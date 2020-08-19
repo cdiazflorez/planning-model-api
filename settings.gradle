@@ -1,0 +1,4 @@
+rootProject.name = 'planning-model-api'
+include 'infrastructure'
+include 'application'
+include 'core'

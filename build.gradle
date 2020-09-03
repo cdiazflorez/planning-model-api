@@ -110,8 +110,10 @@ jacocoTestCoverageVerification {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/PlanningModelApiApplication**',
+                    '**/PlanningModelApplication**',
                     '**/config/**',
+                    '**/domain/entity/current/**',
+                    '**/domain/entity/forecast/**'
             ])
         }))
     }
@@ -126,8 +128,11 @@ jacocoTestReport {
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
-                    '**/PlanningModelApiApplication**',
-                    '**/config/**'
+                    '**/PlanningModelApplication**',
+                    '**/config/**',
+                    '**/domain/entity/current/**',
+                    '**/domain/entity/forecast/**'
+
             ])
         }))
     }
@@ -141,3 +146,5 @@ task installGitHooks(type: Copy) {
 check.dependsOn jacocoTestCoverageVerification
 check.dependsOn jacocoTestReport
 check.dependsOn installGitHooks
+
+generateLombokConfig.enabled = false

@@ -1,11 +1,12 @@
 package com.mercadolibre.planning.model.api.domain.entity.current;
 
-import com.mercadolibre.planning.model.api.web.controller.request.MetricUnit;
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessName;
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessingType;
-import com.mercadolibre.planning.model.api.web.controller.request.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +17,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
 import java.time.ZonedDateTime;
 
@@ -25,8 +25,8 @@ import java.time.ZonedDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "current_processing_distribution")
-public class CurrentProcessingDistributionEntity {
+@Data
+public class CurrentProcessingDistribution {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

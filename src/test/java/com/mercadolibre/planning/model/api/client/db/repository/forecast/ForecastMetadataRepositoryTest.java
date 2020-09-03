@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadataEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadataEntityId;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadataId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,21 +34,21 @@ public class ForecastMetadataRepositoryTest {
     @DisplayName("Looking for a forecast metadata that exists, returns it")
     public void testFindForecastMetadataById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
 
-        final ForecastMetadataEntity forecastMetadataEntity = mockForecastMetadata(forecastEntity);
+        final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
 
-        entityManager.persistAndFlush(forecastMetadataEntity);
+        entityManager.persistAndFlush(forecastMetadata);
 
         // WHEN
-        final Optional<ForecastMetadataEntity> optForecastMetadata = repository
+        final Optional<ForecastMetadata> optForecastMetadata = repository
                 .findById(mockForecastMetadataId());
 
         // THEN
         assertTrue(optForecastMetadata.isPresent());
 
-        final ForecastMetadataEntity foundForecastMetadata = optForecastMetadata.get();
+        final ForecastMetadata foundForecastMetadata = optForecastMetadata.get();
         assertEquals(1L, foundForecastMetadata.getForecastId());
         assertEquals(FORECAST_METADATA_KEY, foundForecastMetadata.getKey());
         assertEquals(FORECAST_METADATA_VALUE, foundForecastMetadata.getValue());
@@ -58,14 +58,14 @@ public class ForecastMetadataRepositoryTest {
     @DisplayName("Looking for a forecast metadata that doesn't exist, returns nothing")
     public void testForecastMetadataDoesntExist() {
         // WHEN
-        final Optional<ForecastMetadataEntity> optForecastMetadata = repository
+        final Optional<ForecastMetadata> optForecastMetadata = repository
                 .findById(mockForecastMetadataId());
 
         // THEN
         assertFalse(optForecastMetadata.isPresent());
     }
 
-    private ForecastMetadataEntityId mockForecastMetadataId() {
-        return new ForecastMetadataEntityId(1L, FORECAST_METADATA_KEY);
+    private ForecastMetadataId mockForecastMetadataId() {
+        return new ForecastMetadataId(1L, FORECAST_METADATA_KEY);
     }
 }

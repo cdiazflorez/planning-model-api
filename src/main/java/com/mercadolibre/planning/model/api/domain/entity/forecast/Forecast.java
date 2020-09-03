@@ -1,9 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
-import com.mercadolibre.planning.model.api.web.controller.request.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,7 +21,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
@@ -32,10 +31,9 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Table(name = "forecast")
+@Data
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
-public class ForecastEntity {
+public class Forecast {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,25 +54,25 @@ public class ForecastEntity {
     @BatchSize(size = 50)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<HeadcountDistributionEntity> headcountDistributions = new HashSet<>();
+    private Set<HeadcountDistribution> headcountDistributions = new HashSet<>();
 
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<HeadcountProductivityEntity> headcountProductivities = new HashSet<>();
+    private Set<HeadcountProductivity> headcountProductivities = new HashSet<>();
 
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<PlanningDistributionEntity> planningDistributions = new HashSet<>();
+    private Set<PlanningDistribution> planningDistributions = new HashSet<>();
 
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 200)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)
     @Builder.Default
-    private Set<ProcessingDistributionEntity> processingDistributions = new HashSet<>();
+    private Set<ProcessingDistribution> processingDistributions = new HashSet<>();
 
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 100)
@@ -84,5 +82,5 @@ public class ForecastEntity {
             fetch = FetchType.EAGER,
             orphanRemoval = true)
     @Builder.Default
-    private Set<ForecastMetadataEntity> metadatas = new HashSet<>();
+    private Set<ForecastMetadata> metadatas = new HashSet<>();
 }

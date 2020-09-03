@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,18 +32,18 @@ public class ProcessingDistributionRepositoryTest {
     @DisplayName("Looking for a processing distribution that exists, returns it")
     public void testFindProcessingDistributionById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
-        entityManager.persistAndFlush(mockProcessingDist(forecastEntity));
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
+        entityManager.persistAndFlush(mockProcessingDist(forecast));
 
         // WHEN
-        final Optional<ProcessingDistributionEntity> optProcessingDistribution =
+        final Optional<ProcessingDistribution> optProcessingDistribution =
                 repository.findById(1L);
 
         // THEN
         assertTrue(optProcessingDistribution.isPresent());
 
-        final ProcessingDistributionEntity foundProcessingDistribution =
+        final ProcessingDistribution foundProcessingDistribution =
                 optProcessingDistribution.get();
 
         assertEquals(1L, foundProcessingDistribution.getId());
@@ -53,16 +53,16 @@ public class ProcessingDistributionRepositoryTest {
         assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
         assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
 
-        final ForecastEntity foundForecastEntity = foundProcessingDistribution.getForecast();
-        assertEquals(1L, foundForecastEntity.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecastEntity.getWorkflow().name());
+        final Forecast foundForecast = foundProcessingDistribution.getForecast();
+        assertEquals(1L, foundForecast.getId());
+        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
     }
 
     @Test
     @DisplayName("Looking for a processing distribution that doesn't exist, returns nothing")
     public void testProcessingDistributionDoesntExist() {
         // WHEN
-        final Optional<ProcessingDistributionEntity> optProcessingDist = repository.findById(1L);
+        final Optional<ProcessingDistribution> optProcessingDist = repository.findById(1L);
 
         // THEN
         assertFalse(optProcessingDist.isPresent());

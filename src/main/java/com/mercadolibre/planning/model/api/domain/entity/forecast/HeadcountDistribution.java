@@ -1,11 +1,10 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
-import com.mercadolibre.planning.model.api.web.controller.request.MetricUnit;
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessName;
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -18,23 +17,19 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import java.time.ZonedDateTime;
 
 @Entity
-@Getter
-@Builder(builderClassName = "ProcessingDistBuilder")
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "processing_distribution")
-public class ProcessingDistributionEntity {
+@Builder
+@Data
+public class HeadcountDistribution {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private ZonedDateTime date;
+    private String area;
 
     @Enumerated(EnumType.STRING)
     private ProcessName processName;
@@ -44,11 +39,8 @@ public class ProcessingDistributionEntity {
     @Enumerated(EnumType.STRING)
     private MetricUnit quantityMetricUnit;
 
-    @Enumerated(EnumType.STRING)
-    private ProcessingType type;
-
     @ManyToOne
     @JoinColumn(name = "forecast_id")
     @Fetch(FetchMode.SELECT)
-    private ForecastEntity forecast;
+    private Forecast forecast;
 }

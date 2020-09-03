@@ -1,10 +1,10 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
-import com.mercadolibre.planning.model.api.web.controller.request.MetricUnit;
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -15,17 +15,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import java.time.OffsetTime;
 
 @Entity
-@Getter
-@Builder(builderClassName = "HeadcountProdBuilder")
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "headcount_productivity")
-public class HeadcountProductivityEntity {
+@Data
+public class HeadcountProductivity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,5 +42,5 @@ public class HeadcountProductivityEntity {
     @ManyToOne
     @JoinColumn(name = "forecast_id")
     @Fetch(FetchMode.SELECT)
-    private ForecastEntity forecast;
+    private Forecast forecast;
 }

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivityEntity;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,16 +29,16 @@ public class CurrentHeadcountProductivityRepositoryTest {
     @DisplayName("Looking for a current headcount productivity that exists, returns it")
     public void testFindCurrentHeadcountProductivityById() {
         // GIVEN
-        final CurrentHeadcountProductivityEntity currentProd = mockCurrentProdEntity();
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
         entityManager.persistAndFlush(currentProd);
 
         // WHEN
-        final Optional<CurrentHeadcountProductivityEntity> optCurrentProd = repository.findById(1L);
+        final Optional<CurrentHeadcountProductivity> optCurrentProd = repository.findById(1L);
 
         // THEN
         assertTrue(optCurrentProd.isPresent());
 
-        final CurrentHeadcountProductivityEntity foundCurrentProd = optCurrentProd.get();
+        final CurrentHeadcountProductivity foundCurrentProd = optCurrentProd.get();
         assertEquals(currentProd.getId(), foundCurrentProd.getId());
         assertEquals(currentProd.getWorkflow(), foundCurrentProd.getWorkflow());
         assertEquals(currentProd.getAbilityLevel(), foundCurrentProd.getAbilityLevel());
@@ -54,7 +54,7 @@ public class CurrentHeadcountProductivityRepositoryTest {
     @DisplayName("Looking for a current headcount productivity that doesn't exist, returns nothing")
     public void testCurrentHeadcountProductivityDoesntExist() {
         // WHEN
-        final Optional<CurrentHeadcountProductivityEntity> optProd = repository.findById(1L);
+        final Optional<CurrentHeadcountProductivity> optProd = repository.findById(1L);
 
         // THEN
         assertFalse(optProd.isPresent());

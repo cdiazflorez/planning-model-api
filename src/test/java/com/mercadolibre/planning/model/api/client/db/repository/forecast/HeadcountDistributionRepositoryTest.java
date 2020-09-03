@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,34 +31,34 @@ public class HeadcountDistributionRepositoryTest {
     @DisplayName("Looking for a headcount distribution that exists, returns it")
     public void testFindHeadcountDistributionById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
 
-        entityManager.persistAndFlush(mockHeadcountDist(forecastEntity));
+        entityManager.persistAndFlush(mockHeadcountDist(forecast));
 
         // WHEN
-        final Optional<HeadcountDistributionEntity> optHeadcountDist = repository.findById(1L);
+        final Optional<HeadcountDistribution> optHeadcountDist = repository.findById(1L);
 
         // THEN
         assertTrue(optHeadcountDist.isPresent());
 
-        final HeadcountDistributionEntity foundHeadcountDistribution = optHeadcountDist.get();
+        final HeadcountDistribution foundHeadcountDistribution = optHeadcountDist.get();
         assertEquals(1L, foundHeadcountDistribution.getId());
         assertEquals("MZ", foundHeadcountDistribution.getArea());
         assertEquals("PICKING", foundHeadcountDistribution.getProcessName().name());
         assertEquals(40, foundHeadcountDistribution.getQuantity());
         assertEquals("WORKER", foundHeadcountDistribution.getQuantityMetricUnit().name());
 
-        final ForecastEntity foundForecastEntity = foundHeadcountDistribution.getForecast();
-        assertEquals(1L, foundForecastEntity.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecastEntity.getWorkflow().name());
+        final Forecast foundForecast = foundHeadcountDistribution.getForecast();
+        assertEquals(1L, foundForecast.getId());
+        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
     }
 
     @Test
     @DisplayName("Looking for a headcount distribution that doesn't exist, returns nothing")
     public void testHeadcountDistributionDoesntExist() {
         // WHEN
-        final Optional<HeadcountDistributionEntity> optHeadcountDistribution =
+        final Optional<HeadcountDistribution> optHeadcountDistribution =
                 repository.findById(1L);
 
         // THEN

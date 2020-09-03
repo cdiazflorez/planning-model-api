@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,17 +34,17 @@ public class PlanningDistributionRepositoryTest {
     @DisplayName("Looking for a planning distribution that exists, returns it")
     public void testFindPlanningDistributionById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
-        entityManager.persistAndFlush(mockPlanningDist(forecastEntity));
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
+        entityManager.persistAndFlush(mockPlanningDist(forecast));
 
         // WHEN
-        final Optional<PlanningDistributionEntity> optPlanningDist = repository.findById(1L);
+        final Optional<PlanningDistribution> optPlanningDist = repository.findById(1L);
 
         // THEN
         assertTrue(optPlanningDist.isPresent());
 
-        final PlanningDistributionEntity foundPlanningDistribution = optPlanningDist.get();
+        final PlanningDistribution foundPlanningDistribution = optPlanningDist.get();
         assertEquals(1L, foundPlanningDistribution.getId());
         assertEquals(DATE_IN, foundPlanningDistribution.getDateIn());
         assertEquals(DATE_OUT, foundPlanningDistribution.getDateOut());
@@ -52,16 +52,16 @@ public class PlanningDistributionRepositoryTest {
         assertEquals("UNIT", foundPlanningDistribution.getQuantityMetricUnit().name());
         assertEquals(new HashSet<>(), foundPlanningDistribution.getMetadatas());
 
-        final ForecastEntity foundForecastEntity = foundPlanningDistribution.getForecast();
-        assertEquals(1L, foundForecastEntity.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecastEntity.getWorkflow().name());
+        final Forecast foundForecast = foundPlanningDistribution.getForecast();
+        assertEquals(1L, foundForecast.getId());
+        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
     }
 
     @Test
     @DisplayName("Looking for a planning distribution that doesn't exist, returns nothing")
     public void testPlanningDistributionDoesntExist() {
         // WHEN
-        final Optional<PlanningDistributionEntity> optPlanningDist = repository.findById(1L);
+        final Optional<PlanningDistribution> optPlanningDist = repository.findById(1L);
 
         // THEN
         assertFalse(optPlanningDist.isPresent());

@@ -1,9 +1,9 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadataEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadataEntityId;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadataId;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,25 +36,25 @@ public class PlanningMetadataRepositoryTest {
     @DisplayName("Looking for a planning metadata that exists, returns it")
     public void testFindPlanningMetadataById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
 
-        final PlanningDistributionEntity planningDistribution = mockPlanningDist(forecastEntity);
+        final PlanningDistribution planningDistribution = mockPlanningDist(forecast);
         entityManager.persistAndFlush(planningDistribution);
 
-        final PlanningDistributionMetadataEntity planningMetadata =
+        final PlanningDistributionMetadata planningMetadata =
                 mockPlanningDistMetadata(planningDistribution);
 
         entityManager.persistAndFlush(planningMetadata);
 
         // WHEN
-        final Optional<PlanningDistributionMetadataEntity> optPlanningMetadata = repository
+        final Optional<PlanningDistributionMetadata> optPlanningMetadata = repository
                 .findById(mockPlanningMetadataId());
 
         // THEN
         assertTrue(optPlanningMetadata.isPresent());
 
-        final PlanningDistributionMetadataEntity foundPlanningMetadata = optPlanningMetadata.get();
+        final PlanningDistributionMetadata foundPlanningMetadata = optPlanningMetadata.get();
         assertEquals(1L, foundPlanningMetadata.getPlanningDistributionId());
         assertEquals(PLANNING_METADATA_KEY, foundPlanningMetadata.getKey());
         assertEquals(PLANNING_METADATA_VALUE, foundPlanningMetadata.getValue());
@@ -64,14 +64,14 @@ public class PlanningMetadataRepositoryTest {
     @DisplayName("Looking for a planning metadata that doesn't exist, returns nothing")
     public void testPlanningMetadataDoesntExist() {
         // WHEN
-        final Optional<PlanningDistributionMetadataEntity> optPlanningMetadata = repository
+        final Optional<PlanningDistributionMetadata> optPlanningMetadata = repository
                 .findById(mockPlanningMetadataId());
 
         // THEN
         assertFalse(optPlanningMetadata.isPresent());
     }
 
-    private PlanningDistributionMetadataEntityId mockPlanningMetadataId() {
-        return new PlanningDistributionMetadataEntityId(1L, PLANNING_METADATA_KEY);
+    private PlanningDistributionMetadataId mockPlanningMetadataId() {
+        return new PlanningDistributionMetadataId(1L, PLANNING_METADATA_KEY);
     }
 }

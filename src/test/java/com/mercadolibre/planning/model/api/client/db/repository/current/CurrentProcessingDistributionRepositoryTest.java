@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,18 +29,18 @@ public class CurrentProcessingDistributionRepositoryTest {
     @DisplayName("Looking for a current processing distribution that exists, returns it")
     public void testFindCurrentProcessingDistributionById() {
         // GIVEN
-        final CurrentProcessingDistributionEntity currentProcessingDist = mockCurrentProcDist();
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
 
         entityManager.persistAndFlush(currentProcessingDist);
 
         // WHEN
-        final Optional<CurrentProcessingDistributionEntity> optCurrentProcessingDist =
+        final Optional<CurrentProcessingDistribution> optCurrentProcessingDist =
                 repository.findById(1L);
 
         // THEN
         assertTrue(optCurrentProcessingDist.isPresent());
 
-        final CurrentProcessingDistributionEntity foundCurrentProc = optCurrentProcessingDist.get();
+        final CurrentProcessingDistribution foundCurrentProc = optCurrentProcessingDist.get();
         assertEquals(currentProcessingDist.getId(), foundCurrentProc.getId());
         assertEquals(currentProcessingDist.getWorkflow(), foundCurrentProc.getWorkflow());
         assertEquals(currentProcessingDist.getType(), foundCurrentProc.getType());
@@ -57,7 +57,7 @@ public class CurrentProcessingDistributionRepositoryTest {
             + " returns nothing")
     public void testCurrentProcessingDistributionDoesntExist() {
         // WHEN
-        final Optional<CurrentProcessingDistributionEntity> optDistribution = repository
+        final Optional<CurrentProcessingDistribution> optDistribution = repository
                 .findById(1L);
 
         // THEN

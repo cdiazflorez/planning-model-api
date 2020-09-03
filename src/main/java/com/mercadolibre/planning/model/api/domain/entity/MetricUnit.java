@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.web.controller.request;
+package com.mercadolibre.planning.model.api.domain.entity;
 
 public enum MetricUnit {
 

@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivityEntity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,19 +32,19 @@ public class HeadcountProductivityRepositoryTest {
     @DisplayName("Looking for a headcount productivity that exists, returns it")
     public void testFindHeadcountProductivityById() {
         // GIVEN
-        final ForecastEntity forecastEntity = mockSimpleForecast();
-        entityManager.persistAndFlush(forecastEntity);
+        final Forecast forecast = mockSimpleForecast();
+        entityManager.persistAndFlush(forecast);
 
-        final HeadcountProductivityEntity productivity = mockHeadcountProd(forecastEntity);
+        final HeadcountProductivity productivity = mockHeadcountProd(forecast);
         entityManager.persistAndFlush(productivity);
 
         // WHEN
-        final Optional<HeadcountProductivityEntity> optHeadcountProd = repository.findById(1L);
+        final Optional<HeadcountProductivity> optHeadcountProd = repository.findById(1L);
 
         // THEN
         assertTrue(optHeadcountProd.isPresent());
 
-        final HeadcountProductivityEntity foundHeadcountProd = optHeadcountProd.get();
+        final HeadcountProductivity foundHeadcountProd = optHeadcountProd.get();
         assertEquals(1L, foundHeadcountProd.getId());
         assertEquals(1L, foundHeadcountProd.getAbilityLevel());
         assertEquals("PACKING", foundHeadcountProd.getProcessName().name());
@@ -52,16 +52,16 @@ public class HeadcountProductivityRepositoryTest {
         assertEquals(80L, foundHeadcountProd.getProductivity());
         assertEquals(AN_OFFSET_TIME, foundHeadcountProd.getDayTime());
 
-        final ForecastEntity foundForecastEntity = foundHeadcountProd.getForecast();
-        assertEquals(1L, foundForecastEntity.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecastEntity.getWorkflow().name());
+        final Forecast foundForecast = foundHeadcountProd.getForecast();
+        assertEquals(1L, foundForecast.getId());
+        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
     }
 
     @Test
     @DisplayName("Looking for a headcount productivity that doesn't exist, returns nothing")
     public void testHeadcountProductivityDoesntExist() {
         // WHEN
-        final Optional<HeadcountProductivityEntity> optHeadcountProd = repository.findById(1L);
+        final Optional<HeadcountProductivity> optHeadcountProd = repository.findById(1L);
 
         // THEN
         assertFalse(optHeadcountProd.isPresent());

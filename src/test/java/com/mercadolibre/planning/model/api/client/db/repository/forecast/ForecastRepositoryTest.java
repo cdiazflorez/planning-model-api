@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadataEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivityEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,69 +40,69 @@ public class ForecastRepositoryTest {
     @DisplayName("Looking for a forecast that exists, returns it")
     public void testFindForecastById() {
         // GIVEN
-        final ForecastEntity forecastEntity = persistForecast();
+        final Forecast forecast = persistForecast();
 
         // WHEN
-        final Optional<ForecastEntity> optForecast = repository.findById(forecastEntity.getId());
+        final Optional<Forecast> optForecast = repository.findById(forecast.getId());
 
         // THEN
         assertTrue(optForecast.isPresent());
 
-        final ForecastEntity foundForecastEntity = optForecast.get();
-        assertEquals(forecastEntity.getId(), foundForecastEntity.getId());
-        assertEquals(forecastEntity.getWorkflow(), foundForecastEntity.getWorkflow());
-        assertEquals(forecastEntity.getDateCreated(), foundForecastEntity.getDateCreated());
-        assertEquals(forecastEntity.getLastUpdated(), foundForecastEntity.getLastUpdated());
-        assertEquals(forecastEntity.getMetadatas(), foundForecastEntity.getMetadatas());
+        final Forecast foundForecast = optForecast.get();
+        assertEquals(forecast.getId(), foundForecast.getId());
+        assertEquals(forecast.getWorkflow(), foundForecast.getWorkflow());
+        assertEquals(forecast.getDateCreated(), foundForecast.getDateCreated());
+        assertEquals(forecast.getLastUpdated(), foundForecast.getLastUpdated());
+        assertEquals(forecast.getMetadatas(), foundForecast.getMetadatas());
 
-        assertEquals(forecastEntity.getPlanningDistributions(),
-                foundForecastEntity.getPlanningDistributions());
+        assertEquals(forecast.getPlanningDistributions(),
+                foundForecast.getPlanningDistributions());
 
-        assertEquals(forecastEntity.getHeadcountDistributions(),
-                foundForecastEntity.getHeadcountDistributions());
+        assertEquals(forecast.getHeadcountDistributions(),
+                foundForecast.getHeadcountDistributions());
 
-        assertEquals(forecastEntity.getProcessingDistributions(),
-                foundForecastEntity.getProcessingDistributions());
+        assertEquals(forecast.getProcessingDistributions(),
+                foundForecast.getProcessingDistributions());
 
-        assertEquals(forecastEntity.getHeadcountProductivities(),
-                foundForecastEntity.getHeadcountProductivities());
+        assertEquals(forecast.getHeadcountProductivities(),
+                foundForecast.getHeadcountProductivities());
     }
 
     @Test
     @DisplayName("Looking for a forecast that doesn't exist, returns nothing")
     public void testForecastDoesntExist() {
         // WHEN
-        final Optional<ForecastEntity> optForecast = repository.findById(1L);
+        final Optional<Forecast> optForecast = repository.findById(1L);
 
         // THEN
         assertFalse(optForecast.isPresent());
     }
 
-    private ForecastEntity persistForecast() {
-        final HeadcountDistributionEntity headcountDistributionEntity = mockHeadcountDist(null);
-        entityManager.persistAndFlush(headcountDistributionEntity);
+    private Forecast persistForecast() {
+        final HeadcountDistribution headcountDistribution = mockHeadcountDist(null);
+        entityManager.persistAndFlush(headcountDistribution);
 
-        final HeadcountProductivityEntity headcountProductivityEntity = mockHeadcountProd(null);
-        entityManager.persistAndFlush(headcountProductivityEntity);
+        final HeadcountProductivity headcountProductivity = mockHeadcountProd(null);
+        entityManager.persistAndFlush(headcountProductivity);
 
-        final PlanningDistributionEntity planningDistributionEntity = mockPlanningDist(null);
-        entityManager.persistAndFlush(planningDistributionEntity);
+        final PlanningDistribution planningDistribution = mockPlanningDist(null);
+        entityManager.persistAndFlush(planningDistribution);
 
-        final ProcessingDistributionEntity processingDistributionEntity = mockProcessingDist(null);
-        entityManager.persistAndFlush(processingDistributionEntity);
+        final ProcessingDistribution processingDistribution = mockProcessingDist(null);
+        entityManager.persistAndFlush(processingDistribution);
 
-        final ForecastEntity forecastEntity = mockForecast(
-                Set.of(headcountDistributionEntity),
-                Set.of(headcountProductivityEntity),
-                Set.of(planningDistributionEntity),
-                Set.of(processingDistributionEntity),
+        final Forecast forecast = mockForecast(
+                Set.of(headcountDistribution),
+                Set.of(headcountProductivity),
+                Set.of(planningDistribution),
+                Set.of(processingDistribution),
                 null);
 
-        entityManager.persistAndFlush(forecastEntity);
+        entityManager.persistAndFlush(forecast);
 
-        final ForecastMetadataEntity forecastMetadataEntity = mockForecastMetadata(forecastEntity);
-        entityManager.persistAndFlush(forecastMetadataEntity);
+        final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
+        entityManager.persistAndFlush(forecastMetadata);
 
-        return forecastEntity;
+        return forecast;
     }
 }

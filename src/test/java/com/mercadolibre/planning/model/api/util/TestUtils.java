@@ -1,29 +1,29 @@
 package com.mercadolibre.planning.model.api.util;
 
-import com.mercadolibre.planning.model.api.web.controller.request.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivityEntity;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadataEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivityEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadataEntity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistributionEntity;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 
 import java.time.OffsetTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
-import static com.mercadolibre.planning.model.api.web.controller.request.MetricUnit.PERCENTAGE;
-import static com.mercadolibre.planning.model.api.web.controller.request.MetricUnit.UNIT;
-import static com.mercadolibre.planning.model.api.web.controller.request.MetricUnit.UNIT_PER_HOUR;
-import static com.mercadolibre.planning.model.api.web.controller.request.MetricUnit.WORKER;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProcessingType.ACTIVE_WORKERS;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProcessingType.REMAINING_PROCESSING;
-import static com.mercadolibre.planning.model.api.web.controller.request.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNIT;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNIT_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static java.util.Collections.emptySet;
 
 public final class TestUtils {
@@ -37,11 +37,11 @@ public final class TestUtils {
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
 
-    public static ForecastEntity mockForecast(final Set<HeadcountDistributionEntity> headcountDists,
-                                              final Set<HeadcountProductivityEntity> productivities,
-                                              final Set<PlanningDistributionEntity> planningDists,
-                                              final Set<ProcessingDistributionEntity> procDists,
-                                              final Set<ForecastMetadataEntity> forecastMetadatas) {
+    public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
+                                        final Set<HeadcountProductivity> productivities,
+                                        final Set<PlanningDistribution> planningDists,
+                                        final Set<ProcessingDistribution> procDists,
+                                        final Set<ForecastMetadata> forecastMetadatas) {
         return forecastEntityBuilder()
                 .headcountDistributions(headcountDists)
                 .processingDistributions(procDists)
@@ -51,23 +51,23 @@ public final class TestUtils {
                 .build();
     }
 
-    public static ForecastEntity mockSimpleForecast() {
+    public static Forecast mockSimpleForecast() {
         return forecastEntityBuilder().build();
     }
 
-    public static ForecastEntity.ForecastEntityBuilder forecastEntityBuilder() {
-        return ForecastEntity.builder()
+    public static Forecast.ForecastBuilder forecastEntityBuilder() {
+        return Forecast.builder()
                 .workflow(FBM_WMS_OUTBOUND)
                 .dateCreated(A_DATE)
                 .lastUpdated(A_DATE);
     }
 
-    public static PlanningDistributionEntity mockPlanningDist(final ForecastEntity forecast) {
+    public static PlanningDistribution mockPlanningDist(final Forecast forecast) {
         return planningBuilder().forecast(forecast).build();
     }
 
-    public static PlanningDistributionEntity.PlanningDistributionEntityBuilder planningBuilder() {
-        return PlanningDistributionEntity.builder()
+    public static PlanningDistribution.PlanningDistributionBuilder planningBuilder() {
+        return PlanningDistribution.builder()
                 .dateIn(DATE_IN)
                 .dateOut(DATE_OUT)
                 .quantity(1200)
@@ -75,21 +75,21 @@ public final class TestUtils {
                 .quantityMetricUnit(UNIT);
     }
 
-    public static HeadcountDistributionEntity.HeadcountDistEntityBuilder headcountDistBuilder() {
-        return HeadcountDistributionEntity.builder()
+    public static HeadcountDistribution.HeadcountDistributionBuilder headcountDistBuilder() {
+        return HeadcountDistribution.builder()
                 .area("MZ")
                 .processName(PICKING)
                 .quantity(40)
                 .quantityMetricUnit(WORKER);
     }
 
-    public static HeadcountDistributionEntity mockHeadcountDist(final ForecastEntity forecast) {
+    public static HeadcountDistribution mockHeadcountDist(final Forecast forecast) {
 
         return headcountDistBuilder().forecast(forecast).build();
     }
 
-    public static HeadcountProductivityEntity.HeadcountProdBuilder headcountProdBuilder() {
-        return HeadcountProductivityEntity.builder()
+    public static HeadcountProductivity.HeadcountProductivityBuilder headcountProdBuilder() {
+        return HeadcountProductivity.builder()
                 .abilityLevel(1L)
                 .productivity(80)
                 .productivityMetricUnit(PERCENTAGE)
@@ -97,12 +97,12 @@ public final class TestUtils {
                 .dayTime(AN_OFFSET_TIME);
     }
 
-    public static HeadcountProductivityEntity mockHeadcountProd(final ForecastEntity forecast) {
+    public static HeadcountProductivity mockHeadcountProd(final Forecast forecast) {
         return headcountProdBuilder().forecast(forecast).build();
     }
 
-    public static ProcessingDistributionEntity.ProcessingDistBuilder processDistBuilder() {
-        return ProcessingDistributionEntity.builder()
+    public static ProcessingDistribution.ProcessingDistBuilder processDistBuilder() {
+        return ProcessingDistribution.builder()
                 .processName(ProcessName.WAVING)
                 .quantity(1000)
                 .quantityMetricUnit(UNIT)
@@ -110,17 +110,17 @@ public final class TestUtils {
                 .date(A_DATE);
     }
 
-    public static ProcessingDistributionEntity mockProcessingDist(final ForecastEntity forecast) {
+    public static ProcessingDistribution mockProcessingDist(final Forecast forecast) {
         return processDistBuilder().forecast(forecast).build();
     }
 
-    public static ForecastMetadataEntity.ForecastMetadataEntityBuilder forecastMetadataBuilder() {
-        return ForecastMetadataEntity.builder()
+    public static ForecastMetadata.ForecastMetadataBuilder forecastMetadataBuilder() {
+        return ForecastMetadata.builder()
                 .key(FORECAST_METADATA_KEY)
                 .value(FORECAST_METADATA_VALUE);
     }
 
-    public static ForecastMetadataEntity mockForecastMetadata(final ForecastEntity forecast) {
+    public static ForecastMetadata mockForecastMetadata(final Forecast forecast) {
         if (forecast == null) {
             return forecastMetadataBuilder().build();
         }
@@ -128,16 +128,16 @@ public final class TestUtils {
         return forecastMetadataBuilder().forecastId(forecast.getId()).build();
     }
 
-    public static PlanningDistributionMetadataEntity
-            .PlanningDistributionMetadataEntityBuilder planningMetadataBuilder() {
+    public static PlanningDistributionMetadata
+            .PlanningDistributionMetadataBuilder planningMetadataBuilder() {
 
-        return PlanningDistributionMetadataEntity.builder()
+        return PlanningDistributionMetadata.builder()
                 .key(PLANNING_METADATA_KEY)
                 .value(PLANNING_METADATA_VALUE);
     }
 
-    public static PlanningDistributionMetadataEntity mockPlanningDistMetadata(
-            final PlanningDistributionEntity planningDistEntity) {
+    public static PlanningDistributionMetadata mockPlanningDistMetadata(
+            final PlanningDistribution planningDistEntity) {
 
         if (planningDistEntity == null) {
             return planningMetadataBuilder().build();
@@ -148,8 +148,8 @@ public final class TestUtils {
                 .build();
     }
 
-    public static CurrentHeadcountProductivityEntity mockCurrentProdEntity() {
-        return CurrentHeadcountProductivityEntity.builder()
+    public static CurrentHeadcountProductivity mockCurrentProdEntity() {
+        return CurrentHeadcountProductivity.builder()
                 .abilityLevel(1L)
                 .date(A_DATE)
                 .isActive(true)
@@ -160,8 +160,8 @@ public final class TestUtils {
                 .build();
     }
 
-    public static CurrentProcessingDistributionEntity mockCurrentProcDist() {
-        return CurrentProcessingDistributionEntity.builder()
+    public static CurrentProcessingDistribution mockCurrentProcDist() {
+        return CurrentProcessingDistribution.builder()
                 .date(A_DATE)
                 .isActive(false)
                 .processName(PACKING)

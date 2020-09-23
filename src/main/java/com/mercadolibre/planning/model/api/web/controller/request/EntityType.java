@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.entity;
+package com.mercadolibre.planning.model.api.web.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -10,20 +10,16 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
 
 @SuppressWarnings("PMD.ShortMethodName")
-public enum ProcessName {
+public enum EntityType {
+    HEADCOUNT,
+    PRODUCTIVITY,
+    THROUGHPUT;
 
-    // FBM WMS OUTBOUND
-    WAVING,
-    PICKING,
-    PUT_TO_WALL,
-    PACKING,
-    EXPEDITION;
-
-    private static final Map<String, ProcessName> LOOKUP = Arrays.stream(values()).collect(
-            toMap(ProcessName::toString, Function.identity())
+    private static final Map<String, EntityType> LOOKUP = Arrays.stream(values()).collect(
+            toMap(EntityType::toString, Function.identity())
     );
 
-    public static Optional<ProcessName> of(final String value) {
+    public static Optional<EntityType> of(final String value) {
         return Optional.ofNullable(LOOKUP.get(value.toUpperCase()));
     }
 

@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -21,5 +23,10 @@ public enum ProcessingType {
 
     public static Optional<ProcessingType> of(final String value) {
         return Optional.ofNullable(LOOKUP.get(value.toUpperCase()));
+    }
+
+    @JsonValue
+    public String toJson() {
+        return this.toString().toLowerCase();
     }
 }

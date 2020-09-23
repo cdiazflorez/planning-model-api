@@ -145,5 +145,6 @@ task installGitHooks(type: Copy) {
 }
 
 check.dependsOn jacocoTestCoverageVerification
+
 check.dependsOn jacocoTestReport
 check.dependsOn installGitHooks

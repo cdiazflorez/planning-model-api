@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.util;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -10,28 +9,60 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
+import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.MetadataRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.PlanningDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.PolyvalentProductivityRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionDataRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionRequest;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNIT;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNIT_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKER;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_TO_WALL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static java.time.ZoneOffset.UTC;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 public final class TestUtils {
 
-    public static final ZonedDateTime A_DATE = ZonedDateTime.parse("2020-08-19T17:00:00.000Z");
-    public static final ZonedDateTime DATE_IN = ZonedDateTime.parse("2020-08-19T18:00:00.000Z");
-    public static final ZonedDateTime DATE_OUT = ZonedDateTime.parse("2020-08-20T15:30:00.000Z");
-    public static final OffsetTime AN_OFFSET_TIME = OffsetTime.parse("10:00:00-03:00");
+    public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
+            ZoneId.of("UTC"));
+    public static final ZonedDateTime A_DATE = ZonedDateTime.of(2020, 8, 19, 14, 0, 0, 0,
+            ZoneId.of("-3"));
+    public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
+            ZoneId.of("UTC"));
+    public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
+            ZoneId.of("UTC"));
+    public static final OffsetTime AN_OFFSET_TIME = OffsetTime.parse("00:00:00-03:00");
+    public static final OffsetTime ANOTHER_OFFSET_TIME = OffsetTime.parse("01:00:00-03:00");
+    public static final OffsetTime AN_OFFSET_TIME_UTC = AN_OFFSET_TIME.withOffsetSameInstant(UTC);
+    public static final OffsetTime ANOTHER_OFFSET_TIME_UTC = ANOTHER_OFFSET_TIME
+            .withOffsetSameInstant(UTC);
     public static final String FORECAST_METADATA_KEY = "mono_order_distribution";
     public static final String FORECAST_METADATA_VALUE = "48";
     public static final String PLANNING_METADATA_KEY = "carrier";
@@ -58,8 +89,8 @@ public final class TestUtils {
     public static Forecast.ForecastBuilder forecastEntityBuilder() {
         return Forecast.builder()
                 .workflow(FBM_WMS_OUTBOUND)
-                .dateCreated(A_DATE)
-                .lastUpdated(A_DATE);
+                .dateCreated(A_DATE_UTC)
+                .lastUpdated(A_DATE_UTC);
     }
 
     public static PlanningDistribution mockPlanningDist(final Forecast forecast) {
@@ -72,7 +103,7 @@ public final class TestUtils {
                 .dateOut(DATE_OUT)
                 .quantity(1200)
                 .metadatas(emptySet())
-                .quantityMetricUnit(UNIT);
+                .quantityMetricUnit(UNITS);
     }
 
     public static HeadcountDistribution.HeadcountDistributionBuilder headcountDistBuilder() {
@@ -80,7 +111,7 @@ public final class TestUtils {
                 .area("MZ")
                 .processName(PICKING)
                 .quantity(40)
-                .quantityMetricUnit(WORKER);
+                .quantityMetricUnit(WORKERS);
     }
 
     public static HeadcountDistribution mockHeadcountDist(final Forecast forecast) {
@@ -90,7 +121,7 @@ public final class TestUtils {
 
     public static HeadcountProductivity.HeadcountProductivityBuilder headcountProdBuilder() {
         return HeadcountProductivity.builder()
-                .abilityLevel(1L)
+                .abilityLevel(1)
                 .productivity(80)
                 .productivityMetricUnit(PERCENTAGE)
                 .processName(PACKING)
@@ -103,11 +134,11 @@ public final class TestUtils {
 
     public static ProcessingDistribution.ProcessingDistBuilder processDistBuilder() {
         return ProcessingDistribution.builder()
-                .processName(ProcessName.WAVING)
+                .processName(WAVING)
                 .quantity(1000)
-                .quantityMetricUnit(UNIT)
+                .quantityMetricUnit(UNITS)
                 .type(REMAINING_PROCESSING)
-                .date(A_DATE);
+                .date(A_DATE_UTC);
     }
 
     public static ProcessingDistribution mockProcessingDist(final Forecast forecast) {
@@ -151,10 +182,10 @@ public final class TestUtils {
     public static CurrentHeadcountProductivity mockCurrentProdEntity() {
         return CurrentHeadcountProductivity.builder()
                 .abilityLevel(1L)
-                .date(A_DATE)
+                .date(A_DATE_UTC)
                 .isActive(true)
                 .productivity(68)
-                .productivityMetricUnit(UNIT_PER_HOUR)
+                .productivityMetricUnit(UNITS_PER_HOUR)
                 .processName(PICKING)
                 .workflow(FBM_WMS_OUTBOUND)
                 .build();
@@ -162,13 +193,112 @@ public final class TestUtils {
 
     public static CurrentProcessingDistribution mockCurrentProcDist() {
         return CurrentProcessingDistribution.builder()
-                .date(A_DATE)
+                .date(A_DATE_UTC)
                 .isActive(false)
                 .processName(PACKING)
                 .quantity(35)
-                .quantityMetricUnit(WORKER)
+                .quantityMetricUnit(WORKERS)
                 .type(ACTIVE_WORKERS)
                 .workflow(FBM_WMS_OUTBOUND)
                 .build();
+    }
+
+    private static List<ProcessingDistributionRequest> mockProcessingDistributions() {
+        final List<ProcessingDistributionDataRequest> data = asList(
+                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+        );
+
+        return singletonList(
+                new ProcessingDistributionRequest(PERFORMED_PROCESSING, UNITS, WAVING, data)
+        );
+    }
+
+    private static List<PolyvalentProductivityRequest> mockPolyvalentProductivities() {
+        return asList(
+                new PolyvalentProductivityRequest(PACKING, PERCENTAGE, 90, 1),
+                new PolyvalentProductivityRequest(PICKING, PERCENTAGE, 86, 1)
+        );
+    }
+
+    private static List<PlanningDistributionRequest> mockPlanningDistributions() {
+        return singletonList(
+                new PlanningDistributionRequest(
+                        DATE_IN, DATE_OUT, UNITS, 1200, asList(
+                        new MetadataRequest("carrier_id", "17502740"),
+                        new MetadataRequest("service_id", "851"),
+                        new MetadataRequest("canalization", "U")
+                ))
+        );
+    }
+
+    private static List<MetadataRequest> mockMetadatas() {
+        return asList(
+                new MetadataRequest("warehouse_id", "ARBA01"),
+                new MetadataRequest("week", "26-2020"),
+                new MetadataRequest("mono_order_distribution", "58"),
+                new MetadataRequest("multi_order_distribution", "42")
+        );
+    }
+
+    private static List<HeadcountProductivityRequest> mockProductivities() {
+        return asList(
+                new HeadcountProductivityRequest(PICKING, UNITS_PER_HOUR, 0, List.of(
+                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 85),
+                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                )),
+                new HeadcountProductivityRequest(PACKING, UNITS_PER_HOUR, 0, List.of(
+                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 92),
+                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                ))
+        );
+    }
+
+    private static List<HeadcountDistributionRequest> mockHeadcounts() {
+        return asList(
+                new HeadcountDistributionRequest(PICKING, PERCENTAGE, mockPickingAreas()),
+                new HeadcountDistributionRequest(PUT_TO_WALL, PERCENTAGE, mockPtwAreas())
+        );
+    }
+
+    private static List<AreaRequest> mockPickingAreas() {
+        return asList(
+                new AreaRequest("MZ", 85),
+                new AreaRequest("RS", 5),
+                new AreaRequest("HV", 5),
+                new AreaRequest("BL", 5)
+        );
+    }
+
+    private static List<AreaRequest> mockPtwAreas() {
+        return asList(
+                new AreaRequest("IN", 60),
+                new AreaRequest("OUT", 40)
+        );
+    }
+
+    public static CreateForecastInput mockCreateForecastInput() {
+        return CreateForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .headcountDistributions(mockHeadcounts())
+                .headcountProductivities(mockProductivities())
+                .planningDistributions(mockPlanningDistributions())
+                .processingDistributions(mockProcessingDistributions())
+                .polyvalentProductivities(mockPolyvalentProductivities())
+                .metadata(mockMetadatas())
+                .build();
+    }
+
+    public static String getResourceAsString(final String resourceName) throws IOException {
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final InputStream resource = classLoader.getResourceAsStream(resourceName);
+
+        try {
+            return IOUtils.toString(resource, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            resource.close();
+        }
     }
 }

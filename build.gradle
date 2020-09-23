@@ -17,7 +17,7 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 11
 targetCompatibility = 11
 
-mainClassName = 'com.mercadolibre.fbm.wms.outbound.bundle.PlanningModelApiApplication'
+mainClassName = 'com.mercadolibre.planning.model.api.PlanningModelApplication'
 
 repositories {
     mavenCentral()
@@ -130,6 +130,7 @@ jacocoTestReport {
             fileTree(dir: it, exclude: [
                     '**/PlanningModelApplication**',
                     '**/config/**',
+                    '**/logging/**',
                     '**/domain/entity/current/**',
                     '**/domain/entity/forecast/**'
 
@@ -146,5 +147,3 @@ task installGitHooks(type: Copy) {
 check.dependsOn jacocoTestCoverageVerification
 check.dependsOn jacocoTestReport
 check.dependsOn installGitHooks
-
-generateLombokConfig.enabled = false

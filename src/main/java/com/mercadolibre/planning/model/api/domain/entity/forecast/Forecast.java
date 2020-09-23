@@ -21,7 +21,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -40,7 +39,6 @@ public class Forecast {
     private long id;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     private Workflow workflow;
 
     @Column(updatable = false)
@@ -68,7 +66,6 @@ public class Forecast {
     @Builder.Default
     private Set<PlanningDistribution> planningDistributions = new HashSet<>();
 
-    @Fetch(FetchMode.SELECT)
     @BatchSize(size = 200)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)
     @Builder.Default

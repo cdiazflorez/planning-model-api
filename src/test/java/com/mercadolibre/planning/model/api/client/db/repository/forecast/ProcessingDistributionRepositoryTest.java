@@ -11,7 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Optional;
 
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProcessingDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,9 +47,9 @@ public class ProcessingDistributionRepositoryTest {
                 optProcessingDistribution.get();
 
         assertEquals(1L, foundProcessingDistribution.getId());
-        assertEquals(A_DATE, foundProcessingDistribution.getDate());
+        assertEquals(A_DATE_UTC, foundProcessingDistribution.getDate());
         assertEquals(1000, foundProcessingDistribution.getQuantity());
-        assertEquals("UNIT", foundProcessingDistribution.getQuantityMetricUnit().name());
+        assertEquals("UNITS", foundProcessingDistribution.getQuantityMetricUnit().name());
         assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
         assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
 

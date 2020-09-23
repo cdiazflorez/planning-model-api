@@ -37,7 +37,7 @@ public class CurrentHeadcountProductivity {
 
     private ProcessName processName;
 
-    private long productivity;
+    private double productivity;
 
     private MetricUnit productivityMetricUnit;
 

@@ -49,7 +49,7 @@ public class PlanningDistributionRepositoryTest {
         assertEquals(DATE_IN, foundPlanningDistribution.getDateIn());
         assertEquals(DATE_OUT, foundPlanningDistribution.getDateOut());
         assertEquals(1200, foundPlanningDistribution.getQuantity());
-        assertEquals("UNIT", foundPlanningDistribution.getQuantityMetricUnit().name());
+        assertEquals("UNITS", foundPlanningDistribution.getQuantityMetricUnit().name());
         assertEquals(new HashSet<>(), foundPlanningDistribution.getMetadatas());
 
         final Forecast foundForecast = foundPlanningDistribution.getForecast();

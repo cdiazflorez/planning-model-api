@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.entity.forecast;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,6 +15,7 @@ import javax.persistence.JoinColumn;
 @IdClass(PlanningDistributionMetadataId.class)
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class PlanningDistributionMetadata {
 

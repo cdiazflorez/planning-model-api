@@ -1,0 +1,129 @@
+{
+    "headcount_distributions": [{
+        "process_name": "picking",
+        "quantity_metric_unit": "percentage",
+        "areas": [{
+            "area_id": "MZ",
+            "quantity": 85
+        },
+            {
+                "area_id": "RS",
+                "quantity": 5
+            },
+            {
+                "area_id": "HV",
+                "quantity": 5
+            },
+            {
+                "area_id": "BL",
+                "quantity": 5
+            }]
+    },
+        {
+            "process_name": "put_to_wall",
+            "quantity_metric_unit": "percentage",
+            "areas": [{
+                "area_id": "IN",
+                "quantity": 60
+            },
+                {
+                    "area_id": "OUT",
+                    "quantity": 40
+                }
+            ]
+        }
+    ],
+    "headcount_productivities": [{
+        "process_name": "picking",
+        "productivity_metric_unit": "units_per_hour",
+        "ability_level": 0,
+        "data": [{
+            "day_time": "00:00-03:00",
+            "productivity": 85
+        },
+            {
+                "day_time": "01:00-03:00",
+                "productivity": 85
+            }
+        ]
+    },
+        {
+            "process_name": "packing",
+            "productivity_metric_unit": "units_per_hour",
+            "ability_level": 0,
+            "data": [{
+                "day_time": "00:00-03:00",
+                "productivity": 92
+            },
+                {
+                    "day_time": "01:00-03:00",
+                    "productivity": 85
+                }
+            ]
+        }
+    ],
+    "planning_distributions": [{
+        "date_in": "2020-08-19T18:00Z",
+        "date_out": "2020-08-20T15:30Z",
+        "quantity": 1200,
+        "quantity_metric_unit": "units",
+        "metadata": [{
+            "key": "carrier_id",
+            "value": "17502740"
+        },
+            {
+                "key": "service_id",
+                "value": "851"
+            },
+            {
+                "key": "canalization",
+                "value": "U"
+            }
+        ]
+    }],
+    "polyvalent_productivities": [{
+        "process_name": "packing",
+        "productivity_metric_unit": "percentage",
+        "productivity": 90,
+        "ability_level": 1
+    },
+        {
+            "process_name": "picking",
+            "productivity_metric_unit": "percentage",
+            "productivity": 86,
+            "ability_level": 1
+        }
+    ],
+    "processing_distributions": [{
+        "type": "performed_processing",
+        "quantity_metric_unit": "units",
+        "process_name": "waving",
+        "data": [{
+            "date": "2020-08-19T18:00Z",
+            "quantity": 172
+        },
+            {
+                "date": "2020-08-19T19:00Z",
+                "quantity": 295
+            }
+        ]
+    }],
+    "metadata": [
+        {
+            "key": "warehouse_id",
+            "value": "ARBA01"
+        },
+        {
+            "key": "week",
+            "value": "26-2020"
+        },
+        {
+            "key": "mono_order_distribution",
+            "value": "58"
+        },
+        {
+            "key": "multi_order_distribution",
+            "value": "42"
+        }
+    ]
+}

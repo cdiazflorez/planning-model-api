@@ -47,7 +47,7 @@ public class HeadcountDistributionRepositoryTest {
         assertEquals("MZ", foundHeadcountDistribution.getArea());
         assertEquals("PICKING", foundHeadcountDistribution.getProcessName().name());
         assertEquals(40, foundHeadcountDistribution.getQuantity());
-        assertEquals("WORKER", foundHeadcountDistribution.getQuantityMetricUnit().name());
+        assertEquals("WORKERS", foundHeadcountDistribution.getQuantityMetricUnit().name());
 
         final Forecast foundForecast = foundHeadcountDistribution.getForecast();
         assertEquals(1L, foundForecast.getId());

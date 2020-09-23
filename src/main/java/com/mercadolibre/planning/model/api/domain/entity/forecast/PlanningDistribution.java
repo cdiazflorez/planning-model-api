@@ -5,11 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -38,19 +41,20 @@ public class PlanningDistribution {
 
     private long quantity;
 
+    @Enumerated(EnumType.STRING)
     private MetricUnit quantityMetricUnit;
 
     @ManyToOne
     @JoinColumn(name = "forecast_id")
-    @Fetch(FetchMode.SELECT)
     private Forecast forecast;
 
+    @Fetch(FetchMode.SELECT)
+    @BatchSize(size = 100)
     @OneToMany(
             mappedBy = "planningDistributionId",
             fetch = FetchType.EAGER,
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    @Fetch(FetchMode.SELECT)
     private Set<PlanningDistributionMetadata> metadatas;
 }

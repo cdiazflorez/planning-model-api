@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetThroughputOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
@@ -49,6 +50,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.R
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
@@ -73,6 +75,7 @@ public final class TestUtils {
     public static final String FORECAST_METADATA_VALUE = "48";
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
+    private static final String WAREHOUSE_ID = "ARBA01";
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -222,12 +225,17 @@ public final class TestUtils {
     }
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
-        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, HEADCOUNT,
+        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT,
                 A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
     }
 
     public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
-        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
+        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+    }
+
+    public static GetEntityInput mockGetThroughputEntityInput(final Source source) {
+        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, THROUGHPUT, A_DATE_UTC,
                 A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
     }
 
@@ -235,7 +243,7 @@ public final class TestUtils {
         return List.of(
                 new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
                         WORKERS, FORECAST, 50),
-                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                new GetHeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
                         WORKERS, FORECAST, 40)
         );
     }
@@ -250,6 +258,19 @@ public final class TestUtils {
                         UNITS_PER_HOUR, FORECAST, 70),
                 new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
                         UNITS_PER_HOUR, FORECAST, 90.5)
+        );
+    }
+
+    public static List<GetEntityOutput> mockGetThroughputEntityOutput() {
+        return List.of(
+                new GetThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        UNITS_PER_HOUR, FORECAST, 800),
+                new GetThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
+                        UNITS_PER_HOUR, FORECAST, 700),
+                new GetThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        UNITS_PER_HOUR, FORECAST, 600),
+                new GetThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
+                        UNITS_PER_HOUR, FORECAST, 550)
         );
     }
 
@@ -297,7 +318,7 @@ public final class TestUtils {
 
     private static List<MetadataRequest> mockMetadatas() {
         return asList(
-                new MetadataRequest("warehouse_id", "ARBA01"),
+                new MetadataRequest("warehouse_id", WAREHOUSE_ID),
                 new MetadataRequest("week", "26-2020"),
                 new MetadataRequest("mono_order_distribution", "58"),
                 new MetadataRequest("multi_order_distribution", "42")

@@ -34,10 +34,11 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
 
     private List<GetEntityOutput> getForecastHeadcount(final GetEntityInput input) {
         final List<ProcessingDistribution> processingDistributions = processingDistRepository
-                .findByWarehouseIdAndWorkflowAndTypeAndDateInRange(
+                .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         input.getWarehouseId(),
                         input.getWorkflow(),
                         ProcessingType.ACTIVE_WORKERS,
+                        input.getProcessName(),
                         input.getDateFrom(),
                         input.getDateTo());
 

@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
@@ -20,7 +21,11 @@ public interface ProcessingDistributionRepository
             + "FROM "
             + "   ProcessingDistribution p "
             + "WHERE "
-            + "   p.date BETWEEN :date_from AND :date_to "
+            + "   p.processName IN "
+            + "   ( "
+            + "      :process_name"
+            + "   ) "
+            + "   AND p.date BETWEEN :date_from AND :date_to "
             + "   AND p.forecast.id = "
             + "   ("
             + "      SELECT "
@@ -36,10 +41,11 @@ public interface ProcessingDistributionRepository
             + "   ) "
             + "   AND p.type = :type "
             + "ORDER BY p.date")
-    List<ProcessingDistribution> findByWarehouseIdAndWorkflowAndTypeAndDateInRange(
+    List<ProcessingDistribution> findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") Workflow workflow,
             @Param("type") ProcessingType type,
+            @Param("process_name") List<ProcessName> processNames,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo);
 

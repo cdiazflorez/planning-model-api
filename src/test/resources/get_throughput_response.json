@@ -2,28 +2,28 @@
     "workflow": "fbm-wms-outbound",
     "date": "2020-08-19T17:00:00Z",
     "process_name": "picking",
-    "value": 50,
-    "metric_unit": "workers",
-    "source": "forecast"
-}, {
-    "workflow": "fbm-wms-outbound",
-    "date": "2020-08-19T18:00:00Z",
-    "process_name": "picking",
-    "value": 40,
-    "metric_unit": "workers",
+    "value": 800.0,
+    "metric_unit": "units_per_hour",
     "source": "forecast"
 }, {
     "workflow": "fbm-wms-outbound",
     "date": "2020-08-19T17:00:00Z",
     "process_name": "packing",
-    "value": 60,
-    "metric_unit": "workers",
+    "value": 700.0,
+    "metric_unit": "units_per_hour",
+    "source": "forecast"
+}, {
+    "workflow": "fbm-wms-outbound",
+    "date": "2020-08-19T18:00:00Z",
+    "process_name": "picking",
+    "value": 600.0,
+    "metric_unit": "units_per_hour",
     "source": "forecast"
 }, {
     "workflow": "fbm-wms-outbound",
     "date": "2020-08-19T18:00:00Z",
     "process_name": "packing",
-    "value": 30,
-    "metric_unit": "workers",
+    "value": 550.0,
+    "metric_unit": "units_per_hour",
     "source": "forecast"
 }]

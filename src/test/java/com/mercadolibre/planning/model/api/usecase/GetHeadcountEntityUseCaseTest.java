@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -49,9 +50,10 @@ public class GetHeadcountEntityUseCaseTest {
     public void testGetHeadcountOk() {
         // GIVEN
         final GetEntityInput input = mockGetHeadcountEntityInput(FORECAST);
-        when(processingDistRepository.findByWarehouseIdAndWorkflowAndTypeAndDateInRange("ARBA01",
-                FBM_WMS_OUTBOUND, ACTIVE_WORKERS, A_DATE_UTC, A_DATE_UTC.plusDays(2)))
-                .thenReturn(processingDistributions());
+
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                "ARBA01", FBM_WMS_OUTBOUND, ACTIVE_WORKERS, List.of(PICKING, PACKING),
+                A_DATE_UTC, A_DATE_UTC.plusDays(2))).thenReturn(processingDistributions());
 
         // WHEN
         final List<GetEntityOutput> output = getHeadcountEntityUseCase.execute(input);

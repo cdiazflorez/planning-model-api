@@ -221,33 +221,16 @@ public final class TestUtils {
     }
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
-        return GetEntityInput.builder()
-                .warehouseId("ARBA01")
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC.plusDays(2))
-                .source(source)
-                .entityType(HEADCOUNT)
-                .workflow(FBM_WMS_OUTBOUND)
-                .build();
+        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, HEADCOUNT,
+                A_DATE_UTC, A_DATE_UTC.plusDays(2), source);
     }
 
     public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {
-        return List.of(GetEntityOutput.builder()
-                        .processName(PICKING)
-                        .workflow(FBM_WMS_OUTBOUND)
-                        .metricUnit(WORKERS)
-                        .source(FORECAST)
-                        .date(A_DATE_UTC)
-                        .value(50)
-                        .build(),
-                GetEntityOutput.builder()
-                        .processName(PICKING)
-                        .workflow(FBM_WMS_OUTBOUND)
-                        .metricUnit(WORKERS)
-                        .source(FORECAST)
-                        .date(A_DATE_UTC.plusHours(1))
-                        .value(40)
-                        .build()
+        return List.of(
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        50, WORKERS, FORECAST),
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        40, WORKERS, FORECAST)
         );
     }
 

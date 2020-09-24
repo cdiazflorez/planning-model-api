@@ -32,13 +32,6 @@ public class GetEntityRequest {
     private Source source;
 
     public GetEntityInput toGetEntityInput(final Workflow workflow, final EntityType entityType) {
-        return GetEntityInput.builder()
-                .warehouseId(warehouseId)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .source(source)
-                .workflow(workflow)
-                .entityType(entityType)
-                .build();
+        return new GetEntityInput(warehouseId, workflow, entityType, dateFrom, dateTo, source);
     }
 }

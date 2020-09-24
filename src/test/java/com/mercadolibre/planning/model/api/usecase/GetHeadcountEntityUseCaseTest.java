@@ -80,22 +80,10 @@ public class GetHeadcountEntityUseCaseTest {
 
     private List<ProcessingDistribution> processingDistributions() {
         return List.of(
-                ProcessingDistribution.builder()
-                        .id(1)
-                        .date(A_DATE_UTC)
-                        .processName(PICKING)
-                        .quantity(100)
-                        .quantityMetricUnit(WORKERS)
-                        .type(ACTIVE_WORKERS)
-                        .build(),
-                ProcessingDistribution.builder()
-                        .id(1)
-                        .date(A_DATE_UTC.plusHours(1))
-                        .processName(PICKING)
-                        .quantity(120)
-                        .quantityMetricUnit(WORKERS)
-                        .type(ACTIVE_WORKERS)
-                        .build()
+                new ProcessingDistribution(1, A_DATE_UTC, PICKING,
+                        100, WORKERS, ACTIVE_WORKERS, null),
+                new ProcessingDistribution(2, A_DATE_UTC.plusHours(1), PICKING,
+                        120, WORKERS, ACTIVE_WORKERS, null)
         );
     }
 }

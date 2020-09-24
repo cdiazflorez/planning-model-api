@@ -12,7 +12,8 @@ import static java.util.stream.Collectors.toMap;
 public enum EntityType {
     HEADCOUNT,
     PRODUCTIVITY,
-    THROUGHPUT;
+    THROUGHPUT,
+    UNKNOWN;
 
     private static final Map<String, EntityType> LOOKUP = Arrays.stream(values()).collect(
             toMap(EntityType::toString, Function.identity())

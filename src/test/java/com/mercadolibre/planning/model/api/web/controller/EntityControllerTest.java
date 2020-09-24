@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,9 +14,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProductivityEntityOutput;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,6 +36,9 @@ public class EntityControllerTest {
 
     @MockBean
     private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
+
+    @MockBean
+    private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -53,16 +59,17 @@ public class EntityControllerTest {
         );
 
         // THEN
+        verifyZeroInteractions(getProductivityEntityUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
 
-    @DisplayName("Get headcount entity throws InvalidEntityTypeException")
+    @DisplayName("Get entity throws InvalidEntityTypeException")
     @Test
-    public void testGetHeadcountEntityThrowException() throws Exception {
+    public void testEntityThrowException() throws Exception {
         // WHEN
         final ResultActions result = mvc.perform(
-                get(URL, "fbm-wms-outbound", "throughput")
+                get(URL, "fbm-wms-outbound", "unknown")
                         .contentType(APPLICATION_JSON)
                         .param("warehouse_id", "ARBA01")
                         .param("source", "forecast")
@@ -72,11 +79,12 @@ public class EntityControllerTest {
         );
 
         // THEN
+        verifyZeroInteractions(getProductivityEntityUseCase);
         result.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
                 .andExpect(jsonPath("$.error", is("invalid_entity_type")))
                 .andExpect(jsonPath("$.message",
-                        containsString("Entity type throughput is invalid")));
+                        containsString("Entity type unknown is invalid")));
     }
 
     @DisplayName("Get headcount entity when entity is not part of the enum")
@@ -95,5 +103,52 @@ public class EntityControllerTest {
 
         // THEN
         result.andExpect(status().isBadRequest());
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getProductivityEntityUseCase);
+    }
+
+    @DisplayName("Get throughput entity works ok")
+    @Test
+    public void testGetThroughputEntityOk() throws Exception {
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "throughput")
+                        .contentType(APPLICATION_JSON)
+                        .param("warehouse_id", "ARBA01")
+                        .param("source", "forecast")
+                        .param("process_name", "picking,packing")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+        );
+
+        // THEN
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @DisplayName("Get productivity entity works ok")
+    @Test
+    public void testGetProductivityEntityOk() throws Exception {
+        // GIVEN
+        when(getProductivityEntityUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockGetProductivityEntityOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "productivity")
+                        .contentType(APPLICATION_JSON)
+                        .param("warehouse_id", "ARBA01")
+                        .param("source", "forecast")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+                        .param("process_name", "picking,packing")
+        );
+
+        // THEN
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content().json(getResourceAsString("get_productivity_response.json")));
     }
 }

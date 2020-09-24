@@ -18,7 +18,7 @@ public class GetEntityOutput {
     private Workflow workflow;
     private ZonedDateTime date;
     private ProcessName processName;
-    private long value;
+    private double value;
     private MetricUnit metricUnit;
     private Source source;
 }

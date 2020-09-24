@@ -46,6 +46,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.P
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
@@ -57,8 +58,6 @@ public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
             ZoneId.of("UTC"));
-    public static final ZonedDateTime A_DATE = ZonedDateTime.of(2020, 8, 19, 14, 0, 0, 0,
-            ZoneId.of("-3"));
     public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
             ZoneId.of("UTC"));
     public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
@@ -225,12 +224,30 @@ public final class TestUtils {
                 A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
     }
 
+    public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
+        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+    }
+
     public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {
         return List.of(
                 new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
                         50, WORKERS, FORECAST),
                 new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
                         40, WORKERS, FORECAST)
+        );
+    }
+
+    public static List<GetEntityOutput> mockGetProductivityEntityOutput() {
+        return List.of(
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        80, UNITS_PER_HOUR, FORECAST),
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
+                        85.0, UNITS_PER_HOUR, FORECAST),
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        70, UNITS_PER_HOUR, FORECAST),
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
+                        90.5, UNITS_PER_HOUR, FORECAST)
         );
     }
 

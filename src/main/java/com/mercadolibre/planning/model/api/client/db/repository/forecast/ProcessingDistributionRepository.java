@@ -35,7 +35,8 @@ public interface ProcessingDistributionRepository
             + "         AND m.key = 'warehouse_id' "
             + "         AND m.value = :warehouse_id"
             + "   ) "
-            + "   AND p.type = :type")
+            + "   AND p.type = :type "
+            + "ORDER BY p.date")
     List<ProcessingDistribution> findByWarehouseIdAndWorkflowAndTypeAndDateInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") Workflow workflow,

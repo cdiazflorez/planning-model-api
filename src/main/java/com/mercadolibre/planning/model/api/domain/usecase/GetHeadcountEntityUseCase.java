@@ -22,7 +22,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
 
     @Override
     public List<GetEntityOutput> execute(final GetEntityInput input) {
-        if (input.getSource() == FORECAST) {
+        if (input.getSource() == null || input.getSource() == FORECAST) {
             return getForecastHeadcount(input);
         } else {
             return getSimulationHeadcount();
@@ -45,7 +45,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         .processName(p.getProcessName())
                         .value(p.getQuantity())
                         .metricUnit(p.getQuantityMetricUnit())
-                        .source(input.getSource())
+                        .source(FORECAST)
                         .build())
                 .collect(toList());
     }

@@ -222,7 +222,7 @@ public final class TestUtils {
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
         return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, HEADCOUNT,
-                A_DATE_UTC, A_DATE_UTC.plusDays(2), source);
+                A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
     }
 
     public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {

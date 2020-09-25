@@ -47,6 +47,7 @@ public class EntityControllerTest {
                         .contentType(APPLICATION_JSON)
                         .param("warehouse_id", "ARBA01")
                         .param("source", "forecast")
+                        .param("process_name", "picking,packing")
                         .param("date_from", A_DATE_UTC.toString())
                         .param("date_to", A_DATE_UTC.plusDays(2).toString())
         );
@@ -65,6 +66,7 @@ public class EntityControllerTest {
                         .contentType(APPLICATION_JSON)
                         .param("warehouse_id", "ARBA01")
                         .param("source", "forecast")
+                        .param("process_name", "picking,packing")
                         .param("date_from", A_DATE_UTC.toString())
                         .param("date_to", A_DATE_UTC.plusDays(2).toString())
         );
@@ -86,6 +88,7 @@ public class EntityControllerTest {
                         .contentType(APPLICATION_JSON)
                         .param("warehouse_id", "ARBA01")
                         .param("source", "forecast")
+                        .param("process_name", "picking,packing")
                         .param("date_from", A_DATE_UTC.toString())
                         .param("date_to", A_DATE_UTC.plusDays(2).toString())
         );

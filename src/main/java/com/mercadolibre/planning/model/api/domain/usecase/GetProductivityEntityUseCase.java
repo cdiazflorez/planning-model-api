@@ -26,33 +26,40 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
     @Override
     public List<GetEntityOutput> execute(final GetEntityInput input) {
         if (input.getSource() == FORECAST) {
-            final List<HeadcountProductivity> productivities = productivityRepository
-                    .findByWarehouseIdAndWorkflowAndProcessNameAndDayTimeInRange(
-                            input.getWarehouseId(),
-                            input.getWorkflow(),
-                            input.getProcessName(),
-                            getOffsetTime(input.getDateFrom()),
-                            getOffsetTime(input.getDateTo()));
-
-            return input.getDateFrom().toLocalDate()
-                    .datesUntil(input.getDateTo().toLocalDate().plusDays(1))
-                    .map(day -> productivities.stream()
-                            .map(p -> GetEntityOutput.builder()
-                                    .workflow(input.getWorkflow())
-                                    .date(getZonedDateTime(p.getDayTime(), day))
-                                    .processName(p.getProcessName())
-                                    .value(p.getProductivity())
-                                    .metricUnit(p.getProductivityMetricUnit())
-                                    .source(input.getSource())
-                                    .build())
-                            .collect(toList()))
-                    .flatMap(List::stream)
-                    .collect(toList());
-
+            return getForecastProductivity(input);
         } else {
-            //TODO: Add SIMULATION logic
-            return emptyList();
+            return getSimulationProductivity();
         }
+    }
+
+    private List<GetEntityOutput> getForecastProductivity(final GetEntityInput input) {
+        final List<HeadcountProductivity> productivities = productivityRepository
+                .findByWarehouseIdAndWorkflowAndProcessNameAndDayTimeInRange(
+                        input.getWarehouseId(),
+                        input.getWorkflow(),
+                        input.getProcessName(),
+                        getOffsetTime(input.getDateFrom()),
+                        getOffsetTime(input.getDateTo()));
+
+        return input.getDateFrom().toLocalDate()
+                .datesUntil(input.getDateTo().toLocalDate().plusDays(1))
+                .map(day -> productivities.stream()
+                        .map(p -> GetEntityOutput.builder()
+                                .workflow(input.getWorkflow())
+                                .date(getZonedDateTime(p.getDayTime(), day))
+                                .processName(p.getProcessName())
+                                .value(p.getProductivity())
+                                .metricUnit(p.getProductivityMetricUnit())
+                                .source(input.getSource())
+                                .build())
+                        .collect(toList()))
+                .flatMap(List::stream)
+                .collect(toList());
+    }
+
+    private List<GetEntityOutput> getSimulationProductivity() {
+        //TODO: Add SIMULATION logic
+        return emptyList();
     }
 
     private OffsetTime getOffsetTime(final TemporalAccessor date) {

@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum MetricUnit {
 
     MINUTES,
@@ -28,6 +27,6 @@ public enum MetricUnit {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase();
+        return toString().toLowerCase();
     }
 }

@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum ProcessName {
 
     // FBM WMS OUTBOUND
@@ -29,6 +28,6 @@ public enum ProcessName {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase();
+        return toString().toLowerCase();
     }
 }

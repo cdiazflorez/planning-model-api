@@ -23,27 +23,35 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     @Override
     public List<GetEntityOutput> execute(final GetEntityInput input) {
         if (input.getSource() == FORECAST) {
-            final List<ProcessingDistribution> processingDistributions = processingDistRepository
-                    .findByWarehouseIdAndWorkflowAndTypeAndDateInRange(
-                            input.getWarehouseId(),
-                            input.getWorkflow(),
-                            ProcessingType.ACTIVE_WORKERS,
-                            input.getDateFrom(),
-                            input.getDateTo());
-
-            return processingDistributions.stream()
-                    .map(p -> GetEntityOutput.builder()
-                            .workflow(input.getWorkflow())
-                            .date(p.getDate())
-                            .processName(p.getProcessName())
-                            .value(p.getQuantity())
-                            .metricUnit(p.getQuantityMetricUnit())
-                            .source(input.getSource())
-                            .build())
-                    .collect(toList());
+            return getForecastHeadcount(input);
         } else {
-            //TODO: Add SIMULATION logic
-            return emptyList();
+            return getSimulationHeadcount();
         }
+    }
+
+    private List<GetEntityOutput> getForecastHeadcount(final GetEntityInput input) {
+        final List<ProcessingDistribution> processingDistributions = processingDistRepository
+                .findByWarehouseIdAndWorkflowAndTypeAndDateInRange(
+                        input.getWarehouseId(),
+                        input.getWorkflow(),
+                        ProcessingType.ACTIVE_WORKERS,
+                        input.getDateFrom(),
+                        input.getDateTo());
+
+        return processingDistributions.stream()
+                .map(p -> GetEntityOutput.builder()
+                        .workflow(input.getWorkflow())
+                        .date(p.getDate())
+                        .processName(p.getProcessName())
+                        .value(p.getQuantity())
+                        .metricUnit(p.getQuantityMetricUnit())
+                        .source(input.getSource())
+                        .build())
+                .collect(toList());
+    }
+
+    private List<GetEntityOutput> getSimulationHeadcount() {
+        //TODO: Add SIMULATION logic
+        return emptyList();
     }
 }

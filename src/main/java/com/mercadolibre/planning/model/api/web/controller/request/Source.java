@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum Source {
     FORECAST,
     SIMULATION;
@@ -24,6 +23,6 @@ public enum Source {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase();
+        return toString().toLowerCase();
     }
 }

@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum ProcessingType {
 
     ACTIVE_WORKERS,
@@ -27,6 +26,6 @@ public enum ProcessingType {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase();
+        return toString().toLowerCase();
     }
 }

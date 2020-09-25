@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum EntityType {
     HEADCOUNT,
     PRODUCTIVITY,
@@ -25,6 +24,6 @@ public enum EntityType {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase();
+        return toString().toLowerCase();
     }
 }

@@ -10,7 +10,6 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-@SuppressWarnings("PMD.ShortMethodName")
 public enum Workflow {
     FBM_WMS_OUTBOUND;
 
@@ -25,6 +24,6 @@ public enum Workflow {
 
     @JsonValue
     public String toJson() {
-        return this.toString().toLowerCase().replace('_', '-');
+        return toString().toLowerCase().replace('_', '-');
     }
 }

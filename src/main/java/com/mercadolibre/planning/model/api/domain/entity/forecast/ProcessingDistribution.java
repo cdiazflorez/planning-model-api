@@ -28,8 +28,6 @@ import java.time.ZonedDateTime;
 @Builder(builderClassName = "ProcessingDistBuilder")
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"forecast"})
-@EqualsAndHashCode(exclude = {"forecast"})
 public class ProcessingDistribution {
 
     @Id
@@ -52,5 +50,7 @@ public class ProcessingDistribution {
     @ManyToOne
     @JoinColumn(name = "forecast_id")
     @Fetch(FetchMode.SELECT)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Forecast forecast;
 }

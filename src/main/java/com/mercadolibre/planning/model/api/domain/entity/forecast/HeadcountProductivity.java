@@ -27,8 +27,6 @@ import java.time.OffsetTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@ToString(exclude = {"forecast"})
-@EqualsAndHashCode(exclude = {"forecast"})
 public class HeadcountProductivity {
 
     @Id
@@ -50,5 +48,7 @@ public class HeadcountProductivity {
     @ManyToOne
     @JoinColumn(name = "forecast_id")
     @Fetch(FetchMode.SELECT)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Forecast forecast;
 }

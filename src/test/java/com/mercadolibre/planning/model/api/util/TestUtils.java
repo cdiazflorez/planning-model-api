@@ -12,6 +12,8 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetHeadcountOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
@@ -231,23 +233,23 @@ public final class TestUtils {
 
     public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {
         return List.of(
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        50, WORKERS, FORECAST),
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        40, WORKERS, FORECAST)
+                new GetHeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        WORKERS, FORECAST, 50),
+                new GetHeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        WORKERS, FORECAST, 40)
         );
     }
 
     public static List<GetEntityOutput> mockGetProductivityEntityOutput() {
         return List.of(
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        80, UNITS_PER_HOUR, FORECAST),
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
-                        85.0, UNITS_PER_HOUR, FORECAST),
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        70, UNITS_PER_HOUR, FORECAST),
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
-                        90.5, UNITS_PER_HOUR, FORECAST)
+                new GetProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        UNITS_PER_HOUR, FORECAST, 80),
+                new GetProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
+                        UNITS_PER_HOUR, FORECAST, 85.0),
+                new GetProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        UNITS_PER_HOUR, FORECAST, 70),
+                new GetProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
+                        UNITS_PER_HOUR, FORECAST, 90.5)
         );
     }
 

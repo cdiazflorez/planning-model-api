@@ -4,6 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,7 +45,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
         return input.getDateFrom().toLocalDate()
                 .datesUntil(input.getDateTo().toLocalDate().plusDays(1))
                 .map(day -> productivities.stream()
-                        .map(p -> GetEntityOutput.builder()
+                        .map(p -> GetProductivityOutput.builder()
                                 .workflow(input.getWorkflow())
                                 .date(getZonedDateTime(p.getDayTime(), day))
                                 .processName(p.getProcessName())

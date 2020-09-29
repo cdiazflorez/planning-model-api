@@ -1,0 +1,51 @@
+package com.mercadolibre.planning.model.api.usecase.strategy;
+
+import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+public class GetEntityStrategyTest {
+
+    @InjectMocks
+    private GetEntityStrategy getEntityStrategy;
+
+    @Mock
+    private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
+
+    @Mock
+    private GetProductivityEntityUseCase getProductivityEntityUseCase;
+
+    @Test
+    public void testGetByHeadcountOk() {
+        // GIVEN
+        when(getHeadcountEntityUseCase.supportsEntityType(HEADCOUNT)).thenReturn(true);
+
+        // WHEN - THEN
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        assertThat(getEntityStrategy.getBy(HEADCOUNT))
+                .isInstanceOf(GetHeadcountEntityUseCase.class);
+    }
+
+    @Test
+    public void testGetByProductivityOk() {
+        // GIVEN
+        when(getHeadcountEntityUseCase.supportsEntityType(PRODUCTIVITY)).thenReturn(false);
+        when(getProductivityEntityUseCase.supportsEntityType(PRODUCTIVITY)).thenReturn(true);
+
+        // WHEN - THEN
+        assertThat(getEntityStrategy.getBy(PRODUCTIVITY))
+                .isInstanceOf(GetProductivityEntityUseCase.class);
+    }
+}

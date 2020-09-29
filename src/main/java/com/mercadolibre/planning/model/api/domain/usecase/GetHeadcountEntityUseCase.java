@@ -6,17 +6,19 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetHeadcountOutput;
+import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-@Service
 @AllArgsConstructor
+@Service
 public class GetHeadcountEntityUseCase implements GetEntityUseCase {
 
     private final ProcessingDistributionRepository processingDistRepository;
@@ -54,5 +56,10 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     private List<GetEntityOutput> getSimulationHeadcount() {
         //TODO: Add SIMULATION logic
         return emptyList();
+    }
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == HEADCOUNT;
     }
 }

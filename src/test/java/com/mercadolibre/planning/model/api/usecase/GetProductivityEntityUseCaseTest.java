@@ -6,21 +6,29 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityU
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
+import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProductivityEntityInput;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.time.ZoneOffset.UTC;
@@ -105,6 +113,26 @@ public class GetProductivityEntityUseCaseTest {
                         90, UNITS_PER_HOUR, 1, null),
                 new HeadcountProductivity(4, AN_OFFSET_TIME.plusHours(1), PACKING,
                         92.5, UNITS_PER_HOUR, 1, null)
+        );
+    }
+
+    @ParameterizedTest
+    @DisplayName("Only supports productivity entity")
+    @MethodSource("getSupportedEntitites")
+    public void testSupportEntityTypeOk(final EntityType entityType,
+                                        final boolean shouldBeSupported) {
+        // WHEN
+        final boolean isSupported = getProductivityEntityUseCase.supportsEntityType(entityType);
+
+        // THEN
+        assertEquals(shouldBeSupported, isSupported);
+    }
+
+    private static Stream<Arguments> getSupportedEntitites() {
+        return Stream.of(
+                Arguments.of(PRODUCTIVITY, true),
+                Arguments.of(HEADCOUNT, false),
+                Arguments.of(THROUGHPUT, false)
         );
     }
 }

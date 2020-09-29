@@ -4,23 +4,26 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.Builder;
 import lombok.Value;
 
+import java.util.Arrays;
+
 import static java.lang.String.format;
 
 @Value
 public class InvalidEntityTypeException extends RuntimeException {
 
-    public static final String MESSAGE_PATTERN = "Entity type %s is invalid";
+    public static final String MESSAGE_PATTERN = "Value %s is invalid, "
+            + "instead it should be one of %s";
 
-    private EntityType entityType;
+    private String invalidEntityType;
 
     @Builder
-    public InvalidEntityTypeException(final EntityType entityType) {
+    public InvalidEntityTypeException(final String entityType) {
         super();
-        this.entityType = entityType;
+        this.invalidEntityType = entityType;
     }
 
     @Override
     public String getMessage() {
-        return format(MESSAGE_PATTERN, entityType.toJson());
+        return format(MESSAGE_PATTERN, invalidEntityType, Arrays.toString(EntityType.values()));
     }
 }

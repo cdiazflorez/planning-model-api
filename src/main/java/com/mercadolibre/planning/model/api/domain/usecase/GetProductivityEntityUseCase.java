@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
+import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +15,13 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-@Service
 @AllArgsConstructor
+@Service
 public class GetProductivityEntityUseCase implements GetEntityUseCase {
 
     private final HeadcountProductivityRepository productivityRepository;
@@ -69,5 +71,10 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
 
     private ZonedDateTime getZonedDateTime(final OffsetTime offsetTime, final LocalDate day) {
         return ZonedDateTime.of(day, offsetTime.toLocalTime(), offsetTime.getOffset());
+    }
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == PRODUCTIVITY;
     }
 }

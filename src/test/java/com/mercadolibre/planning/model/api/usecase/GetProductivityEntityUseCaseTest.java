@@ -53,14 +53,15 @@ public class GetProductivityEntityUseCaseTest {
     public void testGetProductivityOk() {
         // GIVEN
         final GetEntityInput input = mockGetProductivityEntityInput(FORECAST);
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessNameAndDayTimeInRange(
-                "ARBA01", FBM_WMS_OUTBOUND, List.of(PICKING, PACKING),
-                AN_OFFSET_TIME, AN_OFFSET_TIME.plusHours(1))).thenReturn(productivities());
+        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+                "ARBA01", FBM_WMS_OUTBOUND, List.of(PICKING, PACKING)))
+                .thenReturn(productivities());
 
         // WHEN
         final List<GetEntityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
+        assertEquals(4, output.size());
         final GetProductivityOutput output1 = (GetProductivityOutput) output.get(0);
         assertEquals(PICKING, output1.getProcessName());
         assertEquals(80.0, output1.getValue());
@@ -69,15 +70,15 @@ public class GetProductivityEntityUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
         final GetProductivityOutput output2 = (GetProductivityOutput) output.get(1);
-        assertEquals(PICKING, output2.getProcessName());
-        assertEquals(85.0, output2.getValue());
+        assertEquals(PACKING, output2.getProcessName());
+        assertEquals(90, output2.getValue());
         assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
         assertEquals(FORECAST, output2.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
 
         final GetProductivityOutput output3 = (GetProductivityOutput) output.get(2);
-        assertEquals(PACKING, output3.getProcessName());
-        assertEquals(90, output3.getValue());
+        assertEquals(PICKING, output3.getProcessName());
+        assertEquals(85.0, output3.getValue());
         assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
         assertEquals(FORECAST, output3.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());

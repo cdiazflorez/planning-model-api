@@ -8,7 +8,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.OffsetTime;
 import java.util.List;
 
 @Repository
@@ -20,9 +19,7 @@ public interface HeadcountProductivityRepository
             + "FROM "
             + "   HeadcountProductivity hd  "
             + "WHERE "
-            + "   hd.dayTime >= :day_time_from  "
-            + "   AND hd.dayTime <= :day_time_to  "
-            + "   AND hd.processName IN  "
+            + "   hd.processName IN  "
             + "   ( "
             + "      :process_name "
             + "   ) "
@@ -41,11 +38,9 @@ public interface HeadcountProductivityRepository
             + "         AND fm.value = :warehouse_id"
             + "   ) "
             + "ORDER BY hd.dayTime")
-    List<HeadcountProductivity> findByWarehouseIdAndWorkflowAndProcessNameAndDayTimeInRange(
+    List<HeadcountProductivity> findByWarehouseIdAndWorkflowAndProcessName(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") Workflow workflow,
-            @Param("process_name") List<ProcessName> processNames,
-            @Param("day_time_from") OffsetTime dateFrom,
-            @Param("day_time_to") OffsetTime dateTo
+            @Param("process_name") List<ProcessName> processNames
     );
 }

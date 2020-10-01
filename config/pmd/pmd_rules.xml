@@ -50,6 +50,19 @@
             </property>
         </properties>
     </rule>
+    <rule ref="category/java/codestyle.xml/ShortMethodName">
+        <!-- Ignore lambda expressions -->
+        <properties>
+            <property name="violationSuppressXPath" value=".[ancestor::LambdaExpression]"/>
+            <property name="xpath">
+                <value>
+                    //VariableDeclaratorId[(string-length(@Image) &lt; 3) and (not (@Image='id')) and (not (@Image='to')) and (not (@Image='of'))]
+                    [not(ancestor::ForInit)]
+                    [not((ancestor::FormalParameter) and (ancestor::TryStatement))]
+                </value>
+            </property>
+        </properties>
+    </rule>
     <rule ref="category/java/codestyle.xml/LongVariable">
         <!-- Ignore lambda expressions -->
         <properties>

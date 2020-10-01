@@ -1,0 +1,15 @@
+[{
+    "workflow": "fbm-wms-outbound",
+    "date": "2020-08-19T17:00:00Z",
+    "process_name": "picking",
+    "value": 50,
+    "metric_unit": "workers",
+    "source": "forecast"
+}, {
+    "workflow": "fbm-wms-outbound",
+    "date": "2020-08-19T18:00:00Z",
+    "process_name": "picking",
+    "value": 40,
+    "metric_unit": "workers",
+    "source": "forecast"
+}]

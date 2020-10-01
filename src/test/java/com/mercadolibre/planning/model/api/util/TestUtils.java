@@ -10,6 +10,8 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistri
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
@@ -19,6 +21,7 @@ import com.mercadolibre.planning.model.api.web.controller.request.PlanningDistri
 import com.mercadolibre.planning.model.api.web.controller.request.PolyvalentProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -42,6 +45,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.A
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
@@ -203,6 +208,45 @@ public final class TestUtils {
                 .build();
     }
 
+    public static CreateForecastInput mockCreateForecastInput() {
+        return CreateForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .headcountDistributions(mockHeadcounts())
+                .headcountProductivities(mockProductivities())
+                .planningDistributions(mockPlanningDistributions())
+                .processingDistributions(mockProcessingDistributions())
+                .polyvalentProductivities(mockPolyvalentProductivities())
+                .metadata(mockMetadatas())
+                .build();
+    }
+
+    public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
+        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, HEADCOUNT,
+                A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
+    }
+
+    public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {
+        return List.of(
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        50, WORKERS, FORECAST),
+                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        40, WORKERS, FORECAST)
+        );
+    }
+
+    public static String getResourceAsString(final String resourceName) throws IOException {
+        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        final InputStream resource = classLoader.getResourceAsStream(resourceName);
+
+        try {
+            return IOUtils.toString(resource, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            resource.close();
+        }
+    }
+
     private static List<ProcessingDistributionRequest> mockProcessingDistributions() {
         final List<ProcessingDistributionDataRequest> data = asList(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
@@ -275,30 +319,5 @@ public final class TestUtils {
                 new AreaRequest("IN", 60),
                 new AreaRequest("OUT", 40)
         );
-    }
-
-    public static CreateForecastInput mockCreateForecastInput() {
-        return CreateForecastInput.builder()
-                .workflow(FBM_WMS_OUTBOUND)
-                .headcountDistributions(mockHeadcounts())
-                .headcountProductivities(mockProductivities())
-                .planningDistributions(mockPlanningDistributions())
-                .processingDistributions(mockProcessingDistributions())
-                .polyvalentProductivities(mockPolyvalentProductivities())
-                .metadata(mockMetadatas())
-                .build();
-    }
-
-    public static String getResourceAsString(final String resourceName) throws IOException {
-        final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final InputStream resource = classLoader.getResourceAsStream(resourceName);
-
-        try {
-            return IOUtils.toString(resource, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        } finally {
-            resource.close();
-        }
     }
 }

@@ -6,7 +6,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -26,6 +28,8 @@ import java.time.ZonedDateTime;
 @Builder(builderClassName = "ProcessingDistBuilder")
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"forecast"})
+@EqualsAndHashCode(exclude = {"forecast"})
 public class ProcessingDistribution {
 
     @Id

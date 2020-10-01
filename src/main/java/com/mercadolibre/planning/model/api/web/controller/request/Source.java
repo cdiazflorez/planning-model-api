@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.entity;
+package com.mercadolibre.planning.model.api.web.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -9,19 +9,15 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toMap;
 
-public enum MetricUnit {
+public enum Source {
+    FORECAST,
+    SIMULATION;
 
-    MINUTES,
-    PERCENTAGE,
-    UNITS,
-    UNITS_PER_HOUR,
-    WORKERS;
-
-    private static final Map<String, MetricUnit> LOOKUP = Arrays.stream(values()).collect(
-            toMap(MetricUnit::toString, Function.identity())
+    private static final Map<String, Source> LOOKUP = Arrays.stream(values()).collect(
+            toMap(Source::toString, Function.identity())
     );
 
-    public static Optional<MetricUnit> of(final String value) {
+    public static Optional<Source> of(final String value) {
         return Optional.ofNullable(LOOKUP.get(value.toUpperCase()));
     }
 

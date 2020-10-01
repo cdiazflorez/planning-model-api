@@ -71,7 +71,6 @@ public class CreateForecastUseCaseTest {
     @InjectMocks
     private CreateForecastUseCase createForecastUseCase;
 
-
     @Test
     @DisplayName("A forecast is created successfully")
     public void createSaveOk() {

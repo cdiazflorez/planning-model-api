@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +56,7 @@ public class GetHeadcountEntityUseCaseTest {
                 A_DATE_UTC, A_DATE_UTC.plusDays(2))).thenReturn(processingDistributions());
 
         // WHEN
-        final List<GetEntityOutput> output = getHeadcountEntityUseCase.execute(input);
+        final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
         final HeadcountOutput output1 = (HeadcountOutput) output.get(0);
@@ -83,7 +83,7 @@ public class GetHeadcountEntityUseCaseTest {
         final GetEntityInput input = mockGetHeadcountEntityInput(SIMULATION);
 
         // WHEN
-        final List<GetEntityOutput> output = getHeadcountEntityUseCase.execute(input);
+        final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
         assertThat(output).isEmpty();

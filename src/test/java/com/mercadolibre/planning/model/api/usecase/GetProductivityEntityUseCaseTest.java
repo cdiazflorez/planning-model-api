@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
@@ -58,7 +58,7 @@ public class GetProductivityEntityUseCaseTest {
                 .thenReturn(productivities());
 
         // WHEN
-        final List<GetEntityOutput> output = getProductivityEntityUseCase.execute(input);
+        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
         assertEquals(4, output.size());
@@ -98,7 +98,7 @@ public class GetProductivityEntityUseCaseTest {
         final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION);
 
         // WHEN
-        final List<GetEntityOutput> output = getProductivityEntityUseCase.execute(input);
+        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
         assertThat(output).isEmpty();

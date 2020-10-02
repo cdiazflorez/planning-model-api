@@ -5,7 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.GetEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import com.mercadolibre.planning.model.api.exception.EntityTypeNotSupportedException;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
@@ -38,7 +38,7 @@ public class EntityController {
     private final GetEntityStrategy getEntityStrategy;
 
     @GetMapping("/{entityType}")
-    public ResponseEntity<List<GetEntityOutput>> getEntity(
+    public ResponseEntity<List<EntityOutput>> getEntity(
             @PathVariable final Workflow workflow,
             @PathVariable final EntityType entityType,
             @Valid final GetEntityRequest request) {

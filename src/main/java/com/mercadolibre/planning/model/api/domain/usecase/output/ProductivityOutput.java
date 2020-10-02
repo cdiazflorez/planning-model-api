@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ProductivityOutput implements GetEntityOutput {
+public class ProductivityOutput implements EntityOutput {
 
     private Workflow workflow;
     private ZonedDateTime date;

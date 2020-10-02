@@ -1,10 +1,10 @@
 package com.mercadolibre.planning.model.api.domain.usecase;
 
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetHeadcountOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetThroughputOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.ThroughputOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
     private final GetProductivityEntityUseCase productivityEntityUseCase;
 
     @Override
-    public List<GetEntityOutput> execute(final GetEntityInput input) {
+    public List<EntityOutput> execute(final GetEntityInput input) {
         if (input.getSource() == null || input.getSource() == FORECAST) {
             return getForecastThroughput(input);
         } else {
@@ -43,11 +43,11 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         return entityType == THROUGHPUT;
     }
 
-    private List<GetEntityOutput> getForecastThroughput(final GetEntityInput input) {
-        final List<GetEntityOutput> headcounts = new ArrayList<>(headcountEntityUseCase
+    private List<EntityOutput> getForecastThroughput(final GetEntityInput input) {
+        final List<EntityOutput> headcounts = new ArrayList<>(headcountEntityUseCase
                 .execute(createHeadcountInput(input)));
 
-        final List<GetEntityOutput> productivities = new ArrayList<>(productivityEntityUseCase
+        final List<EntityOutput> productivities = new ArrayList<>(productivityEntityUseCase
                 .execute(createProductivityInput(input)));
 
         sortByProcessNameAndDate(headcounts, productivities);
@@ -55,18 +55,18 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         return createThroughputs(headcounts, productivities);
     }
 
-    private List<GetEntityOutput> createThroughputs(final List<GetEntityOutput> headcounts,
-                                                    final List<GetEntityOutput> productivities) {
+    private List<EntityOutput> createThroughputs(final List<EntityOutput> headcounts,
+                                                 final List<EntityOutput> productivities) {
 
-        final List<GetEntityOutput> throughputs = new ArrayList<>();
+        final List<EntityOutput> throughputs = new ArrayList<>();
         if (headcounts.size() == productivities.size()) {
             IntStream.range(0, headcounts.size())
                     .forEach(i -> {
-                        final GetHeadcountOutput headcount = (GetHeadcountOutput) headcounts.get(i);
-                        final GetProductivityOutput productivity =
-                                (GetProductivityOutput) productivities.get(i);
+                        final HeadcountOutput headcount = (HeadcountOutput) headcounts.get(i);
+                        final ProductivityOutput productivity =
+                                (ProductivityOutput) productivities.get(i);
                         if (headcount.getProcessName() == productivity.getProcessName()) {
-                            throughputs.add(GetThroughputOutput.builder()
+                            throughputs.add(ThroughputOutput.builder()
                                     .workflow(headcount.getWorkflow())
                                     .date(headcount.getDate())
                                     .source(headcount.getSource())
@@ -81,10 +81,10 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         return throughputs;
     }
 
-    private void sortByProcessNameAndDate(final List<GetEntityOutput> headcounts,
-                                          final List<GetEntityOutput> productivities) {
-        final Comparator<GetEntityOutput> compareByProcessNameAndDate =
-                comparing(GetEntityOutput::getProcessName).thenComparing(GetEntityOutput::getDate);
+    private void sortByProcessNameAndDate(final List<EntityOutput> headcounts,
+                                          final List<EntityOutput> productivities) {
+        final Comparator<EntityOutput> compareByProcessNameAndDate =
+                comparing(EntityOutput::getProcessName).thenComparing(EntityOutput::getDate);
 
         headcounts.sort(compareByProcessNameAndDate);
         productivities.sort(compareByProcessNameAndDate);
@@ -100,7 +100,7 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
                 input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
     }
 
-    private List<GetEntityOutput> getSimulationThroughput() {
+    private List<EntityOutput> getSimulationThroughput() {
         //TODO: Add SIMULATION logic
         return emptyList();
     }

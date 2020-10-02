@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     private final ProcessingDistributionRepository processingDistRepository;
 
     @Override
-    public List<GetEntityOutput> execute(final GetEntityInput input) {
+    public List<EntityOutput> execute(final GetEntityInput input) {
         if (input.getSource() == null || input.getSource() == FORECAST) {
             return getForecastHeadcount(input);
         } else {
@@ -32,7 +32,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         }
     }
 
-    private List<GetEntityOutput> getForecastHeadcount(final GetEntityInput input) {
+    private List<EntityOutput> getForecastHeadcount(final GetEntityInput input) {
         final List<ProcessingDistribution> processingDistributions = processingDistRepository
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         input.getWarehouseId(),
@@ -54,7 +54,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                 .collect(toList());
     }
 
-    private List<GetEntityOutput> getSimulationHeadcount() {
+    private List<EntityOutput> getSimulationHeadcount() {
         //TODO: Add SIMULATION logic
         return emptyList();
     }

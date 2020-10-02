@@ -17,9 +17,9 @@ import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProductivityEntityOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetThroughputEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
@@ -65,7 +65,7 @@ public class EntityControllerTest {
                 .thenReturn(Optional.of(getHeadcountEntityUseCase));
 
         when(getHeadcountEntityUseCase.execute(any(GetEntityInput.class)))
-                .thenReturn(mockGetHeadcountEntityOutput());
+                .thenReturn(mockHeadcountEntityOutput());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -144,7 +144,7 @@ public class EntityControllerTest {
                 .thenReturn(Optional.of(getProductivityEntityUseCase));
 
         when(getProductivityEntityUseCase.execute(any(GetEntityInput.class)))
-                .thenReturn(mockGetProductivityEntityOutput());
+                .thenReturn(mockProductivityEntityOutput());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -178,7 +178,7 @@ public class EntityControllerTest {
                 .thenReturn(Optional.of(getThroughputEntityUseCase));
 
         when(getThroughputEntityUseCase.execute(any(GetEntityInput.class)))
-                .thenReturn(mockGetThroughputEntityOutput());
+                .thenReturn(mockThroughputEntityOutput());
 
         // WHEN
         final ResultActions result = mvc.perform(

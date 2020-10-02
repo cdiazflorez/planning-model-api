@@ -13,12 +13,12 @@ import java.time.ZonedDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class GetProductivityOutput implements GetEntityOutput {
+public class HeadcountOutput implements GetEntityOutput {
 
     private Workflow workflow;
     private ZonedDateTime date;
     private ProcessName processName;
     private MetricUnit metricUnit;
     private Source source;
-    private double value;
+    private long value;
 }

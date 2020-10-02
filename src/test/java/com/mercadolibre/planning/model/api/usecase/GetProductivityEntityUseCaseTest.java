@@ -5,7 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetProductivityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,28 +62,28 @@ public class GetProductivityEntityUseCaseTest {
 
         // THEN
         assertEquals(4, output.size());
-        final GetProductivityOutput output1 = (GetProductivityOutput) output.get(0);
+        final ProductivityOutput output1 = (ProductivityOutput) output.get(0);
         assertEquals(PICKING, output1.getProcessName());
         assertEquals(80.0, output1.getValue());
         assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
         assertEquals(FORECAST, output1.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
-        final GetProductivityOutput output2 = (GetProductivityOutput) output.get(1);
+        final ProductivityOutput output2 = (ProductivityOutput) output.get(1);
         assertEquals(PACKING, output2.getProcessName());
         assertEquals(90, output2.getValue());
         assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
         assertEquals(FORECAST, output2.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
 
-        final GetProductivityOutput output3 = (GetProductivityOutput) output.get(2);
+        final ProductivityOutput output3 = (ProductivityOutput) output.get(2);
         assertEquals(PICKING, output3.getProcessName());
         assertEquals(85.0, output3.getValue());
         assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
         assertEquals(FORECAST, output3.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
 
-        final GetProductivityOutput output4 = (GetProductivityOutput) output.get(3);
+        final ProductivityOutput output4 = (ProductivityOutput) output.get(3);
         assertEquals(PACKING, output4.getProcessName());
         assertEquals(92.5, output4.getValue());
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());

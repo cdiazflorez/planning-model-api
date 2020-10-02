@@ -7,7 +7,7 @@ import com.mercadolibre.planning.model.api.web.controller.request.Source;
 
 import java.time.ZonedDateTime;
 
-public interface GetEntityOutput {
+public interface EntityOutput {
 
     Workflow getWorkflow();
 

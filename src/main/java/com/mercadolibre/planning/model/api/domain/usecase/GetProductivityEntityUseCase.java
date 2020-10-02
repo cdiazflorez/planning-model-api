@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
     private final HeadcountProductivityRepository productivityRepository;
 
     @Override
-    public List<GetEntityOutput> execute(final GetEntityInput input) {
+    public List<EntityOutput> execute(final GetEntityInput input) {
         if (input.getSource() == null || input.getSource() == FORECAST) {
             return getForecastProductivity(input);
         } else {
@@ -38,7 +38,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
         }
     }
 
-    private List<GetEntityOutput> getForecastProductivity(final GetEntityInput input) {
+    private List<EntityOutput> getForecastProductivity(final GetEntityInput input) {
         final List<HeadcountProductivity> productivities = productivityRepository
                 .findByWarehouseIdAndWorkflowAndProcessName(
                         input.getWarehouseId(),
@@ -46,7 +46,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
                         input.getProcessName());
 
         final ZonedDateTime dateFrom = input.getDateFrom();
-        final List<GetEntityOutput> result = new ArrayList<>();
+        final List<EntityOutput> result = new ArrayList<>();
         iterate(dateFrom, date -> date.plusHours(1))
                 .limit(ChronoUnit.HOURS.between(dateFrom, input.getDateTo()) + 1)
                 .forEach(dateTime -> result.addAll(
@@ -55,12 +55,12 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
         return result;
     }
 
-    private List<GetEntityOutput> getSimulationProductivity() {
+    private List<EntityOutput> getSimulationProductivity() {
         //TODO: Add SIMULATION logic
         return emptyList();
     }
 
-    private List<GetEntityOutput> createEntityOutputs(
+    private List<EntityOutput> createEntityOutputs(
             final List<HeadcountProductivity> productivities,
             final ZonedDateTime dateTime,
             final Workflow workflow) {

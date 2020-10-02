@@ -3,9 +3,11 @@ package com.mercadolibre.planning.model.api.web.controller;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.GetEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
+import com.mercadolibre.planning.model.api.exception.EntityTypeNotSupportedException;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
@@ -36,14 +38,17 @@ public class EntityController {
     private final GetEntityStrategy getEntityStrategy;
 
     @GetMapping("/{entityType}")
-    public ResponseEntity<List<GetEntityOutput>> getEntity(
+    public ResponseEntity<List<EntityOutput>> getEntity(
             @PathVariable final Workflow workflow,
             @PathVariable final EntityType entityType,
             @Valid final GetEntityRequest request) {
 
         final GetEntityInput input = request.toGetEntityInput(workflow, entityType);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(getEntityStrategy.getBy(entityType).execute(input));
+        final GetEntityUseCase getEntityUseCase = getEntityStrategy
+                .getBy(entityType)
+                .orElseThrow(() -> new EntityTypeNotSupportedException(entityType));
+
+        return ResponseEntity.status(HttpStatus.OK).body(getEntityUseCase.execute(input));
     }
 
     @InitBinder

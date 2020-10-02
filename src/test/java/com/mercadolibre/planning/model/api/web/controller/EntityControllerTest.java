@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import org.junit.jupiter.api.DisplayName;
@@ -12,12 +13,16 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.Optional;
+
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProductivityEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,6 +51,9 @@ public class EntityControllerTest {
     @MockBean
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
+    @MockBean
+    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+
     @DisplayName("Get headcount entity works ok")
     @Test
     public void testGetHeadcountEntityOk() throws Exception {
@@ -54,10 +62,10 @@ public class EntityControllerTest {
                 .thenReturn(true);
 
         when(getEntityStrategy.getBy(HEADCOUNT))
-                .thenReturn(getHeadcountEntityUseCase);
+                .thenReturn(Optional.of(getHeadcountEntityUseCase));
 
         when(getHeadcountEntityUseCase.execute(any(GetEntityInput.class)))
-                .thenReturn(mockGetHeadcountEntityOutput());
+                .thenReturn(mockHeadcountEntityOutput());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -72,6 +80,7 @@ public class EntityControllerTest {
 
         // THEN
         verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyZeroInteractions(getThroughputEntityUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
@@ -118,6 +127,7 @@ public class EntityControllerTest {
         result.andExpect(status().isBadRequest());
         verifyZeroInteractions(getHeadcountEntityUseCase);
         verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyZeroInteractions(getThroughputEntityUseCase);
     }
 
     @DisplayName("Get productivity entity works ok")
@@ -131,10 +141,10 @@ public class EntityControllerTest {
                 .thenReturn(true);
 
         when(getEntityStrategy.getBy(PRODUCTIVITY))
-                .thenReturn(getProductivityEntityUseCase);
+                .thenReturn(Optional.of(getProductivityEntityUseCase));
 
         when(getProductivityEntityUseCase.execute(any(GetEntityInput.class)))
-                .thenReturn(mockGetProductivityEntityOutput());
+                .thenReturn(mockProductivityEntityOutput());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -149,7 +159,42 @@ public class EntityControllerTest {
 
         // THEN
         verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getThroughputEntityUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_productivity_response.json")));
+    }
+
+    @DisplayName("Get throughput entity works ok")
+    @Test
+    public void testGetThroughputEntityOk() throws Exception {
+        // GIVEN
+        when(getHeadcountEntityUseCase.supportsEntityType(THROUGHPUT))
+                .thenReturn(false);
+
+        when(getProductivityEntityUseCase.supportsEntityType(THROUGHPUT))
+                .thenReturn(true);
+
+        when(getEntityStrategy.getBy(THROUGHPUT))
+                .thenReturn(Optional.of(getThroughputEntityUseCase));
+
+        when(getThroughputEntityUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockThroughputEntityOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "throughput")
+                        .contentType(APPLICATION_JSON)
+                        .param("warehouse_id", "ARBA01")
+                        .param("source", "forecast")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+                        .param("process_name", "picking,packing")
+        );
+
+        // THEN
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content().json(getResourceAsString("get_throughput_response.json")));
     }
 }

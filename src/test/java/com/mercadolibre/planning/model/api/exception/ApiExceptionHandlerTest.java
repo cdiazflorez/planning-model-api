@@ -35,7 +35,24 @@ public class ApiExceptionHandlerTest {
 
         // WHEN
         final ResponseEntity<ErrorResponse> response =
-                apiExceptionHandler.handle(exception, request);
+                apiExceptionHandler.handleInvalidEntityTypeException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    public void handleEntityTypeNotSupportedException() {
+        // GIVEN
+        final EntityTypeNotSupportedException exception = new EntityTypeNotSupportedException(null);
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Entity type null is not supported", "entity_type_not_supported");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleEntityTypeNotSupportedException(exception, request);
 
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);

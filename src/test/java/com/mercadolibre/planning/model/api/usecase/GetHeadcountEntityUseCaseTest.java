@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -49,12 +50,13 @@ public class GetHeadcountEntityUseCaseTest {
     public void testGetHeadcountOk() {
         // GIVEN
         final GetEntityInput input = mockGetHeadcountEntityInput(FORECAST);
-        when(processingDistRepository.findByWarehouseIdAndWorkflowAndTypeAndDateInRange("ARBA01",
-                FBM_WMS_OUTBOUND, ACTIVE_WORKERS, A_DATE_UTC, A_DATE_UTC.plusDays(2)))
-                .thenReturn(processingDistributions());
+
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                "ARBA01", FBM_WMS_OUTBOUND, ACTIVE_WORKERS, List.of(PICKING, PACKING),
+                A_DATE_UTC, A_DATE_UTC.plusDays(2))).thenReturn(processingDistributions());
 
         // WHEN
-        final List<GetEntityOutput> output = getHeadcountEntityUseCase.execute(input);
+        final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
         final HeadcountOutput output1 = (HeadcountOutput) output.get(0);
@@ -81,7 +83,7 @@ public class GetHeadcountEntityUseCaseTest {
         final GetEntityInput input = mockGetHeadcountEntityInput(SIMULATION);
 
         // WHEN
-        final List<GetEntityOutput> output = getHeadcountEntityUseCase.execute(input);
+        final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
         assertThat(output).isEmpty();

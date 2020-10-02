@@ -4,11 +4,14 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseC
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
@@ -32,6 +35,13 @@ public class GetEntityStrategyTest {
     @Mock
     private GetThroughputEntityUseCase getThroughputEntityUseCase;
 
+    @BeforeEach
+    public void setUp() {
+        getEntityStrategy = new GetEntityStrategy(Set.of(
+                getHeadcountEntityUseCase, getProductivityEntityUseCase, getThroughputEntityUseCase
+        ));
+    }
+
     @Test
     public void testGetByHeadcountOk() {
         // GIVEN
@@ -47,7 +57,6 @@ public class GetEntityStrategyTest {
     @Test
     public void testGetByProductivityOk() {
         // GIVEN
-        when(getHeadcountEntityUseCase.supportsEntityType(PRODUCTIVITY)).thenReturn(false);
         when(getProductivityEntityUseCase.supportsEntityType(PRODUCTIVITY)).thenReturn(true);
 
         // WHEN - THEN
@@ -59,8 +68,6 @@ public class GetEntityStrategyTest {
     @Test
     public void testGetByThroughputOk() {
         // GIVEN
-        when(getHeadcountEntityUseCase.supportsEntityType(THROUGHPUT)).thenReturn(false);
-        when(getProductivityEntityUseCase.supportsEntityType(THROUGHPUT)).thenReturn(false);
         when(getThroughputEntityUseCase.supportsEntityType(THROUGHPUT)).thenReturn(true);
 
         // WHEN - THEN

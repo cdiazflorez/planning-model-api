@@ -12,6 +12,8 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetEntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
@@ -46,6 +48,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.P
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
@@ -57,8 +60,6 @@ public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
             ZoneId.of("UTC"));
-    public static final ZonedDateTime A_DATE = ZonedDateTime.of(2020, 8, 19, 14, 0, 0, 0,
-            ZoneId.of("-3"));
     public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
             ZoneId.of("UTC"));
     public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
@@ -225,12 +226,30 @@ public final class TestUtils {
                 A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
     }
 
+    public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
+        return new GetEntityInput("ARBA01", FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+    }
+
     public static List<GetEntityOutput> mockGetHeadcountEntityOutput() {
         return List.of(
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        50, WORKERS, FORECAST),
-                new GetEntityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        40, WORKERS, FORECAST)
+                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        WORKERS, FORECAST, 50),
+                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        WORKERS, FORECAST, 40)
+        );
+    }
+
+    public static List<GetEntityOutput> mockGetProductivityEntityOutput() {
+        return List.of(
+                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
+                        UNITS_PER_HOUR, FORECAST, 80),
+                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
+                        UNITS_PER_HOUR, FORECAST, 85.0),
+                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
+                        UNITS_PER_HOUR, FORECAST, 70),
+                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
+                        UNITS_PER_HOUR, FORECAST, 90.5)
         );
     }
 

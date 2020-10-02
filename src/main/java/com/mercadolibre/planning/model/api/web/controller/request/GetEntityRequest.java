@@ -31,7 +31,6 @@ public class GetEntityRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private ZonedDateTime dateTo;
 
-    @NotNull
     private Source source;
 
     @NotEmpty

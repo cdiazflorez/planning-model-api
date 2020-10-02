@@ -5,7 +5,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -46,5 +48,7 @@ public class HeadcountProductivity {
     @ManyToOne
     @JoinColumn(name = "forecast_id")
     @Fetch(FetchMode.SELECT)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Forecast forecast;
 }

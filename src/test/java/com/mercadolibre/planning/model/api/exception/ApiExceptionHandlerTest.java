@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,9 +27,11 @@ public class ApiExceptionHandlerTest {
     @Test
     public void handleInvalidEntityTypeException() {
         // GIVEN
-        final InvalidEntityTypeException exception = new InvalidEntityTypeException(THROUGHPUT);
-        final ErrorResponse expectedResponse = new ErrorResponse(HttpStatus.BAD_REQUEST,
-                "Entity type throughput is invalid", "invalid_entity_type");
+        final InvalidEntityTypeException exception = new InvalidEntityTypeException("invalid");
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Value invalid is invalid, instead it should be one of"
+                        + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT]", "invalid_entity_type");
 
         // WHEN
         final ResponseEntity<ErrorResponse> response =

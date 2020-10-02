@@ -26,6 +26,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
@@ -52,7 +53,7 @@ public class GetHeadcountEntityUseCaseTest {
         final GetEntityInput input = mockGetHeadcountEntityInput(FORECAST);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                "ARBA01", FBM_WMS_OUTBOUND, ACTIVE_WORKERS, List.of(PICKING, PACKING),
+                WAREHOUSE_ID, FBM_WMS_OUTBOUND, ACTIVE_WORKERS, List.of(PICKING, PACKING),
                 A_DATE_UTC, A_DATE_UTC.plusDays(2))).thenReturn(processingDistributions());
 
         // WHEN

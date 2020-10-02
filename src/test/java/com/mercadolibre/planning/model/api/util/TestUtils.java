@@ -11,7 +11,9 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistri
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.ThroughputOutput;
@@ -57,7 +59,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
@@ -75,7 +77,7 @@ public final class TestUtils {
     public static final String FORECAST_METADATA_VALUE = "48";
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
-    private static final String WAREHOUSE_ID = "ARBA01";
+    public static final String WAREHOUSE_ID = "ARBA01";
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -212,6 +214,15 @@ public final class TestUtils {
                 .build();
     }
 
+    public static List<PlanningDistribution> planningDistributions() {
+        return List.of(
+                new PlanningDistribution(1, A_DATE_UTC, A_DATE_UTC.plusDays(1), 1000, UNITS,
+                        null, null),
+                new PlanningDistribution(2,  A_DATE_UTC, A_DATE_UTC.plusDays(2), 1200, UNITS,
+                        null, null)
+        );
+    }
+
     public static CreateForecastInput mockCreateForecastInput() {
         return CreateForecastInput.builder()
                 .workflow(FBM_WMS_OUTBOUND)
@@ -237,6 +248,15 @@ public final class TestUtils {
     public static GetEntityInput mockGetThroughputEntityInput(final Source source) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, THROUGHPUT, A_DATE_UTC,
                 A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+    }
+
+    public static GetPlanningDistributionInput mockPlanningDistributionInput() {
+        return GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(A_DATE_UTC)
+                .dateTo(A_DATE_UTC.plusDays(3))
+                .build();
     }
 
     public static List<EntityOutput> mockHeadcountEntityOutput() {
@@ -275,6 +295,29 @@ public final class TestUtils {
                         UNITS_PER_HOUR, FORECAST, 600),
                 new ThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
                         UNITS_PER_HOUR, FORECAST, 550)
+        );
+    }
+
+    public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput() {
+        return List.of(
+                GetPlanningDistributionOutput.builder()
+                        .dateIn(A_DATE_UTC)
+                        .dateOut(A_DATE_UTC.plusDays(1))
+                        .metricUnit(UNITS)
+                        .total(1500)
+                        .build(),
+                GetPlanningDistributionOutput.builder()
+                        .dateIn(A_DATE_UTC)
+                        .dateOut(A_DATE_UTC.plusDays(2))
+                        .metricUnit(UNITS)
+                        .total(1800)
+                        .build(),
+                GetPlanningDistributionOutput.builder()
+                        .dateIn(A_DATE_UTC)
+                        .dateOut(A_DATE_UTC.plusDays(3))
+                        .metricUnit(UNITS)
+                        .total(1700)
+                        .build()
         );
     }
 

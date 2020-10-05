@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -21,6 +22,17 @@ public class ApiExceptionHandler {
 
         final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
                 exception.getMessage(), "invalid_entity_type");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(final EntityNotFoundException exception,
+                                                final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
+                exception.getMessage(), "entity_not_found");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());

@@ -59,6 +59,25 @@ public class ApiExceptionHandlerTest {
         assertErrorResponse(expectedResponse, response);
     }
 
+    @Test
+    public void handleEntityNotFoundException() {
+        // GIVEN
+        final EntityNotFoundException exception = new EntityNotFoundException(
+                "expedition_processing_time", "1");
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "Entity expedition_processing_time with id 1 was not found",
+                "entity_not_found");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handle(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
     private void assertErrorResponse(final ErrorResponse expectedResponse,
                                      final ResponseEntity<ErrorResponse> response) {
 

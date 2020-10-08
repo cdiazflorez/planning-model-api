@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityU
 import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ThroughputOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,15 +67,15 @@ public class GetThroughputEntityUseCaseTest {
 
         // THEN
         assertEquals(4, output.size());
-        final ThroughputOutput output1 = (ThroughputOutput) output.get(0);
+        final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC, output1.getDate());
         assertEquals(PICKING, output1.getProcessName());
-        assertEquals(4000.0, output1.getValue());
+        assertEquals(4000, output1.getValue());
         assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
         assertEquals(FORECAST, output1.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
-        final ThroughputOutput output2 = (ThroughputOutput) output.get(1);
+        final EntityOutput output2 = output.get(1);
         assertEquals(A_DATE_UTC.plusHours(1), output2.getDate());
         assertEquals(PICKING, output2.getProcessName());
         assertEquals(2800, output2.getValue());
@@ -84,7 +83,7 @@ public class GetThroughputEntityUseCaseTest {
         assertEquals(FORECAST, output2.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
 
-        final ThroughputOutput output3 = (ThroughputOutput) output.get(2);
+        final EntityOutput output3 = output.get(2);
         assertEquals(A_DATE_UTC, output3.getDate());
         assertEquals(PACKING, output3.getProcessName());
         assertEquals(5100, output3.getValue());
@@ -92,10 +91,10 @@ public class GetThroughputEntityUseCaseTest {
         assertEquals(FORECAST, output3.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
 
-        final ThroughputOutput output4 = (ThroughputOutput) output.get(3);
+        final EntityOutput output4 = output.get(3);
         assertEquals(A_DATE_UTC.plusHours(1), output4.getDate());
         assertEquals(PACKING, output4.getProcessName());
-        assertEquals(2715.0, output4.getValue());
+        assertEquals(2700, output4.getValue());
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
         assertEquals(FORECAST, output4.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());

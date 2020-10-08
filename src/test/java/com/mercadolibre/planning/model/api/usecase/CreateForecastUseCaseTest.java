@@ -153,17 +153,17 @@ public class CreateForecastUseCaseTest {
                         0, forecast),
                 new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PICKING, 85,
                         UNITS_PER_HOUR, 0, forecast),
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PICKING, 73.1, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PICKING, 73, UNITS_PER_HOUR,
                         1, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PICKING, 73.1,
+                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PICKING, 73,
                         UNITS_PER_HOUR, 1, forecast),
                 new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PACKING, 92, UNITS_PER_HOUR,
                         0, forecast),
                 new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PACKING, 85,
                         UNITS_PER_HOUR, 0, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PACKING, 76.5,
+                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PACKING, 76,
                         UNITS_PER_HOUR, 1, forecast),
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PACKING, 82.8, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PACKING, 82, UNITS_PER_HOUR,
                         1, forecast)
         );
     }

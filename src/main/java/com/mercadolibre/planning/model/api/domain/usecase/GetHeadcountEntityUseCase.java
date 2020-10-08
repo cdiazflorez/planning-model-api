@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +42,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         input.getDateTo());
 
         return processingDistributions.stream()
-                .map(p -> HeadcountOutput.builder()
+                .map(p -> EntityOutput.builder()
                         .workflow(input.getWorkflow())
                         .date(p.getDate())
                         .processName(p.getProcessName())

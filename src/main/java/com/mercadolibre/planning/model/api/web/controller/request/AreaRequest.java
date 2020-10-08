@@ -10,5 +10,5 @@ public class AreaRequest {
     @NotBlank
     private String areaId;
 
-    private double quantity;
+    private long quantity;
 }

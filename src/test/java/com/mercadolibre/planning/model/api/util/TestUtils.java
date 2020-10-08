@@ -14,9 +14,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ThroughputOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
@@ -261,40 +258,112 @@ public final class TestUtils {
 
     public static List<EntityOutput> mockHeadcountEntityOutput() {
         return List.of(
-                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        WORKERS, FORECAST, 50),
-                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        WORKERS, FORECAST, 40),
-                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
-                        WORKERS, FORECAST, 60),
-                new HeadcountOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
-                        WORKERS, FORECAST, 30)
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PICKING)
+                        .metricUnit(WORKERS)
+                        .source(FORECAST)
+                        .value(50)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PICKING)
+                        .metricUnit(WORKERS)
+                        .source(FORECAST)
+                        .value(40)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PACKING)
+                        .metricUnit(WORKERS)
+                        .source(FORECAST)
+                        .value(60)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PACKING)
+                        .metricUnit(WORKERS)
+                        .source(FORECAST)
+                        .value(30)
+                        .build()
         );
     }
 
     public static List<EntityOutput> mockProductivityEntityOutput() {
         return List.of(
-                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        UNITS_PER_HOUR, FORECAST, 80),
-                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
-                        UNITS_PER_HOUR, FORECAST, 85.0),
-                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        UNITS_PER_HOUR, FORECAST, 70),
-                new ProductivityOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
-                        UNITS_PER_HOUR, FORECAST, 90.5)
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PICKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(80)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PICKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(70)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PACKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(85)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PACKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(90)
+                        .build()
         );
     }
 
     public static List<EntityOutput> mockThroughputEntityOutput() {
         return List.of(
-                new ThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PICKING,
-                        UNITS_PER_HOUR, FORECAST, 800),
-                new ThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC, PACKING,
-                        UNITS_PER_HOUR, FORECAST, 700),
-                new ThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PICKING,
-                        UNITS_PER_HOUR, FORECAST, 600),
-                new ThroughputOutput(FBM_WMS_OUTBOUND, A_DATE_UTC.plusHours(1), PACKING,
-                        UNITS_PER_HOUR, FORECAST, 550)
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PICKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(800)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PICKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(600)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC)
+                        .processName(PACKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(700)
+                        .build(),
+                EntityOutput.builder()
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .date(A_DATE_UTC.plusHours(1))
+                        .processName(PACKING)
+                        .metricUnit(UNITS_PER_HOUR)
+                        .source(FORECAST)
+                        .value(550)
+                        .build()
         );
     }
 

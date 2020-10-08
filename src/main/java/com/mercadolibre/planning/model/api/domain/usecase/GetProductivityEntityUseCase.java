@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -67,7 +66,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
 
         return productivities.stream()
                 .filter(l -> areTheSameDayTimes(dateTime, l.getDayTime()))
-                .map(p -> ProductivityOutput.builder()
+                .map(p -> EntityOutput.builder()
                         .workflow(workflow)
                         .date(dateTime)
                         .processName(p.getProcessName())

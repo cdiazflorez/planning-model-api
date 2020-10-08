@@ -12,5 +12,5 @@ public class HeadcountProductivityDataRequest {
     @NotNull
     private OffsetTime dayTime;
 
-    private double productivity;
+    private long productivity;
 }

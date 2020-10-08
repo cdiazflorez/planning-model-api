@@ -12,7 +12,6 @@ import java.time.OffsetTime;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getUtcOffset;
-import static java.lang.Math.floor;
 
 @Value
 public class PolyvalentProductivityRequest {
@@ -23,19 +22,19 @@ public class PolyvalentProductivityRequest {
     @NotNull
     private MetricUnit productivityMetricUnit;
 
-    private double productivity;
+    private long productivity;
 
     private int abilityLevel;
 
     public HeadcountProductivity toHeadcountProductivity(final Forecast forecast,
-                                                         final double regularProductivity,
+                                                         final long regularProductivity,
                                                          final OffsetTime dayTime) {
         return HeadcountProductivity.builder()
                 .abilityLevel(abilityLevel)
                 .processName(processName)
                 .productivityMetricUnit(UNITS_PER_HOUR)
                 .dayTime(getUtcOffset(dayTime))
-                .productivity(floor(regularProductivity * productivity) / 100)
+                .productivity((regularProductivity * productivity) / 100)
                 .forecast(forecast)
                 .build();
     }

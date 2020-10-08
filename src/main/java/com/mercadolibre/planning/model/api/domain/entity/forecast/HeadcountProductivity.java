@@ -38,7 +38,7 @@ public class HeadcountProductivity {
     @Enumerated(EnumType.STRING)
     private ProcessName processName;
 
-    private double productivity;
+    private long productivity;
 
     @Enumerated(EnumType.STRING)
     private MetricUnit productivityMetricUnit;

@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,7 +59,7 @@ public class GetHeadcountEntityUseCaseTest {
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
-        final HeadcountOutput output1 = (HeadcountOutput) output.get(0);
+        final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC, output1.getDate());
         assertEquals(PICKING, output1.getProcessName());
         assertEquals(100, output1.getValue());
@@ -68,7 +67,7 @@ public class GetHeadcountEntityUseCaseTest {
         assertEquals(FORECAST, output1.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
-        final HeadcountOutput output2 = (HeadcountOutput) output.get(1);
+        final EntityOutput output2 = output.get(1);
         assertEquals(A_DATE_UTC.plusHours(1), output2.getDate());
         assertEquals(PICKING, output2.getProcessName());
         assertEquals(120, output2.getValue());

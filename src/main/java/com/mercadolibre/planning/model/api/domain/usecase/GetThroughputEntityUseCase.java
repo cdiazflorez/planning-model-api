@@ -2,9 +2,6 @@ package com.mercadolibre.planning.model.api.domain.usecase;
 
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.HeadcountOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ProductivityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.ThroughputOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,11 +59,10 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         if (headcounts.size() == productivities.size()) {
             IntStream.range(0, headcounts.size())
                     .forEach(i -> {
-                        final HeadcountOutput headcount = (HeadcountOutput) headcounts.get(i);
-                        final ProductivityOutput productivity =
-                                (ProductivityOutput) productivities.get(i);
+                        final EntityOutput headcount = headcounts.get(i);
+                        final EntityOutput productivity = productivities.get(i);
                         if (headcount.getProcessName() == productivity.getProcessName()) {
-                            throughputs.add(ThroughputOutput.builder()
+                            throughputs.add(EntityOutput.builder()
                                     .workflow(headcount.getWorkflow())
                                     .date(headcount.getDate())
                                     .source(headcount.getSource())

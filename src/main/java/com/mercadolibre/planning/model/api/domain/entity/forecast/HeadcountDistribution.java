@@ -34,7 +34,7 @@ public class HeadcountDistribution {
     @Enumerated(EnumType.STRING)
     private ProcessName processName;
 
-    private double quantity;
+    private long quantity;
 
     @Enumerated(EnumType.STRING)
     private MetricUnit quantityMetricUnit;

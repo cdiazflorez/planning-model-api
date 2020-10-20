@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -14,6 +15,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountProductivityDataRequest;
@@ -211,12 +213,10 @@ public final class TestUtils {
                 .build();
     }
 
-    public static List<PlanningDistribution> planningDistributions() {
+    public static List<PlanningDistributionView> planningDistributions() {
         return List.of(
-                new PlanningDistribution(1, A_DATE_UTC, A_DATE_UTC.plusDays(1), 1000, UNITS,
-                        null, null),
-                new PlanningDistribution(2,  A_DATE_UTC, A_DATE_UTC.plusDays(2), 1200, UNITS,
-                        null, null)
+                new PlanningDistributionViewImpl(A_DATE_UTC, A_DATE_UTC.plusDays(1), 1000, UNITS),
+                new PlanningDistributionViewImpl(A_DATE_UTC, A_DATE_UTC.plusDays(2), 1200, UNITS)
         );
     }
 

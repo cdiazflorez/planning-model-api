@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
@@ -24,6 +24,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
@@ -52,8 +53,13 @@ public class GetHeadcountEntityUseCaseTest {
         final GetEntityInput input = mockGetHeadcountEntityInput(FORECAST);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                WAREHOUSE_ID, FBM_WMS_OUTBOUND, ACTIVE_WORKERS, List.of(PICKING, PACKING),
-                A_DATE_UTC, A_DATE_UTC.plusDays(2))).thenReturn(processingDistributions());
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND.name(),
+                ACTIVE_WORKERS.name(),
+                List.of(PICKING.name(), PACKING.name()),
+                A_DATE_UTC, A_DATE_UTC.plusDays(2),
+                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(2)))
+        ).thenReturn(processingDistributions());
 
         // WHEN
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
@@ -89,12 +95,12 @@ public class GetHeadcountEntityUseCaseTest {
         assertThat(output).isEmpty();
     }
 
-    private List<ProcessingDistribution> processingDistributions() {
+    private List<ProcessingDistributionView> processingDistributions() {
         return List.of(
-                new ProcessingDistribution(1, A_DATE_UTC, PICKING,
-                        100, WORKERS, ACTIVE_WORKERS, null),
-                new ProcessingDistribution(2, A_DATE_UTC.plusHours(1), PICKING,
-                        120, WORKERS, ACTIVE_WORKERS, null)
+                new ProcessingDistributionViewImpl(1, A_DATE_UTC, PICKING,
+                        100, WORKERS, ACTIVE_WORKERS),
+                new ProcessingDistributionViewImpl(2, A_DATE_UTC.plusHours(1), PICKING,
+                        120, WORKERS, ACTIVE_WORKERS)
         );
     }
 

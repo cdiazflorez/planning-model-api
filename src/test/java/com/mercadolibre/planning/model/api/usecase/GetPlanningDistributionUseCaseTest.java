@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
@@ -38,8 +39,12 @@ public class GetPlanningDistributionUseCaseTest {
         final GetPlanningDistributionInput input = mockPlanningDistributionInput();
 
         when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
-                WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC.plusDays(3)))
-                .thenReturn(planningDistributions());
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND.name(),
+                A_DATE_UTC,
+                A_DATE_UTC.plusDays(3),
+                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)))
+        ).thenReturn(planningDistributions());
 
         // WHEN
         final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase

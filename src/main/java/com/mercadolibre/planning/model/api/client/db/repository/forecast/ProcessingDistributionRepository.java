@@ -14,7 +14,8 @@ import java.util.Set;
 public interface ProcessingDistributionRepository
         extends CrudRepository<ProcessingDistribution, Long> {
 
-    @Query(value = "SELECT * "
+    @Query(value = "SELECT p.date, process_name as processName, quantity,"
+            + " quantity_metric_unit as quantityMetricUnit, type "
             + "FROM processing_distribution p "
             + "WHERE p.process_name IN (:process_name) "
             + "AND p.date BETWEEN :date_from AND :date_to "

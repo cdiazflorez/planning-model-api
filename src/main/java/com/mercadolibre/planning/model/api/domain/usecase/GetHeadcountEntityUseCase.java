@@ -14,6 +14,8 @@ import java.util.List;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -46,7 +48,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         return processingDistributions.stream()
                 .map(p -> EntityOutput.builder()
                         .workflow(input.getWorkflow())
-                        .date(p.getDate())
+                        .date(ofInstant(p.getDate().toInstant(), UTC))
                         .processName(p.getProcessName())
                         .value(p.getQuantity())
                         .metricUnit(p.getQuantityMetricUnit())

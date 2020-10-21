@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -215,8 +216,16 @@ public final class TestUtils {
 
     public static List<PlanningDistributionView> planningDistributions() {
         return List.of(
-                new PlanningDistributionViewImpl(A_DATE_UTC, A_DATE_UTC.plusDays(1), 1000, UNITS),
-                new PlanningDistributionViewImpl(A_DATE_UTC, A_DATE_UTC.plusDays(2), 1200, UNITS)
+                new PlanningDistributionViewImpl(
+                        Date.from(A_DATE_UTC.toInstant()),
+                        Date.from(A_DATE_UTC.plusDays(1).toInstant()),
+                        1000,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        Date.from(A_DATE_UTC.toInstant()),
+                        Date.from(A_DATE_UTC.plusDays(2).toInstant()),
+                        1200,
+                        UNITS)
         );
     }
 

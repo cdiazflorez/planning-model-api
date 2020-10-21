@@ -4,13 +4,13 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 public interface ProcessingDistributionView {
 
     long getId();
 
-    ZonedDateTime getDate();
+    Date getDate();
 
     ProcessName getProcessName();
 

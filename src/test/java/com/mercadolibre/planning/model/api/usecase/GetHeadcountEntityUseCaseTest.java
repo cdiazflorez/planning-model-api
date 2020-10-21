@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -66,7 +67,7 @@ public class GetHeadcountEntityUseCaseTest {
 
         // THEN
         final EntityOutput output1 = output.get(0);
-        assertEquals(A_DATE_UTC, output1.getDate());
+        assertEquals(A_DATE_UTC.toInstant(), output1.getDate().toInstant());
         assertEquals(PICKING, output1.getProcessName());
         assertEquals(100, output1.getValue());
         assertEquals(WORKERS, output1.getMetricUnit());
@@ -74,7 +75,7 @@ public class GetHeadcountEntityUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
         final EntityOutput output2 = output.get(1);
-        assertEquals(A_DATE_UTC.plusHours(1), output2.getDate());
+        assertEquals(A_DATE_UTC.plusHours(1).toInstant(), output2.getDate().toInstant());
         assertEquals(PICKING, output2.getProcessName());
         assertEquals(120, output2.getValue());
         assertEquals(WORKERS, output2.getMetricUnit());
@@ -97,10 +98,20 @@ public class GetHeadcountEntityUseCaseTest {
 
     private List<ProcessingDistributionView> processingDistributions() {
         return List.of(
-                new ProcessingDistributionViewImpl(1, A_DATE_UTC, PICKING,
-                        100, WORKERS, ACTIVE_WORKERS),
-                new ProcessingDistributionViewImpl(2, A_DATE_UTC.plusHours(1), PICKING,
-                        120, WORKERS, ACTIVE_WORKERS)
+                new ProcessingDistributionViewImpl(
+                        1,
+                        Date.from(A_DATE_UTC.toInstant()),
+                        PICKING,
+                        100,
+                        WORKERS,
+                        ACTIVE_WORKERS),
+                new ProcessingDistributionViewImpl(
+                        2,
+                        Date.from(A_DATE_UTC.plusHours(1).toInstant()),
+                        PICKING,
+                        120,
+                        WORKERS,
+                        ACTIVE_WORKERS)
         );
     }
 

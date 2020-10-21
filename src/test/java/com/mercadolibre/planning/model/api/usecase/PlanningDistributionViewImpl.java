@@ -4,26 +4,26 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Plannin
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import lombok.AllArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 public class PlanningDistributionViewImpl implements PlanningDistributionView {
 
-    private ZonedDateTime dateIn;
+    private Date dateIn;
 
-    private ZonedDateTime dateOut;
+    private Date dateOut;
 
     private long quantity;
 
     private MetricUnit quantityMetricUnit;
 
     @Override
-    public ZonedDateTime getDateIn() {
+    public Date getDateIn() {
         return dateIn;
     }
 
     @Override
-    public ZonedDateTime getDateOut() {
+    public Date getDateOut() {
         return dateOut;
     }
 

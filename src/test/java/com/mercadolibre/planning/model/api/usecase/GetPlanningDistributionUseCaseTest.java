@@ -52,14 +52,14 @@ public class GetPlanningDistributionUseCaseTest {
 
         // THEN
         final GetPlanningDistributionOutput output1 = output.get(0);
-        assertEquals(A_DATE_UTC, output1.getDateIn());
-        assertEquals(A_DATE_UTC.plusDays(1), output1.getDateOut());
+        assertEquals(A_DATE_UTC.toInstant(), output1.getDateIn().toInstant());
+        assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
         assertEquals(1000, output1.getTotal());
         assertEquals(UNITS, output1.getMetricUnit());
 
         final GetPlanningDistributionOutput output2 = output.get(1);
-        assertEquals(A_DATE_UTC, output2.getDateIn());
-        assertEquals(A_DATE_UTC.plusDays(2), output2.getDateOut());
+        assertEquals(A_DATE_UTC.toInstant(), output2.getDateIn().toInstant());
+        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output2.getDateOut().toInstant());
         assertEquals(1200, output2.getTotal());
         assertEquals(UNITS, output2.getMetricUnit());
     }

@@ -6,14 +6,14 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import lombok.AllArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @AllArgsConstructor
 public class ProcessingDistributionViewImpl implements ProcessingDistributionView {
 
     private long id;
 
-    private ZonedDateTime date;
+    private Date date;
 
     private ProcessName processName;
 
@@ -29,7 +29,7 @@ public class ProcessingDistributionViewImpl implements ProcessingDistributionVie
     }
 
     @Override
-    public ZonedDateTime getDate() {
+    public Date getDate() {
         return date;
     }
 

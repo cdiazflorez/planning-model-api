@@ -11,6 +11,8 @@ import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
 
 @AllArgsConstructor
@@ -33,8 +35,8 @@ public class GetPlanningDistributionUseCase
         return planningDistributions.stream()
                 .map(pd -> GetPlanningDistributionOutput.builder()
                         .metricUnit(UNITS)
-                        .dateIn(pd.getDateIn())
-                        .dateOut(pd.getDateOut())
+                        .dateIn(ofInstant(pd.getDateIn().toInstant(), UTC))
+                        .dateOut(ofInstant(pd.getDateOut().toInstant(), UTC))
                         .total(pd.getQuantity())
                         .build())
                 .collect(toList());

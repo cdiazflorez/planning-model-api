@@ -1,12 +1,12 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 public interface PlanningDistributionView {
 
-    ZonedDateTime getDateIn();
+    Date getDateIn();
 
-    ZonedDateTime getDateOut();
+    Date getDateOut();
 
     long getQuantity();
 

@@ -13,7 +13,7 @@ import java.util.Set;
 @Repository
 public interface PlanningDistributionRepository extends CrudRepository<PlanningDistribution, Long> {
 
-    @Query(value = "SELECT * "
+    @Query(value = "SELECT date_in as dateIn, date_out as dateOut, quantity "
             + "FROM planning_distribution p "
             + "WHERE p.date_out BETWEEN :date_out_from AND :date_out_to "
             + "AND p.forecast_id in ("

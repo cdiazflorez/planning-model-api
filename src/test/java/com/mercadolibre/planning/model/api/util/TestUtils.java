@@ -31,7 +31,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -54,7 +53,6 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -68,11 +66,7 @@ public final class TestUtils {
             ZoneId.of("UTC"));
     public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
             ZoneId.of("UTC"));
-    public static final OffsetTime AN_OFFSET_TIME = OffsetTime.parse("00:00:00-03:00");
-    public static final OffsetTime ANOTHER_OFFSET_TIME = OffsetTime.parse("01:00:00-03:00");
-    public static final OffsetTime AN_OFFSET_TIME_UTC = AN_OFFSET_TIME.withOffsetSameInstant(UTC);
-    public static final OffsetTime ANOTHER_OFFSET_TIME_UTC = ANOTHER_OFFSET_TIME
-            .withOffsetSameInstant(UTC);
+
     public static final String FORECAST_METADATA_KEY = "mono_order_distribution";
     public static final String FORECAST_METADATA_VALUE = "48";
     public static final String PLANNING_METADATA_KEY = "carrier";
@@ -136,7 +130,7 @@ public final class TestUtils {
                 .productivity(80)
                 .productivityMetricUnit(PERCENTAGE)
                 .processName(PACKING)
-                .dayTime(AN_OFFSET_TIME);
+                .date(A_DATE_UTC);
     }
 
     public static HeadcountProductivity mockHeadcountProd(final Forecast forecast) {
@@ -453,12 +447,12 @@ public final class TestUtils {
     private static List<HeadcountProductivityRequest> mockProductivities() {
         return asList(
                 new HeadcountProductivityRequest(PICKING, UNITS_PER_HOUR, 0, List.of(
-                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 85),
-                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                        new HeadcountProductivityDataRequest(A_DATE_UTC, 85),
+                        new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
                 )),
                 new HeadcountProductivityRequest(PACKING, UNITS_PER_HOUR, 0, List.of(
-                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 92),
-                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                        new HeadcountProductivityDataRequest(A_DATE_UTC, 92),
+                        new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
                 ))
         );
     }

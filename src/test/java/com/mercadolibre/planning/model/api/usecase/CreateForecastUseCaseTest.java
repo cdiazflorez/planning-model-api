@@ -35,8 +35,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_TO_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
-import static com.mercadolibre.planning.model.api.util.TestUtils.ANOTHER_OFFSET_TIME_UTC;
-import static com.mercadolibre.planning.model.api.util.TestUtils.AN_OFFSET_TIME_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
@@ -149,21 +148,21 @@ public class CreateForecastUseCaseTest {
 
     private Set<HeadcountProductivity> getAllProductivities(final Forecast forecast) {
         return Set.of(
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PICKING, 85, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, A_DATE_UTC, PICKING, 85, UNITS_PER_HOUR,
                         0, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PICKING, 85,
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 85,
                         UNITS_PER_HOUR, 0, forecast),
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PICKING, 73, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, A_DATE_UTC, PICKING, 73, UNITS_PER_HOUR,
                         1, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PICKING, 73,
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 73,
                         UNITS_PER_HOUR, 1, forecast),
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PACKING, 92, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, A_DATE_UTC, PACKING, 92, UNITS_PER_HOUR,
                         0, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PACKING, 85,
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 85,
                         UNITS_PER_HOUR, 0, forecast),
-                new HeadcountProductivity(0, ANOTHER_OFFSET_TIME_UTC, PACKING, 76,
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 76,
                         UNITS_PER_HOUR, 1, forecast),
-                new HeadcountProductivity(0, AN_OFFSET_TIME_UTC, PACKING, 82, UNITS_PER_HOUR,
+                new HeadcountProductivity(0, A_DATE_UTC, PACKING, 82, UNITS_PER_HOUR,
                         1, forecast)
         );
     }

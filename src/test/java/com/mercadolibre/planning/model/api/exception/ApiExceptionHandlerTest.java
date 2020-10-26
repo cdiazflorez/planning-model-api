@@ -43,6 +43,45 @@ public class ApiExceptionHandlerTest {
     }
 
     @Test
+    public void handleProjectionTypeException() {
+        // GIVEN
+        final InvalidProjectionTypeException exception =
+                new InvalidProjectionTypeException("invalid");
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Value invalid is invalid, instead it should be one of"
+                        + " [BACKLOG, CPT]", "invalid_projection_type");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleInvalidProjectionTypeException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    public void handleProjectionTypeNotSupportedException() {
+        // GIVEN
+        final ProjectionTypeNotSupportedException exception =
+                new ProjectionTypeNotSupportedException(null);
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Projection type null is not supported", "projection_type_not_supported");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleProjectionTypeNotSupportedException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
     public void handleEntityTypeNotSupportedException() {
         // GIVEN
         final EntityTypeNotSupportedException exception = new EntityTypeNotSupportedException(null);

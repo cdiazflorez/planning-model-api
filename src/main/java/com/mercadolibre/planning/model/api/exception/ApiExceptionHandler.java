@@ -27,6 +27,17 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
+    @ExceptionHandler(InvalidProjectionTypeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidProjectionTypeException(
+            final InvalidProjectionTypeException exception, final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+                exception.getMessage(), "invalid_projection_type");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> handle(final EntityNotFoundException exception,
                                                 final HttpServletRequest request) {
@@ -44,6 +55,17 @@ public class ApiExceptionHandler {
 
         final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
                 exception.getMessage(), "entity_type_not_supported");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(ProjectionTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleProjectionTypeNotSupportedException(
+            final ProjectionTypeNotSupportedException exception, final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+                exception.getMessage(), "projection_type_not_supported");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());

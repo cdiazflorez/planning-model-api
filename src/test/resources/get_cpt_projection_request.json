@@ -1,0 +1,7 @@
+{
+    "warehouse_id": "ARBA01",
+    "type" : "cpt",
+    "date_from": "2020-01-01T12:00:00Z",
+    "date_to": "2020-01-10T12:00:00Z",
+    "process_name": ["picking","packing"]
+}

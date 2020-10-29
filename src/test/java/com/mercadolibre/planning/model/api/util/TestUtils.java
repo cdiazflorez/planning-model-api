@@ -205,12 +205,13 @@ public final class TestUtils {
     public static CurrentProcessingDistribution mockCurrentProcDist() {
         return CurrentProcessingDistribution.builder()
                 .date(A_DATE_UTC)
-                .isActive(false)
+                .isActive(true)
                 .processName(PACKING)
                 .quantity(35)
                 .quantityMetricUnit(WORKERS)
                 .type(ACTIVE_WORKERS)
                 .workflow(FBM_WMS_OUTBOUND)
+                .logisticCenterId(WAREHOUSE_ID)
                 .build();
     }
 

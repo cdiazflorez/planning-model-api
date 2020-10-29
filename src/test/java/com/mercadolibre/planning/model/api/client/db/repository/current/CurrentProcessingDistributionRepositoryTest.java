@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.util.List;
 import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
@@ -17,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class CurrentProcessingDistributionRepositoryTest {
+class CurrentProcessingDistributionRepositoryTest {
 
     @Autowired
     private CurrentProcessingDistributionRepository repository;
@@ -41,15 +43,7 @@ public class CurrentProcessingDistributionRepositoryTest {
         assertTrue(optCurrentProcessingDist.isPresent());
 
         final CurrentProcessingDistribution foundCurrentProc = optCurrentProcessingDist.get();
-        assertEquals(currentProcessingDist.getId(), foundCurrentProc.getId());
-        assertEquals(currentProcessingDist.getWorkflow(), foundCurrentProc.getWorkflow());
-        assertEquals(currentProcessingDist.getType(), foundCurrentProc.getType());
-        assertEquals(currentProcessingDist.getDate(), foundCurrentProc.getDate());
-        assertEquals(currentProcessingDist.getProcessName(), foundCurrentProc.getProcessName());
-        assertEquals(currentProcessingDist.isActive(), foundCurrentProc.isActive());
-        assertEquals(currentProcessingDist.getQuantity(), foundCurrentProc.getQuantity());
-        assertEquals(currentProcessingDist.getQuantityMetricUnit(),
-                foundCurrentProc.getQuantityMetricUnit());
+        whenCurrentDistributionIsOk(currentProcessingDist, foundCurrentProc);
     }
 
     @Test
@@ -62,5 +56,45 @@ public class CurrentProcessingDistributionRepositoryTest {
 
         // THEN
         assertFalse(optDistribution.isPresent());
+    }
+
+    @Test
+    @DisplayName("Looking for a current processing distributions that exists filterin by "
+            + "different params, returns it")
+    public void testFindCurrentProcessingDistributionBySimulations() {
+        // GIVEN
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
+
+        entityManager.persistAndFlush(currentProcessingDist);
+
+        // WHEN
+        final List<CurrentProcessingDistribution> currentProcessingDistList =
+                repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                        currentProcessingDist.getLogisticCenterId(),
+                        currentProcessingDist.getWorkflow(), currentProcessingDist.getType(),
+                        List.of(ProcessName.PICKING, ProcessName.PACKING),
+                        currentProcessingDist.getDate().minusHours(1),
+                        currentProcessingDist.getDate().plusHours(1));
+
+        // THEN
+        assertEquals(1, currentProcessingDistList.size());
+
+        final CurrentProcessingDistribution foundCurrentProc = currentProcessingDistList.get(0);
+        whenCurrentDistributionIsOk(currentProcessingDist, foundCurrentProc);
+    }
+
+    private void whenCurrentDistributionIsOk(final CurrentProcessingDistribution currentProcessing,
+                                             final CurrentProcessingDistribution foundCurrentProc) {
+        assertEquals(currentProcessing.getId(), foundCurrentProc.getId());
+        assertEquals(currentProcessing.getWorkflow(), foundCurrentProc.getWorkflow());
+        assertEquals(currentProcessing.getType(), foundCurrentProc.getType());
+        assertEquals(currentProcessing.getDate(), foundCurrentProc.getDate());
+        assertEquals(currentProcessing.getProcessName(), foundCurrentProc.getProcessName());
+        assertEquals(currentProcessing.isActive(), foundCurrentProc.isActive());
+        assertEquals(currentProcessing.getQuantity(), foundCurrentProc.getQuantity());
+        assertEquals(currentProcessing.getQuantityMetricUnit(),
+                foundCurrentProc.getQuantityMetricUnit());
+        assertEquals(currentProcessing.getLogisticCenterId(),
+                foundCurrentProc.getLogisticCenterId());
     }
 }

@@ -1,8 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
+import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import lombok.Builder;
 import lombok.Value;
 
@@ -13,13 +12,9 @@ import java.util.List;
 @Builder
 public class ProjectionInput {
 
-    private String warehouseId;
+    private List<EntityOutput> throughput;
 
-    private ProjectionType type;
-
-    private Workflow workflow;
-
-    private List<ProcessName> processName;
+    private List<GetPlanningDistributionOutput> planningUnits;
 
     private ZonedDateTime dateFrom;
 

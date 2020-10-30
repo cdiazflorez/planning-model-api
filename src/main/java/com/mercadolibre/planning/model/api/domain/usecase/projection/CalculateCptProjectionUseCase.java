@@ -1,9 +1,5 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
@@ -32,9 +28,6 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    private final GetThroughputEntityUseCase getThroughputUseCase;
-    private final GetPlanningDistributionUseCase getPlanningUseCase;
-
     @Override
     public boolean supportsProjectionType(final ProjectionType projectionType) {
         return CPT == projectionType;
@@ -42,7 +35,7 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
 
     @Override
     public List<ProjectionOutput> execute(final ProjectionInput input) {
-        final Map<ZonedDateTime, Integer> capacityByDate = getMinThroughputByDate(input);
+        final Map<ZonedDateTime, Integer> capacityByDate = getCapacity(input.getThroughput());
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
@@ -93,15 +86,8 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
         return projectionOutputs;
     }
 
-    private Map<ZonedDateTime, Integer> getMinThroughputByDate(final ProjectionInput input) {
-        final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
-                .builder()
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .processName(input.getProcessName())
-                .workflow(input.getWorkflow())
-                .build());
+    private Map<ZonedDateTime, Integer> getCapacity(
+            final List<EntityOutput> throughput) {
 
         return throughput.stream()
                 .collect(
@@ -114,12 +100,12 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
             final ProjectionInput input) {
 
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> planningUnitsByDateInByDateOut =
-                getPlanning(input);
+                getPlanning(input.getPlanningUnits());
 
         final Map<ZonedDateTime, Integer> currentUnitsBacklogByDateOut = input.getBacklog() == null
                 ? emptyMap()
                 : input.getBacklog().stream().collect(toMap(
-                        Backlog::getDate, Backlog::getQuantity, Integer::sum));
+                Backlog::getDate, Backlog::getQuantity, Integer::sum));
 
         final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
@@ -148,21 +134,13 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getPlanning(
-            final ProjectionInput input) {
-
-        final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
-                GetPlanningDistributionInput.builder()
-                        .warehouseId(input.getWarehouseId())
-                        .dateFrom(input.getDateFrom())
-                        .workflow(input.getWorkflow())
-                        .dateTo(input.getDateTo())
-                        .build());
+            final List<GetPlanningDistributionOutput> planningUnits) {
 
         return planningUnits.stream()
                 .collect(
                         groupingBy(GetPlanningDistributionOutput::getDateOut,
                                 toMap(o ->
-                                        ignoreMinutes(o.getDateIn()),
+                                                ignoreMinutes(o.getDateIn()),
                                         o -> (int) o.getTotal(), Integer::sum)));
     }
 

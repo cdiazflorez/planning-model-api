@@ -1,5 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
@@ -22,6 +26,7 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Project
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,6 +44,12 @@ public class ProjectionControllerTest {
 
     @MockBean
     private CalculateProjectionStrategy calculateProjectionStrategy;
+
+    @MockBean
+    private GetThroughputEntityUseCase getThroughputUseCase;
+
+    @MockBean
+    private GetPlanningDistributionUseCase getPlanningUseCase;
 
     @MockBean
     private CalculateProjectionUseCase calculateProjectionUseCase;
@@ -66,6 +77,9 @@ public class ProjectionControllerTest {
         );
 
         // THEN
+        verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
+        verify(getThroughputUseCase).execute(any(GetEntityInput.class));
+
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
                         .value(etd.format(ISO_OFFSET_DATE_TIME)))

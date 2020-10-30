@@ -1,12 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
@@ -19,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -37,7 +31,6 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CalculateCptProjectionUseCaseTest {
@@ -53,28 +46,24 @@ public class CalculateCptProjectionUseCaseTest {
     @InjectMocks
     private CalculateCptProjectionUseCase calculateCptProjection;
 
-    @Mock
-    private GetThroughputEntityUseCase getThroughput;
-
-    @Mock
-    private GetPlanningDistributionUseCase getPlanning;
-
     @Test
     @DisplayName("The projected end date is the same as the date out and all units were processed")
     public void testSameProjectedEndDateAndDateOut() {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
-        final ProjectionInput input = mockProjectionInput(DATE_FROM_10, DATE_TO_14, backlogs);
+        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
+                .dateOut(DATE_OUT_12)
+                .dateIn(DATE_IN_11)
+                .total(200)
+                .build());
 
-        when(getPlanning.execute(mockPlanningInput(input))).thenReturn(
-                singletonList(builder()
-                        .dateOut(DATE_OUT_12)
-                        .dateIn(DATE_IN_11)
-                        .total(200)
-                        .build()));
-
-        when(getThroughput.execute(mockGetEntityInput(input)))
-                .thenReturn(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)));
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_TO_14)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .backlog(backlogs)
+                .build();
 
         // WHEN
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -93,17 +82,19 @@ public class CalculateCptProjectionUseCaseTest {
     public void testProjectedEndDateBeforeDateOut() {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
-        final ProjectionInput input = mockProjectionInput(DATE_FROM_10, DATE_TO_14, backlogs);
+        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
+                .dateOut(DATE_OUT_12)
+                .dateIn(DATE_IN_11)
+                .total(100)
+                .build());
 
-        when(getPlanning.execute(mockPlanningInput(input))).thenReturn(
-                singletonList(builder()
-                        .dateOut(DATE_OUT_12)
-                        .dateIn(DATE_IN_11)
-                        .total(100)
-                        .build()));
-
-        when(getThroughput.execute(mockGetEntityInput(input)))
-                .thenReturn(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)));
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_TO_14)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .backlog(backlogs)
+                .build();
 
         // WHEN
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -122,17 +113,19 @@ public class CalculateCptProjectionUseCaseTest {
     public void testProjectedEndDateAfterDateTo() {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 1000));
-        final ProjectionInput input = mockProjectionInput(DATE_FROM_10, DATE_TO_14, backlogs);
+        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
+                .dateOut(DATE_OUT_12)
+                .dateIn(DATE_IN_11)
+                .total(100)
+                .build());
 
-        when(getPlanning.execute(mockPlanningInput(input))).thenReturn(
-                singletonList(builder()
-                        .dateOut(DATE_OUT_12)
-                        .dateIn(DATE_IN_11)
-                        .total(100)
-                        .build()));
-
-        when(getThroughput.execute(mockGetEntityInput(input)))
-                .thenReturn(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)));
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_TO_14)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .backlog(backlogs)
+                .build();
 
         // WHEN
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -153,17 +146,19 @@ public class CalculateCptProjectionUseCaseTest {
                                                  final int remainingQuantity) {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(dateOut, 100));
-        final ProjectionInput input = mockProjectionInput(DATE_FROM_10, DATE_TO_14, backlogs);
+        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
+                .dateOut(dateOut)
+                .dateIn(DATE_IN_11)
+                .total(400)
+                .build());
 
-        when(getPlanning.execute(mockPlanningInput(input))).thenReturn(
-                singletonList(builder()
-                        .dateOut(dateOut)
-                        .dateIn(DATE_IN_11)
-                        .total(400)
-                        .build()));
-
-        when(getThroughput.execute(mockGetEntityInput(input)))
-                .thenReturn(mockThroughputs(DATE_FROM_10, dateOut, List.of(100, 200, 200)));
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_TO_14)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, dateOut, List.of(100, 200, 200)))
+                .backlog(backlogs)
+                .build();
 
         // WHEN
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -193,16 +188,18 @@ public class CalculateCptProjectionUseCaseTest {
                 new Backlog(DATE_OUT_13, 150)
         );
 
-        final ProjectionInput input = mockProjectionInput(DATE_FROM_10, DATE_OUT_16, backlogs);
+        final List<GetPlanningDistributionOutput> planningUnits = List.of(
+                builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
+                builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
 
-        when(getPlanning.execute(mockPlanningInput(input))).thenReturn(
-                List.of(
-                        builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
-                        builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build()));
-
-        when(getThroughput.execute(mockGetEntityInput(input)))
-                .thenReturn(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
-                        List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)));
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_OUT_16)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                        List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
+                .backlog(backlogs)
+                .build();
 
         // WHEN
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -240,7 +237,6 @@ public class CalculateCptProjectionUseCaseTest {
         );
     }
 
-
     private List<EntityOutput> mockThroughputs(final ZonedDateTime dateFrom,
                                                final Temporal dateTo,
                                                final List<Integer> values) {
@@ -256,38 +252,5 @@ public class CalculateCptProjectionUseCaseTest {
         }
 
         return entityOutputs;
-    }
-
-    private GetPlanningDistributionInput mockPlanningInput(final ProjectionInput projectionInput) {
-        return GetPlanningDistributionInput.builder()
-                .warehouseId(projectionInput.getWarehouseId())
-                .dateFrom(projectionInput.getDateFrom())
-                .dateTo(projectionInput.getDateTo())
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .build();
-    }
-
-    private GetEntityInput mockGetEntityInput(final ProjectionInput projectionInput) {
-        return GetEntityInput.builder()
-                .warehouseId(projectionInput.getWarehouseId())
-                .dateFrom(projectionInput.getDateFrom())
-                .dateTo(projectionInput.getDateTo())
-                .processName(projectionInput.getProcessName())
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .build();
-    }
-
-    private ProjectionInput mockProjectionInput(final ZonedDateTime dateFrom,
-                                                final ZonedDateTime dateTo,
-                                                final List<Backlog> backlogs) {
-        return ProjectionInput.builder()
-                .warehouseId("ARBA01")
-                .type(CPT)
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .processName(List.of(ProcessName.PICKING, ProcessName.PACKING))
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .backlog(backlogs)
-                .build();
     }
 }

@@ -30,7 +30,7 @@ CREATE TABLE `headcount_productivity` (
   `id` bigint(8) NOT NULL AUTO_INCREMENT,
   `forecast_id` bigint(8) NOT NULL,
   `process_name` varchar(45) DEFAULT NULL,
-  `day_time` time DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
   `productivity` double DEFAULT NULL,
   `productivity_metric_unit` varchar(45) DEFAULT NULL,
   `ability_level` tinyint(2) DEFAULT NULL,

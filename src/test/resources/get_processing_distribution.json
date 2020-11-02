@@ -1,0 +1,16 @@
+[{
+    "date_in": "2020-08-19T17:00:00Z",
+    "date_out": "2020-08-20T17:00:00Z",
+    "metric_unit": "units",
+    "total": 1500
+}, {
+    "date_in": "2020-08-19T17:00:00Z",
+    "date_out": "2020-08-21T17:00:00Z",
+    "metric_unit": "units",
+    "total": 1800
+}, {
+    "date_in": "2020-08-19T17:00:00Z",
+    "date_out": "2020-08-22T17:00:00Z",
+    "metric_unit": "units",
+    "total": 1700
+}]

@@ -16,9 +16,9 @@ public interface HeadcountProductivityRepository
 
     @Query(value = "SELECT process_name as processName, productivity, hd.date as date, "
             + "productivity_metric_unit as productivityMetricUnit "
-            + "FROM HeadcountProductivity hd "
+            + "FROM headcount_productivity hd "
             + "WHERE hd.process_name IN (:process_name) "
-            + "AND p.day_time BETWEEN :date_from AND :date_to "
+            + "AND hd.date BETWEEN :date_from AND :date_to "
             + "AND hd.ability_level = 1  "
             + "AND hd.forecast_id in ("
             + " SELECT MAX(id) FROM "

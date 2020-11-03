@@ -20,7 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Builder
@@ -33,7 +33,7 @@ public class HeadcountProductivity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private OffsetTime dayTime;
+    private ZonedDateTime date;
 
     @Enumerated(EnumType.STRING)
     private ProcessName processName;

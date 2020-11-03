@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.mercadolibre.planning.model.api.util.DateUtils.getUtcOffset;
-
 @Value
 public class HeadcountProductivityRequest {
 
@@ -53,7 +51,7 @@ public class HeadcountProductivityRequest {
                 .productivityMetricUnit(productivityMetricUnit)
                 .processName(processName)
                 .abilityLevel(abilityLevel)
-                .dayTime(getUtcOffset(data.getDayTime()))
+                .date(data.getDayTime())
                 .productivity(data.getProductivity())
                 .forecast(forecast)
                 .build();

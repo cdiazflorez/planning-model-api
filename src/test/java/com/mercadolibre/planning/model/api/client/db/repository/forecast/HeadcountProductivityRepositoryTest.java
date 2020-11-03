@@ -11,7 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Optional;
 
-import static com.mercadolibre.planning.model.api.util.TestUtils.AN_OFFSET_TIME;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountProd;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +50,7 @@ public class HeadcountProductivityRepositoryTest {
         assertEquals("PACKING", foundHeadcountProd.getProcessName().name());
         assertEquals("PERCENTAGE", foundHeadcountProd.getProductivityMetricUnit().name());
         assertEquals(80L, foundHeadcountProd.getProductivity());
-        assertEquals(AN_OFFSET_TIME, foundHeadcountProd.getDayTime());
+        assertEquals(A_DATE_UTC, foundHeadcountProd.getDate());
 
         final Forecast foundForecast = foundHeadcountProd.getForecast();
         assertEquals(1L, foundForecast.getId());

@@ -38,28 +38,24 @@
         "productivity_metric_unit": "units_per_hour",
         "ability_level": 0,
         "data": [{
-            "day_time": "00:00-03:00",
+            "day_time": "2020-08-19T17:00Z",
             "productivity": 85
-        },
-            {
-                "day_time": "01:00-03:00",
-                "productivity": 85
-            }
-        ]
+        }, {
+            "day_time": "2020-08-19T18:00Z",
+            "productivity": 85
+        }]
     },
         {
             "process_name": "packing",
             "productivity_metric_unit": "units_per_hour",
             "ability_level": 0,
             "data": [{
-                "day_time": "00:00-03:00",
+                "day_time": "2020-08-19T17:00Z",
                 "productivity": 92
-            },
-                {
-                    "day_time": "01:00-03:00",
-                    "productivity": 85
-                }
-            ]
+            }, {
+                "day_time": "2020-08-19T18:00Z",
+                "productivity": 85
+            }]
         }
     ],
     "planning_distributions": [{

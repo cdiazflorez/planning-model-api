@@ -68,8 +68,8 @@ public class ProjectionController {
                 GetPlanningDistributionInput.builder()
                         .workflow(workflow)
                         .warehouseId(request.getWarehouseId())
-                        .dateFrom(request.getDateFrom())
-                        .dateTo(request.getDateTo())
+                        .dateOutFrom(request.getDateFrom())
+                        .dateOutTo(request.getDateTo())
                         .build());
 
         return ResponseEntity

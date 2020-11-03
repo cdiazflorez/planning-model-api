@@ -11,7 +11,7 @@ import static java.time.temporal.ChronoUnit.WEEKS;
 public final class DateUtils {
 
     public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
-                                         final ZonedDateTime dateTo) {
+                                               final ZonedDateTime dateTo) {
         final DateTimeFormatter weekFormat = DateTimeFormatter.ofPattern("w-YYYY");
         final long weeks = (int) WEEKS.between(dateFrom, dateTo);
 

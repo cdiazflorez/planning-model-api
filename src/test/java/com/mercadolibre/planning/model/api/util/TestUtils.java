@@ -251,12 +251,14 @@ public final class TestUtils {
                 A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
     }
 
-    public static GetPlanningDistributionInput mockPlanningDistributionInput() {
+    public static GetPlanningDistributionInput mockPlanningDistributionInput(
+            final ZonedDateTime dateInTo) {
         return GetPlanningDistributionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC.plusDays(3))
+                .dateOutFrom(A_DATE_UTC)
+                .dateOutTo(A_DATE_UTC.plusDays(3))
+                .dateInTo(dateInTo)
                 .build();
     }
 

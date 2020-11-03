@@ -3,12 +3,18 @@ package com.mercadolibre.planning.model.api.web.controller;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -24,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = PlanningDistributionController.class)
 public class PlanningDistributionControllerTest {
 
-    private static final String URL = "/planning/model/workflows/{workflow}/planning_distribution";
+    private static final String URL = "/planning/model/workflows/{workflow}/planning_distributions";
 
     @Autowired
     private MockMvc mvc;
@@ -33,8 +39,10 @@ public class PlanningDistributionControllerTest {
     private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
 
     @DisplayName("Get planning distribution works ok")
-    @Test
-    public void testGetPlanningDistributionOk() throws Exception {
+    @ParameterizedTest
+    @MethodSource("getParameters")
+    public void testGetPlanningDistributionOk(final MultiValueMap<String, String> params)
+            throws Exception {
         // GIVEN
         when(getPlanningDistributionUseCase.execute(any(GetPlanningDistributionInput.class)))
                 .thenReturn(mockGetPlanningDistOutput());
@@ -43,13 +51,26 @@ public class PlanningDistributionControllerTest {
         final ResultActions result = mvc.perform(
                 get(URL, "fbm-wms-outbound")
                         .contentType(APPLICATION_JSON)
-                        .param("warehouse_id", WAREHOUSE_ID)
-                        .param("date_from", A_DATE_UTC.toString())
-                        .param("date_to", A_DATE_UTC.plusDays(2).toString())
+                        .params(params)
         );
 
         // THEN
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_processing_distribution.json")));
+    }
+
+    private static Stream<Arguments> getParameters() {
+        final LinkedMultiValueMap<String, String> withDateInTo = new LinkedMultiValueMap<>();
+        withDateInTo.add("warehouse_id", WAREHOUSE_ID);
+        withDateInTo.add("date_out_from", A_DATE_UTC.toString());
+        withDateInTo.add("date_out_to", A_DATE_UTC.plusDays(2).toString());
+        withDateInTo.add("date_in_to", A_DATE_UTC.minusDays(2).toString());
+
+        final LinkedMultiValueMap<String, String> withoutDateInTo = new LinkedMultiValueMap<>();
+        withoutDateInTo.add("warehouse_id", WAREHOUSE_ID);
+        withoutDateInTo.add("date_out_from", A_DATE_UTC.toString());
+        withoutDateInTo.add("date_out_to", A_DATE_UTC.plusDays(2).toString());
+
+        return Stream.of(Arguments.of(withDateInTo), Arguments.of(withoutDateInTo));
     }
 }

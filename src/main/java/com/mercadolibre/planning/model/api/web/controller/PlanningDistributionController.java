@@ -27,7 +27,7 @@ import java.util.List;
 @RequestMapping("/planning/model/workflows/{workflow}/planning_distribution")
 public class PlanningDistributionController {
 
-    private GetPlanningDistributionUseCase getPlanningDistUseCase;
+    private final GetPlanningDistributionUseCase getPlanningDistUseCase;
 
     @GetMapping
     public ResponseEntity<List<GetPlanningDistributionOutput>> getPlanningDist(

@@ -50,4 +50,6 @@ public class CurrentProcessingDistribution {
     private ProcessingType type;
 
     private boolean isActive;
+
+    private String logisticCenterId;
 }

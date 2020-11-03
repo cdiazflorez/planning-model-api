@@ -6,13 +6,13 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
 @AllArgsConstructor
-@Getter
+@Data
 @Builder
 public class GetEntityInput {
 

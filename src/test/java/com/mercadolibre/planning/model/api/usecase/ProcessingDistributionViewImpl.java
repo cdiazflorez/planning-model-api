@@ -11,17 +11,17 @@ import java.util.Date;
 @AllArgsConstructor
 public class ProcessingDistributionViewImpl implements ProcessingDistributionView {
 
-    private long id;
+    private final long id;
 
-    private Date date;
+    private final Date date;
 
-    private ProcessName processName;
+    private final ProcessName processName;
 
-    private long quantity;
+    private final long quantity;
 
-    private MetricUnit quantityMetricUnit;
+    private final MetricUnit quantityMetricUnit;
 
-    private ProcessingType type;
+    private final ProcessingType type;
 
     @Override
     public long getId() {

@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
@@ -18,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
@@ -34,18 +37,29 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetHeadcountEntityUseCaseTest {
+class GetHeadcountEntityUseCaseTest {
 
     @Mock
     private ProcessingDistributionRepository processingDistRepository;
 
+    @Mock
+    private CurrentProcessingDistributionRepository currentRepository;
+
     @InjectMocks
     private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
+
+    private static Stream<Arguments> getSupportedEntitites() {
+        return Stream.of(
+                Arguments.of(HEADCOUNT, true),
+                Arguments.of(PRODUCTIVITY, false),
+                Arguments.of(THROUGHPUT, false)
+        );
+    }
 
     @Test
     @DisplayName("Get headcount entity when source is forecast")
@@ -88,12 +102,53 @@ public class GetHeadcountEntityUseCaseTest {
     public void testGetHeadcountFromSourceSimulation() {
         // GIVEN
         final GetEntityInput input = mockGetHeadcountEntityInput(SIMULATION);
+        when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                ACTIVE_WORKERS,
+                input.getProcessName(),
+                input.getDateFrom(),
+                input.getDateTo())
+        ).thenReturn(currentDistribution());
+
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                input.getWarehouseId(),
+                input.getWorkflow().name(),
+                ACTIVE_WORKERS.name(),
+                input.getProcessName().stream().map(Enum::name).collect(toList()),
+                input.getDateFrom(),
+                input.getDateTo(),
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+        ).thenReturn(processingDistributions());
 
         // WHEN
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
-        assertThat(output).isEmpty();
+        assertEquals(3, output.size());
+
+        final Predicate<EntityOutput> whenIsPickingDist = t ->
+                t.getProcessName().name().equals(PICKING.name()) && t.getDate().isEqual(A_DATE_UTC);
+        assertEquals(20, output.stream().filter(whenIsPickingDist)
+                .findAny().get().getValue());
+
+        final Predicate<EntityOutput> whenIsPAckingDist = t ->
+                t.getProcessName().name().equals(PACKING.name())
+                        && t.getDate().isEqual(A_DATE_UTC.plusHours(2));
+        assertEquals(120, output.stream().filter(whenIsPAckingDist)
+                .findAny().get().getValue());
+    }
+
+    @ParameterizedTest
+    @DisplayName("Only supports headcount entity")
+    @MethodSource("getSupportedEntitites")
+    public void testSupportEntityTypeOk(final EntityType entityType,
+                                 final boolean shouldBeSupported) {
+        // WHEN
+        final boolean isSupported = getHeadcountEntityUseCase.supportsEntityType(entityType);
+
+        // THEN
+        assertEquals(shouldBeSupported, isSupported);
     }
 
     private List<ProcessingDistributionView> processingDistributions() {
@@ -111,27 +166,35 @@ public class GetHeadcountEntityUseCaseTest {
                         PICKING,
                         120,
                         WORKERS,
+                        ACTIVE_WORKERS),
+                new ProcessingDistributionViewImpl(
+                        3,
+                        Date.from(A_DATE_UTC.plusHours(2).toInstant()),
+                        PACKING,
+                        120,
+                        WORKERS,
                         ACTIVE_WORKERS)
         );
     }
 
-    @ParameterizedTest
-    @DisplayName("Only supports headcount entity")
-    @MethodSource("getSupportedEntitites")
-    public void testSupportEntityTypeOk(final EntityType entityType,
-                                        final boolean shouldBeSupported) {
-        // WHEN
-        final boolean isSupported = getHeadcountEntityUseCase.supportsEntityType(entityType);
-
-        // THEN
-        assertEquals(shouldBeSupported, isSupported);
-    }
-
-    private static Stream<Arguments> getSupportedEntitites() {
-        return Stream.of(
-                Arguments.of(HEADCOUNT, true),
-                Arguments.of(PRODUCTIVITY, false),
-                Arguments.of(THROUGHPUT, false)
+    private List<CurrentProcessingDistribution> currentDistribution() {
+        return List.of(
+                CurrentProcessingDistribution.builder()
+                        .date(A_DATE_UTC)
+                        .type(ACTIVE_WORKERS)
+                        .quantity(20)
+                        .isActive(true)
+                        .quantityMetricUnit(WORKERS)
+                        .processName(PICKING)
+                        .build(),
+                CurrentProcessingDistribution.builder()
+                        .date(A_DATE_UTC.plusHours(1))
+                        .type(ACTIVE_WORKERS)
+                        .quantity(20)
+                        .isActive(true)
+                        .quantityMetricUnit(WORKERS)
+                        .processName(PACKING)
+                        .build()
         );
     }
 }

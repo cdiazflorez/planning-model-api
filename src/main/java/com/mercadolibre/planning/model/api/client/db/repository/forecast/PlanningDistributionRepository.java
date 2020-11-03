@@ -40,7 +40,7 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
     @Query(value = "SELECT date_in as dateIn, date_out as dateOut, quantity "
             + "FROM planning_distribution p "
             + "WHERE p.date_out BETWEEN :date_out_from AND :date_out_to "
-            + " p.date_in <= :date_in_to "
+            + "AND p.date_in <= :date_in_to "
             + "AND p.forecast_id in ("
             + " SELECT MAX(fm.id) FROM "
             + "     (SELECT id, "

@@ -193,6 +193,7 @@ public final class TestUtils {
                 .productivityMetricUnit(UNITS_PER_HOUR)
                 .processName(PICKING)
                 .workflow(FBM_WMS_OUTBOUND)
+                .logisticCenterId(WAREHOUSE_ID)
                 .build();
     }
 

@@ -6,8 +6,8 @@ import lombok.Value;
 
 import java.time.ZonedDateTime;
 
-@Builder
 @Value
+@Builder
 public class GetPlanningDistributionInput {
 
     private String warehouseId;

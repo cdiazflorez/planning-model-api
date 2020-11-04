@@ -1,20 +1,23 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
 @Repository
 public interface CurrentProcessingDistributionRepository
-        extends CrudRepository<CurrentProcessingDistribution, Long> {
+        extends JpaRepository<CurrentProcessingDistribution, Long> {
 
     @Query("SELECT "
             + " cpd "
@@ -25,7 +28,7 @@ public interface CurrentProcessingDistributionRepository
             + "   AND cpd.workflow = :workflow "
             + "   AND cpd.type = :type "
             + "   AND cpd.logisticCenterId = :warehouse_id "
-            + "   AND cpd.isActive is true "
+            + "   AND cpd.isActive = true "
             + "ORDER BY cpd.date")
     List<CurrentProcessingDistribution>
             findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -35,5 +38,27 @@ public interface CurrentProcessingDistributionRepository
             @Param("process_name") List<ProcessName> processNames,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query("UPDATE "
+            + " CurrentProcessingDistribution cpd "
+            + "SET "
+            + "   cpd.isActive = false "
+            + "WHERE "
+            + "   cpd.processName = :process_name"
+            + "   AND cpd.workflow = :workflow "
+            + "   AND cpd.logisticCenterId = :logistic_center_id "
+            + "   AND cpd.quantityMetricUnit = :metric_unit "
+            + "   AND cpd.type = :type "
+            + "   AND cpd.date in :dates"
+            + "   AND cpd.isActive = true")
+    void deactivateProcessingDistribution(
+            @Param("logistic_center_id") String logisticCenterId,
+            @Param("workflow") Workflow workflow,
+            @Param("process_name") ProcessName processName,
+            @Param("dates") List<ZonedDateTime> dates,
+            @Param("type") ProcessingType type,
+            @Param("metric_unit") MetricUnit metricUnit);
 
 }

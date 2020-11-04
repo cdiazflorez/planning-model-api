@@ -35,13 +35,17 @@ public class CurrentHeadcountProductivity {
     @Enumerated(EnumType.STRING)
     private Workflow workflow;
 
+    @Enumerated(EnumType.STRING)
     private ProcessName processName;
 
-    private double productivity;
+    private long productivity;
 
+    @Enumerated(EnumType.STRING)
     private MetricUnit productivityMetricUnit;
 
     private long abilityLevel;
 
     private boolean isActive;
+
+    private String logisticCenterId;
 }

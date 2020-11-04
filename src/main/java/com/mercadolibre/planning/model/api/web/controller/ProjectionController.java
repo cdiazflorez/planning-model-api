@@ -17,6 +17,7 @@ import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeE
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.request.ProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
+import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -50,6 +52,9 @@ public class ProjectionController {
             @RequestBody final ProjectionRequest request) {
 
         final ProjectionType projectionType = request.getType();
+        final String warehouseId = request.getWarehouseId();
+        final ZonedDateTime dateFrom = request.getDateFrom();
+        final ZonedDateTime dateTo = request.getDateTo();
 
         final CalculateProjectionUseCase calculateProjectionUseCase = calculateProjectionStrategy
                 .getBy(projectionType)
@@ -57,9 +62,9 @@ public class ProjectionController {
 
         final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
                 .builder()
-                .warehouseId(request.getWarehouseId())
-                .dateFrom(request.getDateFrom())
-                .dateTo(request.getDateTo())
+                .warehouseId(warehouseId)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
                 .processName(request.getProcessName())
                 .workflow(workflow)
                 .build());
@@ -74,8 +79,8 @@ public class ProjectionController {
 
         return ResponseEntity
                 .ok(calculateProjectionUseCase.execute(ProjectionInput.builder()
-                        .dateFrom(request.getDateFrom())
-                        .dateTo(request.getDateTo())
+                        .dateFrom(dateFrom)
+                        .dateTo(dateTo)
                         .backlog(getBacklog(request))
                         .throughput(throughput)
                         .planningUnits(planningUnits)
@@ -91,10 +96,6 @@ public class ProjectionController {
     private List<Backlog> getBacklog(final ProjectionRequest request) {
         return request.getBacklog() == null
                 ? emptyList()
-                : request.getBacklog().stream()
-                .map(backlogRequest -> new Backlog(
-                        backlogRequest.getDate(),
-                        backlogRequest.getQuantity()))
-                .collect(toList());
+                : request.getBacklog().stream().map(QuantityByDate::toBacklog).collect(toList());
     }
 }

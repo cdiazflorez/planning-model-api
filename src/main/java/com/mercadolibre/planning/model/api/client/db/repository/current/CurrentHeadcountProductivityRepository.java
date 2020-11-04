@@ -39,4 +39,22 @@ public interface CurrentHeadcountProductivityRepository
             @Param("dates") List<ZonedDateTime> dates,
             @Param("metric_unit") MetricUnit metricUnit,
             @Param("ability_level") long abilityLevel);
+
+    @Query("SELECT "
+            + " cpd "
+            + "FROM CurrentHeadcountProductivity cpd "
+            + "WHERE "
+            + "   cpd.processName IN (:process_name) "
+            + "   AND cpd.date BETWEEN :date_from AND :date_to "
+            + "   AND cpd.workflow = :workflow "
+            + "   AND cpd.logisticCenterId = :warehouse_id "
+            + "   AND cpd.isActive = true "
+            + "ORDER BY cpd.date")
+    List<CurrentHeadcountProductivity>
+            findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+            @Param("warehouse_id") String warehouseId,
+            @Param("workflow") Workflow workflow,
+            @Param("process_name") List<ProcessName> processNames,
+            @Param("date_from") ZonedDateTime dateFrom,
+            @Param("date_to") ZonedDateTime dateTo);
 }

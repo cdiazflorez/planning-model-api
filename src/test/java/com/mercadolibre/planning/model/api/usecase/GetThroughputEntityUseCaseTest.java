@@ -31,11 +31,8 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,21 +95,6 @@ public class GetThroughputEntityUseCaseTest {
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
         assertEquals(FORECAST, output4.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
-    }
-
-    @Test
-    @DisplayName("Get throughput entity when source is simulation")
-    public void testGetThroughputFromSourceSimulation() {
-        // GIVEN
-        final GetEntityInput input = mockGetThroughputEntityInput(SIMULATION);
-
-        // WHEN
-        final List<EntityOutput> output = getThroughputEntityUseCase.execute(input);
-
-        // THEN
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        assertThat(output).isEmpty();
     }
 
     @ParameterizedTest

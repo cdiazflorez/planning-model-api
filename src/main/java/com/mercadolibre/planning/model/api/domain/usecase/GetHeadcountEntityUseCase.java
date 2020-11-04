@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessi
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -105,13 +106,16 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         final MetricUnit quantityMetricUnit = currentDistributionOptional
                 .map(CurrentProcessingDistribution::getQuantityMetricUnit)
                 .orElseGet(processingDistribution::getQuantityMetricUnit);
+        final Source source = currentDistributionOptional
+                .map(t -> SIMULATION)
+                .orElse(FORECAST);
         return EntityOutput.builder()
                 .workflow(input.getWorkflow())
                 .date(date)
                 .processName(processingDistribution.getProcessName())
                 .value(quantity)
                 .metricUnit(quantityMetricUnit)
-                .source(SIMULATION)
+                .source(source)
                 .build();
     }
 

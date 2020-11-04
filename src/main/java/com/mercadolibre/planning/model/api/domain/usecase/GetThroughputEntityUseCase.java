@@ -15,8 +15,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 
 @Service
@@ -28,19 +26,6 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {
-        if (input.getSource() == null || input.getSource() == FORECAST) {
-            return getForecastThroughput(input);
-        } else {
-            return getSimulationThroughput();
-        }
-    }
-
-    @Override
-    public boolean supportsEntityType(final EntityType entityType) {
-        return entityType == THROUGHPUT;
-    }
-
-    private List<EntityOutput> getForecastThroughput(final GetEntityInput input) {
         final List<EntityOutput> headcounts = new ArrayList<>(headcountEntityUseCase
                 .execute(createHeadcountInput(input)));
 
@@ -50,6 +35,11 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         sortByProcessNameAndDate(headcounts, productivities);
 
         return createThroughputs(headcounts, productivities);
+    }
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == THROUGHPUT;
     }
 
     private List<EntityOutput> createThroughputs(final List<EntityOutput> headcounts,
@@ -96,8 +86,4 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
                 input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
     }
 
-    private List<EntityOutput> getSimulationThroughput() {
-        //TODO: Add SIMULATION logic
-        return emptyList();
-    }
 }

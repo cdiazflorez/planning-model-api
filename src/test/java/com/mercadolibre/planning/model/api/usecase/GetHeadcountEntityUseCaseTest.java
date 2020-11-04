@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseC
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.AssertionErrors;
 
 import java.util.Date;
 import java.util.List;
@@ -129,14 +131,12 @@ class GetHeadcountEntityUseCaseTest {
 
         final Predicate<EntityOutput> whenIsPickingDist = t ->
                 t.getProcessName().name().equals(PICKING.name()) && t.getDate().isEqual(A_DATE_UTC);
-        assertEquals(20, output.stream().filter(whenIsPickingDist)
-                .findAny().get().getValue());
+        whenTestThePredicateCase(output, whenIsPickingDist, 20, SIMULATION);
 
         final Predicate<EntityOutput> whenIsPAckingDist = t ->
                 t.getProcessName().name().equals(PACKING.name())
                         && t.getDate().isEqual(A_DATE_UTC.plusHours(2));
-        assertEquals(120, output.stream().filter(whenIsPAckingDist)
-                .findAny().get().getValue());
+        whenTestThePredicateCase(output, whenIsPAckingDist, 120, FORECAST);
     }
 
     @ParameterizedTest
@@ -196,5 +196,20 @@ class GetHeadcountEntityUseCaseTest {
                         .processName(PACKING)
                         .build()
         );
+    }
+
+    private void whenTestThePredicateCase(final List<EntityOutput> output,
+                                          final Predicate<EntityOutput> predicate,
+                                          final int expectedQuantity,
+                                          final Source forecast) {
+        output.stream()
+                .filter(predicate)
+                .findAny()
+                .ifPresentOrElse((value) -> {
+                            assertEquals(expectedQuantity, value.getValue());
+                            assertEquals(forecast, value.getSource());
+                            }, () ->
+                        AssertionErrors.fail("item not found")
+            );
     }
 }

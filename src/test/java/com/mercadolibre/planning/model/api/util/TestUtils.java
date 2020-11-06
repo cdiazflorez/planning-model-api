@@ -72,6 +72,8 @@ public final class TestUtils {
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
     public static final String WAREHOUSE_ID = "ARBA01";
+    public static final String LOGISTIC_CENTER_ID = "ARBA01";
+    public static final String CONFIG_KEY = "expedition_processing_time";
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,

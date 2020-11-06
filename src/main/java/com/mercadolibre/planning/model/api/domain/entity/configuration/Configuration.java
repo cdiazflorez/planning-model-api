@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -22,8 +23,10 @@ public class Configuration {
     private String logisticCenterId;
 
     @Id
+    @Column(name = "`key`", length = 80)
     private String key;
 
+    @Column(name = "`value`", length = 20)
     private long value;
 
     @Enumerated(EnumType.STRING)

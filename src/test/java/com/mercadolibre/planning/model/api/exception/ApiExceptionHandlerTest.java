@@ -117,6 +117,27 @@ public class ApiExceptionHandlerTest {
         assertErrorResponse(expectedResponse, response);
     }
 
+    @Test
+    public void handleEntityAlreadyExistsException() {
+        // GIVEN
+        final EntityAlreadyExistsException exception = new EntityAlreadyExistsException(
+                "configuration", "ARBA01-expedition_processing_time");
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Entity configuration with id ARBA01-expedition_processing_time already exists",
+                "entity_already_exists");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleEntityAlreadyExistsException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+
     private void assertErrorResponse(final ErrorResponse expectedResponse,
                                      final ResponseEntity<ErrorResponse> response) {
 

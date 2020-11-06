@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -20,6 +22,9 @@ import static java.util.Comparator.comparing;
 @Service
 @AllArgsConstructor
 public class GetThroughputEntityUseCase implements GetEntityUseCase {
+
+    private static final Set<ProcessingType> THROUGHPUT_PROCESSING_TYPES =
+            Set.of(ProcessingType.ACTIVE_WORKERS);
 
     private final GetHeadcountEntityUseCase headcountEntityUseCase;
     private final GetProductivityEntityUseCase productivityEntityUseCase;
@@ -78,12 +83,14 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
 
     private GetEntityInput createProductivityInput(final GetEntityInput input) {
         return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), PRODUCTIVITY,
-                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
+                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName(),
+                input.getProcessingType());
     }
 
     private GetEntityInput createHeadcountInput(final GetEntityInput input) {
         return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), HEADCOUNT,
-                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
+                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName(),
+                THROUGHPUT_PROCESSING_TYPES);
     }
 
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
@@ -24,6 +25,7 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Source.
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @AllArgsConstructor
 @Service
@@ -34,23 +36,21 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {
-        if (input.getSource() == null || input.getSource() == FORECAST) {
+        if (input.getSource() == FORECAST) {
             return getForecastHeadcount(input);
         } else {
             return getSimulationHeadcount(input);
         }
     }
 
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == HEADCOUNT;
+    }
+
     private List<EntityOutput> getForecastHeadcount(final GetEntityInput input) {
-        final List<ProcessingDistributionView> processingDistributions = processingDistRepository
-                .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        ProcessingType.ACTIVE_WORKERS.name(),
-                        input.getProcessName().stream().map(Enum::name).collect(toList()),
-                        input.getDateFrom(),
-                        input.getDateTo(),
-                        getForecastWeeks(input.getDateFrom(), input.getDateTo()));
+        final List<ProcessingDistributionView> processingDistributions =
+                findProcessingDistributionBy(input);
 
         return processingDistributions.stream()
                 .map(p -> EntityOutput.builder()
@@ -65,15 +65,8 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     }
 
     private List<EntityOutput> getSimulationHeadcount(final GetEntityInput input) {
-        final List<ProcessingDistributionView> processingDistributions = processingDistRepository
-                .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        ProcessingType.ACTIVE_WORKERS.name(),
-                        input.getProcessName().stream().map(Enum::name).collect(toList()),
-                        input.getDateFrom(),
-                        input.getDateTo(),
-                        getForecastWeeks(input.getDateFrom(), input.getDateTo()));
+        final List<ProcessingDistributionView> processingDistributions =
+                findProcessingDistributionBy(input);
 
         final List<CurrentProcessingDistribution> currentProcessingDistributions =
                 currentPDistributionRepository
@@ -88,6 +81,19 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         return processingDistributions.stream()
                 .map(p -> getEntityOutput(input, currentProcessingDistributions, p))
                 .collect(toList());
+    }
+
+    private List<ProcessingDistributionView> findProcessingDistributionBy(
+            final GetEntityInput input) {
+        return processingDistRepository
+                .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                        input.getWarehouseId(),
+                        input.getWorkflow().name(),
+                        getProcessingTypeAsStringOrNull(input.getProcessingType()),
+                        input.getProcessName().stream().map(Enum::name).collect(toList()),
+                        input.getDateFrom(),
+                        input.getDateTo(),
+                        getForecastWeeks(input.getDateFrom(), input.getDateTo()));
     }
 
     private EntityOutput getEntityOutput(final GetEntityInput input,
@@ -119,8 +125,10 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                 .build();
     }
 
-    @Override
-    public boolean supportsEntityType(final EntityType entityType) {
-        return entityType == HEADCOUNT;
+    private Set<String> getProcessingTypeAsStringOrNull(
+            final Set<ProcessingType> processingTypes) {
+        return processingTypes == null
+                ? null
+                : processingTypes.stream().map(Enum::name).collect(toSet());
     }
 }

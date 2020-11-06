@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -51,13 +53,23 @@ public class GetThroughputEntityUseCaseTest {
     @DisplayName("Get throughput entity when source is forecast")
     public void testGetForecastThroughputOk() {
         // GIVEN
-        when(getHeadcountEntityUseCase.execute(any()))
+
+        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST);
+        when(getHeadcountEntityUseCase.execute(
+                GetEntityInput.builder()
+                        .warehouseId(input.getWarehouseId()).entityType(HEADCOUNT)
+                        .workflow(input.getWorkflow())
+                        .source(FORECAST)
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .processName(input.getProcessName())
+                        .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+                        .build()))
                 .thenReturn(mockHeadcountEntityOutput());
 
         when(getProductivityEntityUseCase.execute(any()))
                 .thenReturn(mockProductivityEntityOutput());
 
-        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST);
 
         // WHEN
         final List<EntityOutput> output = getThroughputEntityUseCase.execute(input);

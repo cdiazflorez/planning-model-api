@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -72,6 +73,7 @@ public final class TestUtils {
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
     public static final String WAREHOUSE_ID = "ARBA01";
+    public static final String WORKFLOW_ID = "fbm-wms-outbound";
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
 
@@ -241,18 +243,25 @@ public final class TestUtils {
     }
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
-        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT,
-                A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
+        return mockGetHeadcountEntityInput(source, null);
+    }
+
+
+    public static GetEntityInput mockGetHeadcountEntityInput(
+            final Source source,
+            final Set<ProcessingType> processingTypes) {
+        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT, A_DATE_UTC,
+                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING), processingTypes);
     }
 
     public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null);
     }
 
     public static GetEntityInput mockGetThroughputEntityInput(final Source source) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, THROUGHPUT, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null);
     }
 
     public static GetPlanningDistributionInput mockPlanningDistributionInput(

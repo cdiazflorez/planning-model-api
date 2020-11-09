@@ -2,13 +2,14 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.GetSimulationThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -35,10 +36,11 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping("/planning/model/workflows/{workflow}/simulations")
 public class SimulationController {
 
-    private final CalculateCptProjectionUseCase calculateCptProjectionUseCase;
     private final ActivateSimulationUseCase activateSimulationUseCase;
-    private final GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private final CalculateCptProjectionUseCase calculateCptProjectionUseCase;
+    private final GetForecastedThroughputUseCase getForecastedThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private final GetSimulationThroughputUseCase getSimulationThroughputUseCase;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -48,16 +50,24 @@ public class SimulationController {
 
         activateSimulationUseCase.execute(request.toSimulationInput(workflow));
 
-        final List<EntityOutput> throughput = getThroughputEntityUseCase
+        final List<EntityOutput> throughput = getForecastedThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final List<GetPlanningDistributionOutput> planningDistributions =
-                getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
+        return ResponseEntity.ok(projectSimulation(request, workflow, throughput).stream()
+                .map(SaveSimulationResponse::fromProjectionOutput)
+                .collect(toList()));
+    }
 
-        final List<ProjectionOutput> projectionOutputs = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(throughput, planningDistributions));
+    @PostMapping("/run")
+    @Trace(dispatcher = true)
+    public ResponseEntity<List<SaveSimulationResponse>> runSimulation(
+            @PathVariable final Workflow workflow,
+            @Valid @RequestBody final SimulationRequest request) {
 
-        return ResponseEntity.ok(projectionOutputs.stream()
+        final List<EntityOutput> throughput = getSimulationThroughputUseCase
+                .execute(request.toThroughputEntityInput(workflow));
+
+        return ResponseEntity.ok(projectSimulation(request, workflow, throughput).stream()
                 .map(SaveSimulationResponse::fromProjectionOutput)
                 .collect(toList()));
     }
@@ -67,5 +77,16 @@ public class SimulationController {
         dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
         dataBinder.registerCustomEditor(EntityType.class, new EntityTypeEditor());
         dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
+    }
+
+    private List<ProjectionOutput> projectSimulation(final SimulationRequest request,
+                                                     final Workflow workflow,
+                                                     final List<EntityOutput> throughput) {
+
+        final List<GetPlanningDistributionOutput> planningDistributions =
+                getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
+
+        return calculateCptProjectionUseCase
+                .execute(request.toProjectionInput(throughput, planningDistributions));
     }
 }

@@ -1,9 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
@@ -38,7 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetThroughputEntityUseCaseTest {
+public class GetForecastedThroughputUseCaseTest {
 
     @Mock
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
@@ -47,14 +47,13 @@ public class GetThroughputEntityUseCaseTest {
     private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
 
     @InjectMocks
-    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
 
     @Test
     @DisplayName("Get throughput entity when source is forecast")
     public void testGetForecastThroughputOk() {
         // GIVEN
-
-        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST);
+        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST, null);
         when(getHeadcountEntityUseCase.execute(
                 GetEntityInput.builder()
                         .warehouseId(input.getWarehouseId()).entityType(HEADCOUNT)
@@ -70,9 +69,8 @@ public class GetThroughputEntityUseCaseTest {
         when(getProductivityEntityUseCase.execute(any()))
                 .thenReturn(mockProductivityEntityOutput());
 
-
         // WHEN
-        final List<EntityOutput> output = getThroughputEntityUseCase.execute(input);
+        final List<EntityOutput> output = getForecastedThroughputUseCase.execute(input);
 
         // THEN
         assertEquals(4, output.size());
@@ -115,7 +113,7 @@ public class GetThroughputEntityUseCaseTest {
     public void testSupportEntityTypeOk(final EntityType entityType,
                                         final boolean shouldBeSupported) {
         // WHEN
-        final boolean isSupported = getThroughputEntityUseCase.supportsEntityType(entityType);
+        final boolean isSupported = getForecastedThroughputUseCase.supportsEntityType(entityType);
 
         // THEN
         assertEquals(shouldBeSupported, isSupported);

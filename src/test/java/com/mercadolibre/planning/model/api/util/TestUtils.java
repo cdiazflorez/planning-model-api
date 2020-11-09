@@ -27,6 +27,7 @@ import com.mercadolibre.planning.model.api.web.controller.request.PolyvalentProd
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -251,17 +252,18 @@ public final class TestUtils {
             final Source source,
             final Set<ProcessingType> processingTypes) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT, A_DATE_UTC,
-                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING), processingTypes);
+                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING), processingTypes, null);
     }
 
     public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null);
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, null);
     }
 
-    public static GetEntityInput mockGetThroughputEntityInput(final Source source) {
+    public static GetEntityInput mockGetThroughputEntityInput(final Source source,
+                                                              final List<Simulation> simulations) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, THROUGHPUT, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null);
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, simulations);
     }
 
     public static GetPlanningDistributionInput mockPlanningDistributionInput(

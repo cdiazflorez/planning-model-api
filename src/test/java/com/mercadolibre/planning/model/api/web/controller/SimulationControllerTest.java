@@ -1,13 +1,14 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.GetSimulationThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,13 +36,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = SimulationController.class)
 public class SimulationControllerTest {
 
-    private static final String URL = "/planning/model/workflows/{workflow}/simulations/save";
+    private static final String URL = "/planning/model/workflows/{workflow}/simulations";
 
     @Autowired
     private MockMvc mvc;
 
     @MockBean
-    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
+
+    @MockBean
+    private GetSimulationThroughputUseCase getSimulationThroughputUseCase;
 
     @MockBean
     private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
@@ -52,7 +57,7 @@ public class SimulationControllerTest {
     private ActivateSimulationUseCase activateSimulationUseCase;
 
     @Test
-    public void testActivateSimulation() throws Exception {
+    public void testSaveSimulation() throws Exception {
         // GIVEN
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
@@ -63,15 +68,48 @@ public class SimulationControllerTest {
 
         // WHEN
         final ResultActions result = mvc.perform(
-                post(URL, "fbm-wms-outbound")
+                post(URL + "/save", "fbm-wms-outbound")
                         .contentType(APPLICATION_JSON)
-                        .content(getResourceAsString("activate_simulation_request.json"))
+                        .content(getResourceAsString("simulation_request.json"))
         );
 
         // THEN
-        verify(getThroughputEntityUseCase).execute(any(GetEntityInput.class));
+        verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
         verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
         verify(activateSimulationUseCase).execute(any(SimulationInput.class));
+        verifyZeroInteractions(getSimulationThroughputUseCase);
+
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].date")
+                        .value(dateOut.format(ISO_OFFSET_DATE_TIME)))
+                .andExpect(jsonPath("$[0].projected_end_date")
+                        .value(projectedEndDate.format(ISO_OFFSET_DATE_TIME)))
+                .andExpect(jsonPath("$[0].remaining_quantity")
+                        .value(100));
+    }
+
+    @Test
+    public void testRunSimulation() throws Exception {
+        // GIVEN
+        final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
+        final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
+        when(calculateCptProjectionUseCase.execute(any(ProjectionInput.class)))
+                .thenReturn(List.of(
+                        new ProjectionOutput(dateOut, projectedEndDate, 100)
+                ));
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                post(URL + "/run", "fbm-wms-outbound")
+                        .contentType(APPLICATION_JSON)
+                        .content(getResourceAsString("simulation_request.json"))
+        );
+
+        // THEN
+        verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
+        verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
+        verifyZeroInteractions(activateSimulationUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")

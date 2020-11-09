@@ -42,6 +42,6 @@ public class GetEntityRequest {
 
     public GetEntityInput toGetEntityInput(final Workflow workflow, final EntityType entityType) {
         return new GetEntityInput(warehouseId, workflow, entityType,
-                dateFrom, dateTo, source, processName, processingType);
+                dateFrom, dateTo, source, processName, processingType, null);
     }
 }

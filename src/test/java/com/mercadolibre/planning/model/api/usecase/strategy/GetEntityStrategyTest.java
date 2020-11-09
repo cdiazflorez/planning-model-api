@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase.strategy;
 
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +33,14 @@ public class GetEntityStrategyTest {
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @Mock
-    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
 
     @BeforeEach
     public void setUp() {
         getEntityStrategy = new GetEntityStrategy(Set.of(
-                getHeadcountEntityUseCase, getProductivityEntityUseCase, getThroughputEntityUseCase
+                getHeadcountEntityUseCase,
+                getProductivityEntityUseCase,
+                getForecastedThroughputUseCase
         ));
     }
 
@@ -49,7 +51,7 @@ public class GetEntityStrategyTest {
 
         // WHEN - THEN
         verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
         assertThat(getEntityStrategy.getBy(HEADCOUNT).get())
                 .isInstanceOf(GetHeadcountEntityUseCase.class);
     }
@@ -60,7 +62,7 @@ public class GetEntityStrategyTest {
         when(getProductivityEntityUseCase.supportsEntityType(PRODUCTIVITY)).thenReturn(true);
 
         // WHEN - THEN
-        verifyZeroInteractions(getThroughputEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
         assertThat(getEntityStrategy.getBy(PRODUCTIVITY).get())
                 .isInstanceOf(GetProductivityEntityUseCase.class);
     }
@@ -68,10 +70,10 @@ public class GetEntityStrategyTest {
     @Test
     public void testGetByThroughputOk() {
         // GIVEN
-        when(getThroughputEntityUseCase.supportsEntityType(THROUGHPUT)).thenReturn(true);
+        when(getForecastedThroughputUseCase.supportsEntityType(THROUGHPUT)).thenReturn(true);
 
         // WHEN - THEN
         assertThat(getEntityStrategy.getBy(THROUGHPUT).get())
-                .isInstanceOf(GetThroughputEntityUseCase.class);
+                .isInstanceOf(GetForecastedThroughputUseCase.class);
     }
 }

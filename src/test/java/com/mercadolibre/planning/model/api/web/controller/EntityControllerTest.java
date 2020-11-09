@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import org.junit.jupiter.api.DisplayName;
@@ -52,7 +52,7 @@ public class EntityControllerTest {
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @MockBean
-    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -81,7 +81,7 @@ public class EntityControllerTest {
 
         // THEN
         verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
@@ -128,7 +128,7 @@ public class EntityControllerTest {
         result.andExpect(status().isBadRequest());
         verifyZeroInteractions(getHeadcountEntityUseCase);
         verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
     }
 
     @DisplayName("Get productivity entity works ok")
@@ -160,7 +160,7 @@ public class EntityControllerTest {
 
         // THEN
         verifyZeroInteractions(getHeadcountEntityUseCase);
-        verifyZeroInteractions(getThroughputEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_productivity_response.json")));
     }
@@ -176,9 +176,9 @@ public class EntityControllerTest {
                 .thenReturn(true);
 
         when(getEntityStrategy.getBy(THROUGHPUT))
-                .thenReturn(Optional.of(getThroughputEntityUseCase));
+                .thenReturn(Optional.of(getForecastedThroughputUseCase));
 
-        when(getThroughputEntityUseCase.execute(any(GetEntityInput.class)))
+        when(getForecastedThroughputUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockThroughputEntityOutput());
 
         // WHEN

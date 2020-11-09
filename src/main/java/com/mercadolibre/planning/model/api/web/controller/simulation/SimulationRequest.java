@@ -63,7 +63,8 @@ public class SimulationRequest {
 
     public GetEntityInput toThroughputEntityInput(final Workflow workflow) {
         return new GetEntityInput(warehouseId, workflow, THROUGHPUT,
-                dateFrom, dateTo, SIMULATION, processName, Set.of(ProcessingType.ACTIVE_WORKERS));
+                dateFrom, dateTo, SIMULATION, processName,
+                Set.of(ProcessingType.ACTIVE_WORKERS), simulations);
     }
 
     public GetPlanningDistributionInput toPlanningInput(final Workflow workflow) {

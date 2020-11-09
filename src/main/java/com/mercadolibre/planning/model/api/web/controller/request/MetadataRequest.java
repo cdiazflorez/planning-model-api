@@ -19,8 +19,9 @@ public class MetadataRequest {
         return new ForecastMetadata(forecastId, key, value);
     }
 
-    public PlanningDistributionMetadata toPlanningDistributionMetadata() {
+    public PlanningDistributionMetadata toPlanningDistributionMetadata(final long id) {
         return PlanningDistributionMetadata.builder()
+                .planningDistributionId(id)
                 .key(key)
                 .value(value)
                 .build();

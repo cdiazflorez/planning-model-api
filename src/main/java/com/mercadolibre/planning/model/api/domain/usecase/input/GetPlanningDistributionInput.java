@@ -6,12 +6,14 @@ import lombok.Value;
 
 import java.time.ZonedDateTime;
 
-@Builder
 @Value
+@Builder
 public class GetPlanningDistributionInput {
 
     private String warehouseId;
     private Workflow workflow;
-    private ZonedDateTime dateFrom;
-    private ZonedDateTime dateTo;
+    private ZonedDateTime dateOutFrom;
+    private ZonedDateTime dateOutTo;
+    private ZonedDateTime dateInTo;
+
 }

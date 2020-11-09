@@ -4,13 +4,13 @@ import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 
-import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 
 @Value
 public class HeadcountProductivityDataRequest {
 
     @NotNull
-    private OffsetTime dayTime;
+    private ZonedDateTime dayTime;
 
     private long productivity;
 }

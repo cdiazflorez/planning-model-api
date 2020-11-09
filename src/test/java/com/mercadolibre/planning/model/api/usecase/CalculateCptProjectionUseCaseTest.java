@@ -218,6 +218,67 @@ public class CalculateCptProjectionUseCaseTest {
         assertEquals(200, projection2.getRemainingQuantity());
     }
 
+    @Test
+    @DisplayName("Cpt without items should return projected_date")
+    public void testEmptyCpt() {
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_OUT_16)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                        List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
+                .planningUnits(List.of(
+                        builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(0).build()))
+                .build();
+
+        // WHEN
+        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+
+        // THEN
+        assertEquals(1, projections.size());
+
+        final ProjectionOutput projection1 = projections.get(0);
+        assertEquals(DATE_OUT_12, projection1.getDate());
+        assertEquals(DATE_FROM_10, projection1.getProjectedEndDate());
+        assertEquals(0, projection1.getRemainingQuantity());
+    }
+
+    @Test
+    @DisplayName("Recalculate de projection if has new items")
+    public void testRecalculateProjectionDate() {
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_OUT_16)
+                .planningUnits(List.of(
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.minusHours(1))
+                                .total(100).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11)
+                                .total(100).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(1))
+                                .total(50).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(2))
+                                .total(50).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(3))
+                                .total(50).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(4))
+                                .total(50).build(),
+                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(5))
+                                .total(50).build()))
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                        List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
+                .build();
+
+        // WHEN
+        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+
+        // THEN
+        assertEquals(1, projections.size());
+
+        final ProjectionOutput projection1 = projections.get(0);
+        assertEquals(DATE_OUT_16, projection1.getDate());
+        assertNull(projection1.getProjectedEndDate());
+        assertEquals(120, projection1.getRemainingQuantity());
+    }
+
     @ParameterizedTest
     @DisplayName("Only supports cpt type")
     @MethodSource("getSupportedProjectionTypes")

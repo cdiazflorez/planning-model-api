@@ -8,10 +8,9 @@ import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 
-import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getUtcOffset;
 
 @Value
 public class PolyvalentProductivityRequest {
@@ -28,12 +27,12 @@ public class PolyvalentProductivityRequest {
 
     public HeadcountProductivity toHeadcountProductivity(final Forecast forecast,
                                                          final long regularProductivity,
-                                                         final OffsetTime dayTime) {
+                                                         final ZonedDateTime date) {
         return HeadcountProductivity.builder()
                 .abilityLevel(abilityLevel)
                 .processName(processName)
                 .productivityMetricUnit(UNITS_PER_HOUR)
-                .dayTime(getUtcOffset(dayTime))
+                .date(date)
                 .productivity((regularProductivity * productivity) / 100)
                 .forecast(forecast)
                 .build();

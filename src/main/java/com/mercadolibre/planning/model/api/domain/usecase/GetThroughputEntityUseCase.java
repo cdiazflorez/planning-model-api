@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.domain.usecase;
 
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,48 +12,24 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static java.util.Collections.emptyList;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.util.Comparator.comparing;
 
 @Service
 @AllArgsConstructor
-public class GetThroughputEntityUseCase implements GetEntityUseCase {
-
-    private final GetHeadcountEntityUseCase headcountEntityUseCase;
-    private final GetProductivityEntityUseCase productivityEntityUseCase;
-
-    @Override
-    public List<EntityOutput> execute(final GetEntityInput input) {
-        if (input.getSource() == null || input.getSource() == FORECAST) {
-            return getForecastThroughput(input);
-        } else {
-            return getSimulationThroughput();
-        }
-    }
+public abstract class GetThroughputEntityUseCase implements GetEntityUseCase {
 
     @Override
     public boolean supportsEntityType(final EntityType entityType) {
         return entityType == THROUGHPUT;
     }
 
-    private List<EntityOutput> getForecastThroughput(final GetEntityInput input) {
-        final List<EntityOutput> headcounts = new ArrayList<>(headcountEntityUseCase
-                .execute(createHeadcountInput(input)));
-
-        final List<EntityOutput> productivities = new ArrayList<>(productivityEntityUseCase
-                .execute(createProductivityInput(input)));
+    protected List<EntityOutput> createThroughputs(final List<EntityOutput> headcounts,
+                                                   final List<EntityOutput> productivities) {
 
         sortByProcessNameAndDate(headcounts, productivities);
-
-        return createThroughputs(headcounts, productivities);
-    }
-
-    private List<EntityOutput> createThroughputs(final List<EntityOutput> headcounts,
-                                                 final List<EntityOutput> productivities) {
 
         final List<EntityOutput> throughputs = new ArrayList<>();
         if (headcounts.size() == productivities.size()) {
@@ -65,7 +41,7 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
                             throughputs.add(EntityOutput.builder()
                                     .workflow(headcount.getWorkflow())
                                     .date(headcount.getDate())
-                                    .source(headcount.getSource())
+                                    .source(getDefinitiveSource(headcount, productivity))
                                     .processName(headcount.getProcessName())
                                     .metricUnit(UNITS_PER_HOUR)
                                     .value(headcount.getValue() * productivity.getValue())
@@ -86,18 +62,10 @@ public class GetThroughputEntityUseCase implements GetEntityUseCase {
         productivities.sort(compareByProcessNameAndDate);
     }
 
-    private GetEntityInput createProductivityInput(final GetEntityInput input) {
-        return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), PRODUCTIVITY,
-                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
-    }
-
-    private GetEntityInput createHeadcountInput(final GetEntityInput input) {
-        return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), HEADCOUNT,
-                input.getDateFrom(), input.getDateTo(), input.getSource(), input.getProcessName());
-    }
-
-    private List<EntityOutput> getSimulationThroughput() {
-        //TODO: Add SIMULATION logic
-        return emptyList();
+    private Source getDefinitiveSource(final EntityOutput headcount,
+                                       final EntityOutput productivity) {
+        return headcount.getSource() == SIMULATION || productivity.getSource() == SIMULATION
+                ? SIMULATION
+                : FORECAST;
     }
 }

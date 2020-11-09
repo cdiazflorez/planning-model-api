@@ -71,4 +71,15 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
+    @ExceptionHandler(EntityAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
+            final EntityAlreadyExistsException exception, final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+                exception.getMessage(), "entity_already_exists");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
 }

@@ -19,7 +19,7 @@ public interface ProcessingDistributionRepository
             + "FROM processing_distribution p "
             + "WHERE p.process_name IN (:process_name) "
             + "AND p.date BETWEEN :date_from AND :date_to "
-            + "AND p.type = :type "
+            + "AND ((:type) is NULL OR p.type IN (:type)) "
             + "AND p.forecast_id in ("
             + " SELECT MAX(id) FROM "
             + "     (SELECT id, "
@@ -36,7 +36,7 @@ public interface ProcessingDistributionRepository
     List<ProcessingDistributionView> findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") String workflow,
-            @Param("type") String type,
+            @Param("type") Set<String> type,
             @Param("process_name") List<String> processNames,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,

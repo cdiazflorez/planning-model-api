@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,15 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,7 +79,7 @@ class CurrentProcessingDistributionRepositoryTest {
                 repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         currentProcessingDist.getLogisticCenterId(),
                         currentProcessingDist.getWorkflow(), currentProcessingDist.getType(),
-                        List.of(ProcessName.PICKING, ProcessName.PACKING),
+                        List.of(PICKING, PACKING),
                         currentProcessingDist.getDate().minusHours(1),
                         currentProcessingDist.getDate().plusHours(1));
 
@@ -81,6 +88,30 @@ class CurrentProcessingDistributionRepositoryTest {
 
         final CurrentProcessingDistribution foundCurrentProc = currentProcessingDistList.get(0);
         whenCurrentDistributionIsOk(currentProcessingDist, foundCurrentProc);
+    }
+
+    @Test
+    @DisplayName("Deactivate processing distribution")
+    public void testDeactivateProcessingDistribution() {
+        // GIVEN
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
+        entityManager.persistAndFlush(currentProcessingDist);
+
+        // WHEN
+        repository.deactivateProcessingDistribution(
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND,
+                PACKING,
+                singletonList(A_DATE_UTC),
+                ACTIVE_WORKERS,
+                WORKERS
+        );
+
+        final Optional<CurrentProcessingDistribution> result = repository.findById(1L);
+
+        // THEN
+        assertTrue(result.isPresent());
+        assertFalse(result.get().isActive());
     }
 
     private void whenCurrentDistributionIsOk(final CurrentProcessingDistribution currentProcessing,

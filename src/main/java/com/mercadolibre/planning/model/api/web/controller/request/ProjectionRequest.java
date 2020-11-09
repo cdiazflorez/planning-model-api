@@ -28,5 +28,5 @@ public class ProjectionRequest {
     @NotNull
     private ZonedDateTime dateTo;
 
-    private List<ProjectionBacklogRequest> backlog;
+    private List<QuantityByDate> backlog;
 }

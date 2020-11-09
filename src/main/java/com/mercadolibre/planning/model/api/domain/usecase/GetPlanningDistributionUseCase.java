@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDist
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
@@ -24,15 +25,9 @@ public class GetPlanningDistributionUseCase
 
     @Override
     public List<GetPlanningDistributionOutput> execute(final GetPlanningDistributionInput input) {
-        final List<PlanningDistributionView> planningDistributions =
-                planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        input.getDateFrom(),
-                        input.getDateTo(),
-                        getForecastWeeks(input.getDateFrom(), input.getDateTo()));
+        final List<PlanningDistributionView> planningDistribution = getPlanningDistributions(input);
 
-        return planningDistributions.stream()
+        return planningDistribution.stream()
                 .map(pd -> GetPlanningDistributionOutput.builder()
                         .metricUnit(UNITS)
                         .dateIn(ofInstant(pd.getDateIn().toInstant(), UTC))
@@ -40,5 +35,32 @@ public class GetPlanningDistributionUseCase
                         .total(pd.getQuantity())
                         .build())
                 .collect(toList());
+    }
+
+    private List<PlanningDistributionView> getPlanningDistributions(
+            final GetPlanningDistributionInput input) {
+
+        final ZonedDateTime dateOutFrom = input.getDateOutFrom();
+        final ZonedDateTime dateOutTo = input.getDateOutTo();
+        final ZonedDateTime dateInTo = input.getDateInTo();
+
+        return dateInTo == null
+                ? planningDistRepository
+                .findByWarehouseIdWorkflowAndDateOutInRange(
+                        input.getWarehouseId(),
+                        input.getWorkflow().name(),
+                        dateOutFrom,
+                        dateOutTo,
+                        getForecastWeeks(dateOutFrom, dateOutTo))
+                : planningDistRepository
+                .findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
+                        input.getWarehouseId(),
+                        input.getWorkflow().name(),
+                        dateOutFrom,
+                        dateOutTo,
+                        dateInTo,
+                        getForecastWeeks(dateOutFrom, dateOutTo)
+        );
+
     }
 }

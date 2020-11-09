@@ -22,18 +22,22 @@ public class GetPlanningDistributionRequest {
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private ZonedDateTime dateFrom;
+    private ZonedDateTime dateOutFrom;
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private ZonedDateTime dateTo;
+    private ZonedDateTime dateOutTo;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private ZonedDateTime dateInTo;
 
     public GetPlanningDistributionInput toGetPlanningDistInput(final Workflow workflow) {
         return GetPlanningDistributionInput.builder()
                 .warehouseId(warehouseId)
                 .workflow(workflow)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
+                .dateOutFrom(dateOutFrom)
+                .dateOutTo(dateOutTo)
+                .dateInTo(dateInTo)
                 .build();
     }
 }

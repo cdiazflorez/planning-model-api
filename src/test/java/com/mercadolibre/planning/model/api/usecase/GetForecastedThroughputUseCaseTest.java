@@ -1,8 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -31,15 +33,12 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetThroughputEntityUseCaseTest {
+public class GetForecastedThroughputUseCaseTest {
 
     @Mock
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
@@ -48,22 +47,30 @@ public class GetThroughputEntityUseCaseTest {
     private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
 
     @InjectMocks
-    private GetThroughputEntityUseCase getThroughputEntityUseCase;
+    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
 
     @Test
     @DisplayName("Get throughput entity when source is forecast")
     public void testGetForecastThroughputOk() {
         // GIVEN
-        when(getHeadcountEntityUseCase.execute(any()))
+        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST, null);
+        when(getHeadcountEntityUseCase.execute(
+                GetEntityInput.builder()
+                        .warehouseId(input.getWarehouseId()).entityType(HEADCOUNT)
+                        .workflow(input.getWorkflow())
+                        .source(FORECAST)
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .processName(input.getProcessName())
+                        .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+                        .build()))
                 .thenReturn(mockHeadcountEntityOutput());
 
         when(getProductivityEntityUseCase.execute(any()))
                 .thenReturn(mockProductivityEntityOutput());
 
-        final GetEntityInput input = mockGetThroughputEntityInput(FORECAST);
-
         // WHEN
-        final List<EntityOutput> output = getThroughputEntityUseCase.execute(input);
+        final List<EntityOutput> output = getForecastedThroughputUseCase.execute(input);
 
         // THEN
         assertEquals(4, output.size());
@@ -100,28 +107,13 @@ public class GetThroughputEntityUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
     }
 
-    @Test
-    @DisplayName("Get throughput entity when source is simulation")
-    public void testGetThroughputFromSourceSimulation() {
-        // GIVEN
-        final GetEntityInput input = mockGetThroughputEntityInput(SIMULATION);
-
-        // WHEN
-        final List<EntityOutput> output = getThroughputEntityUseCase.execute(input);
-
-        // THEN
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        assertThat(output).isEmpty();
-    }
-
     @ParameterizedTest
     @DisplayName("Only supports throughput entity")
     @MethodSource("getSupportedEntitites")
     public void testSupportEntityTypeOk(final EntityType entityType,
                                         final boolean shouldBeSupported) {
         // WHEN
-        final boolean isSupported = getThroughputEntityUseCase.supportsEntityType(entityType);
+        final boolean isSupported = getForecastedThroughputUseCase.supportsEntityType(entityType);
 
         // THEN
         assertEquals(shouldBeSupported, isSupported);

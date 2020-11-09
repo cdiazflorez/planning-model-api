@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -26,12 +27,12 @@ import com.mercadolibre.planning.model.api.web.controller.request.PolyvalentProd
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProcessingDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -54,7 +55,6 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static java.time.ZoneOffset.UTC;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -68,16 +68,15 @@ public final class TestUtils {
             ZoneId.of("UTC"));
     public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
             ZoneId.of("UTC"));
-    public static final OffsetTime AN_OFFSET_TIME = OffsetTime.parse("00:00:00-03:00");
-    public static final OffsetTime ANOTHER_OFFSET_TIME = OffsetTime.parse("01:00:00-03:00");
-    public static final OffsetTime AN_OFFSET_TIME_UTC = AN_OFFSET_TIME.withOffsetSameInstant(UTC);
-    public static final OffsetTime ANOTHER_OFFSET_TIME_UTC = ANOTHER_OFFSET_TIME
-            .withOffsetSameInstant(UTC);
+
     public static final String FORECAST_METADATA_KEY = "mono_order_distribution";
     public static final String FORECAST_METADATA_VALUE = "48";
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
     public static final String WAREHOUSE_ID = "ARBA01";
+    public static final String WORKFLOW_ID = "fbm-wms-outbound";
+    public static final String LOGISTIC_CENTER_ID = "ARBA01";
+    public static final String CONFIG_KEY = "expedition_processing_time";
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -136,7 +135,7 @@ public final class TestUtils {
                 .productivity(80)
                 .productivityMetricUnit(PERCENTAGE)
                 .processName(PACKING)
-                .dayTime(AN_OFFSET_TIME);
+                .date(A_DATE_UTC);
     }
 
     public static HeadcountProductivity mockHeadcountProd(final Forecast forecast) {
@@ -198,7 +197,9 @@ public final class TestUtils {
                 .productivity(68)
                 .productivityMetricUnit(UNITS_PER_HOUR)
                 .processName(PICKING)
+                .logisticCenterId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
+                .logisticCenterId(WAREHOUSE_ID)
                 .build();
     }
 
@@ -243,26 +244,36 @@ public final class TestUtils {
     }
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
-        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT,
-                A_DATE_UTC, A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING));
+        return mockGetHeadcountEntityInput(source, null);
+    }
+
+
+    public static GetEntityInput mockGetHeadcountEntityInput(
+            final Source source,
+            final Set<ProcessingType> processingTypes) {
+        return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT, A_DATE_UTC,
+                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING), processingTypes, null);
     }
 
     public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, null);
     }
 
-    public static GetEntityInput mockGetThroughputEntityInput(final Source source) {
+    public static GetEntityInput mockGetThroughputEntityInput(final Source source,
+                                                              final List<Simulation> simulations) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, THROUGHPUT, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING));
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, simulations);
     }
 
-    public static GetPlanningDistributionInput mockPlanningDistributionInput() {
+    public static GetPlanningDistributionInput mockPlanningDistributionInput(
+            final ZonedDateTime dateInTo) {
         return GetPlanningDistributionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC.plusDays(3))
+                .dateOutFrom(A_DATE_UTC)
+                .dateOutTo(A_DATE_UTC.plusDays(3))
+                .dateInTo(dateInTo)
                 .build();
     }
 
@@ -454,12 +465,12 @@ public final class TestUtils {
     private static List<HeadcountProductivityRequest> mockProductivities() {
         return asList(
                 new HeadcountProductivityRequest(PICKING, UNITS_PER_HOUR, 0, List.of(
-                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 85),
-                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                        new HeadcountProductivityDataRequest(A_DATE_UTC, 85),
+                        new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
                 )),
                 new HeadcountProductivityRequest(PACKING, UNITS_PER_HOUR, 0, List.of(
-                        new HeadcountProductivityDataRequest(AN_OFFSET_TIME, 92),
-                        new HeadcountProductivityDataRequest(ANOTHER_OFFSET_TIME, 85)
+                        new HeadcountProductivityDataRequest(A_DATE_UTC, 92),
+                        new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
                 ))
         );
     }

@@ -14,16 +14,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.util.TestUtils.CONFIG_KEY;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LOGISTIC_CENTER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GetConfigurationUseCaseTest {
-
-    private static final String LOGISTIC_CENTER_ID = "ARBA01";
-
-    private static final String KEY = "expedition_processing_time";
 
     @InjectMocks
     private GetConfigurationUseCase getConfiguration;
@@ -34,10 +32,13 @@ public class GetConfigurationUseCaseTest {
     @Test
     public void testGetConfiguration() {
         // GIVEN
-        final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
-        final Configuration configuration = new Configuration(LOGISTIC_CENTER_ID, KEY, 1, UNITS);
+        final GetConfigurationInput input = new GetConfigurationInput(
+                LOGISTIC_CENTER_ID, CONFIG_KEY);
 
-        when(repository.findById(new ConfigurationId(LOGISTIC_CENTER_ID, KEY)))
+        final Configuration configuration = new Configuration(
+                LOGISTIC_CENTER_ID, CONFIG_KEY, 1, UNITS);
+
+        when(repository.findById(new ConfigurationId(LOGISTIC_CENTER_ID, CONFIG_KEY)))
                 .thenReturn(Optional.of(configuration));
 
         // WHEN

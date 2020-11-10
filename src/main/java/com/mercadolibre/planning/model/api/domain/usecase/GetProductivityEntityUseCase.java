@@ -11,11 +11,13 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
@@ -50,6 +52,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
     }
 
     private List<EntityOutput> getSimulationProductivity(final GetEntityInput input) {
+        final Workflow workflow = input.getWorkflow();
         final List<EntityOutput> forecastProductivities = getForecastProductivity(input);
         final List<CurrentHeadcountProductivity> productivities = currentProductivityRepository
                 .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -59,22 +62,29 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
                         input.getDateFrom(),
                         input.getDateTo()
                 );
-        return forecastProductivities.stream().map(t ->
-                productivities.stream()
-                        .filter(f -> f.getDate()
-                                .isEqual(t.getDate())
-                                && t.getProcessName() == f.getProcessName()
-                        ).findFirst()
-                        .map(c -> EntityOutput.builder()
-                                .value(c.getProductivity())
-                                .metricUnit(t.getMetricUnit())
-                                .date(t.getDate())
-                                .processName(t.getProcessName())
-                                .source(t.getSource())
-                                .workflow(t.getWorkflow())
-                                .build()
-                        ).orElse(t)
-        ).collect(toList());
+        final List<EntityOutput> entities = new ArrayList<>();
+
+        forecastProductivities.forEach(fp ->
+                entities.add(EntityOutput.builder()
+                                .workflow(workflow)
+                                .value(fp.getValue())
+                                .source(FORECAST)
+                                .processName(fp.getProcessName())
+                                .metricUnit(fp.getMetricUnit())
+                                .date(fp.getDate())
+                                .build()));
+
+        productivities.forEach(sp ->
+                entities.add(EntityOutput.builder()
+                        .workflow(workflow)
+                        .value(sp.getProductivity())
+                        .source(SIMULATION)
+                        .processName(sp.getProcessName())
+                        .metricUnit(sp.getProductivityMetricUnit())
+                        .date(sp.getDate())
+                        .build()));
+
+        return entities;
     }
 
     private List<EntityOutput> createEntityOutputs(

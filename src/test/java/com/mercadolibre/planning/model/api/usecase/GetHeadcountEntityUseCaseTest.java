@@ -19,12 +19,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.AssertionErrors;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
@@ -130,16 +129,12 @@ class GetHeadcountEntityUseCaseTest {
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
-        assertEquals(3, output.size());
-
-        final Predicate<EntityOutput> whenIsPickingDist = t ->
-                t.getProcessName().name().equals(PICKING.name()) && t.getDate().isEqual(A_DATE_UTC);
-        whenTestThePredicateCase(output, whenIsPickingDist, 20, SIMULATION);
-
-        final Predicate<EntityOutput> whenIsPAckingDist = t ->
-                t.getProcessName().name().equals(PACKING.name())
-                        && t.getDate().isEqual(A_DATE_UTC.plusHours(2));
-        whenTestThePredicateCase(output, whenIsPAckingDist, 120, FORECAST);
+        assertEquals(5, output.size());
+        outputPropertiesEqualTo(output.get(0), FORECAST, 100, A_DATE_UTC.toInstant());
+        outputPropertiesEqualTo(output.get(1), FORECAST, 120, A_DATE_UTC.plusHours(1).toInstant());
+        outputPropertiesEqualTo(output.get(2), FORECAST, 120, A_DATE_UTC.plusHours(2).toInstant());
+        outputPropertiesEqualTo(output.get(3), SIMULATION, 20, A_DATE_UTC.toInstant());
+        outputPropertiesEqualTo(output.get(4), SIMULATION, 20, A_DATE_UTC.plusHours(1).toInstant());
     }
 
     @ParameterizedTest
@@ -201,18 +196,13 @@ class GetHeadcountEntityUseCaseTest {
         );
     }
 
-    private void whenTestThePredicateCase(final List<EntityOutput> output,
-                                          final Predicate<EntityOutput> predicate,
-                                          final int expectedQuantity,
-                                          final Source forecast) {
-        output.stream()
-                .filter(predicate)
-                .findAny()
-                .ifPresentOrElse((value) -> {
-                            assertEquals(expectedQuantity, value.getValue());
-                            assertEquals(forecast, value.getSource());
-                            }, () ->
-                        AssertionErrors.fail("item not found")
-            );
+    private void outputPropertiesEqualTo(final EntityOutput entityOutput,
+                                         final Source source,
+                                         final int quantity,
+                                         final Instant instant) {
+
+        assertEquals(source, entityOutput.getSource());
+        assertEquals(quantity, entityOutput.getValue());
+        assertEquals(instant, entityOutput.getDate().toInstant());
     }
 }

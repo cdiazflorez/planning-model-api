@@ -3,19 +3,17 @@ package com.mercadolibre.planning.model.api.domain.usecase;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
-import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
@@ -65,6 +63,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     }
 
     private List<EntityOutput> getSimulationHeadcount(final GetEntityInput input) {
+        final Workflow workflow = input.getWorkflow();
         final List<ProcessingDistributionView> processingDistributions =
                 findProcessingDistributionBy(input);
 
@@ -78,9 +77,30 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                                 input.getDateFrom(),
                                 input.getDateTo());
 
-        return processingDistributions.stream()
-                .map(p -> getEntityOutput(input, currentProcessingDistributions, p))
-                .collect(toList());
+        final List<EntityOutput> entities = new ArrayList<>();
+
+        processingDistributions.forEach(pd ->
+                entities.add(EntityOutput.builder()
+                        .workflow(workflow)
+                        .date(pd.getDate().toInstant().atZone(UTC))
+                        .metricUnit(pd.getQuantityMetricUnit())
+                        .processName(pd.getProcessName())
+                        .source(FORECAST)
+                        .value(pd.getQuantity())
+                        .type(pd.getType())
+                        .build()));
+
+        currentProcessingDistributions.forEach(cpd ->
+                entities.add(EntityOutput.builder()
+                        .workflow(workflow)
+                        .date(cpd.getDate())
+                        .value(cpd.getQuantity())
+                        .source(SIMULATION)
+                        .processName(cpd.getProcessName())
+                        .metricUnit(cpd.getQuantityMetricUnit())
+                        .build()));
+
+        return entities;
     }
 
     private List<ProcessingDistributionView> findProcessingDistributionBy(
@@ -94,35 +114,6 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         input.getDateFrom(),
                         input.getDateTo(),
                         getForecastWeeks(input.getDateFrom(), input.getDateTo()));
-    }
-
-    private EntityOutput getEntityOutput(final GetEntityInput input,
-                                         final List<CurrentProcessingDistribution> currentDistList,
-                                         final ProcessingDistributionView processingDistribution) {
-        final ZonedDateTime date = processingDistribution.getDate().toInstant().atZone(UTC);
-        final Optional<CurrentProcessingDistribution> currentDistributionOptional =
-                currentDistList.stream()
-                        .filter(t -> t.getDate()
-                                .isEqual(date)
-                                && t.getProcessName() == processingDistribution.getProcessName())
-                        .findFirst();
-        final long quantity = currentDistributionOptional
-                .map(CurrentProcessingDistribution::getQuantity)
-                .orElseGet(processingDistribution::getQuantity);
-        final MetricUnit quantityMetricUnit = currentDistributionOptional
-                .map(CurrentProcessingDistribution::getQuantityMetricUnit)
-                .orElseGet(processingDistribution::getQuantityMetricUnit);
-        final Source source = currentDistributionOptional
-                .map(t -> SIMULATION)
-                .orElse(FORECAST);
-        return EntityOutput.builder()
-                .workflow(input.getWorkflow())
-                .date(date)
-                .processName(processingDistribution.getProcessName())
-                .value(quantity)
-                .metricUnit(quantityMetricUnit)
-                .source(source)
-                .build();
     }
 
     private Set<String> getProcessingTypeAsStringOrNull(

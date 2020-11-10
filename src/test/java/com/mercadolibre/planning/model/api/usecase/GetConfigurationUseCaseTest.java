@@ -35,8 +35,12 @@ public class GetConfigurationUseCaseTest {
         final GetConfigurationInput input = new GetConfigurationInput(
                 LOGISTIC_CENTER_ID, CONFIG_KEY);
 
-        final Configuration configuration = new Configuration(
-                LOGISTIC_CENTER_ID, CONFIG_KEY, 1, UNITS);
+        final Configuration configuration = Configuration.builder()
+                .logisticCenterId(LOGISTIC_CENTER_ID)
+                .key(CONFIG_KEY)
+                .value(1)
+                .metricUnit(UNITS)
+                .build();
 
         when(repository.findById(new ConfigurationId(LOGISTIC_CENTER_ID, CONFIG_KEY)))
                 .thenReturn(Optional.of(configuration));

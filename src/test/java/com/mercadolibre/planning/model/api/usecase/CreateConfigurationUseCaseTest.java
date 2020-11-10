@@ -37,8 +37,12 @@ public class CreateConfigurationUseCaseTest {
         final ConfigurationInput input = new ConfigurationInput(
                 LOGISTIC_CENTER_ID, CONFIG_KEY, 60, MINUTES);
 
-        final Configuration configuration = new Configuration(
-                LOGISTIC_CENTER_ID, CONFIG_KEY, 60, MINUTES);
+        final Configuration configuration = Configuration.builder()
+                .logisticCenterId(LOGISTIC_CENTER_ID)
+                .key(CONFIG_KEY)
+                .value(60)
+                .metricUnit(MINUTES)
+                .build();
 
         when(repository.findById(new ConfigurationId(LOGISTIC_CENTER_ID, CONFIG_KEY)))
                 .thenReturn(Optional.empty());

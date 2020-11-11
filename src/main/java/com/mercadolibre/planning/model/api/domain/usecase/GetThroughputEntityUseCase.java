@@ -47,7 +47,7 @@ public abstract class GetThroughputEntityUseCase implements GetEntityUseCase {
                 if (productivity != null) {
                     throughput.add(EntityOutput.builder()
                             .workflow(headcount.getWorkflow())
-                            .date(headcount.getDate())
+                            .date(headcount.getDate().withFixedOffsetZone())
                             .source(getDefinitiveSource(headcount, productivity))
                             .processName(headcount.getProcessName())
                             .metricUnit(UNITS_PER_HOUR)

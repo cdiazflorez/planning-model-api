@@ -75,7 +75,7 @@ public class GetForecastedThroughputUseCaseTest {
         // THEN
         assertEquals(4, output.size());
         final EntityOutput output1 = output.get(0);
-        assertEquals(A_DATE_UTC, output1.getDate());
+        assertEquals(A_DATE_UTC.withFixedOffsetZone(), output1.getDate());
         assertEquals(PICKING, output1.getProcessName());
         assertEquals(4000, output1.getValue());
         assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
@@ -83,7 +83,7 @@ public class GetForecastedThroughputUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
 
         final EntityOutput output2 = output.get(1);
-        assertEquals(A_DATE_UTC.plusHours(1), output2.getDate());
+        assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output2.getDate());
         assertEquals(PICKING, output2.getProcessName());
         assertEquals(2800, output2.getValue());
         assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
@@ -91,7 +91,7 @@ public class GetForecastedThroughputUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
 
         final EntityOutput output3 = output.get(2);
-        assertEquals(A_DATE_UTC, output3.getDate());
+        assertEquals(A_DATE_UTC.withFixedOffsetZone(), output3.getDate());
         assertEquals(PACKING, output3.getProcessName());
         assertEquals(5100, output3.getValue());
         assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
@@ -99,7 +99,7 @@ public class GetForecastedThroughputUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
 
         final EntityOutput output4 = output.get(3);
-        assertEquals(A_DATE_UTC.plusHours(1), output4.getDate());
+        assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output4.getDate());
         assertEquals(PACKING, output4.getProcessName());
         assertEquals(2700, output4.getValue());
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());

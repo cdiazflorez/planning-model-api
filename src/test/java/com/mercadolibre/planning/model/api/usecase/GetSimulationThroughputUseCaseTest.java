@@ -96,7 +96,7 @@ public class GetSimulationThroughputUseCaseTest {
                                        final ProcessName processName,
                                        final int quantity,
                                        final Source source) {
-        assertEquals(date, output.getDate());
+        assertEquals(date.withFixedOffsetZone(), output.getDate());
         assertEquals(processName, output.getProcessName());
         assertEquals(quantity, output.getValue());
         assertEquals(source, output.getSource());

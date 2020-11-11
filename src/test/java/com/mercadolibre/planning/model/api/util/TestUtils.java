@@ -244,20 +244,24 @@ public final class TestUtils {
     }
 
     public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
-        return mockGetHeadcountEntityInput(source, null);
+        return mockGetHeadcountEntityInput(source, null, null);
     }
 
 
     public static GetEntityInput mockGetHeadcountEntityInput(
             final Source source,
-            final Set<ProcessingType> processingTypes) {
+            final Set<ProcessingType> processingTypes,
+            final List<Simulation> simulations) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, HEADCOUNT, A_DATE_UTC,
-                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING), processingTypes, null);
+                A_DATE_UTC.plusDays(2), source, List.of(PICKING, PACKING),
+                processingTypes, simulations);
     }
 
-    public static GetEntityInput mockGetProductivityEntityInput(final Source source) {
+    public static GetEntityInput mockGetProductivityEntityInput(
+            final Source source,
+            final List<Simulation> simulations) {
         return new GetEntityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PRODUCTIVITY, A_DATE_UTC,
-                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, null);
+                A_DATE_UTC.plusHours(1), source, List.of(PICKING, PACKING), null, simulations);
     }
 
     public static GetEntityInput mockGetThroughputEntityInput(final Source source,

@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
@@ -12,16 +13,19 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
+import static com.mercadolibre.planning.model.api.util.SimulationUtils.createSimulationMap;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -53,7 +57,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         return processingDistributions.stream()
                 .map(p -> EntityOutput.builder()
                         .workflow(input.getWorkflow())
-                        .date(ofInstant(p.getDate().toInstant(), UTC))
+                        .date(fromDate(p.getDate()))
                         .processName(p.getProcessName())
                         .value(p.getQuantity())
                         .metricUnit(p.getQuantityMetricUnit())
@@ -77,6 +81,9 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                                 input.getDateFrom(),
                                 input.getDateTo());
 
+        final Map<ProcessName, Map<ZonedDateTime, Long>> simulations = createSimulationMap(
+                input.getSimulations(), HEADCOUNT);
+
         final List<EntityOutput> entities = new ArrayList<>();
 
         processingDistributions.forEach(pd ->
@@ -86,7 +93,11 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         .metricUnit(pd.getQuantityMetricUnit())
                         .processName(pd.getProcessName())
                         .source(FORECAST)
-                        .value(pd.getQuantity())
+                        .value(simulations.containsKey(pd.getProcessName())
+                                ? simulations.get(pd.getProcessName()).getOrDefault(
+                                        fromDate(pd.getDate()), pd.getQuantity())
+                                : pd.getQuantity()
+                        )
                         .type(pd.getType())
                         .build()));
 

@@ -37,12 +37,12 @@ public class GetForecastedThroughputUseCase extends GetThroughputEntityUseCase {
     private GetEntityInput createProductivityInput(final GetEntityInput input) {
         return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), PRODUCTIVITY,
                 input.getDateFrom(), input.getDateTo(), input.getSource(),
-                input.getProcessName(), input.getProcessingType(), null);
+                input.getProcessName(), input.getProcessingType(), input.getSimulations());
     }
 
     private GetEntityInput createHeadcountInput(final GetEntityInput input) {
         return new GetEntityInput(input.getWarehouseId(), input.getWorkflow(), HEADCOUNT,
                 input.getDateFrom(), input.getDateTo(), input.getSource(),
-                input.getProcessName(), THROUGHPUT_PROCESSING_TYPES, null);
+                input.getProcessName(), THROUGHPUT_PROCESSING_TYPES, input.getSimulations());
     }
 }

@@ -9,7 +9,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityU
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,7 +62,7 @@ public class GetProductivityEntityUseCaseTest {
     @DisplayName("Get productivity entity when source is forecast")
     public void testGetProductivityOk() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(FORECAST);
+        final GetEntityInput input = mockGetProductivityEntityInput(FORECAST, null);
         when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
@@ -80,10 +84,42 @@ public class GetProductivityEntityUseCaseTest {
     }
 
     @Test
+    @DisplayName("Get productivity entity when source is forecast and has simulations applied ")
+    public void testGetProductivityWhitUnsavedSimulationOk() {
+        // GIVEN
+        final GetEntityInput input = mockGetProductivityEntityInput(
+                null,
+                List.of(new Simulation(
+                        PICKING,
+                        List.of(new SimulationEntity(
+                                PRODUCTIVITY,
+                                List.of(new QuantityByDate(A_DATE_UTC, 68)))))));
+
+        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+                "ARBA01",
+                FBM_WMS_OUTBOUND.name(),
+                List.of(PICKING.name(), PACKING.name()),
+                input.getDateFrom(),
+                input.getDateTo(),
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+        ).thenReturn(productivities());
+
+        // WHEN
+        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
+
+        // THEN
+        assertEquals(4, output.size());
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 68);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+    }
+
+    @Test
     @DisplayName("Get productivity entity when source is simulation")
     public void testGetProductivityFromSourceSimulation() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION);
+        final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION, null);
         final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
 
         // WHEN

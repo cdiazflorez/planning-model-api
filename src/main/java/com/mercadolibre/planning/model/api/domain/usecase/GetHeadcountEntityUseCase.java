@@ -61,6 +61,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         .processName(p.getProcessName())
                         .value(p.getQuantity())
                         .metricUnit(p.getQuantityMetricUnit())
+                        .type(p.getType())
                         .source(FORECAST)
                         .build())
                 .collect(toList());
@@ -109,6 +110,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                         .source(SIMULATION)
                         .processName(cpd.getProcessName())
                         .metricUnit(cpd.getQuantityMetricUnit())
+                        .type(cpd.getType())
                         .build()));
 
         return entities;

@@ -92,6 +92,7 @@ public class GetSimulationThroughputUseCase extends GetThroughputEntityUseCase {
                 .noneMatch(simulatedEntity ->
                         simulatedEntity.getProcessName() == forecastEntity.getProcessName()
                                 && simulatedEntity.getWorkflow() == forecastEntity.getWorkflow()
-                                && simulatedEntity.getDate().isEqual(forecastEntity.getDate()));
+                                && simulatedEntity.getDate().withFixedOffsetZone()
+                                .isEqual(forecastEntity.getDate().withFixedOffsetZone()));
     }
 }

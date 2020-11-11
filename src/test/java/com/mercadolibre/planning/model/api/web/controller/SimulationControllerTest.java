@@ -92,11 +92,14 @@ public class SimulationControllerTest {
     public void testRunSimulation() throws Exception {
         // GIVEN
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
-        final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
+        final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
+        final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
         when(calculateCptProjectionUseCase.execute(any(ProjectionInput.class)))
                 .thenReturn(List.of(
-                        new ProjectionOutput(dateOut, projectedEndDate, 100)
-                ));
+                        new ProjectionOutput(dateOut, simulatedEndDate, 100)))
+                .thenReturn(List.of(
+                        new ProjectionOutput(dateOut, projectedEndDate, 150)
+        ));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -108,14 +111,16 @@ public class SimulationControllerTest {
         // THEN
         verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
         verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
+        verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
         verifyZeroInteractions(activateSimulationUseCase);
-        verifyZeroInteractions(getForecastedThroughputUseCase);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
                         .value(dateOut.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].projected_end_date")
                         .value(projectedEndDate.format(ISO_OFFSET_DATE_TIME)))
+                .andExpect(jsonPath("$[0].simulated_end_date")
+                        .value(simulatedEndDate.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
                         .value(100));
     }

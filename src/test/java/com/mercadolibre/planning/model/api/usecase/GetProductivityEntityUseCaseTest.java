@@ -3,11 +3,17 @@ package com.mercadolibre.planning.model.api.usecase;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -38,6 +45,7 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Source.
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,38 +64,94 @@ public class GetProductivityEntityUseCaseTest {
     @DisplayName("Get productivity entity when source is forecast")
     public void testGetProductivityOk() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(FORECAST);
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+        final GetEntityInput input = mockGetProductivityEntityInput(FORECAST, null);
+        when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
         ).thenReturn(productivities());
 
         // WHEN
         final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
-        whenTestOutpoutResponse(output, false);
+        assertEquals(4, output.size());
+        verifyZeroInteractions(currentProductivityRepository);
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+    }
+
+    @Test
+    @DisplayName("Get productivity entity when source is null and has simulations applied")
+    public void testGetProductivityWithUnsavedSimulationOk() {
+        // GIVEN
+        final GetEntityInput input = mockGetProductivityEntityInput(
+                null,
+                List.of(new Simulation(
+                        PICKING,
+                        List.of(new SimulationEntity(
+                                PRODUCTIVITY,
+                                List.of(new QuantityByDate(A_DATE_UTC, 100),
+                                        new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))));
+        when(currentProductivityRepository
+                .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                        WAREHOUSE_ID,
+                        FBM_WMS_OUTBOUND,
+                        List.of(PICKING, PACKING),
+                        input.getDateFrom(),
+                        input.getDateTo()
+                )
+        ).thenReturn(List.of(
+                mockCurrentProdEntity(A_DATE_UTC, 68),
+                mockCurrentProdEntity(A_DATE_UTC.plusHours(1), 30)
+        ));
+
+        when(productivityRepository.findBy(
+                "ARBA01",
+                FBM_WMS_OUTBOUND.name(),
+                List.of(PICKING.name(), PACKING.name()),
+                input.getDateFrom(),
+                input.getDateTo(),
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
+        ).thenReturn(productivities());
+
+        // WHEN
+        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
+
+        // THEN
+        assertEquals(6, output.size());
+
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+        outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 100);
+        outputPropertiesEqualTo(output.get(5), PICKING, SIMULATION, 101);
     }
 
     @Test
     @DisplayName("Get productivity entity when source is simulation")
     public void testGetProductivityFromSourceSimulation() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION);
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
+        final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION, null);
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
 
         // WHEN
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+        when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
         ).thenReturn(productivities());
 
         when(currentProductivityRepository
@@ -104,7 +168,12 @@ public class GetProductivityEntityUseCaseTest {
 
         // THEN
         assertThat(output).isNotEmpty();
-        whenTestOutpoutResponse(output, true);
+        assertEquals(5, output.size());
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+        outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 68);
     }
 
     @ParameterizedTest
@@ -148,7 +217,6 @@ public class GetProductivityEntityUseCaseTest {
         );
     }
 
-
     private static Stream<Arguments> getSupportedEntitites() {
         return Stream.of(
                 Arguments.of(PRODUCTIVITY, true),
@@ -157,37 +225,15 @@ public class GetProductivityEntityUseCaseTest {
         );
     }
 
+    private void outputPropertiesEqualTo(final EntityOutput entityOutput,
+                                         final ProcessName processName,
+                                         final Source source,
+                                         final int quantity) {
 
-    private void whenTestOutpoutResponse(final List<EntityOutput> output,
-                                         final boolean isSimulation) {
-        assertEquals(4, output.size());
-        final EntityOutput output1 = output.get(0);
-        assertEquals(PICKING, output1.getProcessName());
-        assertEquals(isSimulation ? 68 : 80, output1.getValue());
-        assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
-        assertEquals(FORECAST, output1.getSource());
-        assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
-
-        final EntityOutput output2 = output.get(1);
-        assertEquals(PICKING, output2.getProcessName());
-        assertEquals(85, output2.getValue());
-        assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
-        assertEquals(FORECAST, output2.getSource());
-        assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
-
-        final EntityOutput output3 = output.get(2);
-        assertEquals(PACKING, output3.getProcessName());
-        assertEquals(90, output3.getValue());
-        assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
-        assertEquals(FORECAST, output3.getSource());
-        assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
-
-        final EntityOutput output4 = output.get(3);
-        assertEquals(PACKING, output4.getProcessName());
-        assertEquals(92, output4.getValue());
-        assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
-        assertEquals(FORECAST, output4.getSource());
-        assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
+        assertEquals(processName, entityOutput.getProcessName());
+        assertEquals(source, entityOutput.getSource());
+        assertEquals(quantity, entityOutput.getValue());
+        assertEquals(UNITS_PER_HOUR, entityOutput.getMetricUnit());
+        assertEquals(FBM_WMS_OUTBOUND, entityOutput.getWorkflow());
     }
-
 }

@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.util.TestUtils.CONFIG_KEY;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LOGISTIC_CENTER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
@@ -54,9 +56,12 @@ public class ConfigurationControllerTest {
     public void testGetConfiguration() throws Exception {
         // GIVEN
         final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
-        when(getConfiguration.execute(input)).thenReturn(Optional.of(new Configuration(
-                LOGISTIC_CENTER_ID, KEY, 1, UNITS
-        )));
+        when(getConfiguration.execute(input)).thenReturn(Optional.of(Configuration.builder()
+                .logisticCenterId(LOGISTIC_CENTER_ID)
+                .key(CONFIG_KEY)
+                .value(1)
+                .metricUnit(UNITS)
+                .build()));
 
         // WHEN
         final ResultActions result = mvc.perform(get(URL)
@@ -92,9 +97,12 @@ public class ConfigurationControllerTest {
         final ConfigurationInput input = new ConfigurationInput(
                 LOGISTIC_CENTER_ID, KEY, 60, MINUTES);
 
-        when(createConfiguration.execute(input)).thenReturn(new Configuration(
-                LOGISTIC_CENTER_ID, KEY, 60, MINUTES
-        ));
+        when(createConfiguration.execute(input)).thenReturn(Configuration.builder()
+                .logisticCenterId(LOGISTIC_CENTER_ID)
+                .key(CONFIG_KEY)
+                .value(60)
+                .metricUnit(MINUTES)
+                .build());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -115,9 +123,12 @@ public class ConfigurationControllerTest {
         final ConfigurationInput input = new ConfigurationInput(
                 LOGISTIC_CENTER_ID, KEY, 180, MINUTES);
 
-        when(updateConfiguration.execute(input)).thenReturn(new Configuration(
-                LOGISTIC_CENTER_ID, KEY, 180, MINUTES
-        ));
+        when(updateConfiguration.execute(input)).thenReturn(Configuration.builder()
+                .logisticCenterId(LOGISTIC_CENTER_ID)
+                .key(CONFIG_KEY)
+                .value(180)
+                .metricUnit(MINUTES)
+                .build());
 
         // WHEN
         final ResultActions result = mvc.perform(

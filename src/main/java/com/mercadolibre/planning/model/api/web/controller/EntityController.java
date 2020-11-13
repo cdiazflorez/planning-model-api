@@ -15,8 +15,8 @@ import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEdit
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessingTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.SourceEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
+import com.mercadolibre.planning.model.api.web.controller.request.EntityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
-import com.mercadolibre.planning.model.api.web.controller.request.GetEntityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -25,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,6 +34,7 @@ import javax.validation.Valid;
 
 import java.util.List;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/entities")
@@ -43,7 +46,21 @@ public class EntityController {
     public ResponseEntity<List<EntityOutput>> getEntity(
             @PathVariable final Workflow workflow,
             @PathVariable final EntityType entityType,
-            @Valid final GetEntityRequest request) {
+            @Valid final EntityRequest request) {
+
+        final GetEntityInput input = request.toGetEntityInput(workflow, entityType);
+        final GetEntityUseCase getEntityUseCase = getEntityStrategy
+                .getBy(entityType)
+                .orElseThrow(() -> new EntityTypeNotSupportedException(entityType));
+
+        return ResponseEntity.status(HttpStatus.OK).body(getEntityUseCase.execute(input));
+    }
+
+    @PostMapping("/{entityType}")
+    public ResponseEntity<List<EntityOutput>> getEntityWithSimulations(
+            @PathVariable final Workflow workflow,
+            @PathVariable final EntityType entityType,
+            @RequestBody @Valid final EntityRequest request) {
 
         final GetEntityInput input = request.toGetEntityInput(workflow, entityType);
         final GetEntityUseCase getEntityUseCase = getEntityStrategy

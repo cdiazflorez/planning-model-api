@@ -62,9 +62,30 @@ public class SimulationRequest {
     }
 
     public GetEntityInput toThroughputEntityInput(final Workflow workflow) {
-        return new GetEntityInput(warehouseId, workflow, THROUGHPUT,
-                dateFrom, dateTo, SIMULATION, processName,
-                Set.of(ProcessingType.ACTIVE_WORKERS), simulations);
+        return GetEntityInput.builder()
+                .warehouseId(warehouseId)
+                .workflow(workflow)
+                .entityType(THROUGHPUT)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .source(SIMULATION)
+                .processName(processName)
+                .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+                .simulations(simulations)
+                .build();
+    }
+
+    public GetEntityInput toForecastedThroughputEntityInput(final Workflow workflow) {
+        return GetEntityInput.builder()
+                .warehouseId(warehouseId)
+                .workflow(workflow)
+                .entityType(THROUGHPUT)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .source(SIMULATION)
+                .processName(processName)
+                .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+                .build();
     }
 
     public GetPlanningDistributionInput toPlanningInput(final Workflow workflow) {

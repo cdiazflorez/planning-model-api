@@ -2,8 +2,11 @@ package com.mercadolibre.planning.model.api.domain.entity.configuration;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,10 +15,13 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
 
+import java.time.ZonedDateTime;
+
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @IdClass(ConfigurationId.class)
 public class Configuration {
 
@@ -31,4 +37,10 @@ public class Configuration {
 
     @Enumerated(EnumType.STRING)
     private MetricUnit metricUnit;
+
+    @CreationTimestamp
+    private ZonedDateTime dateCreated;
+
+    @UpdateTimestamp
+    private ZonedDateTime lastUpdated;
 }

@@ -6,17 +6,15 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
-@Data
+@Value
 @Builder
-@AllArgsConstructor
 public class GetEntityInput {
 
     private String warehouseId;
@@ -28,4 +26,7 @@ public class GetEntityInput {
     private List<ProcessName> processName;
     private Set<ProcessingType> processingType;
     private List<Simulation> simulations;
+
+    //TODO: Sacar este atributo a una clase aparte
+    private Set<Integer> abilityLevel;
 }

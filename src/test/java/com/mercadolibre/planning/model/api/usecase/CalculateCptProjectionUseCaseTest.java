@@ -30,6 +30,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @ExtendWith(MockitoExtension.class)
@@ -219,7 +220,7 @@ public class CalculateCptProjectionUseCaseTest {
     }
 
     @Test
-    @DisplayName("Cpt without items should return projected_date")
+    @DisplayName("Cpt without items shouldn't be returned")
     public void testEmptyCpt() {
         final ProjectionInput input = ProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
@@ -234,12 +235,7 @@ public class CalculateCptProjectionUseCaseTest {
         final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
-        assertEquals(1, projections.size());
-
-        final ProjectionOutput projection1 = projections.get(0);
-        assertEquals(DATE_OUT_12, projection1.getDate());
-        assertEquals(DATE_FROM_10, projection1.getProjectedEndDate());
-        assertEquals(0, projection1.getRemainingQuantity());
+        assertTrue(projections.isEmpty());
     }
 
     @Test

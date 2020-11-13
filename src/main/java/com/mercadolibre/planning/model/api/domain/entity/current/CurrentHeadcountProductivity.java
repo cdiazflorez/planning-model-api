@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -48,4 +50,10 @@ public class CurrentHeadcountProductivity {
     private boolean isActive;
 
     private String logisticCenterId;
+
+    @CreationTimestamp
+    private ZonedDateTime dateCreated;
+
+    @UpdateTimestamp
+    private ZonedDateTime lastUpdated;
 }

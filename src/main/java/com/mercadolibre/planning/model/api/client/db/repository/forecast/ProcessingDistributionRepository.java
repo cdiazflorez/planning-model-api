@@ -19,7 +19,7 @@ public interface ProcessingDistributionRepository
             + "FROM processing_distribution p "
             + "WHERE p.process_name IN (:process_name) "
             + "AND p.date BETWEEN :date_from AND :date_to "
-            + "AND ((:type) is NULL OR p.type IN (:type)) "
+            + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "
             + "AND p.forecast_id in ("
             + " SELECT MAX(id) FROM "
             + "     (SELECT id, "

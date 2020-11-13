@@ -27,11 +27,12 @@ public class CreateConfigurationUseCase
         configurationRepository.findById(new ConfigurationId(logisticCenterId, key))
                 .ifPresent(alreadyExistsHandler(format("%s-%s", logisticCenterId, key)));
 
-        return configurationRepository.save(new Configuration(
-                input.getLogisticCenterId(),
-                input.getKey(),
-                input.getValue(),
-                input.getMetricUnit())
+        return configurationRepository.save(Configuration.builder()
+                        .logisticCenterId(input.getLogisticCenterId())
+                        .key(input.getKey())
+                        .value(input.getValue())
+                        .metricUnit(input.getMetricUnit())
+                        .build()
         );
     }
 

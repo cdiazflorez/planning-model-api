@@ -38,7 +38,8 @@ class CurrentProcessingDistributionRepositoryTest {
     @DisplayName("Looking for a current processing distribution that exists, returns it")
     public void testFindCurrentProcessingDistributionById() {
         // GIVEN
-        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
+                A_DATE_UTC, 35L);
 
         entityManager.persistAndFlush(currentProcessingDist);
 
@@ -70,7 +71,8 @@ class CurrentProcessingDistributionRepositoryTest {
             + "different params, returns it")
     public void testFindCurrentProcessingDistributionBySimulations() {
         // GIVEN
-        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
+                A_DATE_UTC, 35L);
 
         entityManager.persistAndFlush(currentProcessingDist);
 
@@ -94,7 +96,8 @@ class CurrentProcessingDistributionRepositoryTest {
     @DisplayName("Deactivate processing distribution")
     public void testDeactivateProcessingDistribution() {
         // GIVEN
-        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist();
+        final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
+                A_DATE_UTC, 35L);
         entityManager.persistAndFlush(currentProcessingDist);
 
         // WHEN

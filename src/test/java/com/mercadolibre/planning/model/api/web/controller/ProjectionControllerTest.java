@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateProjectionUseCase;
@@ -46,7 +46,7 @@ public class ProjectionControllerTest {
     private CalculateProjectionStrategy calculateProjectionStrategy;
 
     @MockBean
-    private GetForecastedThroughputUseCase getThroughputUseCase;
+    private GetThroughputUseCase getThroughputUseCase;
 
     @MockBean
     private GetPlanningDistributionUseCase getPlanningUseCase;

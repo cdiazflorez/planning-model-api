@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class GetEntityRequest {
+public class EntityRequest {
 
     @NotBlank
     private String warehouseId;
@@ -44,7 +44,18 @@ public class GetEntityRequest {
     private List<Simulation> simulations;
 
     public GetEntityInput toGetEntityInput(final Workflow workflow, final EntityType entityType) {
-        return new GetEntityInput(warehouseId, workflow, entityType,
-                dateFrom, dateTo, source, processName, processingType, simulations);
+        return GetEntityInput.builder()
+                .warehouseId(warehouseId)
+                .workflow(workflow)
+                .entityType(entityType)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .source(source)
+                .processName(processName)
+                .processingType(processingType)
+                .simulations(simulations)
+                //TODO: Hacer una clase especifica para setear el input de la productividad
+                .abilityLevel(Set.of(1))
+                .build();
     }
 }

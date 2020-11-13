@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase.strategy;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class GetEntityStrategyTest {
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @Mock
-    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
+    private GetThroughputUseCase getForecastedThroughputUseCase;
 
     @BeforeEach
     public void setUp() {
@@ -74,6 +74,6 @@ public class GetEntityStrategyTest {
 
         // WHEN - THEN
         assertThat(getEntityStrategy.getBy(THROUGHPUT).get())
-                .isInstanceOf(GetForecastedThroughputUseCase.class);
+                .isInstanceOf(GetThroughputUseCase.class);
     }
 }

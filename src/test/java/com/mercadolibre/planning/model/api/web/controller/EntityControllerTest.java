@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
 import org.junit.jupiter.api.DisplayName;
@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Optional;
 
@@ -52,7 +53,7 @@ public class EntityControllerTest {
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @MockBean
-    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
+    private GetThroughputUseCase getForecastedThroughputUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -198,4 +199,32 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_throughput_response.json")));
     }
+
+    @DisplayName("Get headcount with simulations works ok")
+    @Test
+    public void testGetHeadcountWithSimulationsOk() throws Exception {
+        // GIVEN
+        when(getHeadcountEntityUseCase.supportsEntityType(HEADCOUNT))
+                .thenReturn(true);
+
+        when(getEntityStrategy.getBy(HEADCOUNT))
+                .thenReturn(Optional.of(getHeadcountEntityUseCase));
+
+        when(getHeadcountEntityUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockHeadcountEntityOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                MockMvcRequestBuilders.post(URL, "fbm-wms-outbound", "headcount")
+                        .contentType(APPLICATION_JSON)
+                        .content(getResourceAsString("post_headcount_request.json"))
+        );
+
+        // THEN
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyZeroInteractions(getForecastedThroughputUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
+    }
+
 }

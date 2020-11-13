@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -44,6 +45,7 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Source.
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,13 +65,14 @@ public class GetProductivityEntityUseCaseTest {
     public void testGetProductivityOk() {
         // GIVEN
         final GetEntityInput input = mockGetProductivityEntityInput(FORECAST, null);
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+        when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
         ).thenReturn(productivities());
 
         // WHEN
@@ -77,6 +80,7 @@ public class GetProductivityEntityUseCaseTest {
 
         // THEN
         assertEquals(4, output.size());
+        verifyZeroInteractions(currentProductivityRepository);
         outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
         outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
         outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
@@ -84,8 +88,8 @@ public class GetProductivityEntityUseCaseTest {
     }
 
     @Test
-    @DisplayName("Get productivity entity when source is forecast and has simulations applied ")
-    public void testGetProductivityWhitUnsavedSimulationOk() {
+    @DisplayName("Get productivity entity when source is null and has simulations applied")
+    public void testGetProductivityWithUnsavedSimulationOk() {
         // GIVEN
         final GetEntityInput input = mockGetProductivityEntityInput(
                 null,
@@ -93,26 +97,43 @@ public class GetProductivityEntityUseCaseTest {
                         PICKING,
                         List.of(new SimulationEntity(
                                 PRODUCTIVITY,
-                                List.of(new QuantityByDate(A_DATE_UTC, 68)))))));
+                                List.of(new QuantityByDate(A_DATE_UTC, 100),
+                                        new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))));
+        when(currentProductivityRepository
+                .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                        WAREHOUSE_ID,
+                        FBM_WMS_OUTBOUND,
+                        List.of(PICKING, PACKING),
+                        input.getDateFrom(),
+                        input.getDateTo()
+                )
+        ).thenReturn(List.of(
+                mockCurrentProdEntity(A_DATE_UTC, 68),
+                mockCurrentProdEntity(A_DATE_UTC.plusHours(1), 30)
+        ));
 
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+        when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
         ).thenReturn(productivities());
 
         // WHEN
         final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
-        assertEquals(4, output.size());
-        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 68);
+        assertEquals(6, output.size());
+
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
         outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
         outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
         outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+        outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 100);
+        outputPropertiesEqualTo(output.get(5), PICKING, SIMULATION, 101);
     }
 
     @Test
@@ -120,16 +141,17 @@ public class GetProductivityEntityUseCaseTest {
     public void testGetProductivityFromSourceSimulation() {
         // GIVEN
         final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION, null);
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
 
         // WHEN
-        when(productivityRepository.findByWarehouseIdAndWorkflowAndProcessName(
+        when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                Set.of(1))
         ).thenReturn(productivities());
 
         when(currentProductivityRepository
@@ -194,7 +216,6 @@ public class GetProductivityEntityUseCaseTest {
                         .build()
         );
     }
-
 
     private static Stream<Arguments> getSupportedEntitites() {
         return Stream.of(

@@ -2,20 +2,20 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.GetSimulationThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
+
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -39,9 +39,8 @@ public class SimulationController {
 
     private final ActivateSimulationUseCase activateSimulationUseCase;
     private final CalculateCptProjectionUseCase calculateCptProjectionUseCase;
-    private final GetForecastedThroughputUseCase getForecastedThroughputUseCase;
+    private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
-    private final GetSimulationThroughputUseCase getSimulationThroughputUseCase;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -51,7 +50,7 @@ public class SimulationController {
 
         activateSimulationUseCase.execute(request.toSimulationInput(workflow));
 
-        final List<EntityOutput> throughput = getForecastedThroughputUseCase
+        final List<EntityOutput> throughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
         final List<GetPlanningDistributionOutput> planningDistributions =
@@ -74,14 +73,14 @@ public class SimulationController {
         final List<GetPlanningDistributionOutput> planningDistributions =
                 getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
 
-        final List<EntityOutput> simulatedThroughput = getSimulationThroughputUseCase
+        final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
         final List<ProjectionOutput> projectSimulation = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(simulatedThroughput, planningDistributions));
 
-        final List<EntityOutput> actualThroughput = getForecastedThroughputUseCase
-                .execute(request.toThroughputEntityInput(workflow));
+        final List<EntityOutput> actualThroughput = getThroughputUseCase
+                .execute(request.toForecastedThroughputEntityInput(workflow));
 
         final List<ProjectionOutput> projection = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(actualThroughput, planningDistributions));

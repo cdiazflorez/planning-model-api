@@ -1,14 +1,13 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetForecastedThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.GetSimulationThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
@@ -25,6 +24,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsSt
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -42,10 +42,7 @@ public class SimulationControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private GetForecastedThroughputUseCase getForecastedThroughputUseCase;
-
-    @MockBean
-    private GetSimulationThroughputUseCase getSimulationThroughputUseCase;
+    private GetThroughputUseCase getForecastedThroughputUseCase;
 
     @MockBean
     private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
@@ -77,7 +74,6 @@ public class SimulationControllerTest {
         verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
         verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
         verify(activateSimulationUseCase).execute(any(SimulationInput.class));
-        verifyZeroInteractions(getSimulationThroughputUseCase);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
@@ -109,9 +105,9 @@ public class SimulationControllerTest {
         );
 
         // THEN
-        verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
+        //verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
         verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
-        verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
+        verify(getForecastedThroughputUseCase, times(2)).execute(any(GetEntityInput.class));
         verifyZeroInteractions(activateSimulationUseCase);
 
         result.andExpect(status().isOk())

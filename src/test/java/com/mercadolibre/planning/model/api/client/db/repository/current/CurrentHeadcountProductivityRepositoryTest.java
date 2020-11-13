@@ -37,7 +37,7 @@ public class CurrentHeadcountProductivityRepositoryTest {
     @DisplayName("Looking for a current headcount productivity that exists, returns it")
     public void testFindCurrentHeadcountProductivityById() {
         // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
         entityManager.persistAndFlush(currentProd);
 
         // WHEN
@@ -65,7 +65,7 @@ public class CurrentHeadcountProductivityRepositoryTest {
             + "filtered with params and returns it")
     public void testFindCurrentHeadcountProductivityByFilters() {
         // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
         entityManager.persistAndFlush(currentProd);
 
         // WHEN
@@ -89,7 +89,7 @@ public class CurrentHeadcountProductivityRepositoryTest {
     @DisplayName("Deactivate productivity")
     public void testDeactivateProductivity() {
         // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity();
+        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
         entityManager.persistAndFlush(currentProd);
 
         // WHEN

@@ -36,6 +36,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
@@ -44,6 +45,7 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Source.
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,6 +88,7 @@ class GetHeadcountEntityUseCaseTest {
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
+        verifyZeroInteractions(currentRepository);
         final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.toInstant(), output1.getDate().toInstant());
         assertEquals(PICKING, output1.getProcessName());
@@ -104,8 +107,8 @@ class GetHeadcountEntityUseCaseTest {
     }
 
     @Test
-    @DisplayName("Get headcount entity when source is forecast and has simulations applied")
-    public void testGetHeadcountWhitUnsavedSimulationOk() {
+    @DisplayName("Get headcount entity when source is null and has simulations applied")
+    public void testGetHeadcountWithUnsavedSimulationOk() {
         // GIVEN
         final GetEntityInput input = mockGetHeadcountEntityInput(null,
                 Set.of(ProcessingType.ACTIVE_WORKERS, ProcessingType.WORKERS),
@@ -113,7 +116,24 @@ class GetHeadcountEntityUseCaseTest {
                         PICKING,
                         List.of(new SimulationEntity(
                                 HEADCOUNT,
-                                List.of(new QuantityByDate(A_DATE_UTC, 50)))))));
+                                List.of(new QuantityByDate(A_DATE_UTC, 50))))),
+                new Simulation(
+                        PACKING,
+                        List.of(new SimulationEntity(
+                                HEADCOUNT,
+                                List.of(new QuantityByDate(A_DATE_UTC, 100)))))));
+
+        when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND,
+                ProcessingType.ACTIVE_WORKERS,
+                List.of(PICKING, PACKING),
+                input.getDateFrom(),
+                input.getDateTo()
+        )).thenReturn(List.of(
+                mockCurrentProcDist(A_DATE_UTC, 40L),
+                mockCurrentProcDist(A_DATE_UTC.plusHours(1), 60L)
+        ));
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                 WAREHOUSE_ID,
@@ -128,10 +148,11 @@ class GetHeadcountEntityUseCaseTest {
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
+        assertEquals(6, output.size());
         final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.toInstant(), output1.getDate().toInstant());
         assertEquals(PICKING, output1.getProcessName());
-        assertEquals(50, output1.getValue());
+        assertEquals(100, output1.getValue());
         assertEquals(WORKERS, output1.getMetricUnit());
         assertEquals(FORECAST, output1.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
@@ -143,6 +164,38 @@ class GetHeadcountEntityUseCaseTest {
         assertEquals(WORKERS, output2.getMetricUnit());
         assertEquals(FORECAST, output2.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
+
+        final EntityOutput output3 = output.get(2);
+        assertEquals(A_DATE_UTC.plusHours(2).toInstant(), output3.getDate().toInstant());
+        assertEquals(PACKING, output3.getProcessName());
+        assertEquals(120, output3.getValue());
+        assertEquals(WORKERS, output3.getMetricUnit());
+        assertEquals(FORECAST, output3.getSource());
+        assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
+
+        final EntityOutput output4 = output.get(3);
+        assertEquals(A_DATE_UTC.plusHours(1).toInstant(), output4.getDate().toInstant());
+        assertEquals(PACKING, output4.getProcessName());
+        assertEquals(60, output4.getValue());
+        assertEquals(WORKERS, output4.getMetricUnit());
+        assertEquals(SIMULATION, output4.getSource());
+        assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
+
+        final EntityOutput output5 = output.get(4);
+        assertEquals(A_DATE_UTC.toInstant(), output5.getDate().toInstant());
+        assertEquals(PICKING, output5.getProcessName());
+        assertEquals(50, output5.getValue());
+        assertEquals(WORKERS, output5.getMetricUnit());
+        assertEquals(SIMULATION, output5.getSource());
+        assertEquals(FBM_WMS_OUTBOUND, output5.getWorkflow());
+
+        final EntityOutput output6 = output.get(5);
+        assertEquals(A_DATE_UTC.toInstant(), output6.getDate().toInstant());
+        assertEquals(PACKING, output6.getProcessName());
+        assertEquals(100, output6.getValue());
+        assertEquals(WORKERS, output6.getMetricUnit());
+        assertEquals(SIMULATION, output6.getSource());
+        assertEquals(FBM_WMS_OUTBOUND, output6.getWorkflow());
     }
 
     @Test

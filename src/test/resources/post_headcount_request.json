@@ -1,0 +1,50 @@
+{
+    "warehouse_id": "ARBA01",
+    "date_from": "2020-08-19T17:00:00Z",
+    "date_to": "2020-08-21T17:00:00Z",
+    "process_name": ["picking", "packing"],
+    "simulations": [{
+        "process_name": "packing",
+        "entities": [{
+            "type": "headcount",
+            "values": [{
+                "date": "2020-08-19T17:00:00Z",
+                "quantity": 32
+            },
+                {
+                    "date": "2020-08-19T18:00:00Z",
+                    "quantity": 32
+                }
+            ]
+        },
+            {
+                "type": "productivity",
+                "values": [{
+                    "date": "2020-08-19T17:00:00Z",
+                    "quantity": 40
+                },
+                    {
+                        "date": "2020-08-19T18:00:00Z",
+                        "quantity": 60
+                    }
+                ]
+            }
+        ]
+    },
+        {
+            "process_name": "picking",
+            "entities": [{
+                "type": "headcount",
+                "values": [{
+                    "date": "2020-08-19T17:00:00Z",
+                    "quantity": 32
+                },
+                    {
+                        "date": "2020-08-19T19:00:00Z",
+                        "quantity": 32
+                    }
+                ]
+            }]
+        }
+    ]
+}

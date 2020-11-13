@@ -19,7 +19,7 @@ public interface HeadcountProductivityRepository
             + "FROM headcount_productivity hd "
             + "WHERE hd.process_name IN (:process_name) "
             + "AND hd.date BETWEEN :date_from AND :date_to "
-            + "AND hd.ability_level = 1  "
+            + "AND hd.ability_level in (:ability_levels)  "
             + "AND hd.forecast_id in ("
             + " SELECT MAX(id) FROM "
             + "     (SELECT id, "
@@ -33,12 +33,13 @@ public interface HeadcountProductivityRepository
             + "     AND workflow = :workflow "
             + "     AND forecast_week IN (:weeks) "
             + "     GROUP BY forecast_week)", nativeQuery = true)
-    List<HeadcountProductivityView> findByWarehouseIdAndWorkflowAndProcessName(
+    List<HeadcountProductivityView> findBy(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") String workflow,
             @Param("process_name") List<String> processNames,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,
-            @Param("weeks") Set<String> weeks
+            @Param("weeks") Set<String> weeks,
+            @Param("ability_levels") Set<Integer> abilityLevels
     );
 }

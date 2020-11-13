@@ -39,54 +39,53 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
-        return project(input.getDateFrom(), capacityByDate, unitsByDateOutAndDate);
+        return project(capacityByDate, unitsByDateOutAndDate);
     }
 
     @SuppressWarnings("PMD.NullAssignment")
     private List<ProjectionOutput> project(
-            final ZonedDateTime dateFrom,
             final Map<ZonedDateTime, Integer> capacityByDate,
             final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate) {
 
         final List<ProjectionOutput> projectionOutputs = new ArrayList<>();
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
+
+            if (unitsByDate.values().stream().mapToInt(Integer::intValue).sum() == 0) {
+                return;
+            }
             int nextBacklog = 0;
             int remainingQuantity = 0;
             ZonedDateTime projectedDate = null;
 
-            if (unitsByDate.values().stream().mapToInt(Integer::intValue).sum() > 0) {
-                for (final ZonedDateTime time : unitsByDate.keySet()) {
-                    final int capacity = capacityByDate.getOrDefault(time, 0);
-                    final int unitsToProcess = unitsByDate.getOrDefault(time, 0);
-                    int unitsBeingProcessed = min(nextBacklog + unitsToProcess, capacity);
-                    final int currentBacklog = nextBacklog;
+            for (final ZonedDateTime time : unitsByDate.keySet()) {
+                final int capacity = capacityByDate.getOrDefault(time, 0);
+                final int unitsToProcess = unitsByDate.getOrDefault(time, 0);
+                int unitsBeingProcessed = min(nextBacklog + unitsToProcess, capacity);
+                final int currentBacklog = nextBacklog;
 
-                    nextBacklog += unitsToProcess - unitsBeingProcessed;
+                nextBacklog += unitsToProcess - unitsBeingProcessed;
 
-                    if (unitsToProcess != 0) {
-                        projectedDate = null;
-                    }
-                    // update projectedDate when all units were processed
-                    if (nextBacklog == 0 && currentBacklog + unitsToProcess != 0) {
-                        projectedDate = calculateProjectedDate(time, capacity,
-                                unitsBeingProcessed);
-                    }
+                if (unitsToProcess != 0) {
+                    projectedDate = null;
+                }
+                // update projectedDate when all units were processed
+                if (nextBacklog == 0 && currentBacklog + unitsToProcess != 0) {
+                    projectedDate = calculateProjectedDate(time, capacity,
+                            unitsBeingProcessed);
+                }
 
-                    capacityByDate.put(time, capacity - unitsBeingProcessed);
+                capacityByDate.put(time, capacity - unitsBeingProcessed);
 
-                    if (dateOut.truncatedTo(HOURS).isEqual(time)) {
-                        final int minutes = (int) MINUTES.between(time, dateOut);
-                        unitsBeingProcessed = minutes * unitsBeingProcessed / HOUR_IN_MINUTES;
-                        remainingQuantity = currentBacklog - unitsBeingProcessed;
+                if (dateOut.truncatedTo(HOURS).isEqual(time)) {
+                    final int minutes = (int) MINUTES.between(time, dateOut);
+                    unitsBeingProcessed = minutes * unitsBeingProcessed / HOUR_IN_MINUTES;
+                    remainingQuantity = currentBacklog - unitsBeingProcessed;
 
-                        // no left units to process
-                        if (nextBacklog == 0) {
-                            break;
-                        }
+                    // no left units to process
+                    if (nextBacklog == 0) {
+                        break;
                     }
                 }
-            } else {
-                projectedDate = dateFrom;
             }
             projectionOutputs.add(new ProjectionOutput(dateOut, projectedDate, remainingQuantity));
         });
@@ -97,11 +96,10 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
     private Map<ZonedDateTime, Integer> getCapacity(
             final List<EntityOutput> throughput) {
 
-        return throughput.stream()
-                .collect(
-                        toMap(
-                                EntityOutput::getDate,
-                                entityOutput -> (int) entityOutput.getValue(), Math::min));
+        return throughput.stream().collect(toMap(
+                EntityOutput::getDate,
+                entityOutput -> (int) entityOutput.getValue(),
+                Math::min));
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(
@@ -146,11 +144,12 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
             final List<GetPlanningDistributionOutput> planningUnits) {
 
         return planningUnits.stream()
-                .collect(
-                        groupingBy(GetPlanningDistributionOutput::getDateOut,
-                                toMap(o ->
-                                                ignoreMinutes(o.getDateIn()),
-                                        o -> (int) o.getTotal(), Integer::sum)));
+                .collect(groupingBy(
+                        GetPlanningDistributionOutput::getDateOut,
+                        toMap(
+                                o -> ignoreMinutes(o.getDateIn()),
+                                o -> (int) o.getTotal(),
+                                Integer::sum)));
     }
 
     private ZonedDateTime calculateProjectedDate(final ZonedDateTime date,

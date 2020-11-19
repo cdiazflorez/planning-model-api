@@ -39,7 +39,7 @@ public interface CurrentProcessingDistributionRepository
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo);
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE "
             + " CurrentProcessingDistribution cpd "

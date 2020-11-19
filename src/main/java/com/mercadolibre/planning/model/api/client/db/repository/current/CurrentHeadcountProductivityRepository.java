@@ -18,7 +18,7 @@ import java.util.List;
 public interface CurrentHeadcountProductivityRepository
         extends JpaRepository<CurrentHeadcountProductivity, Long> {
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     @Query("UPDATE "
             + "  CurrentHeadcountProductivity chp "

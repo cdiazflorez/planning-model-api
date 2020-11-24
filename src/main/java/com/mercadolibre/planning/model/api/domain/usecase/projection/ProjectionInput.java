@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection;
 
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import lombok.Builder;
 import lombok.Value;

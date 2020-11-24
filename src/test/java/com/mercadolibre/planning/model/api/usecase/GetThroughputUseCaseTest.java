@@ -1,24 +1,24 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -60,7 +60,7 @@ public class GetThroughputUseCaseTest {
         // GIVEN
         final GetEntityInput input = mockGetThroughputEntityInput(FORECAST, null);
         when(getHeadcountEntityUseCase.execute(
-                GetEntityInput.builder()
+                GetHeadcountInput.builder()
                         .warehouseId(input.getWarehouseId()).entityType(HEADCOUNT)
                         .workflow(input.getWorkflow())
                         .source(FORECAST)
@@ -116,11 +116,11 @@ public class GetThroughputUseCaseTest {
     @DisplayName("Get throughput entity when source is simulation")
     public void testGetThroughputSimulationOk() {
         // GIVEN
-        final GetEntityInput input = mockGetHeadcountEntityInput(null);
+        final GetEntityInput input = mockGetHeadcountEntityInput(SIMULATION);
         when(getHeadcountEntityUseCase.execute(any()))
                 .thenReturn(mockHeadcountEntityOutputWhitSimulations());
 
-        when(getProductivityEntityUseCase.execute(GetEntityInput.builder()
+        when(getProductivityEntityUseCase.execute(GetProductivityInput.builder()
                 .warehouseId(input.getWarehouseId())
                 .workflow(input.getWorkflow())
                 .entityType(PRODUCTIVITY)
@@ -128,25 +128,13 @@ public class GetThroughputUseCaseTest {
                 .dateTo(input.getDateTo())
                 .source(SIMULATION)
                 .processName(input.getProcessName())
-                .processingType(input.getProcessingType())
                 .simulations(input.getSimulations())
-                .abilityLevel(Set.of(1))
+                .abilityLevel(Set.of(1,2))
                 .build()))
-                .thenReturn(mockProductivityEntityOutputWithSimulations());
-
-        when(getProductivityEntityUseCase.execute(GetEntityInput.builder()
-                .warehouseId(input.getWarehouseId())
-                .workflow(input.getWorkflow())
-                .entityType(PRODUCTIVITY)
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .source(FORECAST)
-                .processName(input.getProcessName())
-                .processingType(input.getProcessingType())
-                .simulations(input.getSimulations())
-                .abilityLevel(Set.of(2))
-                .build()))
-                .thenReturn(mockMultiFunctionalProductivityEntityOutput());
+                .thenReturn(Stream.concat(
+                        mockProductivityEntityOutputWithSimulations().stream(),
+                        mockMultiFunctionalProductivityEntityOutput().stream())
+                        .collect(Collectors.toList()));
 
         // WHEN
         final List<EntityOutput> output = getForecastedThroughputUseCase.execute(input);
@@ -184,20 +172,6 @@ public class GetThroughputUseCaseTest {
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
         assertEquals(SIMULATION, output4.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
-    }
-
-
-
-    @ParameterizedTest
-    @DisplayName("Only supports throughput entity")
-    @MethodSource("getSupportedEntitites")
-    public void testSupportEntityTypeOk(final EntityType entityType,
-                                        final boolean shouldBeSupported) {
-        // WHEN
-        final boolean isSupported = getForecastedThroughputUseCase.supportsEntityType(entityType);
-
-        // THEN
-        assertEquals(shouldBeSupported, isSupported);
     }
 
     private static Stream<Arguments> getSupportedEntitites() {

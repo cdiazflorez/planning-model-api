@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;

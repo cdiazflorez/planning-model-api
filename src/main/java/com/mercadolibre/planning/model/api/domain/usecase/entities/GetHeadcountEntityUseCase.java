@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase;
+package com.mercadolibre.planning.model.api.domain.usecase.entities;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
@@ -6,9 +6,9 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +25,15 @@ import static com.mercadolibre.planning.model.api.web.controller.request.Source.
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-@AllArgsConstructor
 @Service
-public class GetHeadcountEntityUseCase implements GetEntityUseCase {
+@AllArgsConstructor
+public class GetHeadcountEntityUseCase implements UseCase<GetHeadcountInput, List<EntityOutput>> {
 
     private final ProcessingDistributionRepository processingDistRepository;
     private final CurrentProcessingDistributionRepository currentPDistributionRepository;
 
     @Override
-    public List<EntityOutput> execute(final GetEntityInput input) {
+    public List<EntityOutput> execute(final GetHeadcountInput input) {
         if (input.getSource() == FORECAST) {
             return getForecastHeadcount(input);
         } else {
@@ -41,12 +41,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
         }
     }
 
-    @Override
-    public boolean supportsEntityType(final EntityType entityType) {
-        return entityType == HEADCOUNT;
-    }
-
-    private List<EntityOutput> getForecastHeadcount(final GetEntityInput input) {
+    private List<EntityOutput> getForecastHeadcount(final GetHeadcountInput input) {
         final List<ProcessingDistributionView> processingDistributions =
                 findProcessingDistributionBy(input);
 
@@ -63,7 +58,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                 .collect(toList());
     }
 
-    private List<EntityOutput> getSimulationHeadcount(final GetEntityInput input) {
+    private List<EntityOutput> getSimulationHeadcount(final GetHeadcountInput input) {
         final List<CurrentProcessingDistribution> currentProcessingDistributions =
                 findCurrentProcessingDistributionBy(input);
 
@@ -100,7 +95,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     }
 
     private List<ProcessingDistributionView> findProcessingDistributionBy(
-            final GetEntityInput input) {
+            final GetHeadcountInput input) {
 
         return processingDistRepository
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -114,7 +109,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
     }
 
     private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(
-            final GetEntityInput input) {
+            final GetHeadcountInput input) {
 
         return currentPDistributionRepository
                 .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -133,7 +128,7 @@ public class GetHeadcountEntityUseCase implements GetEntityUseCase {
                 : processingTypes.stream().map(Enum::name).collect(toSet());
     }
 
-    private List<EntityOutput> createUnappliedSimulations(final GetEntityInput input) {
+    private List<EntityOutput> createUnappliedSimulations(final GetHeadcountInput input) {
         if (input.getSimulations() == null) {
             return Collections.emptyList();
         }

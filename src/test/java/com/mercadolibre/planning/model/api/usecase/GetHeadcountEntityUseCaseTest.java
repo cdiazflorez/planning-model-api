@@ -5,10 +5,9 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
@@ -16,9 +15,7 @@ import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationE
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -72,7 +69,7 @@ class GetHeadcountEntityUseCaseTest {
     @DisplayName("Get headcount entity when source is forecast")
     public void testGetHeadcountOk() {
         // GIVEN
-        final GetEntityInput input = mockGetHeadcountEntityInput(FORECAST,
+        final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST,
                 Set.of(ProcessingType.ACTIVE_WORKERS, ProcessingType.WORKERS), null);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -110,7 +107,7 @@ class GetHeadcountEntityUseCaseTest {
     @DisplayName("Get headcount entity when source is null and has simulations applied")
     public void testGetHeadcountWithUnsavedSimulationOk() {
         // GIVEN
-        final GetEntityInput input = mockGetHeadcountEntityInput(null,
+        final GetHeadcountInput input = mockGetHeadcountEntityInput(null,
                 Set.of(ProcessingType.ACTIVE_WORKERS, ProcessingType.WORKERS),
                 List.of(new Simulation(
                         PICKING,
@@ -202,7 +199,7 @@ class GetHeadcountEntityUseCaseTest {
     @DisplayName("Get headcount entity when source is simulation")
     public void testGetHeadcountFromSourceSimulation() {
         // GIVEN
-        final GetEntityInput input = mockGetHeadcountEntityInput(SIMULATION);
+        final GetHeadcountInput input = mockGetHeadcountEntityInput(SIMULATION);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                 input.getWarehouseId(),
@@ -233,18 +230,6 @@ class GetHeadcountEntityUseCaseTest {
         outputPropertiesEqualTo(output.get(2), FORECAST, 120, A_DATE_UTC.plusHours(2).toInstant());
         outputPropertiesEqualTo(output.get(3), SIMULATION, 20, A_DATE_UTC.toInstant());
         outputPropertiesEqualTo(output.get(4), SIMULATION, 20, A_DATE_UTC.plusHours(1).toInstant());
-    }
-
-    @ParameterizedTest
-    @DisplayName("Only supports headcount entity")
-    @MethodSource("getSupportedEntitites")
-    public void testSupportEntityTypeOk(final EntityType entityType,
-                                 final boolean shouldBeSupported) {
-        // WHEN
-        final boolean isSupported = getHeadcountEntityUseCase.supportsEntityType(entityType);
-
-        // THEN
-        assertEquals(shouldBeSupported, isSupported);
     }
 
     private List<ProcessingDistributionView> processingDistributions() {

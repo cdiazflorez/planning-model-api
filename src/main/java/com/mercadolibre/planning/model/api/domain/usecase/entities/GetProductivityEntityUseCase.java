@@ -1,13 +1,13 @@
-package com.mercadolibre.planning.model.api.domain.usecase;
+package com.mercadolibre.planning.model.api.domain.usecase.entities;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.ProductivityOutput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +25,15 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
-public class GetProductivityEntityUseCase implements GetEntityUseCase {
+public class GetProductivityEntityUseCase implements
+        UseCase<GetProductivityInput,
+        List<ProductivityOutput>> {
 
     protected final HeadcountProductivityRepository productivityRepository;
     protected final CurrentHeadcountProductivityRepository currentProductivityRepository;
 
     @Override
-    public List<EntityOutput> execute(final GetEntityInput input) {
+    public List<ProductivityOutput> execute(final GetProductivityInput input) {
         if (input.getSource() == FORECAST) {
             return getForecastProductivity(input);
         } else {
@@ -39,36 +41,32 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
         }
     }
 
-    @Override
-    public boolean supportsEntityType(final EntityType entityType) {
-        return entityType == PRODUCTIVITY;
-    }
-
-    private List<EntityOutput> getForecastProductivity(final GetEntityInput input) {
+    private List<ProductivityOutput> getForecastProductivity(final GetProductivityInput input) {
         final List<HeadcountProductivityView> productivities = findProductivityBy(input);
 
         return productivities.stream()
-                .map(p -> EntityOutput.builder()
+                .map(p -> ProductivityOutput.builder()
                         .workflow(input.getWorkflow())
                         .date(ofInstant(p.getDate().toInstant(), UTC))
                         .processName(p.getProcessName())
                         .value(p.getProductivity())
                         .metricUnit(p.getProductivityMetricUnit())
                         .source(FORECAST)
+                        .abilityLevel(p.getAbilityLevel())
                         .build())
                 .collect(toList());
     }
 
-    private List<EntityOutput> getSimulationProductivity(final GetEntityInput input) {
+    private List<ProductivityOutput> getSimulationProductivity(final GetProductivityInput input) {
         final List<CurrentHeadcountProductivity> currentProductivity =
                 findCurrentProductivityBy(input);
 
-        final List<EntityOutput> entities = getForecastProductivity(input);
-        final List<EntityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
+        final List<ProductivityOutput> entities = getForecastProductivity(input);
+        final List<ProductivityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
 
         currentProductivity.forEach(sp -> {
             if (noSimulationExistsWithSameProperties(inputSimulatedEntities, sp)) {
-                entities.add(EntityOutput.builder()
+                entities.add(ProductivityOutput.builder()
                         .workflow(input.getWorkflow())
                         .value(sp.getProductivity())
                         .source(SIMULATION)
@@ -84,7 +82,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
     }
 
     private boolean noSimulationExistsWithSameProperties(
-            final List<EntityOutput> entities,
+            final List<ProductivityOutput> entities,
             final CurrentHeadcountProductivity currentHeadcountProductivity) {
 
         return entities.stream().noneMatch(entityOutput -> entityOutput.getSource() == SIMULATION
@@ -95,7 +93,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
     }
 
     private List<CurrentHeadcountProductivity> findCurrentProductivityBy(
-            final GetEntityInput input) {
+            final GetProductivityInput input) {
 
         return currentProductivityRepository
                 .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -106,7 +104,7 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
                         input.getDateTo());
     }
 
-    private List<HeadcountProductivityView> findProductivityBy(final GetEntityInput input) {
+    private List<HeadcountProductivityView> findProductivityBy(final GetProductivityInput input) {
         return productivityRepository.findBy(
                 input.getWarehouseId(),
                 input.getWorkflow().name(),
@@ -117,18 +115,18 @@ public class GetProductivityEntityUseCase implements GetEntityUseCase {
                 input.getAbilityLevel());
     }
 
-    private List<EntityOutput> createUnappliedSimulations(final GetEntityInput input) {
+    private List<ProductivityOutput> createUnappliedSimulations(final GetProductivityInput input) {
         if (input.getSimulations() == null) {
             return Collections.emptyList();
         }
-        final List<EntityOutput> simulatedEntities = new ArrayList<>();
+        final List<ProductivityOutput> simulatedEntities = new ArrayList<>();
 
         input.getSimulations().forEach(simulation ->
                 simulation.getEntities().stream()
                         .filter(entity -> entity.getType() == PRODUCTIVITY)
                         .forEach(entity -> {
                             entity.getValues().forEach(quantityByDate ->
-                                    simulatedEntities.add(EntityOutput.builder()
+                                    simulatedEntities.add(ProductivityOutput.builder()
                                             .workflow(input.getWorkflow())
                                             .date(quantityByDate.getDate().withFixedOffsetZone())
                                             .metricUnit(MetricUnit.UNITS_PER_HOUR)

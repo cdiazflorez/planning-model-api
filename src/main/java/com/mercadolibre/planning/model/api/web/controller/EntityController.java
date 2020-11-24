@@ -4,11 +4,14 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.GetEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.strategy.GetEntityStrategy;
-import com.mercadolibre.planning.model.api.exception.EntityTypeNotSupportedException;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
@@ -17,10 +20,11 @@ import com.mercadolibre.planning.model.api.web.controller.editor.SourceEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.request.HeadcountRequest;
+import com.mercadolibre.planning.model.api.web.controller.request.ProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -34,40 +38,71 @@ import javax.validation.Valid;
 
 import java.util.List;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+import static org.springframework.http.HttpStatus.OK;
+
 @RestController
 @AllArgsConstructor
+@SuppressWarnings("PMD.ExcessiveImports")
 @RequestMapping("/planning/model/workflows/{workflow}/entities")
 public class EntityController {
 
-    private final GetEntityStrategy getEntityStrategy;
+    private final GetHeadcountEntityUseCase getHeadcountUseCase;
+    private final GetProductivityEntityUseCase getProductivityUseCase;
+    private final GetThroughputUseCase getThroughputUseCase;
 
-    @GetMapping("/{entityType}")
-    public ResponseEntity<List<EntityOutput>> getEntity(
+    @GetMapping("/headcount")
+    public ResponseEntity<List<EntityOutput>> getHeadcounts(
             @PathVariable final Workflow workflow,
-            @PathVariable final EntityType entityType,
-            @Valid final EntityRequest request) {
+            @Valid final HeadcountRequest request) {
 
-        final GetEntityInput input = request.toGetEntityInput(workflow, entityType);
-        final GetEntityUseCase getEntityUseCase = getEntityStrategy
-                .getBy(entityType)
-                .orElseThrow(() -> new EntityTypeNotSupportedException(entityType));
-
-        return ResponseEntity.status(HttpStatus.OK).body(getEntityUseCase.execute(input));
+        final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
+        return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
     }
 
-    @PostMapping("/{entityType}")
-    public ResponseEntity<List<EntityOutput>> getEntityWithSimulations(
+    @GetMapping("/productivity")
+    public ResponseEntity<List<ProductivityOutput>> getProductivity(
             @PathVariable final Workflow workflow,
-            @PathVariable final EntityType entityType,
+            @Valid final ProductivityRequest request) {
+
+        final GetProductivityInput input = request.toGetProductivityInput(workflow);
+        return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
+    }
+
+    @GetMapping("/throughput")
+    public ResponseEntity<List<EntityOutput>> getThroughput(
+            @PathVariable final Workflow workflow,
+            @Valid final EntityRequest request) {
+
+        final GetEntityInput input = request.toGetEntityInput(workflow);
+        return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
+    }
+
+    //TODO: Unificar estos 3 post en una sola llamada
+    @PostMapping("/headcount")
+    public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
+            @PathVariable final Workflow workflow,
+            @RequestBody @Valid final HeadcountRequest request) {
+
+        final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
+        return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
+    }
+
+    @PostMapping("/productivity")
+    public ResponseEntity<List<ProductivityOutput>> getProductivityWithSimulations(
+            @PathVariable final Workflow workflow,
+            @RequestBody @Valid final ProductivityRequest request) {
+
+        final GetProductivityInput input = request.toGetProductivityInput(workflow);
+        return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
+    }
+
+    @PostMapping("/throughput")
+    public ResponseEntity<List<EntityOutput>> getThroughputWithSimulations(
+            @PathVariable final Workflow workflow,
             @RequestBody @Valid final EntityRequest request) {
 
-        final GetEntityInput input = request.toGetEntityInput(workflow, entityType);
-        final GetEntityUseCase getEntityUseCase = getEntityStrategy
-                .getBy(entityType)
-                .orElseThrow(() -> new EntityTypeNotSupportedException(entityType));
-
-        return ResponseEntity.status(HttpStatus.OK).body(getEntityUseCase.execute(input));
+        final GetEntityInput input = request.toGetEntityInput(workflow);
+        return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
     }
 
     @InitBinder

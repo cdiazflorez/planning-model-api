@@ -15,7 +15,7 @@ public interface HeadcountProductivityRepository
         extends CrudRepository<HeadcountProductivity, Long> {
 
     @Query(value = "SELECT process_name as processName, productivity, hd.date as date, "
-            + "productivity_metric_unit as productivityMetricUnit "
+            + "productivity_metric_unit as productivityMetricUnit, ability_level as abilityLevel "
             + "FROM headcount_productivity hd "
             + "WHERE hd.process_name IN (:process_name) "
             + "AND hd.date BETWEEN :date_from AND :date_to "

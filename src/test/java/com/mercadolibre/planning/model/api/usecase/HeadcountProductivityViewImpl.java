@@ -18,6 +18,8 @@ public class HeadcountProductivityViewImpl implements HeadcountProductivityView 
 
     private Date date;
 
+    private int abilityLevel;
+
 
     @Override
     public ProcessName getProcessName() {
@@ -37,5 +39,10 @@ public class HeadcountProductivityViewImpl implements HeadcountProductivityView 
     @Override
     public Date getDate() {
         return date;
+    }
+
+    @Override
+    public int getAbilityLevel() {
+        return abilityLevel;
     }
 }

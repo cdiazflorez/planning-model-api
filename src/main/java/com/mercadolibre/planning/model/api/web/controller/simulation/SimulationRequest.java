@@ -41,6 +41,9 @@ public class SimulationRequest {
     @NotNull
     private List<Simulation> simulations;
 
+    @NotNull
+    private Long userId;
+
     public ProjectionInput toProjectionInput(final List<EntityOutput> throughputs,
                                              final List<GetPlanningDistributionOutput> units) {
         return ProjectionInput.builder()
@@ -55,8 +58,16 @@ public class SimulationRequest {
     }
 
     public SimulationInput toSimulationInput(final Workflow workflow) {
-        return new SimulationInput(warehouseId, workflow, processName,
-                dateFrom, dateTo, backlog, simulations);
+        return SimulationInput.builder()
+                .warehouseId(warehouseId)
+                .workflow(workflow)
+                .processName(processName)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .backlog(backlog)
+                .simulations(simulations)
+                .userId(userId)
+                .build();
     }
 
     public GetEntityInput toThroughputEntityInput(final Workflow workflow) {

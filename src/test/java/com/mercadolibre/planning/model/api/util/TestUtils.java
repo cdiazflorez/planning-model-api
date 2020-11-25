@@ -79,6 +79,7 @@ public final class TestUtils {
     public static final String WORKFLOW_ID = "fbm-wms-outbound";
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
+    public static final long USER_ID = 1234L;
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,

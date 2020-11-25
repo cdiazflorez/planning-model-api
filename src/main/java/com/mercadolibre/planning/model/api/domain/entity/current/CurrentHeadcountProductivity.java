@@ -51,6 +51,8 @@ public class CurrentHeadcountProductivity {
 
     private String logisticCenterId;
 
+    private long userId;
+
     @CreationTimestamp
     private ZonedDateTime dateCreated;
 

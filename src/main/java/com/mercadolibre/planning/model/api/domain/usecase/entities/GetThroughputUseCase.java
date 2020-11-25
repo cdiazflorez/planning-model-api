@@ -43,6 +43,7 @@ public class GetThroughputUseCase implements UseCase<GetEntityInput, List<Entity
     public List<EntityOutput> execute(final GetEntityInput input) {
         final List<EntityOutput> headcounts = headcountEntityUseCase.execute(
                 createHeadcountInput(input));
+
         final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(
                 createProductivityInput(input));
 

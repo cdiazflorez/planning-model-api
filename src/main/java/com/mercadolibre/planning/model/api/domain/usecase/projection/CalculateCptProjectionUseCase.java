@@ -147,9 +147,10 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
                 .collect(groupingBy(
                         GetPlanningDistributionOutput::getDateOut,
                         toMap(
-                                o -> ignoreMinutes(o.getDateIn()),
+                                o -> ignoreMinutes(o.getDateIn().plusHours(1)),
                                 o -> (int) o.getTotal(),
                                 Integer::sum)));
+        // Se agrega una hora para compensar que las ventas se graban con 0 minutos.
     }
 
     private ZonedDateTime calculateProjectedDate(final ZonedDateTime date,

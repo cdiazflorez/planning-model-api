@@ -5,21 +5,18 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.usecase.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,7 +61,7 @@ public class GetProductivityEntityUseCaseTest {
     @DisplayName("Get productivity entity when source is forecast")
     public void testGetProductivityOk() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(FORECAST, null);
+        final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null);
         when(productivityRepository.findBy(
                 "ARBA01",
                 FBM_WMS_OUTBOUND.name(),
@@ -76,7 +73,7 @@ public class GetProductivityEntityUseCaseTest {
         ).thenReturn(productivities());
 
         // WHEN
-        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
+        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
         assertEquals(4, output.size());
@@ -91,7 +88,7 @@ public class GetProductivityEntityUseCaseTest {
     @DisplayName("Get productivity entity when source is null and has simulations applied")
     public void testGetProductivityWithUnsavedSimulationOk() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(
+        final GetProductivityInput input = mockGetProductivityEntityInput(
                 null,
                 List.of(new Simulation(
                         PICKING,
@@ -123,7 +120,7 @@ public class GetProductivityEntityUseCaseTest {
         ).thenReturn(productivities());
 
         // WHEN
-        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
+        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
         assertEquals(6, output.size());
@@ -140,7 +137,7 @@ public class GetProductivityEntityUseCaseTest {
     @DisplayName("Get productivity entity when source is simulation")
     public void testGetProductivityFromSourceSimulation() {
         // GIVEN
-        final GetEntityInput input = mockGetProductivityEntityInput(SIMULATION, null);
+        final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null);
         final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
 
         // WHEN
@@ -164,7 +161,7 @@ public class GetProductivityEntityUseCaseTest {
                 )
         ).thenReturn(currentProductivities());
 
-        final List<EntityOutput> output = getProductivityEntityUseCase.execute(input);
+        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
 
         // THEN
         assertThat(output).isNotEmpty();
@@ -176,28 +173,16 @@ public class GetProductivityEntityUseCaseTest {
         outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 68);
     }
 
-    @ParameterizedTest
-    @DisplayName("Only supports productivity entity")
-    @MethodSource("getSupportedEntitites")
-    public void testSupportEntityTypeOk(final EntityType entityType,
-                                        final boolean shouldBeSupported) {
-        // WHEN
-        final boolean isSupported = getProductivityEntityUseCase.supportsEntityType(entityType);
-
-        // THEN
-        assertEquals(shouldBeSupported, isSupported);
-    }
-
     private List<HeadcountProductivityView> productivities() {
         return List.of(
                 new HeadcountProductivityViewImpl(PICKING,
-                        80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant())),
+                        80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
                 new HeadcountProductivityViewImpl(PICKING,
-                        85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant())),
+                        85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1),
                 new HeadcountProductivityViewImpl(PACKING,
-                        90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant())),
+                        90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
                 new HeadcountProductivityViewImpl(PACKING,
-                        92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()))
+                        92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()),1)
         );
     }
 

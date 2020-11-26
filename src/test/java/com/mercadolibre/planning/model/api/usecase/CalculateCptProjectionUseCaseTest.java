@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
@@ -74,7 +74,7 @@ public class CalculateCptProjectionUseCaseTest {
 
         final ProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
-        assertEquals(DATE_OUT_12, projection.getProjectedEndDate());
+        assertEquals(DATE_OUT_13, projection.getProjectedEndDate());
         assertEquals(0, projection.getRemainingQuantity());
     }
 
@@ -105,7 +105,7 @@ public class CalculateCptProjectionUseCaseTest {
 
         final ProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
-        assertEquals(parse("2020-01-01T11:30:00Z"), projection.getProjectedEndDate());
+        assertEquals(parse("2020-01-01T12:30:00Z"), projection.getProjectedEndDate());
         assertEquals(0, projection.getRemainingQuantity());
     }
 
@@ -137,7 +137,7 @@ public class CalculateCptProjectionUseCaseTest {
         final ProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
         assertNull(projection.getProjectedEndDate());
-        assertEquals(800, projection.getRemainingQuantity());
+        assertEquals(700, projection.getRemainingQuantity());
     }
 
     @ParameterizedTest
@@ -149,7 +149,7 @@ public class CalculateCptProjectionUseCaseTest {
         final List<Backlog> backlogs = singletonList(new Backlog(dateOut, 100));
         final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
                 .dateOut(dateOut)
-                .dateIn(DATE_IN_11)
+                .dateIn(DATE_FROM_10)
                 .total(400)
                 .build());
 
@@ -198,7 +198,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
                 .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
-                        List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
+                        List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
 
@@ -210,13 +210,13 @@ public class CalculateCptProjectionUseCaseTest {
 
         final ProjectionOutput projection1 = projections.get(0);
         assertEquals(DATE_OUT_12, projection1.getDate());
-        assertEquals(parse("2020-01-01T11:30:00Z"), projection1.getProjectedEndDate());
+        assertEquals(parse("2020-01-01T12:30:00Z"), projection1.getProjectedEndDate());
         assertEquals(0, projection1.getRemainingQuantity());
 
         final ProjectionOutput projection2 = projections.get(1);
         assertEquals(DATE_OUT_13, projection2.getDate());
-        assertEquals(parse("2020-01-01T15:00:00Z"), projection2.getProjectedEndDate());
-        assertEquals(200, projection2.getRemainingQuantity());
+        assertEquals(parse("2020-01-01T15:30:00Z"), projection2.getProjectedEndDate());
+        assertEquals(250, projection2.getRemainingQuantity());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class CalculateCptProjectionUseCaseTest {
         final ProjectionOutput projection1 = projections.get(0);
         assertEquals(DATE_OUT_16, projection1.getDate());
         assertNull(projection1.getProjectedEndDate());
-        assertEquals(120, projection1.getRemainingQuantity());
+        assertEquals(170, projection1.getRemainingQuantity());
     }
 
     @ParameterizedTest

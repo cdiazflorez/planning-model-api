@@ -55,6 +55,8 @@ public class CurrentProcessingDistribution {
 
     private String logisticCenterId;
 
+    private long userId;
+
     @CreationTimestamp
     private ZonedDateTime dateCreated;
 

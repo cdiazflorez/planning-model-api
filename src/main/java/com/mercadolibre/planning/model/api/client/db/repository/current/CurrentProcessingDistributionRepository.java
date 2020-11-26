@@ -44,7 +44,9 @@ public interface CurrentProcessingDistributionRepository
     @Query("UPDATE "
             + " CurrentProcessingDistribution cpd "
             + "SET "
-            + "   cpd.isActive = false "
+            + "   cpd.isActive = false, "
+            + "   cpd.userId = :user_id,"
+            + "   cpd.lastUpdated = CURRENT_TIMESTAMP "
             + "WHERE "
             + "   cpd.processName = :process_name"
             + "   AND cpd.workflow = :workflow "
@@ -59,6 +61,7 @@ public interface CurrentProcessingDistributionRepository
             @Param("process_name") ProcessName processName,
             @Param("dates") List<ZonedDateTime> dates,
             @Param("type") ProcessingType type,
+            @Param("user_id") long userId,
             @Param("metric_unit") MetricUnit metricUnit);
 
 }

@@ -35,6 +35,8 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
     }
 
     private void deactivateOldSimulations(final SimulationInput input) {
+        final long userId = input.getUserId();
+
         input.getSimulations().forEach(simulation ->
                 simulation.getEntities().stream()
                         .filter(e -> e.getType() == PRODUCTIVITY)
@@ -47,6 +49,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                                                 .map(QuantityByDate::getDate)
                                                 .collect(toList()),
                                         UNITS_PER_HOUR,
+                                        userId,
                                         ORIGINAL_WORKER_ABILITY
                                 )
                         ));
@@ -63,6 +66,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                                                 .map(QuantityByDate::getDate)
                                                 .collect(toList()),
                                         ACTIVE_WORKERS,
+                                        userId,
                                         WORKERS
                                 )
                         ));
@@ -124,6 +128,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                                 .date(value.getDate())
                                 .logisticCenterId(input.getWarehouseId())
                                 .productivity(value.getQuantity())
+                                .userId(input.getUserId())
                                 .productivityMetricUnit(UNITS_PER_HOUR)
                                 .abilityLevel(ORIGINAL_WORKER_ABILITY)
                                 .isActive(true)
@@ -145,6 +150,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                                 .quantity(value.getQuantity())
                                 .logisticCenterId(input.getWarehouseId())
                                 .quantityMetricUnit(WORKERS)
+                                .userId(input.getUserId())
                                 .type(ACTIVE_WORKERS)
                                 .isActive(true)
                                 .build()))));

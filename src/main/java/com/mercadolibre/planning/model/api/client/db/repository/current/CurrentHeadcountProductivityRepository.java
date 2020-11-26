@@ -23,7 +23,9 @@ public interface CurrentHeadcountProductivityRepository
     @Query("UPDATE "
             + "  CurrentHeadcountProductivity chp "
             + "SET "
-            + "   chp.isActive = false "
+            + "   chp.isActive = false, "
+            + "   chp.userId = :user_id, "
+            + "   chp.lastUpdated = CURRENT_TIMESTAMP "
             + "WHERE  "
             + "   chp.processName = :process_name "
             + "   AND chp.workflow = :workflow "
@@ -38,6 +40,7 @@ public interface CurrentHeadcountProductivityRepository
             @Param("process_name") ProcessName processName,
             @Param("dates") List<ZonedDateTime> dates,
             @Param("metric_unit") MetricUnit metricUnit,
+            @Param("user_id") long userId,
             @Param("ability_level") long abilityLevel);
 
     @Query("SELECT "

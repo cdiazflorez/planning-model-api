@@ -2,10 +2,10 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateProjectionUseCase;

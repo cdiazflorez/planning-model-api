@@ -11,10 +11,13 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
@@ -76,6 +79,7 @@ public final class TestUtils {
     public static final String WORKFLOW_ID = "fbm-wms-outbound";
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
+    public static final long USER_ID = 1234L;
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -244,16 +248,16 @@ public final class TestUtils {
                 .build();
     }
 
-    public static GetEntityInput mockGetHeadcountEntityInput(final Source source) {
+    public static GetHeadcountInput mockGetHeadcountEntityInput(final Source source) {
         return mockGetHeadcountEntityInput(source, null, null);
     }
 
 
-    public static GetEntityInput mockGetHeadcountEntityInput(
+    public static GetHeadcountInput mockGetHeadcountEntityInput(
             final Source source,
             final Set<ProcessingType> processingTypes,
             final List<Simulation> simulations) {
-        return GetEntityInput.builder()
+        return GetHeadcountInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
                 .entityType(HEADCOUNT)
@@ -266,10 +270,10 @@ public final class TestUtils {
                 .build();
     }
 
-    public static GetEntityInput mockGetProductivityEntityInput(
+    public static GetProductivityInput mockGetProductivityEntityInput(
             final Source source,
             final List<Simulation> simulations) {
-        return GetEntityInput.builder()
+        return GetProductivityInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
                 .entityType(HEADCOUNT)
@@ -413,145 +417,161 @@ public final class TestUtils {
         );
     }
 
-    public static List<EntityOutput> mockProductivityEntityOutput() {
+    public static List<ProductivityOutput> mockProductivityEntityOutput() {
         return List.of(
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(80)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(70)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(85)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(90)
+                        .abilityLevel(1)
                         .build()
         );
     }
 
-    public static List<EntityOutput> mockProductivityEntityOutputWithSimulations() {
+    public static List<ProductivityOutput> mockProductivityEntityOutputWithSimulations() {
         return List.of(
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(80)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(70)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(SIMULATION)
                         .value(90)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(SIMULATION)
                         .value(50)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(85)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(90)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(SIMULATION)
                         .value(75)
+                        .abilityLevel(1)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(SIMULATION)
                         .value(100)
+                        .abilityLevel(1)
                         .build()
         );
     }
 
-    public static List<EntityOutput> mockMultiFunctionalProductivityEntityOutput() {
+    public static List<ProductivityOutput> mockMultiFunctionalProductivityEntityOutput() {
         return List.of(
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(40)
+                        .abilityLevel(2)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PICKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(35)
+                        .abilityLevel(2)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(40)
+                        .abilityLevel(2)
                         .build(),
-                EntityOutput.builder()
+                ProductivityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC.plusHours(1))
                         .processName(PACKING)
                         .metricUnit(UNITS_PER_HOUR)
                         .source(FORECAST)
                         .value(45)
+                        .abilityLevel(2)
                         .build()
         );
     }

@@ -17,6 +17,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
 import static java.util.Collections.singletonList;
@@ -107,6 +108,7 @@ class CurrentProcessingDistributionRepositoryTest {
                 PACKING,
                 singletonList(A_DATE_UTC),
                 ACTIVE_WORKERS,
+                USER_ID,
                 WORKERS
         );
 
@@ -115,6 +117,7 @@ class CurrentProcessingDistributionRepositoryTest {
         // THEN
         assertTrue(result.isPresent());
         assertFalse(result.get().isActive());
+        assertEquals(USER_ID, result.get().getUserId());
     }
 
     private void whenCurrentDistributionIsOk(final CurrentProcessingDistribution currentProcessing,

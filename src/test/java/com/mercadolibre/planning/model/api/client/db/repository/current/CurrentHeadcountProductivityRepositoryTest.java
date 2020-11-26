@@ -16,6 +16,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProdEntity;
 import static java.util.Collections.singletonList;
@@ -94,13 +95,14 @@ public class CurrentHeadcountProductivityRepositoryTest {
 
         // WHEN
         repository.deactivateProductivity(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PICKING,
-                singletonList(A_DATE_UTC), UNITS_PER_HOUR, 1L);
+                singletonList(A_DATE_UTC), UNITS_PER_HOUR, USER_ID, 1L);
 
         final Optional<CurrentHeadcountProductivity> result = repository.findById(1L);
 
         // THEN
         assertTrue(result.isPresent());
         assertFalse(result.get().isActive());
+        assertEquals(USER_ID, result.get().getUserId());
     }
 
     private void assertCurrentProductivity(final CurrentHeadcountProductivity currentProd,

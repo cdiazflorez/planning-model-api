@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -27,16 +28,21 @@ public class HeadcountDistribution {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private long id;
 
+    @Column
     private String area;
 
     @Enumerated(EnumType.STRING)
+    @Column
     private ProcessName processName;
 
+    @Column
     private long quantity;
 
     @Enumerated(EnumType.STRING)
+    @Column
     private MetricUnit quantityMetricUnit;
 
     @ManyToOne

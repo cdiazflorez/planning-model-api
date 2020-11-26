@@ -28,6 +28,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
@@ -83,10 +84,10 @@ public class ActivateSimulationUseCaseTest {
         // THEN
         verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
                 workflow, PICKING, List.of(DATE_12, DATE_13),
-                ACTIVE_WORKERS, WORKERS);
+                ACTIVE_WORKERS, USER_ID, WORKERS);
 
         verify(currentProductivityRepository).deactivateProductivity(input.getWarehouseId(),
-                workflow, PACKING, singletonList(DATE_12), UNITS_PER_HOUR, 1);
+                workflow, PACKING, singletonList(DATE_12), UNITS_PER_HOUR, USER_ID, 1);
 
         assertEquals(3, simulations.size());
 
@@ -119,14 +120,16 @@ public class ActivateSimulationUseCaseTest {
     }
 
     private SimulationInput mockSimulationInput(final List<Simulation> simulations) {
-        return new SimulationInput(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND,
-                List.of(PICKING, PACKING),
-                A_DATE_UTC,
-                A_DATE_UTC.plusDays(1),
-                singletonList(new QuantityByDate(DATE_12, 1000)),
-                simulations);
+        return SimulationInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .processName(List.of(PICKING, PACKING))
+                .dateFrom(A_DATE_UTC)
+                .dateTo(A_DATE_UTC.plusDays(1))
+                .backlog(singletonList(new QuantityByDate(DATE_12, 1000)))
+                .simulations(simulations)
+                .userId(USER_ID)
+                .build();
     }
 
     private List<CurrentProcessingDistribution> mockCurrentDistribution() {

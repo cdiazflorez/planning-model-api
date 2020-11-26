@@ -14,4 +14,6 @@ public interface HeadcountProductivityView {
     MetricUnit getProductivityMetricUnit();
 
     Date getDate();
+
+    int getAbilityLevel();
 }

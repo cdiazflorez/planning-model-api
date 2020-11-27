@@ -195,7 +195,7 @@ public final class TestUtils {
     public static CurrentHeadcountProductivity mockCurrentProdEntity(final ZonedDateTime date,
                                                                      final long value) {
         return CurrentHeadcountProductivity.builder()
-                .abilityLevel(1L)
+                .abilityLevel(1)
                 .date(date)
                 .isActive(true)
                 .productivity(value)

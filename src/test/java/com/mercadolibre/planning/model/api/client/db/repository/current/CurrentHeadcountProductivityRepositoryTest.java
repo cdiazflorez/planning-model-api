@@ -95,7 +95,7 @@ public class CurrentHeadcountProductivityRepositoryTest {
 
         // WHEN
         repository.deactivateProductivity(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PICKING,
-                singletonList(A_DATE_UTC), UNITS_PER_HOUR, USER_ID, 1L);
+                singletonList(A_DATE_UTC), UNITS_PER_HOUR, USER_ID, 1);
 
         final Optional<CurrentHeadcountProductivity> result = repository.findById(1L);
 

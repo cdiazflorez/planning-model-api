@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
@@ -17,8 +18,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProd
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountDistributionRequest;
@@ -309,6 +312,35 @@ public final class TestUtils {
                 .dateOutTo(A_DATE_UTC.plusDays(3))
                 .dateInTo(dateInTo)
                 .build();
+    }
+
+    public static GetForecastMetadataInput mockForecastMetadataInput() {
+        return GetForecastMetadataInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(DATE_IN)
+                .dateTo(DATE_OUT)
+                .build();
+    }
+
+    public static List<ForecastMetadataView> mockForecastByWarehouseId() {
+        return List.of(
+                new ForecastMetadataViewImpl(
+                        "mono_order_distribution",
+                        "58"),
+                new ForecastMetadataViewImpl(
+                        "multi_order_distribution",
+                        "23"),
+                new ForecastMetadataViewImpl(
+                        "multi_batch_distribution",
+                        "72"),
+                new ForecastMetadataViewImpl(
+                        "warehouse_id",
+                        WAREHOUSE_ID),
+                new ForecastMetadataViewImpl(
+                        "week",
+                        "48-2020")
+        );
     }
 
     public static List<EntityOutput> mockHeadcountEntityOutput() {

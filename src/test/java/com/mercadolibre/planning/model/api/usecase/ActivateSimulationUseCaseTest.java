@@ -110,7 +110,7 @@ public class ActivateSimulationUseCaseTest {
         assertTrue(simulation2.isActive());
 
         final SimulationOutput simulation3 = simulations.get(2);
-        assertEquals(Long.valueOf(1), simulation3.getAbilityLevel());
+        assertEquals(Integer.valueOf(1), simulation3.getAbilityLevel());
         assertEquals(DATE_12, simulation3.getDate());
         assertEquals(PACKING, simulation3.getProcessName());
         assertEquals(96, simulation3.getQuantity());
@@ -161,7 +161,7 @@ public class ActivateSimulationUseCaseTest {
                 .processName(PACKING)
                 .productivity(96)
                 .productivityMetricUnit(UNITS_PER_HOUR)
-                .abilityLevel(1L)
+                .abilityLevel(1)
                 .workflow(FBM_WMS_OUTBOUND)
                 .isActive(true)
                 .build());

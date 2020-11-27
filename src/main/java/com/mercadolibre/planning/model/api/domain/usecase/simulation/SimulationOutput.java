@@ -17,5 +17,5 @@ public class SimulationOutput {
     private long quantity;
     private MetricUnit quantityMetricUnit;
     private boolean isActive;
-    private Long abilityLevel;
+    private Integer abilityLevel;
 }

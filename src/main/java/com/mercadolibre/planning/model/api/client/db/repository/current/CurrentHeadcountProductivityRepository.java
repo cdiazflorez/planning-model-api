@@ -41,7 +41,7 @@ public interface CurrentHeadcountProductivityRepository
             @Param("dates") List<ZonedDateTime> dates,
             @Param("metric_unit") MetricUnit metricUnit,
             @Param("user_id") long userId,
-            @Param("ability_level") long abilityLevel);
+            @Param("ability_level") int abilityLevel);
 
     @Query("SELECT "
             + " cpd "

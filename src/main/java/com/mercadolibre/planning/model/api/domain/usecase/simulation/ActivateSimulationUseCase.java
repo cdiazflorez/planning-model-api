@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.toList;
 @Service
 public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<SimulationOutput>> {
 
-    private static final long ORIGINAL_WORKER_ABILITY = 1L;
+    private static final int ORIGINAL_WORKER_ABILITY = 1;
 
     private final CurrentHeadcountProductivityRepository currentProductivityRepository;
     private final CurrentProcessingDistributionRepository currentProcessingRepository;

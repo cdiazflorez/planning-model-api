@@ -73,6 +73,7 @@ public class GetProductivityEntityUseCase implements
                         .processName(sp.getProcessName())
                         .metricUnit(sp.getProductivityMetricUnit())
                         .date(sp.getDate())
+                        .abilityLevel(sp.getAbilityLevel())
                         .build());
             }
         });

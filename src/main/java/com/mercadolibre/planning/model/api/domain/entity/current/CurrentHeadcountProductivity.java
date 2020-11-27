@@ -45,7 +45,7 @@ public class CurrentHeadcountProductivity {
     @Enumerated(EnumType.STRING)
     private MetricUnit productivityMetricUnit;
 
-    private long abilityLevel;
+    private int abilityLevel;
 
     private boolean isActive;
 

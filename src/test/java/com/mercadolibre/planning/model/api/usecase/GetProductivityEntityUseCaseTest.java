@@ -190,7 +190,7 @@ public class GetProductivityEntityUseCaseTest {
         return List.of(
                 CurrentHeadcountProductivity
                         .builder()
-                        .abilityLevel(1L)
+                        .abilityLevel(1)
                         .date(A_DATE_UTC)
                         .isActive(true)
                         .productivity(68)

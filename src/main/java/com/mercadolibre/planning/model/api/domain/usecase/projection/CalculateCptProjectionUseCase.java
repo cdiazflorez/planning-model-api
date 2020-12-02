@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import static com.mercadolibre.planning.model.api.web.controller.request.ProjectionType.CPT;
 import static java.lang.Math.min;
@@ -115,21 +116,26 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
                         Backlog::getQuantity, Integer::sum));
 
         final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
+        final TreeSet<ZonedDateTime> datesOut =
+                new TreeSet(planningUnitsByDateInByDateOut.keySet());
+        datesOut.addAll(currentUnitsBacklogByDateOut.keySet());
+
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 new TreeMap<>();
 
-        planningUnitsByDateInByDateOut.keySet().forEach(dateOut -> {
+        datesOut.forEach(dateOut -> {
             final Map<ZonedDateTime, Integer> unitsByDate = new TreeMap<>();
             final Integer backlogQty = currentUnitsBacklogByDateOut.getOrDefault(dateOut, 0);
 
             unitsByDate.put(dateFrom, calculateExactBacklog(backlogQty,
-                    planningUnitsByDateInByDateOut.get(dateOut).getOrDefault(dateFrom, 0)));
+                    planningUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap())
+                            .getOrDefault(dateFrom, 0)));
 
             iterate(dateFrom.plusHours(1), date -> date.plusHours(1))
                     .limit(HOURS.between(dateFrom, input.getDateTo()))
                     .forEach(dateTime -> {
-                        final Integer planningQty = planningUnitsByDateInByDateOut.get(dateOut)
-                                .getOrDefault(dateTime, 0);
+                        final Integer planningQty = planningUnitsByDateInByDateOut
+                                .getOrDefault(dateOut, emptyMap()).getOrDefault(dateTime, 0);
 
                         unitsByDate.put(dateTime, planningQty);
                     });

@@ -181,7 +181,7 @@ public class CalculateCptProjectionUseCaseTest {
     }
 
     @Test
-    @DisplayName("The capacity is shared among al date outs")
+    @DisplayName("The capacity is shared among all date outs")
     public void testMultipleDateOuts() {
         // GIVEN
         final List<Backlog> backlogs = List.of(
@@ -239,7 +239,7 @@ public class CalculateCptProjectionUseCaseTest {
     }
 
     @Test
-    @DisplayName("Recalculate de projection if has new items")
+    @DisplayName("Recalculate the projection if has new items")
     public void testRecalculateProjectionDate() {
         final ProjectionInput input = ProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
@@ -273,6 +273,51 @@ public class CalculateCptProjectionUseCaseTest {
         assertEquals(DATE_OUT_16, projection1.getDate());
         assertNull(projection1.getProjectedEndDate());
         assertEquals(170, projection1.getRemainingQuantity());
+    }
+
+    @Test
+    @DisplayName("CPT coming from backlog but not present in Forecast should be calculated anyway")
+    public void testCptIsNotPresentInForecast() {
+        // GIVEN
+        final List<Backlog> backlogs = List.of(
+                new Backlog(DATE_OUT_12, 100),
+                new Backlog(DATE_OUT_12_30, 150),
+                new Backlog(DATE_OUT_13, 200)
+        );
+
+        final List<GetPlanningDistributionOutput> planningUnits = List.of(
+                builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
+                builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
+
+        final ProjectionInput input = ProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_OUT_16)
+                .planningUnits(planningUnits)
+                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                        List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
+                .backlog(backlogs)
+                .build();
+
+        // WHEN
+        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+
+        // THEN
+        assertEquals(3, projections.size());
+
+        final ProjectionOutput projection1 = projections.get(0);
+        assertEquals(DATE_OUT_12, projection1.getDate());
+        assertEquals(parse("2020-01-01T12:30:00Z"), projection1.getProjectedEndDate());
+        assertEquals(0, projection1.getRemainingQuantity());
+
+        final ProjectionOutput projection2 = projections.get(1);
+        assertEquals(DATE_OUT_12_30, projection2.getDate());
+        assertEquals(parse("2020-01-01T11:15:00Z"), projection2.getProjectedEndDate());
+        assertEquals(0, projection2.getRemainingQuantity());
+
+        final ProjectionOutput projection3 = projections.get(2);
+        assertEquals(DATE_OUT_13, projection3.getDate());
+        assertEquals(parse("2020-01-01T16:00:00Z"), projection3.getProjectedEndDate());
+        assertEquals(300, projection3.getRemainingQuantity());
     }
 
     @ParameterizedTest

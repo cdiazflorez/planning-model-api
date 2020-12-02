@@ -20,7 +20,8 @@ import static java.util.stream.Collectors.toMap;
 public enum EntityType {
     HEADCOUNT(WORKERS),
     PRODUCTIVITY(UNITS_PER_HOUR),
-    THROUGHPUT(UNITS);
+    THROUGHPUT(UNITS),
+    REMAINING_PROCESSING(UNITS);
 
     private final MetricUnit metricUnit;
 

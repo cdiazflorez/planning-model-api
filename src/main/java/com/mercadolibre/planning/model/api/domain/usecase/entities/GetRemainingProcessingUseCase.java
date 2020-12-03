@@ -4,7 +4,6 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
@@ -24,7 +23,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -60,11 +58,10 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                         getForecastWeeks(input.getDateFrom(), input.getDateTo())
                 );
 
-        return createRemainingProcessing(input.getWorkflow(), throughput, remainingProcessing);
+        return createRemainingProcessing(throughput, remainingProcessing);
     }
 
     private List<EntityOutput> createRemainingProcessing(
-            final Workflow workflow,
             final List<EntityOutput> throughput,
             final List<ProcessingDistributionView> remainingProcessing) {
 
@@ -77,7 +74,7 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
 
         final Map<ProcessName, Map<ZonedDateTime, EntityOutput>> remainingProcessingMap =
                 toMapByProcessNameAndDate(remainingProcessing.stream()
-                        .map(pd -> pd.toEntityOutput(workflow, FORECAST))
+                        .map(pd -> EntityOutput.fromProcessingDistributionView(pd))
                         .collect(toList())
                 );
 

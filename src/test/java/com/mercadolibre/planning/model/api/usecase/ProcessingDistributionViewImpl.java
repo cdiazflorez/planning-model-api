@@ -4,14 +4,9 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.Source;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
-
-import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 
 @AllArgsConstructor
 public class ProcessingDistributionViewImpl implements ProcessingDistributionView {
@@ -58,16 +53,4 @@ public class ProcessingDistributionViewImpl implements ProcessingDistributionVie
         return type;
     }
 
-    @Override
-    public EntityOutput toEntityOutput(final Workflow workflow, final Source source) {
-        return EntityOutput.builder()
-                .workflow(workflow)
-                .date(fromDate(getDate()))
-                .processName(getProcessName())
-                .value(getQuantity())
-                .metricUnit(getQuantityMetricUnit())
-                .type(getType())
-                .source(source)
-                .build();
-    }
 }

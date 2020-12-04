@@ -58,10 +58,10 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                         getForecastWeeks(input.getDateFrom(), input.getDateTo())
                 );
 
-        return createRemainingProcessing(throughput, remainingProcessing);
+        return getRemainingProcessingUnits(throughput, remainingProcessing);
     }
 
-    private List<EntityOutput> createRemainingProcessing(
+    private List<EntityOutput> getRemainingProcessingUnits(
             final List<EntityOutput> throughput,
             final List<ProcessingDistributionView> remainingProcessing) {
 

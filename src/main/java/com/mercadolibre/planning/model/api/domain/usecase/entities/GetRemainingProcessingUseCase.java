@@ -52,7 +52,7 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                         input.getWarehouseId(),
                         input.getWorkflow().name(),
                         Set.of(ProcessingType.REMAINING_PROCESSING.name()),
-                        input.getProcessName().stream().map(Enum::name).collect(toList()),
+                        input.getProcessNamesAsString(),
                         input.getDateFrom(),
                         input.getDateTo(),
                         getForecastWeeks(input.getDateFrom(), input.getDateTo())

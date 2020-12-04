@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
@@ -106,5 +107,8 @@ public class GetRemainingProcessingUseCaseTest {
 
         assertNotNull(remainingProcessing);
         assertEquals(75, remainingProcessing.getValue());
+        assertEquals(A_DATE_UTC.withFixedOffsetZone(), remainingProcessing.getDate());
+        assertEquals(WAVING, remainingProcessing.getProcessName());
+        assertEquals(UNITS, remainingProcessing.getMetricUnit());
     }
 }

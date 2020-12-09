@@ -40,7 +40,6 @@ import static com.mercadolibre.planning.model.api.web.controller.request.EntityT
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
-import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -205,7 +204,7 @@ class GetHeadcountEntityUseCaseTest {
                 input.getWarehouseId(),
                 input.getWorkflow().name(),
                 null,
-                input.getProcessName().stream().map(Enum::name).collect(toList()),
+                input.getProcessNamesAsString(),
                 input.getDateFrom(),
                 input.getDateTo(),
                 getForecastWeeks(input.getDateFrom(), input.getDateTo()))

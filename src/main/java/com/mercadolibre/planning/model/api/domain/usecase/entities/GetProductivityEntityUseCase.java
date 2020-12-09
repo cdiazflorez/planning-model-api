@@ -109,7 +109,7 @@ public class GetProductivityEntityUseCase implements
         return productivityRepository.findBy(
                 input.getWarehouseId(),
                 input.getWorkflow().name(),
-                input.getProcessName().stream().map(Enum::name).collect(toList()),
+                input.getProcessNamesAsString(),
                 input.getDateFrom(),
                 input.getDateTo(),
                 getForecastWeeks(input.getDateFrom(), input.getDateTo()),

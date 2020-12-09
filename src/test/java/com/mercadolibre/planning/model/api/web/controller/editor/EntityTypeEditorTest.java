@@ -49,6 +49,7 @@ public class EntityTypeEditorTest {
 
         // THEN
         assertEquals("Value aaa is invalid, instead it should be one of"
-                + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT]", exception.getMessage());
+                + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING]",
+                exception.getMessage());
     }
 }

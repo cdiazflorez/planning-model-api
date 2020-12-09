@@ -102,7 +102,7 @@ public class GetHeadcountEntityUseCase implements UseCase<GetHeadcountInput, Lis
                         input.getWarehouseId(),
                         input.getWorkflow().name(),
                         getProcessingTypeAsStringOrNull(input.getProcessingType()),
-                        input.getProcessName().stream().map(Enum::name).collect(toList()),
+                        input.getProcessNamesAsString(),
                         input.getDateFrom(),
                         input.getDateTo(),
                         getForecastWeeks(input.getDateFrom(), input.getDateTo()));

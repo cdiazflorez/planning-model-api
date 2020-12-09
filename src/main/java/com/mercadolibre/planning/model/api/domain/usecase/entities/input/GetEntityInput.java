@@ -12,6 +12,8 @@ import lombok.experimental.SuperBuilder;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+
 @Getter
 @SuperBuilder
 @EqualsAndHashCode
@@ -25,4 +27,8 @@ public class GetEntityInput {
     private Source source;
     private List<ProcessName> processName;
     private List<Simulation> simulations;
+
+    public List<String> getProcessNamesAsString() {
+        return getProcessName().stream().map(Enum::name).collect(toList());
+    }
 }

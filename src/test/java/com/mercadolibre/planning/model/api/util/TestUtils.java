@@ -754,4 +754,29 @@ public final class TestUtils {
                 new AreaRequest("OUT", 40)
         );
     }
+    
+
+    
+    public static List<EntityOutput> mockGetBacklogTargetOutput() {
+        return List.of(
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(UNITS)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(REMAINING_PROCESSING)
+                        .value(1500)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build(),
+                        EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(UNITS)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(REMAINING_PROCESSING)
+                        .value(1500)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build()
+        );
+    }
 }

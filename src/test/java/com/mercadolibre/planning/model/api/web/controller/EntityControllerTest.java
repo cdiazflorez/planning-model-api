@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
@@ -44,6 +47,9 @@ public class EntityControllerTest {
 
     @MockBean
     private GetThroughputUseCase getThroughputUseCase;
+    
+    @MockBean
+    private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -157,8 +163,36 @@ public class EntityControllerTest {
         // THEN
         verifyZeroInteractions(getProductivityEntityUseCase);
         verifyZeroInteractions(getThroughputUseCase);
+        verifyZeroInteractions(getRemainingProcessingUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
+    }
+    
+    @DisplayName("Get Remaining_processing entity works ok")
+    @Test
+    public void testGetRemainingProcessingEntityOk() throws Exception {
+        // GIVEN
+        when(getRemainingProcessingUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockGetRemainingProcessingOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "remaining_processing")
+                        .contentType(APPLICATION_JSON)
+                        .param("warehouse_id", "ARBA01")
+                        .param("source", "forecast")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+                        .param("process_name", ProcessName.WAVING.name())
+        );
+
+        // THEN
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyZeroInteractions(getThroughputUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content()
+                .json(getResourceAsString("get_remaining_processing_response.json")));
     }
 
 }

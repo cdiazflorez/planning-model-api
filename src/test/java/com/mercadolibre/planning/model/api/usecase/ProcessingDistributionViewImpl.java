@@ -52,4 +52,5 @@ public class ProcessingDistributionViewImpl implements ProcessingDistributionVie
     public ProcessingType getType() {
         return type;
     }
+
 }

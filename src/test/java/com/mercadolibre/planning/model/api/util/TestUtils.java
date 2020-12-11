@@ -20,6 +20,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.output.Produc
 import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
@@ -60,6 +61,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
@@ -79,7 +81,7 @@ public final class TestUtils {
     public static final String PLANNING_METADATA_KEY = "carrier";
     public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
     public static final String WAREHOUSE_ID = "ARBA01";
-    public static final String WORKFLOW_ID = "fbm-wms-outbound";
+    public static final long HOUR_IN_MINUTES = 60L;
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
     public static final long USER_ID = 1234L;
@@ -289,6 +291,16 @@ public final class TestUtils {
                 .build();
     }
 
+    public static GetSuggestedWavesInput mockGetSuggestedWavesInput(final ZonedDateTime now) {
+        return GetSuggestedWavesInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(now.plusHours(1).truncatedTo(HOURS).withFixedOffsetZone())
+                .backlog(500)
+                .dateTo(now.plusHours(2).truncatedTo(HOURS).withFixedOffsetZone())
+                .build();
+    }
+
     public static GetEntityInput mockGetThroughputEntityInput(final Source source,
                                                               final List<Simulation> simulations) {
         return GetEntityInput.builder()
@@ -327,19 +339,13 @@ public final class TestUtils {
         return List.of(
                 new ForecastMetadataViewImpl(
                         "mono_order_distribution",
-                        "58"),
+                        "20"),
                 new ForecastMetadataViewImpl(
                         "multi_order_distribution",
-                        "23"),
+                        "20"),
                 new ForecastMetadataViewImpl(
                         "multi_batch_distribution",
-                        "72"),
-                new ForecastMetadataViewImpl(
-                        "warehouse_id",
-                        WAREHOUSE_ID),
-                new ForecastMetadataViewImpl(
-                        "week",
-                        "48-2020")
+                        "60")
         );
     }
 

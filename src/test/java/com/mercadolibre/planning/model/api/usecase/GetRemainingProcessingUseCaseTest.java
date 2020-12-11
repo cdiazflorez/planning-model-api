@@ -60,8 +60,8 @@ public class GetRemainingProcessingUseCaseTest {
                 .warehouseId(WAREHOUSE_ID)
                 .entityType(THROUGHPUT)
                 .processName(List.of(PICKING, PACKING))
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC)
+                .dateFrom(A_DATE_UTC.plusHours(1))
+                .dateTo(A_DATE_UTC.plusHours(1))
                 .build())).thenReturn(List.of(
                         EntityOutput.builder()
                                 .workflow(FBM_WMS_OUTBOUND)

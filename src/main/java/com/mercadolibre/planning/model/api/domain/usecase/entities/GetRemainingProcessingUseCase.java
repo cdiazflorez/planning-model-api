@@ -43,8 +43,8 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                 .warehouseId(input.getWarehouseId())
                 .entityType(THROUGHPUT)
                 .processName(List.of(PICKING, PACKING))
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
+                .dateFrom(input.getDateFrom().plusHours(1))
+                .dateTo(input.getDateTo().plusHours(1))
                 .build());
 
         final List<ProcessingDistributionView> remainingProcessing = processingDistRepository

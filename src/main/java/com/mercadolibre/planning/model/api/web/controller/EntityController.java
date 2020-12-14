@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
@@ -49,6 +50,7 @@ public class EntityController {
     private final GetHeadcountEntityUseCase getHeadcountUseCase;
     private final GetProductivityEntityUseCase getProductivityUseCase;
     private final GetThroughputUseCase getThroughputUseCase;
+    private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
 
     @GetMapping("/headcount")
     public ResponseEntity<List<EntityOutput>> getHeadcounts(
@@ -103,6 +105,16 @@ public class EntityController {
 
         final GetEntityInput input = request.toGetEntityInput(workflow);
         return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
+    }
+    
+    @GetMapping("/remaining_processing")
+    public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
+            @PathVariable final Workflow workflow,
+            @Valid final EntityRequest request) {
+
+        final GetEntityInput input = request.toGetEntityInput(workflow);
+        return ResponseEntity.status(OK)
+                .body(getRemainingProcessingUseCase.execute(input));
     }
 
     @InitBinder

@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.output;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -10,6 +11,8 @@ import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.ZonedDateTime;
+
+import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 
 @Getter
 @SuperBuilder
@@ -23,4 +26,15 @@ public class EntityOutput {
     private MetricUnit metricUnit;
     private Source source;
     private long value;
+
+    public static EntityOutput fromProcessingDistributionView(
+            final ProcessingDistributionView processingDistributionView) {
+        return EntityOutput.builder()
+                .processName(processingDistributionView.getProcessName())
+                .type(processingDistributionView.getType())
+                .date(fromDate(processingDistributionView.getDate()))
+                .metricUnit(processingDistributionView.getQuantityMetricUnit())
+                .value(processingDistributionView.getQuantity())
+                .build();
+    }
 }

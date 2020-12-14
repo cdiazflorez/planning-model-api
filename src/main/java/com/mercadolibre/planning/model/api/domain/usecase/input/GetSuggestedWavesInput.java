@@ -8,13 +8,12 @@ import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class GetPlanningDistributionInput {
+public class GetSuggestedWavesInput {
 
     private String warehouseId;
     private Workflow workflow;
-    private ZonedDateTime dateOutFrom;
-    private ZonedDateTime dateOutTo;
-    private ZonedDateTime dateInFrom;
-    private ZonedDateTime dateInTo;
+    private ZonedDateTime dateFrom;
+    private ZonedDateTime dateTo;
+    private long backlog;
 
 }

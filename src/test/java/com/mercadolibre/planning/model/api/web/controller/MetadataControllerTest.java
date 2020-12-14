@@ -32,7 +32,7 @@ public class MetadataControllerTest {
 
     @DisplayName("Get Forecast Metadata")
     @Test
-    public void createForecastOk() throws Exception {
+    public void testGetForecastMetadataOk() throws Exception {
         // GIVEN
         final GetForecastMetadataInput input = mockForecastMetadataInput();
         when(getForecastMetadataUseCase.execute(input)).thenReturn(mockForecastByWarehouseId());

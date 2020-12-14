@@ -61,4 +61,27 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             @Param("date_out_to") ZonedDateTime dateOutTo,
             @Param("date_in_to") ZonedDateTime dateInTo,
             @Param("weeks") Set<String> weeks);
+
+    @Query(value = "SELECT sum(quantity) as quantity "
+            + "FROM planning_distribution p "
+            + "WHERE p.date_in BETWEEN :date_in_from AND :date_in_to "
+            + "AND p.forecast_id in ("
+            + " SELECT MAX(fm.id) FROM "
+            + "     (SELECT id, "
+            + "     workflow, "
+            + "     (SELECT m.value FROM forecast_metadata m "
+            + "     WHERE m.forecast_id = f.id AND m.key = 'warehouse_id') AS warehouse_id, "
+            + "     (SELECT m.value FROM forecast_metadata m "
+            + "     WHERE m.forecast_id = f.id AND m.key = 'week') AS forecast_week "
+            + "     FROM forecast f) fm "
+            + "     WHERE fm.warehouse_id = :warehouse_id "
+            + "     AND fm.workflow = :workflow "
+            + "     AND fm.forecast_week in (:weeks)"
+            + "     GROUP BY fm.forecast_week)", nativeQuery = true)
+    SuggestedWavePlanningDistributionView findByWarehouseIdWorkflowDateInRange(
+            @Param("warehouse_id") String warehouseId,
+            @Param("workflow") String workflow,
+            @Param("date_in_from") ZonedDateTime dateInFrom,
+            @Param("date_in_to") ZonedDateTime dateInTo,
+            @Param("weeks") Set<String> weeks);
 }

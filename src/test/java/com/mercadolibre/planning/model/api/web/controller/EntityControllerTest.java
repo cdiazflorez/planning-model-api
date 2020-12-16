@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
@@ -28,6 +26,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -155,7 +154,7 @@ public class EntityControllerTest {
 
         // WHEN
         final ResultActions result = mvc.perform(
-                MockMvcRequestBuilders.post(URL, "fbm-wms-outbound", "headcount")
+                post(URL, "fbm-wms-outbound", "headcount")
                         .contentType(APPLICATION_JSON)
                         .content(getResourceAsString("post_headcount_request.json"))
         );
@@ -177,13 +176,9 @@ public class EntityControllerTest {
 
         // WHEN
         final ResultActions result = mvc.perform(
-                get(URL, "fbm-wms-outbound", "remaining_processing")
+                post(URL, "fbm-wms-outbound", "remaining_processing")
                         .contentType(APPLICATION_JSON)
-                        .param("warehouse_id", "ARBA01")
-                        .param("source", "forecast")
-                        .param("date_from", A_DATE_UTC.toString())
-                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
-                        .param("process_name", ProcessName.WAVING.name())
+                        .content(getResourceAsString("get_remaining_processing_request.json"))
         );
 
         // THEN

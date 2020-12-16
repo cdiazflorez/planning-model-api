@@ -107,10 +107,10 @@ public class EntityController {
         return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
     }
     
-    @GetMapping("/remaining_processing")
+    @PostMapping("/remaining_processing")
     public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
             @PathVariable final Workflow workflow,
-            @Valid final EntityRequest request) {
+            @RequestBody @Valid final EntityRequest request) {
 
         final GetEntityInput input = request.toGetEntityInput(workflow);
         return ResponseEntity.status(OK)

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -24,14 +24,14 @@ public class RunSimulationResponse {
     private int remainingQuantity;
 
     public static List<RunSimulationResponse> fromProjectionOutputs(
-            final List<ProjectionOutput> simulationOutputs,
-            final List<ProjectionOutput> actualOutputs) {
+            final List<CptProjectionOutput> simulationOutputs,
+            final List<CptProjectionOutput> actualOutputs) {
 
         final List<RunSimulationResponse> runSimulationResponses = new ArrayList<>();
 
-        final Map<ZonedDateTime, List<ProjectionOutput>> actualOutputsByDate = actualOutputs
+        final Map<ZonedDateTime, List<CptProjectionOutput>> actualOutputsByDate = actualOutputs
                 .stream()
-                .collect(groupingBy(ProjectionOutput::getDate));
+                .collect(groupingBy(CptProjectionOutput::getDate));
 
         if (simulationOutputs.size() == actualOutputs.size()) {
             simulationOutputs.forEach(s -> {

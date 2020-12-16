@@ -24,6 +24,7 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +54,7 @@ public class EntityController {
     private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
 
     @GetMapping("/headcount")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getHeadcounts(
             @PathVariable final Workflow workflow,
             @Valid final HeadcountRequest request) {
@@ -62,6 +64,7 @@ public class EntityController {
     }
 
     @GetMapping("/productivity")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<ProductivityOutput>> getProductivity(
             @PathVariable final Workflow workflow,
             @Valid final ProductivityRequest request) {
@@ -71,6 +74,7 @@ public class EntityController {
     }
 
     @GetMapping("/throughput")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getThroughput(
             @PathVariable final Workflow workflow,
             @Valid final EntityRequest request) {
@@ -81,6 +85,7 @@ public class EntityController {
 
     //TODO: Unificar estos 3 post en una sola llamada
     @PostMapping("/headcount")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final HeadcountRequest request) {
@@ -90,6 +95,7 @@ public class EntityController {
     }
 
     @PostMapping("/productivity")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<ProductivityOutput>> getProductivityWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final ProductivityRequest request) {
@@ -99,6 +105,7 @@ public class EntityController {
     }
 
     @PostMapping("/throughput")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getThroughputWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final EntityRequest request) {

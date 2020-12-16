@@ -7,7 +7,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughput
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
@@ -56,10 +56,10 @@ public class SimulationController {
         final List<GetPlanningDistributionOutput> planningDistributions =
                 getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
 
-        final List<ProjectionOutput> projectionOutputs = calculateCptProjectionUseCase
+        final List<CptProjectionOutput> cptProjectionOutputs = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(throughput, planningDistributions));
 
-        return ResponseEntity.ok(projectionOutputs.stream()
+        return ResponseEntity.ok(cptProjectionOutputs.stream()
                 .map(SaveSimulationResponse::fromProjectionOutput)
                 .collect(toList()));
     }
@@ -76,13 +76,13 @@ public class SimulationController {
         final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final List<ProjectionOutput> projectSimulation = calculateCptProjectionUseCase
+        final List<CptProjectionOutput> projectSimulation = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(simulatedThroughput, planningDistributions));
 
         final List<EntityOutput> actualThroughput = getThroughputUseCase
                 .execute(request.toForecastedThroughputEntityInput(workflow));
 
-        final List<ProjectionOutput> projection = calculateCptProjectionUseCase
+        final List<CptProjectionOutput> projection = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(actualThroughput, planningDistributions));
 
         return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));

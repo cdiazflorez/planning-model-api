@@ -5,7 +5,7 @@ import lombok.Value;
 import java.time.ZonedDateTime;
 
 @Value
-public class ProjectionOutput {
+public class CptProjectionOutput {
 
     private ZonedDateTime date;
 

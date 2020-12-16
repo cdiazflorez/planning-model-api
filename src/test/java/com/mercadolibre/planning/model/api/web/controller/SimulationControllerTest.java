@@ -5,8 +5,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughput
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
@@ -58,9 +58,9 @@ public class SimulationControllerTest {
         // GIVEN
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
-        when(calculateCptProjectionUseCase.execute(any(ProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new ProjectionOutput(dateOut, projectedEndDate, 100)
+                        new CptProjectionOutput(dateOut, projectedEndDate, 100)
                 ));
 
         // WHEN
@@ -90,11 +90,11 @@ public class SimulationControllerTest {
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
-        when(calculateCptProjectionUseCase.execute(any(ProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new ProjectionOutput(dateOut, simulatedEndDate, 100)))
+                        new CptProjectionOutput(dateOut, simulatedEndDate, 100)))
                 .thenReturn(List.of(
-                        new ProjectionOutput(dateOut, projectedEndDate, 150)
+                        new CptProjectionOutput(dateOut, projectedEndDate, 150)
         ));
 
         // WHEN

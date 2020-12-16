@@ -1,23 +1,21 @@
-package com.mercadolibre.planning.model.api.web.controller.request;
+package com.mercadolibre.planning.model.api.web.controller.request.projection;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-public class ProjectionRequest {
+@Value
+public class BacklogProjectionRequest {
 
     @NotNull
     private String warehouseId;
 
     @NotNull
-    private ProjectionType type;
+    private Long userId;
 
     @NotNull
     private List<ProcessName> processName;
@@ -28,5 +26,5 @@ public class ProjectionRequest {
     @NotNull
     private ZonedDateTime dateTo;
 
-    private List<QuantityByDate> backlog;
+    private List<CurrentBacklog> currentBacklog;
 }

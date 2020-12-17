@@ -4,9 +4,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.output.Entity
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +22,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput.builder;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProjectionType.BACKLOG;
-import static com.mercadolibre.planning.model.api.web.controller.request.ProjectionType.CPT;
 import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.singletonList;
@@ -58,21 +55,21 @@ public class CalculateCptProjectionUseCaseTest {
                 .total(200)
                 .build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .throughput(mockThroughputs(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
 
-        final ProjectionOutput projection = projections.get(0);
+        final CptProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
         assertEquals(DATE_OUT_13, projection.getProjectedEndDate());
         assertEquals(0, projection.getRemainingQuantity());
@@ -89,21 +86,21 @@ public class CalculateCptProjectionUseCaseTest {
                 .total(100)
                 .build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .throughput(mockThroughputs(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
 
-        final ProjectionOutput projection = projections.get(0);
+        final CptProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
         assertEquals(parse("2020-01-01T12:30:00Z"), projection.getProjectedEndDate());
         assertEquals(0, projection.getRemainingQuantity());
@@ -120,21 +117,21 @@ public class CalculateCptProjectionUseCaseTest {
                 .total(100)
                 .build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_12, List.of(100, 200, 200)))
+                .throughput(mockThroughputs(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
 
-        final ProjectionOutput projection = projections.get(0);
+        final CptProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
         assertNull(projection.getProjectedEndDate());
         assertEquals(700, projection.getRemainingQuantity());
@@ -153,21 +150,21 @@ public class CalculateCptProjectionUseCaseTest {
                 .total(400)
                 .build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, dateOut, List.of(100, 200, 200)))
+                .throughput(mockThroughputs(dateOut, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
 
-        final ProjectionOutput projection = projections.get(0);
+        final CptProjectionOutput projection = projections.get(0);
         assertEquals(dateOut, projection.getDate());
         assertEquals(parse("2020-01-01T13:00:00Z"), projection.getProjectedEndDate());
         assertEquals(remainingQuantity, projection.getRemainingQuantity());
@@ -181,7 +178,7 @@ public class CalculateCptProjectionUseCaseTest {
     }
 
     @Test
-    @DisplayName("The capacity is shared among all date outs")
+    @DisplayName("The capacity is shared among al date outs")
     public void testMultipleDateOuts() {
         // GIVEN
         final List<Backlog> backlogs = List.of(
@@ -193,27 +190,27 @@ public class CalculateCptProjectionUseCaseTest {
                 builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
                 builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                .throughput(mockThroughputs(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(2, projections.size());
 
-        final ProjectionOutput projection1 = projections.get(0);
+        final CptProjectionOutput projection1 = projections.get(0);
         assertEquals(DATE_OUT_12, projection1.getDate());
         assertEquals(parse("2020-01-01T12:30:00Z"), projection1.getProjectedEndDate());
         assertEquals(0, projection1.getRemainingQuantity());
 
-        final ProjectionOutput projection2 = projections.get(1);
+        final CptProjectionOutput projection2 = projections.get(1);
         assertEquals(DATE_OUT_13, projection2.getDate());
         assertEquals(parse("2020-01-01T15:30:00Z"), projection2.getProjectedEndDate());
         assertEquals(250, projection2.getRemainingQuantity());
@@ -222,26 +219,26 @@ public class CalculateCptProjectionUseCaseTest {
     @Test
     @DisplayName("Cpt without items shouldn't be returned")
     public void testEmptyCpt() {
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_OUT_16)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                .throughput(mockThroughputs(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
                 .planningUnits(List.of(
                         builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(0).build()))
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertTrue(projections.isEmpty());
     }
 
     @Test
-    @DisplayName("Recalculate the projection if has new items")
+    @DisplayName("Recalculate de projection if has new items")
     public void testRecalculateProjectionDate() {
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(List.of(
@@ -259,17 +256,17 @@ public class CalculateCptProjectionUseCaseTest {
                                 .total(50).build(),
                         builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(5))
                                 .total(50).build()))
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                .throughput(mockThroughputs(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
 
-        final ProjectionOutput projection1 = projections.get(0);
+        final CptProjectionOutput projection1 = projections.get(0);
         assertEquals(DATE_OUT_16, projection1.getDate());
         assertNull(projection1.getProjectedEndDate());
         assertEquals(170, projection1.getRemainingQuantity());
@@ -289,66 +286,46 @@ public class CalculateCptProjectionUseCaseTest {
                 builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
                 builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
 
-        final ProjectionInput input = ProjectionInput.builder()
+        final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
-                .throughput(mockThroughputs(DATE_FROM_10, DATE_OUT_16.plusHours(2),
+                .throughput(mockThroughputs(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
 
         // WHEN
-        final List<ProjectionOutput> projections = calculateCptProjection.execute(input);
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(3, projections.size());
 
-        final ProjectionOutput projection1 = projections.get(0);
+        final CptProjectionOutput projection1 = projections.get(0);
         assertEquals(DATE_OUT_12, projection1.getDate());
         assertEquals(parse("2020-01-01T12:30:00Z"), projection1.getProjectedEndDate());
         assertEquals(0, projection1.getRemainingQuantity());
 
-        final ProjectionOutput projection2 = projections.get(1);
+        final CptProjectionOutput projection2 = projections.get(1);
         assertEquals(DATE_OUT_12_30, projection2.getDate());
         assertEquals(parse("2020-01-01T11:15:00Z"), projection2.getProjectedEndDate());
         assertEquals(0, projection2.getRemainingQuantity());
 
-        final ProjectionOutput projection3 = projections.get(2);
+        final CptProjectionOutput projection3 = projections.get(2);
         assertEquals(DATE_OUT_13, projection3.getDate());
         assertEquals(parse("2020-01-01T16:00:00Z"), projection3.getProjectedEndDate());
         assertEquals(300, projection3.getRemainingQuantity());
     }
 
-    @ParameterizedTest
-    @DisplayName("Only supports cpt type")
-    @MethodSource("getSupportedProjectionTypes")
-    public void testSupportEntityTypeOk(final ProjectionType projectionType,
-                                        final boolean shouldBeSupported) {
-        // WHEN
-        final boolean isSupported = calculateCptProjection.supportsProjectionType(projectionType);
-
-        // THEN
-        assertEquals(shouldBeSupported, isSupported);
-    }
-
-    private static Stream<Arguments> getSupportedProjectionTypes() {
-        return Stream.of(
-                Arguments.of(CPT, true),
-                Arguments.of(BACKLOG, false)
-        );
-    }
-
-    private List<EntityOutput> mockThroughputs(final ZonedDateTime dateFrom,
-                                               final Temporal dateTo,
+    private List<EntityOutput> mockThroughputs(final Temporal dateTo,
                                                final List<Integer> values) {
 
         final List<EntityOutput> entityOutputs = new ArrayList<>();
 
-        for (int i = 0; i <= HOURS.between(dateFrom, dateTo); i++) {
+        for (int i = 0; i <= HOURS.between(DATE_FROM_10, dateTo); i++) {
             entityOutputs.add(
                     EntityOutput.builder()
-                            .date(dateFrom.plusHours(i))
+                            .date(DATE_FROM_10.plusHours(i))
                             .value(values.get(i))
                             .build());
         }

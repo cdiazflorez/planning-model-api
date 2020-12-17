@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDist
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.request.GetPlanningDistributionRequest;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ public class PlanningDistributionController {
     private final GetPlanningDistributionUseCase getPlanningDistUseCase;
 
     @GetMapping
+    @Trace(dispatcher = true)
     public ResponseEntity<List<GetPlanningDistributionOutput>> getPlanningDist(
             @PathVariable final Workflow workflow,
             @Valid final GetPlanningDistributionRequest request) {

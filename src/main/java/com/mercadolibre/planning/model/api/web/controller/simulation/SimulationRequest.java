@@ -6,7 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEnti
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import lombok.Data;
@@ -44,9 +44,9 @@ public class SimulationRequest {
     @NotNull
     private Long userId;
 
-    public ProjectionInput toProjectionInput(final List<EntityOutput> throughputs,
-                                             final List<GetPlanningDistributionOutput> units) {
-        return ProjectionInput.builder()
+    public CptProjectionInput toProjectionInput(final List<EntityOutput> throughputs,
+                                                final List<GetPlanningDistributionOutput> units) {
+        return CptProjectionInput.builder()
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .throughput(throughputs)

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
-import com.mercadolibre.planning.model.api.domain.usecase.projection.ProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -16,7 +16,7 @@ public class SaveSimulationResponse {
 
     private int remainingQuantity;
 
-    public static SaveSimulationResponse fromProjectionOutput(final ProjectionOutput output) {
+    public static SaveSimulationResponse fromProjectionOutput(final CptProjectionOutput output) {
         return new SaveSimulationResponse(
                 output.getDate(), output.getProjectedEndDate(), output.getRemainingQuantity());
     }

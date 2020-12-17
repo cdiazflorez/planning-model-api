@@ -9,6 +9,7 @@ import java.util.stream.LongStream;
 
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.WEEKS;
 
 public final class DateUtils {
@@ -26,4 +27,13 @@ public final class DateUtils {
                 .map(integer -> dateFrom.plusWeeks(integer).format(weekFormat))
                 .collect(Collectors.toSet());
     }
+
+    public static ZonedDateTime ignoreMinutes(final ZonedDateTime dateTime) {
+        return dateTime.truncatedTo(HOURS).withFixedOffsetZone();
+    }
+
+    public static ZonedDateTime nextHour(final ZonedDateTime dateTime) {
+        return dateTime.truncatedTo(HOURS).plusHours(1);
+    }
+
 }

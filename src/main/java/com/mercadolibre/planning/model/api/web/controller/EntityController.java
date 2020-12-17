@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
@@ -23,6 +24,7 @@ import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.request.HeadcountRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.ProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
@@ -49,8 +51,10 @@ public class EntityController {
     private final GetHeadcountEntityUseCase getHeadcountUseCase;
     private final GetProductivityEntityUseCase getProductivityUseCase;
     private final GetThroughputUseCase getThroughputUseCase;
+    private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
 
     @GetMapping("/headcount")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getHeadcounts(
             @PathVariable final Workflow workflow,
             @Valid final HeadcountRequest request) {
@@ -60,6 +64,7 @@ public class EntityController {
     }
 
     @GetMapping("/productivity")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<ProductivityOutput>> getProductivity(
             @PathVariable final Workflow workflow,
             @Valid final ProductivityRequest request) {
@@ -69,6 +74,7 @@ public class EntityController {
     }
 
     @GetMapping("/throughput")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getThroughput(
             @PathVariable final Workflow workflow,
             @Valid final EntityRequest request) {
@@ -79,6 +85,7 @@ public class EntityController {
 
     //TODO: Unificar estos 3 post en una sola llamada
     @PostMapping("/headcount")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final HeadcountRequest request) {
@@ -88,6 +95,7 @@ public class EntityController {
     }
 
     @PostMapping("/productivity")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<ProductivityOutput>> getProductivityWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final ProductivityRequest request) {
@@ -97,12 +105,23 @@ public class EntityController {
     }
 
     @PostMapping("/throughput")
+    @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getThroughputWithSimulations(
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final EntityRequest request) {
 
         final GetEntityInput input = request.toGetEntityInput(workflow);
         return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
+    }
+    
+    @PostMapping("/remaining_processing")
+    public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
+            @PathVariable final Workflow workflow,
+            @RequestBody @Valid final EntityRequest request) {
+
+        final GetEntityInput input = request.toGetEntityInput(workflow);
+        return ResponseEntity.status(OK)
+                .body(getRemainingProcessingUseCase.execute(input));
     }
 
     @InitBinder

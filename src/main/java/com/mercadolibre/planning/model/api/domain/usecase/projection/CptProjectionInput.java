@@ -10,7 +10,7 @@ import java.util.List;
 
 @Value
 @Builder
-public class ProjectionInput {
+public class CptProjectionInput {
 
     private List<EntityOutput> throughput;
 

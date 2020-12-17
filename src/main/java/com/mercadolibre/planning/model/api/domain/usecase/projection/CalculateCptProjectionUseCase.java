@@ -2,7 +2,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection;
 
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import static com.mercadolibre.planning.model.api.web.controller.request.ProjectionType.CPT;
+import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -25,17 +24,11 @@ import static java.util.stream.Stream.iterate;
 
 @Service
 @AllArgsConstructor
-public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase {
+public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    @Override
-    public boolean supportsProjectionType(final ProjectionType projectionType) {
-        return CPT == projectionType;
-    }
-
-    @Override
-    public List<ProjectionOutput> execute(final ProjectionInput input) {
+    public List<CptProjectionOutput> execute(final CptProjectionInput input) {
         final Map<ZonedDateTime, Integer> capacityByDate = getCapacity(input.getThroughput());
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
@@ -44,16 +37,17 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
     }
 
     @SuppressWarnings("PMD.NullAssignment")
-    private List<ProjectionOutput> project(
+    private List<CptProjectionOutput> project(
             final Map<ZonedDateTime, Integer> capacityByDate,
             final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate) {
 
-        final List<ProjectionOutput> projectionOutputs = new ArrayList<>();
+        final List<CptProjectionOutput> cptProjectionOutputs = new ArrayList<>();
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
 
             if (unitsByDate.values().stream().mapToInt(Integer::intValue).sum() == 0) {
                 return;
             }
+
             int nextBacklog = 0;
             int remainingQuantity = 0;
             ZonedDateTime projectedDate = null;
@@ -88,10 +82,11 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
                     }
                 }
             }
-            projectionOutputs.add(new ProjectionOutput(dateOut, projectedDate, remainingQuantity));
+            cptProjectionOutputs.add(
+                    new CptProjectionOutput(dateOut, projectedDate, remainingQuantity));
         });
 
-        return projectionOutputs;
+        return cptProjectionOutputs;
     }
 
     private Map<ZonedDateTime, Integer> getCapacity(
@@ -104,7 +99,7 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(
-            final ProjectionInput input) {
+            final CptProjectionInput input) {
 
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> planningUnitsByDateInByDateOut =
                 getPlanning(input.getPlanningUnits());
@@ -113,7 +108,7 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
                 ? emptyMap()
                 : input.getBacklog().stream().collect(toMap(
                         backlog -> backlog.getDate().withFixedOffsetZone(),
-                        Backlog::getQuantity, Integer::sum));
+                Backlog::getQuantity, Integer::sum));
 
         final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
         final TreeSet<ZonedDateTime> datesOut =
@@ -173,9 +168,5 @@ public class CalculateCptProjectionUseCase implements CalculateProjectionUseCase
     private int calculateExactBacklog(final int backlogQty, final int planningQty) {
         final int remainingMinutes = HOUR_IN_MINUTES - LocalTime.now().getMinute();
         return backlogQty + (remainingMinutes * planningQty / HOUR_IN_MINUTES);
-    }
-
-    private ZonedDateTime ignoreMinutes(final ZonedDateTime dateTime) {
-        return dateTime.truncatedTo(HOURS).withFixedOffsetZone();
     }
 }

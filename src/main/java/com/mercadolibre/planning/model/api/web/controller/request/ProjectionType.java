@@ -12,7 +12,6 @@ import static java.util.stream.Collectors.toMap;
 public enum ProjectionType {
 
     BACKLOG,
-    // Check if name should be DATE_OUT instead of CPT
     CPT;
 
     private static final Map<String, ProjectionType> LOOKUP = Arrays.stream(values()).collect(

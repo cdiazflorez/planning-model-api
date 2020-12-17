@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.GetConfigurationUseCas
 import com.mercadolibre.planning.model.api.domain.usecase.UpdateConfigurationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.input.GetConfigurationInput;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ public class ConfigurationController {
     private final UpdateConfigurationUseCase updateConfigurationUseCase;
 
     @GetMapping
+    @Trace(dispatcher = true)
     public ResponseEntity<ConfigurationResponse> get(@RequestParam final String logisticCenterId,
                                                      @RequestParam final String key) {
         return ResponseEntity.ok(toResponse(
@@ -41,6 +43,7 @@ public class ConfigurationController {
     }
 
     @PostMapping
+    @Trace(dispatcher = true)
     public ResponseEntity<ConfigurationResponse> create(
             @RequestBody @Valid final CreateConfigurationRequest request) {
 
@@ -50,6 +53,7 @@ public class ConfigurationController {
     }
 
     @PutMapping("/{logisticCenterId}/{key}")
+    @Trace(dispatcher = true)
     public ResponseEntity<ConfigurationResponse> update(
             @PathVariable final String logisticCenterId,
             @PathVariable final String key,

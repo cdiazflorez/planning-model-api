@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingP
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,8 +26,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -50,7 +51,7 @@ public class GetRemainingProcessingUseCaseTest {
                 .workflow(FBM_WMS_OUTBOUND)
                 .processName(List.of(WAVING))
                 .warehouseId(WAREHOUSE_ID)
-                .entityType(REMAINING_PROCESSING)
+                .entityType(EntityType.REMAINING_PROCESSING)
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC)
                 .build();
@@ -108,5 +109,8 @@ public class GetRemainingProcessingUseCaseTest {
         assertEquals(A_DATE_UTC.withFixedOffsetZone(), remainingProcessing.getDate());
         assertEquals(WAVING, remainingProcessing.getProcessName());
         assertEquals(UNITS, remainingProcessing.getMetricUnit());
+        assertEquals(FBM_WMS_OUTBOUND, remainingProcessing.getWorkflow());
+        assertEquals(FORECAST, remainingProcessing.getSource());
+        assertEquals(ProcessingType.REMAINING_PROCESSING, remainingProcessing.getType());
     }
 }

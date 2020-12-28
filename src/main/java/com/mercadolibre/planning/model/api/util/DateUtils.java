@@ -44,7 +44,7 @@ public final class DateUtils {
         ZonedDateTime utcTimestamp = instant.atZone(ZoneOffset.UTC);
 
         return String.format("%s-%s",
-                utcTimestamp.get(IsoFields.WEEK_BASED_YEAR),
-                utcTimestamp.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
+                utcTimestamp.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+                utcTimestamp.get(IsoFields.WEEK_BASED_YEAR));
     }
 }

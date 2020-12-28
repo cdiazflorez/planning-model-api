@@ -3,7 +3,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
@@ -20,9 +19,11 @@ import java.util.TreeMap;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -51,17 +52,18 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         input.getWarehouseId(),
                         input.getWorkflow().name(),
-                        Set.of(ProcessingType.REMAINING_PROCESSING.name()),
+                        Set.of(REMAINING_PROCESSING.name()),
                         input.getProcessNamesAsString(),
                         input.getDateFrom(),
                         input.getDateTo(),
                         getForecastWeeks(input.getDateFrom(), input.getDateTo())
                 );
 
-        return getRemainingProcessingUnits(throughput, remainingProcessing);
+        return getRemainingProcessingUnits(input, throughput, remainingProcessing);
     }
 
     private List<EntityOutput> getRemainingProcessingUnits(
+            final GetEntityInput input,
             final List<EntityOutput> throughput,
             final List<ProcessingDistributionView> remainingProcessing) {
 
@@ -94,11 +96,13 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                             Math.round((throughputPerHour / 60.0) * remainingProcessingInMinutes);
 
                     remainingProcessingInUnits.add(EntityOutput.builder()
-                            .workflow(remainingProcessingByDate.getWorkflow())
+                            .workflow(input.getWorkflow())
                             .date(remainingProcessingByDate.getDate().withFixedOffsetZone())
                             .processName(processName)
                             .metricUnit(UNITS)
                             .value(value)
+                            .source(FORECAST)
+                            .type(REMAINING_PROCESSING)
                             .build());
                 })
         );

@@ -20,7 +20,7 @@ public final class DateUtils {
 
     public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
                                                final ZonedDateTime dateTo) {
-        final DateTimeFormatter weekFormat = DateTimeFormatter.ofPattern("w-YYYY");
+        final DateTimeFormatter weekFormat = DateTimeFormatter.ofPattern("w-yyyy");
         final long weeks = (int) WEEKS.between(dateFrom, dateTo);
 
         return LongStream.rangeClosed(0, weeks).boxed()

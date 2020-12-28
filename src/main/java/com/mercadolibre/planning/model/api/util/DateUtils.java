@@ -1,7 +1,10 @@
 package com.mercadolibre.planning.model.api.util;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.IsoFields;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,11 +23,11 @@ public final class DateUtils {
 
     public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
                                                final ZonedDateTime dateTo) {
-        final DateTimeFormatter weekFormat = DateTimeFormatter.ofPattern("w-YYYY");
+
         final long weeks = (int) WEEKS.between(dateFrom, dateTo);
 
         return LongStream.rangeClosed(0, weeks).boxed()
-                .map(integer -> dateFrom.plusWeeks(integer).format(weekFormat))
+                .map(integer -> toWeekYear(dateFrom.plusWeeks(integer)))
                 .collect(Collectors.toSet());
     }
 
@@ -36,4 +39,12 @@ public final class DateUtils {
         return dateTime.truncatedTo(HOURS).plusHours(1);
     }
 
+    public static String toWeekYear(ZonedDateTime zonedDateTime) {
+        Instant instant = Instant.from(zonedDateTime);
+        ZonedDateTime utcTimestamp = instant.atZone(ZoneOffset.UTC);
+
+        return String.format("%s-%s",
+                utcTimestamp.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
+                utcTimestamp.get(IsoFields.WEEK_BASED_YEAR));
+    }
 }

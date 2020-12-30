@@ -62,7 +62,7 @@ public class GetRemainingProcessingUseCaseTest {
                 .entityType(THROUGHPUT)
                 .processName(List.of(PICKING, PACKING))
                 .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC)
+                .dateTo(A_DATE_UTC.plusHours(2))
                 .build())).thenReturn(List.of(
                         EntityOutput.builder()
                                 .workflow(FBM_WMS_OUTBOUND)
@@ -77,6 +77,34 @@ public class GetRemainingProcessingUseCaseTest {
                                 .date(A_DATE_UTC)
                                 .metricUnit(MINUTES)
                                 .value(45)
+                                .build(),
+                        EntityOutput.builder()
+                                .workflow(FBM_WMS_OUTBOUND)
+                                .processName(PICKING)
+                                .date(A_DATE_UTC.plusHours(1))
+                                .metricUnit(MINUTES)
+                                .value(49)
+                                .build(),
+                        EntityOutput.builder()
+                                .workflow(FBM_WMS_OUTBOUND)
+                                .processName(PACKING)
+                                .date(A_DATE_UTC.plusHours(1))
+                                .metricUnit(MINUTES)
+                                .value(27)
+                                .build(),
+                        EntityOutput.builder()
+                                .workflow(FBM_WMS_OUTBOUND)
+                                .processName(PICKING)
+                                .date(A_DATE_UTC.plusHours(2))
+                                .metricUnit(MINUTES)
+                                .value(26)
+                                .build(),
+                        EntityOutput.builder()
+                                .workflow(FBM_WMS_OUTBOUND)
+                                .processName(PACKING)
+                                .date(A_DATE_UTC.plusHours(2))
+                                .metricUnit(MINUTES)
+                                .value(17)
                                 .build()
                         ));
 
@@ -105,7 +133,7 @@ public class GetRemainingProcessingUseCaseTest {
         final EntityOutput remainingProcessing = outputs.get(0);
 
         assertNotNull(remainingProcessing);
-        assertEquals(75, remainingProcessing.getValue());
+        assertEquals(49, remainingProcessing.getValue());
         assertEquals(A_DATE_UTC.withFixedOffsetZone(), remainingProcessing.getDate());
         assertEquals(WAVING, remainingProcessing.getProcessName());
         assertEquals(UNITS, remainingProcessing.getMetricUnit());

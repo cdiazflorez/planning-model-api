@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
@@ -36,17 +37,36 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {
-        // We should be querying for each process name coming on input, except in the case of
-        // WAVING where we need TPH from PICKING and PACKING in order to calculate the
-        // remaining processing in UNITS.
-        final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput.builder()
+
+        final List<Long> throughputPerHourList = new ArrayList<>();
+
+        getThroughputUseCase.execute(GetEntityInput.builder()
                 .workflow(input.getWorkflow())
                 .warehouseId(input.getWarehouseId())
                 .entityType(THROUGHPUT)
                 .processName(List.of(PICKING, PACKING))
                 .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .build());
+                .dateTo(input.getDateTo().plusHours(2))
+                .build())
+                .stream()
+                .collect(
+                        groupingBy(
+                            entityOutput -> entityOutput.getDate().withFixedOffsetZone(),
+                            TreeMap::new,
+                            toList()
+                )).forEach((entityDate, throughputList) ->
+                    throughputPerHourList.add(throughputList
+                            .stream()
+                            .map(EntityOutput::getValue)
+                            .mapToLong(v -> v)
+                            .min()
+                            .orElse(0)));
+
+        final double totalThroughput = throughputPerHourList
+                .stream()
+                .mapToDouble(Long::doubleValue)
+                .summaryStatistics()
+                .getAverage();
 
         final List<ProcessingDistributionView> remainingProcessing = processingDistRepository
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -59,24 +79,20 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                         getForecastWeeks(input.getDateFrom(), input.getDateTo())
                 );
 
-        return getRemainingProcessingUnits(input, throughput, remainingProcessing);
+        return getRemainingProcessingUnits(
+                input.getWorkflow(),
+                totalThroughput,
+                remainingProcessing);
     }
 
     private List<EntityOutput> getRemainingProcessingUnits(
-            final GetEntityInput input,
-            final List<EntityOutput> throughput,
+            final Workflow workflow,
+            final double totalThroughput,
             final List<ProcessingDistributionView> remainingProcessing) {
-
-        final Map<ZonedDateTime, List<EntityOutput>> throughputMap = throughput.stream()
-                .collect(groupingBy(
-                        (e) -> e.getDate().withFixedOffsetZone(),
-                        TreeMap::new,
-                        toList()
-                ));
 
         final Map<ProcessName, Map<ZonedDateTime, EntityOutput>> remainingProcessingMap =
                 toMapByProcessNameAndDate(remainingProcessing.stream()
-                        .map(pd -> EntityOutput.fromProcessingDistributionView(pd))
+                        .map(EntityOutput::fromProcessingDistributionView)
                         .collect(toList())
                 );
 
@@ -86,17 +102,12 @@ public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, Li
                 remainingProcessingByProcess.forEach((dateTime, remainingProcessingByDate) -> {
 
                     final long remainingProcessingInMinutes = remainingProcessingByDate.getValue();
-                    final long throughputPerHour = throughputMap.get(dateTime).stream()
-                            .map(EntityOutput::getValue)
-                            .mapToLong(v -> v)
-                            .min()
-                            .orElse(0);
 
                     final long value =
-                            Math.round((throughputPerHour / 60.0) * remainingProcessingInMinutes);
+                            Math.round((totalThroughput / 60.0) * remainingProcessingInMinutes);
 
                     remainingProcessingInUnits.add(EntityOutput.builder()
-                            .workflow(input.getWorkflow())
+                            .workflow(workflow)
                             .date(remainingProcessingByDate.getDate().withFixedOffsetZone())
                             .processName(processName)
                             .metricUnit(UNITS)

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.editor;
 
-import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

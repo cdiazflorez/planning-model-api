@@ -1,15 +1,16 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.CalculateBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

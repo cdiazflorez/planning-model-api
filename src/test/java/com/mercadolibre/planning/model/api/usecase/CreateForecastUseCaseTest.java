@@ -15,9 +15,9 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.CreateForecastUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.CreateForecastOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

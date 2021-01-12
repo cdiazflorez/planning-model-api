@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput.builder;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.singletonList;

@@ -1,7 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetForecastMetadataInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.GetForecastMetadataUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
+import com.mercadolibre.planning.model.api.web.controller.metadata.MetadataController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
-
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastByWarehouseId;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadataInput;
 import static org.mockito.Mockito.when;

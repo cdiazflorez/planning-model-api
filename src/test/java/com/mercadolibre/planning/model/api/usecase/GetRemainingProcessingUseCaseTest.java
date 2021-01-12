@@ -2,11 +2,11 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,8 +26,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;

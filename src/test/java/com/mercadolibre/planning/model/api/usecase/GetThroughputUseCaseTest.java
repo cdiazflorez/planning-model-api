@@ -1,13 +1,13 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,11 +33,11 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEn
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMultiFunctionalProductivityEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutputWithSimulations;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

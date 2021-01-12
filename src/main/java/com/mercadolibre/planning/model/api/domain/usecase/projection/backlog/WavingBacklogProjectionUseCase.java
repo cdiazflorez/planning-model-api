@@ -1,9 +1,8 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.BacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

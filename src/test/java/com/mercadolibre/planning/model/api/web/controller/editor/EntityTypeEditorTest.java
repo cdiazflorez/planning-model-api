@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.editor;
 
 import com.mercadolibre.planning.model.api.exception.InvalidEntityTypeException;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

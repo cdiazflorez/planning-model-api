@@ -1,9 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
-import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

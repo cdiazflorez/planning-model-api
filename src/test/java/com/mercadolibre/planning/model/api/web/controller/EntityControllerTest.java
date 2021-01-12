@@ -1,12 +1,13 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

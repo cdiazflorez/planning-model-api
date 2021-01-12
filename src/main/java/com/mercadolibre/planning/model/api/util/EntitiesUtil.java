@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.web.controller.request.Source;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 
 import java.time.ZonedDateTime;
 import java.util.List;

@@ -5,12 +5,12 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Plannin
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.SuggestedWavePlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.input.GetSuggestedWavesInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.SuggestedWavesOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.GetSuggestedWavesUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.SuggestedWavesOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,15 +27,13 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
-
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.HOUR_IN_MINUTES;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastByWarehouseId;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetSuggestedWavesInput;
-
-import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.REMAINING_PROCESSING;
-import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

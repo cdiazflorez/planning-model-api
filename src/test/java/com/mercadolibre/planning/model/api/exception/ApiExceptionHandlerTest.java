@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.exception;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -132,6 +133,25 @@ public class ApiExceptionHandlerTest {
         // WHEN
         final ResponseEntity<ErrorResponse> response =
                 apiExceptionHandler.handleEntityAlreadyExistsException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    @DisplayName("Handle Exception")
+    public void handleGenericException() {
+        // GIVEN
+        final Exception exception = new Exception("Unknown error");
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                exception.getMessage(),
+                "unknown_error");
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleGenericException(
+                exception, request);
 
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);

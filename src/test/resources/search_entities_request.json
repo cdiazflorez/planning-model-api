@@ -1,0 +1,15 @@
+{
+    "warehouse_id": "ARBA01",
+    "date_from": "2020-08-19T17:00:00Z",
+    "date_to": "2020-08-20T17:00:00Z",
+    "entity_types": ["headcount", "productivity", "throughput", "remaining_processing"],
+    "process_name": ["picking", "packing"],
+    "entity_filters": {
+        "headcount": {
+            "processing_type": ["active_workers"]
+        },
+        "productivity": {
+            "ability_level": ["1"]
+        }
+    }
+}

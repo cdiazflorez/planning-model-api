@@ -15,6 +15,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
@@ -24,6 +25,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityDataRequest;
@@ -44,6 +46,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
@@ -59,6 +62,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.P
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -760,9 +765,7 @@ public final class TestUtils {
                 new AreaRequest("OUT", 40)
         );
     }
-    
 
-    
     public static List<EntityOutput> mockGetRemainingProcessingOutput() {
         return List.of(
                 EntityOutput.builder()
@@ -783,6 +786,29 @@ public final class TestUtils {
                         .value(1500)
                         .workflow(FBM_WMS_OUTBOUND)
                         .build()
+        );
+    }
+
+    public static SearchEntitiesInput mockSearchEntitiesInput(
+            final Source source,
+            final List<EntityType> entityTypes) {
+        return SearchEntitiesInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .entityTypes(entityTypes)
+                .dateFrom(A_DATE_UTC)
+                .dateTo(A_DATE_UTC.plusDays(2))
+                .source(source)
+                .processName(List.of(PICKING, PACKING))
+                .build();
+    }
+
+    public static Map<EntityType, Object> mockSearchEntitiesOutput() {
+        return Map.of(
+                HEADCOUNT, mockHeadcountEntityOutput(),
+                PRODUCTIVITY, mockProductivityEntityOutput(),
+                EntityType.REMAINING_PROCESSING, mockGetRemainingProcessingOutput(),
+                THROUGHPUT, mockThroughputEntityOutput()
         );
     }
 }

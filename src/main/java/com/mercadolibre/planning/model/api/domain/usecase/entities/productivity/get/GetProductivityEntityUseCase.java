@@ -5,7 +5,8 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,16 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
-public class GetProductivityEntityUseCase implements
-        UseCase<GetProductivityInput,
-        List<ProductivityOutput>> {
+public class GetProductivityEntityUseCase
+        implements EntityUseCase<GetProductivityInput, List<ProductivityOutput>> {
 
     protected final HeadcountProductivityRepository productivityRepository;
     protected final CurrentHeadcountProductivityRepository currentProductivityRepository;
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == PRODUCTIVITY;
+    }
 
     @Override
     public List<ProductivityOutput> execute(final GetProductivityInput input) {

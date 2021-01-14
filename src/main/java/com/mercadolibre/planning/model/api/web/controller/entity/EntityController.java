@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
@@ -23,6 +24,7 @@ import com.mercadolibre.planning.model.api.web.controller.entity.request.EntityR
 import com.mercadolibre.planning.model.api.web.controller.entity.request.HeadcountRequest;
 import com.mercadolibre.planning.model.api.web.controller.entity.request.ProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.request.EntitySearchRequest;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.OK;
 
@@ -51,6 +54,7 @@ public class EntityController {
     private final GetProductivityEntityUseCase getProductivityUseCase;
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+    private final SearchEntitiesUseCase searchEntitiesUseCase;
 
     @GetMapping("/headcount")
     @Trace(dispatcher = true)
@@ -82,7 +86,15 @@ public class EntityController {
         return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
     }
 
-    //TODO: Unificar estos 3 post en una sola llamada
+    @PostMapping("/search")
+    @Trace(dispatcher = true)
+    public ResponseEntity<Map<EntityType,Object>> searchEntities(
+            @PathVariable final Workflow workflow,
+            @RequestBody @Valid final EntitySearchRequest request) {
+        return ResponseEntity.ok(searchEntitiesUseCase.execute(request.toSearchInput(workflow))
+        );
+    }
+
     @PostMapping("/headcount")
     @Trace(dispatcher = true)
     public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
@@ -112,7 +124,7 @@ public class EntityController {
         final GetEntityInput input = request.toGetEntityInput(workflow);
         return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
     }
-    
+
     @PostMapping("/remaining_processing")
     public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
             @PathVariable final Workflow workflow,

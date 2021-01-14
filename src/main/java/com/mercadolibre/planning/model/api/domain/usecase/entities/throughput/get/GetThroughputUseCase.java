@@ -2,14 +2,15 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.g
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,19 +27,27 @@ import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProce
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameDateAndSource;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+
 import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
-public class GetThroughputUseCase implements UseCase<GetEntityInput, List<EntityOutput>> {
+public class GetThroughputUseCase
+        implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 
     private static final int MAIN_ABILITY = 1;
     private static final int POLYVALENT_ABILITY = 2;
 
     private final GetHeadcountEntityUseCase headcountEntityUseCase;
     private final GetProductivityEntityUseCase productivityEntityUseCase;
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == THROUGHPUT;
+    }
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {

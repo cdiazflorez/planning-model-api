@@ -4,10 +4,11 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,10 +32,16 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
-public class GetRemainingProcessingUseCase implements UseCase<GetEntityInput, List<EntityOutput>> {
+public class GetRemainingProcessingUseCase
+        implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 
     private final ProcessingDistributionRepository processingDistRepository;
     private final GetThroughputUseCase getThroughputUseCase;
+
+    @Override
+    public boolean supportsEntityType(final EntityType entityType) {
+        return entityType == EntityType.REMAINING_PROCESSING;
+    }
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {

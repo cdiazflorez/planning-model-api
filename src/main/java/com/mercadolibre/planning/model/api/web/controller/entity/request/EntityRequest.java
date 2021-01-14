@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.entity.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
@@ -17,7 +16,6 @@ import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -39,8 +37,6 @@ public class EntityRequest {
 
     @NotEmpty
     protected List<ProcessName> processName;
-
-    protected Set<ProcessingType> processingType;
 
     protected List<Simulation> simulations;
 

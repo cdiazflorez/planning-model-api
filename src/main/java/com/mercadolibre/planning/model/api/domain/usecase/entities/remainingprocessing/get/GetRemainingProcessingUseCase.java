@@ -4,6 +4,8 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -17,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -37,6 +39,7 @@ public class GetRemainingProcessingUseCase
 
     private final ProcessingDistributionRepository processingDistRepository;
     private final GetThroughputUseCase getThroughputUseCase;
+    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @Override
     public boolean supportsEntityType(final EntityType entityType) {
@@ -46,33 +49,22 @@ public class GetRemainingProcessingUseCase
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {
 
-        final List<Long> throughputPerHourList = new ArrayList<>();
-
-        getThroughputUseCase.execute(GetEntityInput.builder()
+        final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput.builder()
                 .workflow(input.getWorkflow())
                 .warehouseId(input.getWarehouseId())
                 .entityType(THROUGHPUT)
-                .processName(List.of(PICKING, PACKING))
+                .processName(List.of(PICKING, PACKING, PACKING_WALL))
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo().plusHours(2))
-                .build())
-                .stream()
-                .collect(
-                        groupingBy(
-                            entityOutput -> entityOutput.getDate().withFixedOffsetZone(),
-                            TreeMap::new,
-                            toList()
-                )).forEach((entityDate, throughputList) ->
-                    throughputPerHourList.add(throughputList
-                            .stream()
-                            .map(EntityOutput::getValue)
-                            .mapToLong(v -> v)
-                            .min()
-                            .orElse(0)));
+                .build());
 
-        final double totalThroughput = throughputPerHourList
+        final List<CapacityOutput> capacityOutputs = getCapacityPerHourUseCase.execute(
+                fromEntityOutputs(throughput)
+        );
+
+        final double totalThroughput = capacityOutputs
                 .stream()
-                .mapToDouble(Long::doubleValue)
+                .mapToDouble(CapacityOutput::getValue)
                 .summaryStatistics()
                 .getAverage();
 

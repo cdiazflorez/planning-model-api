@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import lombok.AllArgsConstructor;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -27,6 +30,8 @@ import static java.util.stream.Stream.iterate;
 public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
+
+    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     public List<CptProjectionOutput> execute(final CptProjectionInput input) {
         final Map<ZonedDateTime, Integer> capacityByDate = getCapacity(input.getThroughput());
@@ -89,13 +94,13 @@ public class CalculateCptProjectionUseCase {
         return cptProjectionOutputs;
     }
 
-    private Map<ZonedDateTime, Integer> getCapacity(
-            final List<EntityOutput> throughput) {
-
-        return throughput.stream().collect(toMap(
-                EntityOutput::getDate,
-                entityOutput -> (int) entityOutput.getValue(),
-                Math::min));
+    private Map<ZonedDateTime, Integer> getCapacity(final List<EntityOutput> throughput) {
+        return getCapacityPerHourUseCase.execute(fromEntityOutputs(throughput))
+                .stream()
+                .collect(toMap(
+                        CapacityOutput::getDate,
+                        capacityOutput -> (int) capacityOutput.getValue()
+                ));
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(

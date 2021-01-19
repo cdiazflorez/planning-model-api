@@ -55,7 +55,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_TO_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
@@ -744,9 +743,8 @@ public final class TestUtils {
     }
 
     private static List<HeadcountDistributionRequest> mockHeadcounts() {
-        return asList(
-                new HeadcountDistributionRequest(PICKING, PERCENTAGE, mockPickingAreas()),
-                new HeadcountDistributionRequest(PUT_TO_WALL, PERCENTAGE, mockPtwAreas())
+        return singletonList(
+                new HeadcountDistributionRequest(PICKING, PERCENTAGE, mockPickingAreas())
         );
     }
 

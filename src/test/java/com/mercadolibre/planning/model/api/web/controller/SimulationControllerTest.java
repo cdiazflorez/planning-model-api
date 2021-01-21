@@ -1,14 +1,14 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

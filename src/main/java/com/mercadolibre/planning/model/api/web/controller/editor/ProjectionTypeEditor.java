@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.editor;
 
 import com.mercadolibre.planning.model.api.exception.InvalidProjectionTypeException;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
+import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
 
 import java.beans.PropertyEditorSupport;
 

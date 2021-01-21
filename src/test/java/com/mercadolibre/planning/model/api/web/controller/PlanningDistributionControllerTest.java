@@ -1,8 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.web.controller.planningdistribution.PlanningDistributionController;
+import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

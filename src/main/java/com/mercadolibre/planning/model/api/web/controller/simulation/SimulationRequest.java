@@ -2,13 +2,13 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
+import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -16,8 +16,8 @@ import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.SIMULATION;
 import static java.util.stream.Collectors.toList;
 
 @Data

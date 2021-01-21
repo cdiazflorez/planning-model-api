@@ -1,10 +1,10 @@
 package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
+import com.mercadolibre.planning.model.api.web.controller.request.projection.CurrentBacklog;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -14,10 +14,10 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
+import static com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput.builder;
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
+import static com.mercadolibre.planning.model.api.web.controller.request.Source.FORECAST;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -1,12 +1,12 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.WavingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
+import com.mercadolibre.planning.model.api.web.controller.request.projection.CurrentBacklog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -21,9 +21,8 @@ public enum ProcessName {
     WAVING(null, false),
     PICKING(singletonList(WAVING), true),
     PACKING(singletonList(PICKING), false),
-    BATCH_SORTER(singletonList(PICKING),false),
-    PACKING_WALL(singletonList(BATCH_SORTER),false),
-    EXPEDITION(singletonList(PACKING), false);
+    PUT_TO_WALL(singletonList(PICKING), false),
+    EXPEDITION(List.of(PACKING, PUT_TO_WALL), false);
 
     private final List<ProcessName> previousProcesses;
     private final boolean considerPreviousBacklog;

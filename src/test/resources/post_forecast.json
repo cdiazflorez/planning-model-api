@@ -18,7 +18,20 @@
                 "area_id": "BL",
                 "quantity": 5
             }]
-    }
+    },
+        {
+            "process_name": "put_to_wall",
+            "quantity_metric_unit": "percentage",
+            "areas": [{
+                "area_id": "IN",
+                "quantity": 60
+            },
+                {
+                    "area_id": "OUT",
+                    "quantity": 40
+                }
+            ]
+        }
     ],
     "headcount_productivities": [{
         "process_name": "picking",

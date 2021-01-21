@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller.configuration;
 
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.ConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.CreateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.UpdateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.input.ConfigurationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetConfigurationInput;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,6 +18,7 @@ import java.util.Optional;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.util.TestUtils.CONFIG_KEY;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LOGISTIC_CENTER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;

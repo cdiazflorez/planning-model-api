@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.editor;
 
-import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.request.Source;
 
 import java.beans.PropertyEditorSupport;
 import java.util.Arrays;

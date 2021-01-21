@@ -5,10 +5,10 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationOutput;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.SimulationOutput;
+import com.mercadolibre.planning.model.api.web.controller.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import org.junit.jupiter.api.DisplayName;
@@ -30,8 +30,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.request.EntityType.PRODUCTIVITY;
 import static java.time.ZonedDateTime.parse;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;

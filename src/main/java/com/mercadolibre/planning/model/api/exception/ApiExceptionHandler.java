@@ -1,9 +1,7 @@
 package com.mercadolibre.planning.model.api.exception;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-@Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
@@ -27,7 +24,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "invalid_entity_type");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_entity_type", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
@@ -39,7 +35,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "invalid_projection_type");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_projection_type", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
@@ -51,7 +46,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "entity_not_found");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_not_found", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
@@ -63,7 +57,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "entity_type_not_supported");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_type_not_supported", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
@@ -75,7 +68,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "projection_type_not_supported");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("projection_type_not_supported", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
@@ -87,23 +79,6 @@ public class ApiExceptionHandler {
                 exception.getMessage(), "entity_already_exists");
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_already_exists", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            final Exception exception,
-            final HttpServletRequest request) {
-
-        final ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                exception.getMessage(),
-                "unknown_error");
-
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-
-        log.error("unknown_error", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 

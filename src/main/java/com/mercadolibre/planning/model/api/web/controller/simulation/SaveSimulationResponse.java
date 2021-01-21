@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

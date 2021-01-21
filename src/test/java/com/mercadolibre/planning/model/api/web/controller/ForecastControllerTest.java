@@ -1,9 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
-import com.mercadolibre.planning.model.api.web.controller.forecast.ForecastController;
+import com.mercadolibre.planning.model.api.domain.usecase.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.output.CreateForecastOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

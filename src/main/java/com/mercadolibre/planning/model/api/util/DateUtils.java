@@ -1,9 +1,10 @@
 package com.mercadolibre.planning.model.api.util;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,9 +39,9 @@ public final class DateUtils {
         return dateTime.truncatedTo(HOURS).plusHours(1);
     }
 
-    public static String toWeekYear(final TemporalAccessor zonedDateTime) {
-        final Instant instant = Instant.from(zonedDateTime);
-        final ZonedDateTime utcTimestamp = instant.atZone(UTC);
+    public static String toWeekYear(ZonedDateTime zonedDateTime) {
+        Instant instant = Instant.from(zonedDateTime);
+        ZonedDateTime utcTimestamp = instant.atZone(ZoneOffset.UTC);
 
         return String.format("%s-%s",
                 utcTimestamp.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),

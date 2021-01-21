@@ -1,13 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller.configuration;
 
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.CreateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.GetConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.UpdateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.input.GetConfigurationInput;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
-import com.mercadolibre.planning.model.api.web.controller.configuration.request.CreateConfigurationRequest;
-import com.mercadolibre.planning.model.api.web.controller.configuration.request.UpdateConfigurationRequest;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

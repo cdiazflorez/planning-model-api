@@ -2,20 +2,19 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
-import com.mercadolibre.planning.model.api.web.controller.request.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
-
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.InitBinder;

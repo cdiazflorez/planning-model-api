@@ -15,9 +15,9 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.CreateForecastUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.input.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.CreateForecastOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +32,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_TO_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
@@ -132,9 +131,7 @@ public class CreateForecastUseCaseTest {
                 new HeadcountDistribution(0, "MZ", PICKING, 85, PERCENTAGE, forecast),
                 new HeadcountDistribution(0, "RS", PICKING, 5, PERCENTAGE, forecast),
                 new HeadcountDistribution(0, "HV", PICKING, 5, PERCENTAGE, forecast),
-                new HeadcountDistribution(0, "BL", PICKING, 5, PERCENTAGE, forecast),
-                new HeadcountDistribution(0, "IN", PUT_TO_WALL, 60, PERCENTAGE, forecast),
-                new HeadcountDistribution(0, "OUT", PUT_TO_WALL, 40, PERCENTAGE, forecast)
+                new HeadcountDistribution(0, "BL", PICKING, 5, PERCENTAGE, forecast)
         );
     }
 

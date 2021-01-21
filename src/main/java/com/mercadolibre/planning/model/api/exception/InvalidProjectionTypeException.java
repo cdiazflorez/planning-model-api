@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.exception;
 
-import com.mercadolibre.planning.model.api.web.controller.request.ProjectionType;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import lombok.Builder;
 import lombok.Value;
 

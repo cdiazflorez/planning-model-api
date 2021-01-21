@@ -1,11 +1,14 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.output.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.Backlog;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -21,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.output.GetPlanningDistributionOutput.builder;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.singletonList;
@@ -29,6 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CalculateCptProjectionUseCaseTest {
@@ -40,6 +47,9 @@ public class CalculateCptProjectionUseCaseTest {
     private static final ZonedDateTime DATE_OUT_13 = parse("2020-01-01T13:00:00Z");
     private static final ZonedDateTime DATE_TO_14 = parse("2020-01-01T14:00:00Z");
     private static final ZonedDateTime DATE_OUT_16 = parse("2020-01-01T16:00:00Z");
+
+    @Mock
+    private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @InjectMocks
     private CalculateCptProjectionUseCase calculateCptProjection;
@@ -54,7 +64,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .dateIn(DATE_IN_11)
                 .total(200)
                 .build());
-
         final CptProjectionInput input = CptProjectionInput.builder()
                 .dateFrom(DATE_FROM_10)
                 .dateTo(DATE_TO_14)
@@ -63,12 +72,20 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .build();
 
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200)
+                ));
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
-
         final CptProjectionOutput projection = projections.get(0);
         assertEquals(DATE_OUT_12, projection.getDate());
         assertEquals(DATE_OUT_13, projection.getProjectedEndDate());
@@ -93,6 +110,16 @@ public class CalculateCptProjectionUseCaseTest {
                 .throughput(mockThroughputs(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
+
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200)
+                ));
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -124,6 +151,16 @@ public class CalculateCptProjectionUseCaseTest {
                 .throughput(mockThroughputs(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
+
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200)
+                ));
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -157,6 +194,16 @@ public class CalculateCptProjectionUseCaseTest {
                 .throughput(mockThroughputs(dateOut, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
+
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200)
+                ));
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -198,6 +245,28 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
+
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(3),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(4),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(5),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(6),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(7),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(8),
+                                UNITS_PER_HOUR,100)
+                ));
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -260,6 +329,28 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .build();
 
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(3),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(4),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(5),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(6),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(7),
+                                UNITS_PER_HOUR,20),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(8),
+                                UNITS_PER_HOUR,20)
+                ));
+
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
@@ -295,6 +386,28 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .build();
 
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone(),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(1),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(2),
+                                UNITS_PER_HOUR,200),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(3),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(4),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(5),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(6),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(7),
+                                UNITS_PER_HOUR,100),
+                        new CapacityOutput(DATE_FROM_10.withFixedOffsetZone().plusHours(8),
+                                UNITS_PER_HOUR,100)
+                ));
+
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
@@ -321,11 +434,12 @@ public class CalculateCptProjectionUseCaseTest {
                                                final List<Integer> values) {
 
         final List<EntityOutput> entityOutputs = new ArrayList<>();
-
         for (int i = 0; i <= HOURS.between(DATE_FROM_10, dateTo); i++) {
             entityOutputs.add(
                     EntityOutput.builder()
                             .date(DATE_FROM_10.plusHours(i))
+                            .processName(i % 4 == 0 ? ProcessName.PACKING_WALL
+                                    : i % 2 == 0 ? ProcessName.PACKING : ProcessName.PICKING)
                             .value(values.get(i))
                             .build());
         }

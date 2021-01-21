@@ -1,12 +1,15 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetRemainingProcessingUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +18,29 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.ABILITY_LEVEL;
+import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.PROCESSING_TYPE;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSearchEntitiesOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -46,9 +66,12 @@ public class EntityControllerTest {
 
     @MockBean
     private GetThroughputUseCase getThroughputUseCase;
-    
+
     @MockBean
     private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+
+    @MockBean
+    private SearchEntitiesUseCase searchEntitiesUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -166,7 +189,7 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
-    
+
     @DisplayName("Get Remaining_processing entity works ok")
     @Test
     public void testGetRemainingProcessingEntityOk() throws Exception {
@@ -188,6 +211,39 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content()
                 .json(getResourceAsString("get_remaining_processing_response.json")));
+    }
+
+    @DisplayName("Search entities returns all entities")
+    @Test
+    public void testSearchEntitiesOk() throws Exception {
+        // GIVEN
+        when(searchEntitiesUseCase.execute(SearchEntitiesInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0, ZoneId.of("UTC")))
+                .dateTo(ZonedDateTime.of(2020, 8, 20, 17, 0, 0, 0, ZoneId.of("UTC")))
+                .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING))
+                .processName(List.of(PICKING, PACKING))
+                .entityFilters(Map.of(
+                        HEADCOUNT, Map.of(
+                                PROCESSING_TYPE.toJson(), List.of(ACTIVE_WORKERS.toJson())
+                        ),
+                        PRODUCTIVITY, Map.of(ABILITY_LEVEL.toJson(), List.of("1"))
+                ))
+                .build())
+        ).thenReturn(mockSearchEntitiesOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                post(URL, "fbm-wms-outbound", "search")
+                        .contentType(APPLICATION_JSON)
+                        .content(getResourceAsString("search_entities_request.json"))
+        );
+
+        // THEN
+        result.andExpect(status().isOk())
+                .andExpect(content()
+                        .json(getResourceAsString("search_entities_response.json")));
     }
 
 }

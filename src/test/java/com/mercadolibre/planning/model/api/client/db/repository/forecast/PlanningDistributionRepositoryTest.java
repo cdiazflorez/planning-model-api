@@ -9,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
@@ -50,7 +50,7 @@ public class PlanningDistributionRepositoryTest {
         assertEquals(DATE_OUT, foundPlanningDistribution.getDateOut());
         assertEquals(1200, foundPlanningDistribution.getQuantity());
         assertEquals("UNITS", foundPlanningDistribution.getQuantityMetricUnit().name());
-        assertEquals(new HashSet<>(), foundPlanningDistribution.getMetadatas());
+        assertEquals(new ArrayList<>(), foundPlanningDistribution.getMetadatas());
 
         final Forecast foundForecast = foundPlanningDistribution.getForecast();
         assertEquals(1L, foundForecast.getId());

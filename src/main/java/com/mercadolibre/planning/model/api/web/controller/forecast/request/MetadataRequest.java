@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller.forecast.request;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import lombok.Value;
 
@@ -15,13 +14,8 @@ public class MetadataRequest {
     @NotBlank
     private String value;
 
-    public ForecastMetadata toForecastMetadata(final long forecastId) {
-        return new ForecastMetadata(forecastId, key, value);
-    }
-
-    public PlanningDistributionMetadata toPlanningDistributionMetadata(final long id) {
+    public PlanningDistributionMetadata toPlanningDistributionMetadata() {
         return PlanningDistributionMetadata.builder()
-                .planningDistributionId(id)
                 .key(key)
                 .value(value)
                 .build();

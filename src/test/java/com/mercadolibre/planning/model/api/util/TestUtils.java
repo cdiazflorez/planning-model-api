@@ -67,7 +67,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
@@ -124,7 +124,7 @@ public final class TestUtils {
                 .dateIn(DATE_IN)
                 .dateOut(DATE_OUT)
                 .quantity(1200)
-                .metadatas(emptySet())
+                .metadatas(emptyList())
                 .quantityMetricUnit(UNITS);
     }
 

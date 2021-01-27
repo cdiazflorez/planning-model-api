@@ -10,9 +10,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Value
 public class HeadcountDistributionRequest {
@@ -27,8 +26,8 @@ public class HeadcountDistributionRequest {
     @Valid
     private List<AreaRequest> areas;
 
-    public Set<HeadcountDistribution> toHeadcountDists(final Forecast forecast) {
-        final Set<HeadcountDistribution> headcountDistributions = new HashSet<>();
+    public List<HeadcountDistribution> toHeadcountDists(final Forecast forecast) {
+        final List<HeadcountDistribution> headcountDistributions = new ArrayList<>();
         areas.forEach(area -> headcountDistributions.add(
                 HeadcountDistribution.builder()
                         .processName(processName)

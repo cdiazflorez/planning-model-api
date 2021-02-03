@@ -36,30 +36,44 @@ public class GetPlanningDistributionUseCase
                 .collect(toList());
     }
 
+    // TODO: Avoid calling this method when calculating real forecast deviation card.
+    // Instead, create a new endpoint planning_distribution/count to get only units quantity
     private List<PlanningDistributionView> getPlanningDistributions(
             final GetPlanningDistributionInput input) {
 
         final ZonedDateTime dateOutFrom = input.getDateOutFrom();
         final ZonedDateTime dateOutTo = input.getDateOutTo();
+        final ZonedDateTime dateInFrom = input.getDateInFrom();
         final ZonedDateTime dateInTo = input.getDateInTo();
 
-        return dateInTo == null
-                ? planningDistRepository
-                .findByWarehouseIdWorkflowAndDateOutInRange(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        dateOutFrom,
-                        dateOutTo,
-                        getForecastWeeks(dateOutFrom, dateOutTo))
-                : planningDistRepository
-                .findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        dateOutFrom,
-                        dateOutTo,
-                        dateInTo,
-                        getForecastWeeks(dateOutFrom, dateOutTo)
-        );
-
+        if (dateInTo == null && dateInFrom == null) {
+            return planningDistRepository
+                    .findByWarehouseIdWorkflowAndDateOutInRange(
+                            input.getWarehouseId(),
+                            input.getWorkflow().name(),
+                            dateOutFrom,
+                            dateOutTo,
+                            getForecastWeeks(dateOutFrom, dateOutTo));
+        } else if (dateInTo != null && dateInFrom == null) {
+            return planningDistRepository
+                    .findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
+                            input.getWarehouseId(),
+                            input.getWorkflow().name(),
+                            dateOutFrom,
+                            dateOutTo,
+                            dateInTo,
+                            getForecastWeeks(dateOutFrom, dateOutTo)
+                    );
+        } else {
+            return planningDistRepository
+                    .findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
+                            input.getWarehouseId(),
+                            input.getWorkflow().name(),
+                            dateOutFrom,
+                            dateOutTo,
+                            dateInFrom,
+                            dateInTo,
+                            getForecastWeeks(dateOutFrom, dateOutTo));
+        }
     }
 }

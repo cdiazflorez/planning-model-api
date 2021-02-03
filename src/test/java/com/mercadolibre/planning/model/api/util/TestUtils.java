@@ -333,13 +333,16 @@ public final class TestUtils {
     }
 
     public static GetPlanningDistributionInput mockPlanningDistributionInput(
+            final ZonedDateTime dateInFrom,
             final ZonedDateTime dateInTo) {
+
         return GetPlanningDistributionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
                 .dateOutFrom(A_DATE_UTC)
                 .dateOutTo(A_DATE_UTC.plusDays(3))
                 .dateInTo(dateInTo)
+                .dateInFrom(dateInFrom)
                 .build();
     }
 

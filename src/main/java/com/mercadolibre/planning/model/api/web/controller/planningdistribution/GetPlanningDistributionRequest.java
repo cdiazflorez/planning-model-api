@@ -29,6 +29,9 @@ public class GetPlanningDistributionRequest {
     private ZonedDateTime dateOutTo;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    private ZonedDateTime dateInFrom;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private ZonedDateTime dateInTo;
 
     public GetPlanningDistributionInput toGetPlanningDistInput(final Workflow workflow) {
@@ -37,6 +40,7 @@ public class GetPlanningDistributionRequest {
                 .workflow(workflow)
                 .dateOutFrom(dateOutFrom)
                 .dateOutTo(dateOutTo)
+                .dateInFrom(dateInFrom)
                 .dateInTo(dateInTo)
                 .build();
     }

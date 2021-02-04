@@ -22,7 +22,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import java.time.ZonedDateTime;
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Builder
@@ -56,5 +56,5 @@ public class PlanningDistribution {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private Set<PlanningDistributionMetadata> metadatas;
+    private List<PlanningDistributionMetadata> metadatas;
 }

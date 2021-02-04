@@ -1,12 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningMetadataRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
@@ -18,6 +11,11 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
+import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
+import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
+import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
+import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
+import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
@@ -46,25 +44,19 @@ import static org.mockito.Mockito.when;
 public class CreateForecastUseCaseTest {
 
     @Mock
-    private ForecastRepository forecastRepository;
+    private ForecastGateway forecastGateway;
 
     @Mock
-    private ForecastMetadataRepository forecastMetadataRepository;
+    private ProcessingDistributionGateway processingDistributionGateway;
 
     @Mock
-    private ProcessingDistributionRepository processingDistRepository;
+    private HeadcountDistributionGateway headcountDistributionGateway;
 
     @Mock
-    private HeadcountDistributionRepository headcountRepository;
+    private HeadcountProductivityGateway headcountProductivityGateway;
 
     @Mock
-    private HeadcountProductivityRepository productivityRepository;
-
-    @Mock
-    private PlanningDistributionRepository planningRepository;
-
-    @Mock
-    private PlanningMetadataRepository planningMetadataRepository;
+    private PlanningDistributionGateway planningDistributionGateway;
 
     @InjectMocks
     private CreateForecastUseCase createForecastUseCase;
@@ -79,20 +71,9 @@ public class CreateForecastUseCaseTest {
         final Forecast savedForecast = new Forecast();
         savedForecast.setWorkflow(Workflow.FBM_WMS_OUTBOUND);
         savedForecast.setId(1L);
+        final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
 
-        when(forecastRepository.save(forecast)).thenReturn(savedForecast);
-
-        final Set<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
-        final Set<ProcessingDistribution> processingDists = getProcessingDists(savedForecast);
-        final Set<HeadcountDistribution> headcounts = getHeadcountDists(savedForecast);
-        final Set<HeadcountProductivity> productivities = getAllProductivities(savedForecast);
-        final Set<PlanningDistributionMetadata> planningMetadatas = getPlanningMetadatas();
-
-        final PlanningDistribution planningDist = new PlanningDistribution(
-                0, DATE_IN, DATE_OUT, 1200, UNITS, savedForecast, null);
-
-        final PlanningDistribution expectedSavedPlanningDist = getSavedPlanningDist(planningDist);
-        when(planningRepository.save(planningDist)).thenReturn(expectedSavedPlanningDist);
+        when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);
 
         final CreateForecastInput input = mockCreateForecastInput();
 
@@ -100,25 +81,33 @@ public class CreateForecastUseCaseTest {
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 
         // THEN
-        verify(forecastMetadataRepository).saveAll(forecastMetadatas);
-        verify(processingDistRepository).saveAll(processingDists);
-        verify(headcountRepository).saveAll(headcounts);
-        verify(productivityRepository).saveAll(productivities);
-        verify(planningMetadataRepository).saveAll(planningMetadatas);
+        verify(processingDistributionGateway).create(
+                getProcessingDists(savedForecast),
+                savedForecast.getId());
+        verify(headcountDistributionGateway).create(
+                getHeadcountDists(savedForecast),
+                savedForecast.getId());
+        verify(headcountProductivityGateway).create(
+                getAllProductivities(savedForecast),
+                savedForecast.getId());
+        verify(planningDistributionGateway).create(
+                getPlanningDistributions(savedForecast),
+                savedForecast.getId());
+
         assertEquals(1L, output.getId());
     }
 
-    private Set<ForecastMetadata> getForecastMetadatas() {
-        return Set.of(
-                new ForecastMetadata(1, "warehouse_id", "ARBA01"),
-                new ForecastMetadata(1, "week", "26-2020"),
-                new ForecastMetadata(1, "mono_order_distribution", "58"),
-                new ForecastMetadata(1, "multi_order_distribution", "42")
+    private List<ForecastMetadata> getForecastMetadatas() {
+        return List.of(
+                new ForecastMetadata(0, "warehouse_id", "ARBA01"),
+                new ForecastMetadata(0, "week", "26-2020"),
+                new ForecastMetadata(0, "mono_order_distribution", "58"),
+                new ForecastMetadata(0, "multi_order_distribution", "42")
         );
     }
 
-    private Set<ProcessingDistribution> getProcessingDists(final Forecast forecast) {
-        return Set.of(
+    private List<ProcessingDistribution> getProcessingDists(final Forecast forecast) {
+        return List.of(
                 new ProcessingDistribution(0, DATE_IN, WAVING,
                         172, UNITS, PERFORMED_PROCESSING, forecast),
                 new ProcessingDistribution(0, DATE_IN.plusHours(1), WAVING,
@@ -126,8 +115,8 @@ public class CreateForecastUseCaseTest {
         );
     }
 
-    private Set<HeadcountDistribution> getHeadcountDists(final Forecast forecast) {
-        return Set.of(
+    private List<HeadcountDistribution> getHeadcountDists(final Forecast forecast) {
+        return List.of(
                 new HeadcountDistribution(0, "MZ", PICKING, 85, PERCENTAGE, forecast),
                 new HeadcountDistribution(0, "RS", PICKING, 5, PERCENTAGE, forecast),
                 new HeadcountDistribution(0, "HV", PICKING, 5, PERCENTAGE, forecast),
@@ -135,44 +124,39 @@ public class CreateForecastUseCaseTest {
         );
     }
 
-    private Set<PlanningDistributionMetadata> getPlanningMetadatas() {
-        return Set.of(
-                new PlanningDistributionMetadata(1, "carrier_id", "17502740"),
-                new PlanningDistributionMetadata(1, "service_id", "851"),
-                new PlanningDistributionMetadata(1, "canalization", "U")
+    private List<PlanningDistribution> getPlanningDistributions(final Forecast forecast) {
+        return List.of(new PlanningDistribution(
+                0, DATE_IN, DATE_OUT, 1200, UNITS, forecast, getPlanningMetadatas())
         );
     }
 
-    private Set<HeadcountProductivity> getAllProductivities(final Forecast forecast) {
-        return Set.of(
+    private List<PlanningDistributionMetadata> getPlanningMetadatas() {
+        return List.of(
+                new PlanningDistributionMetadata(0, "carrier_id", "17502740"),
+                new PlanningDistributionMetadata(0, "service_id", "851"),
+                new PlanningDistributionMetadata(0, "canalization", "U")
+        );
+    }
+
+    private List<HeadcountProductivity> getAllProductivities(final Forecast forecast) {
+        return List.of(
                 new HeadcountProductivity(0, A_DATE_UTC, PICKING, 85, UNITS_PER_HOUR,
                         0, forecast),
-                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 85,
-                        UNITS_PER_HOUR, 0, forecast),
                 new HeadcountProductivity(0, A_DATE_UTC, PICKING, 73, UNITS_PER_HOUR,
                         1, forecast),
-                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 73,
-                        UNITS_PER_HOUR, 1, forecast),
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 85, UNITS_PER_HOUR,
+                        0, forecast),
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PICKING, 73, UNITS_PER_HOUR,
+                        1, forecast),
                 new HeadcountProductivity(0, A_DATE_UTC, PACKING, 92, UNITS_PER_HOUR,
                         0, forecast),
-                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 85,
-                        UNITS_PER_HOUR, 0, forecast),
-                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 76,
-                        UNITS_PER_HOUR, 1, forecast),
                 new HeadcountProductivity(0, A_DATE_UTC, PACKING, 82, UNITS_PER_HOUR,
+                        1, forecast),
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 85, UNITS_PER_HOUR,
+                        0, forecast),
+                new HeadcountProductivity(0, A_DATE_UTC.plusHours(1), PACKING, 76, UNITS_PER_HOUR,
                         1, forecast)
-        );
-    }
 
-    private PlanningDistribution getSavedPlanningDist(final PlanningDistribution planningDist) {
-        return PlanningDistribution.builder()
-                .id(1L)
-                .dateIn(planningDist.getDateIn())
-                .dateOut(planningDist.getDateOut())
-                .forecast(planningDist.getForecast())
-                .metadatas(planningDist.getMetadatas())
-                .quantity(planningDist.getQuantity())
-                .quantityMetricUnit(planningDist.getQuantityMetricUnit())
-                .build();
+        );
     }
 }

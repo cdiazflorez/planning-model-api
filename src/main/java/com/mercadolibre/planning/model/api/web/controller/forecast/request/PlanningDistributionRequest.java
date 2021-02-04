@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Value
@@ -38,6 +39,9 @@ public class PlanningDistributionRequest {
                 .forecast(forecast)
                 .quantity(quantity)
                 .quantityMetricUnit(quantityMetricUnit)
+                .metadatas(metadata.stream()
+                        .map(MetadataRequest::toPlanningDistributionMetadata)
+                        .collect(Collectors.toList()))
                 .build();
     }
 

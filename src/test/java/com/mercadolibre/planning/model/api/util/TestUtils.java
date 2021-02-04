@@ -19,6 +19,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchE
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.SaveForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -67,7 +68,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
@@ -124,7 +125,7 @@ public final class TestUtils {
                 .dateIn(DATE_IN)
                 .dateOut(DATE_OUT)
                 .quantity(1200)
-                .metadatas(emptySet())
+                .metadatas(emptyList())
                 .quantityMetricUnit(UNITS);
     }
 
@@ -257,6 +258,18 @@ public final class TestUtils {
                 .build();
     }
 
+    public static SaveForecastDeviationInput mockSaveForecastDeviationInput() {
+        return SaveForecastDeviationInput
+                    .builder()
+                    .workflow(FBM_WMS_OUTBOUND)
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_OUT)
+                    .value(5.6)
+                    .userId(USER_ID)
+                    .warehouseId(WAREHOUSE_ID)
+                    .build();
+    }
+
     public static GetHeadcountInput mockGetHeadcountEntityInput(final Source source) {
         return mockGetHeadcountEntityInput(source, null, null);
     }
@@ -320,13 +333,16 @@ public final class TestUtils {
     }
 
     public static GetPlanningDistributionInput mockPlanningDistributionInput(
+            final ZonedDateTime dateInFrom,
             final ZonedDateTime dateInTo) {
+
         return GetPlanningDistributionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
                 .dateOutFrom(A_DATE_UTC)
                 .dateOutTo(A_DATE_UTC.plusDays(3))
                 .dateInTo(dateInTo)
+                .dateInFrom(dateInFrom)
                 .build();
     }
 

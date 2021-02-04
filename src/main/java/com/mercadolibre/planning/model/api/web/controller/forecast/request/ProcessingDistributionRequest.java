@@ -11,9 +11,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Value
 public class ProcessingDistributionRequest {
@@ -31,8 +30,8 @@ public class ProcessingDistributionRequest {
     @Valid
     private List<ProcessingDistributionDataRequest> data;
 
-    public Set<ProcessingDistribution> toProcessingDistributions(final Forecast forecast) {
-        final Set<ProcessingDistribution> processingDistributions = new HashSet<>();
+    public List<ProcessingDistribution> toProcessingDistributions(final Forecast forecast) {
+        final List<ProcessingDistribution> processingDistributions = new ArrayList<>();
         data.forEach(data -> processingDistributions.add(ProcessingDistribution.builder()
                 .processName(processName)
                 .quantityMetricUnit(quantityMetricUnit)

@@ -11,6 +11,8 @@
 <FindBugsFilter>
     <Match>
         <Or>
+            <Bug pattern="SQL_INJECTION_JPA" />
+            <!-- We need to do dynamic queries, however we are using queryParams -->
             <Bug pattern="UNKNOWN_NULLNESS_OF_RETURNED_VALUE" />
             <Bug pattern="UNKNOWN_NULLNESS_OF_PARAMETER" />
             <Bug pattern="IMPLICIT_NULLNESS" />

@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,11 +30,11 @@ public class HeadcountProductivityRequest {
     @Valid
     private List<HeadcountProductivityDataRequest> data;
 
-    public Set<HeadcountProductivity> toHeadcountProductivities(
+    public List<HeadcountProductivity> toHeadcountProductivities(
             final Forecast forecast,
             final List<PolyvalentProductivityRequest> polyvalentProductivities) {
 
-        final Set<HeadcountProductivity> headcountProductivities = new HashSet<>();
+        final List<HeadcountProductivity> headcountProductivities = new ArrayList<>();
 
         data.forEach(productivityData -> {
             headcountProductivities.add(createRegularProductivity(forecast, productivityData));

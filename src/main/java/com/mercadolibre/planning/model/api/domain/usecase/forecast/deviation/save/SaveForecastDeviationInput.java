@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation;
+package com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;

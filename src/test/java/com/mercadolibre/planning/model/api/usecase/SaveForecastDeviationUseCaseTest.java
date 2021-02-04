@@ -2,8 +2,8 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.SaveForecastDeviationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.SaveForecastDeviationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

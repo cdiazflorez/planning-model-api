@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Plannin
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
@@ -19,7 +20,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchE
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.SaveForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -824,5 +825,18 @@ public final class TestUtils {
                 EntityType.REMAINING_PROCESSING, mockGetRemainingProcessingOutput(),
                 THROUGHPUT, mockThroughputEntityOutput()
         );
+    }
+
+    public static CurrentForecastDeviation mockCurrentForecastDeviation() {
+        return CurrentForecastDeviation
+                .builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(DATE_IN)
+                .dateTo(DATE_OUT)
+                .value(0.025)
+                .userId(USER_ID)
+                .logisticCenterId(WAREHOUSE_ID)
+                .isActive(true)
+                .build();
     }
 }

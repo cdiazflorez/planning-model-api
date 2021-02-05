@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.SuggestedWavePlanningDistributionView;
@@ -9,6 +8,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +31,13 @@ public class GetSuggestedWavesUseCase
         implements UseCase<GetSuggestedWavesInput, List<SuggestedWavesOutput>> {
 
     private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+    private final GetForecastMetadataUseCase getForecastMetadataUseCase;
 
     private final PlanningDistributionRepository planningDistRepository;
-    private final ForecastMetadataRepository forecastMetadataRepository;
 
     private static final long HOUR_IN_MINUTES = 60L;
 
+    @Trace
     @Override
     public List<SuggestedWavesOutput> execute(final GetSuggestedWavesInput input) {
         final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
@@ -47,16 +50,15 @@ public class GetSuggestedWavesUseCase
 
         final long unitsToWave = Math.max(input.getBacklog() + sales - remainingProcessing, 0);
 
-        final List<ForecastMetadataView> forecastMetadataPercentage = forecastMetadataRepository
-                .findLastForecastMetadataByWarehouseId(
-                        List.of(
-                                WaveCardinality.MONO_ORDER_DISTRIBUTION.toJson(),
-                                WaveCardinality.MULTI_BATCH_DISTRIBUTION.toJson(),
-                                WaveCardinality.MULTI_ORDER_DISTRIBUTION.toJson()
-                        ),
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
-                        forecastWeeks);
+        final List<ForecastMetadataView> forecastMetadataPercentage = getForecastMetadataUseCase
+                .execute(GetForecastMetadataInput.builder()
+                        .workflow(input.getWorkflow())
+                        .warehouseId(input.getWarehouseId())
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .build()
+                );
+
         return forecastMetadataPercentage.stream()
                 .map(fm -> new SuggestedWavesOutput(
                         WaveCardinality.of(fm.getKey()).orElse(null),

@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeE
 import com.mercadolibre.planning.model.api.web.controller.editor.WaveCardinalityEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class SuggestedWavesController {
     private final GetSuggestedWavesUseCase getSuggestedWavesUseCase;
 
     @GetMapping
+    @Trace(dispatcher = true)
     public ResponseEntity<List<SuggestedWavesOutput>> getSuggestedWaves(
             @PathVariable final Workflow workflow,
             @Valid final GetSuggestedWavesRequest request) {

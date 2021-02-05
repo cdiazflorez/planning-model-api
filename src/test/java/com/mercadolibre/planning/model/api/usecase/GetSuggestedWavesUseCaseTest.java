@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.SuggestedWavePlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -8,6 +7,8 @@ import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.SuggestedWavesOutput;
@@ -46,7 +47,7 @@ public class GetSuggestedWavesUseCaseTest {
     private PlanningDistributionRepository planningDistRepository;
 
     @Mock
-    private ForecastMetadataRepository forecastMetadataRepository;
+    private GetForecastMetadataUseCase getForecastMetadataUseCase;
 
     @Mock
     private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
@@ -89,15 +90,12 @@ public class GetSuggestedWavesUseCaseTest {
                         .build())
         ).thenReturn(mockRemainingProcessing());
 
-        when(forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
-                List.of(
-                        WaveCardinality.MONO_ORDER_DISTRIBUTION.toJson(),
-                        WaveCardinality.MULTI_BATCH_DISTRIBUTION.toJson(),
-                        WaveCardinality.MULTI_ORDER_DISTRIBUTION.toJson()
-                ),
-                WAREHOUSE_ID,
-                input.getWorkflow().name(),
-                forecastWeeks)
+        when(getForecastMetadataUseCase.execute(GetForecastMetadataInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(WAREHOUSE_ID)
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
         ).thenReturn(mockForecastByWarehouseId());
 
         // WHEN
@@ -179,15 +177,12 @@ public class GetSuggestedWavesUseCaseTest {
                         .build())
         ).thenReturn(List.of());
 
-        when(forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
-                List.of(
-                        WaveCardinality.MONO_ORDER_DISTRIBUTION.toJson(),
-                        WaveCardinality.MULTI_BATCH_DISTRIBUTION.toJson(),
-                        WaveCardinality.MULTI_ORDER_DISTRIBUTION.toJson()
-                ),
-                WAREHOUSE_ID,
-                input.getWorkflow().name(),
-                forecastWeeks)
+        when(getForecastMetadataUseCase.execute(GetForecastMetadataInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(WAREHOUSE_ID)
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
         ).thenReturn(List.of());
 
         // WHEN

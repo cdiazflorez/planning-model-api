@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.get;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
@@ -9,6 +10,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
@@ -21,12 +24,13 @@ public class GetForecastMetadataUseCase implements UseCase<GetForecastMetadataIn
     @Trace
     @Override
     public List<ForecastMetadataView> execute(final GetForecastMetadataInput input) {
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .build()
+        final List<ForecastIdView> forecastIds =
+                getForecastUseCase.execute(GetForecastInput.builder()
+                        .workflow(input.getWorkflow())
+                        .warehouseId(input.getWarehouseId())
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .build()
         );
 
         return forecastMetadataRepository
@@ -39,7 +43,9 @@ public class GetForecastMetadataUseCase implements UseCase<GetForecastMetadataIn
                                         WaveCardinality
                                                 .MULTI_ORDER_DISTRIBUTION.toJson()
                                 ),
-                                forecastIds
+                                forecastIds.stream()
+                                        .map(ForecastIdView::getId)
+                                        .collect(toList())
                         );
     }
 }

@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
@@ -16,9 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastByWarehouseId;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIdView;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadataInput;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,7 +47,6 @@ public class GetForecastMetadataUseCaseTest {
     public void testGetInfo() {
         // GIVEN
         final GetForecastMetadataInput input  = mockForecastMetadataInput();
-        final List<Long> lastForecasts = List.of(1L, 2L);
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
@@ -52,7 +54,7 @@ public class GetForecastMetadataUseCaseTest {
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .build())
-        ).thenReturn(lastForecasts);
+        ).thenReturn(mockForecastIdView());
 
         when(forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
                 List.of(
@@ -60,7 +62,10 @@ public class GetForecastMetadataUseCaseTest {
                         WaveCardinality.MULTI_BATCH_DISTRIBUTION.toJson(),
                         WaveCardinality.MULTI_ORDER_DISTRIBUTION.toJson()
                 ),
-                lastForecasts)
+                mockForecastIdView().stream()
+                        .map(ForecastIdView::getId)
+                        .collect(Collectors.toList())
+                )
         ).thenReturn(mockForecastByWarehouseId());
 
         // WHEN
@@ -82,7 +87,6 @@ public class GetForecastMetadataUseCaseTest {
     public void testNoInfo() {
         // GIVEN
         final GetForecastMetadataInput input  = mockForecastMetadataInput();
-        final List<Long> lastForecasts = List.of(1L, 2L);
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
@@ -90,7 +94,7 @@ public class GetForecastMetadataUseCaseTest {
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .build())
-        ).thenReturn(lastForecasts);
+        ).thenReturn(mockForecastIdView());
 
         when(forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
                 List.of(
@@ -98,7 +102,10 @@ public class GetForecastMetadataUseCaseTest {
                         WaveCardinality.MULTI_BATCH_DISTRIBUTION.toJson(),
                         WaveCardinality.MULTI_ORDER_DISTRIBUTION.toJson()
                 ),
-                lastForecasts)
+                mockForecastIdView().stream()
+                        .map(ForecastIdView::getId)
+                        .collect(Collectors.toList())
+                )
         ).thenReturn(List.of());
 
         // WHEN

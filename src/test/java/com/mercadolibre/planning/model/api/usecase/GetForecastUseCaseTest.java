@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastRepository;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
@@ -17,6 +18,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIdView;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,20 +47,20 @@ public class GetForecastUseCaseTest {
                 WAREHOUSE_ID,
                 FBM_WMS_OUTBOUND.name(),
                 getForecastWeeks(input.getDateFrom(), input.getDateTo())
-        )).thenReturn(List.of(1L, 2L));
+        )).thenReturn(mockForecastIdView());
 
         // WHEN
-        final List<Long> forecasts = getForecastUseCase.execute(input);
+        final List<ForecastIdView> forecasts = getForecastUseCase.execute(input);
 
         // THEN
         assertFalse(forecasts.isEmpty());
         assertEquals(2, forecasts.size());
 
-        final Long forecastId1 = forecasts.get(0);
-        assertEquals(Long.valueOf(1), forecastId1);
+        final ForecastIdView forecastId1 = forecasts.get(0);
+        assertEquals(Long.valueOf(1), forecastId1.getId());
 
-        final Long forecastId2 = forecasts.get(1);
-        assertEquals(Long.valueOf(2), forecastId2);
+        final ForecastIdView forecastId2 = forecasts.get(1);
+        assertEquals(Long.valueOf(2), forecastId2.getId());
     }
 
     @Test

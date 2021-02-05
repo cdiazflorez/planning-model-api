@@ -12,7 +12,7 @@ import java.util.Set;
 @Repository
 public interface ForecastRepository extends CrudRepository<Forecast, Long> {
 
-    @Query(value = "SELECT MAX(fm.id) FROM "
+    @Query(value = "SELECT MAX(fm.id) as id FROM "
             + "     (SELECT id, "
             + "     workflow, "
             + "     (SELECT m.value FROM forecast_metadata m "
@@ -24,7 +24,7 @@ public interface ForecastRepository extends CrudRepository<Forecast, Long> {
             + "     AND fm.workflow = :workflow "
             + "     AND fm.forecast_week in (:weeks)"
             + "     GROUP BY fm.forecast_week", nativeQuery = true)
-    List<Long> findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
+    List<ForecastIdView> findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") String workflow,
             @Param("weeks") Set<String> weeks

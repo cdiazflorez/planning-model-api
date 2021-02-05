@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -25,6 +26,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
+import com.mercadolibre.planning.model.api.usecase.ForecastIdViewImpl;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
@@ -838,5 +840,12 @@ public final class TestUtils {
                 .logisticCenterId(WAREHOUSE_ID)
                 .isActive(true)
                 .build();
+    }
+
+    public static List<ForecastIdView> mockForecastIdView() {
+        return List.of(
+                new ForecastIdViewImpl(1L),
+                new ForecastIdViewImpl(2L)
+        );
     }
 }

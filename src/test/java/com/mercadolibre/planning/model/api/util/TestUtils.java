@@ -21,6 +21,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchE
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -271,6 +272,10 @@ public final class TestUtils {
                     .userId(USER_ID)
                     .warehouseId(WAREHOUSE_ID)
                     .build();
+    }
+
+    public static DisableForecastDeviationInput mockDisableForecastDeviationInput() {
+        return new DisableForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
     }
 
     public static GetHeadcountInput mockGetHeadcountEntityInput(final Source source) {

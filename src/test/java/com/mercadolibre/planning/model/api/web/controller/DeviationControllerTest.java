@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
@@ -7,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.sav
 import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationController;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
+import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSaveForecastDeviationInput;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -41,7 +45,10 @@ public class DeviationControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private SaveForecastDeviationUseCase useCase;
+    private SaveForecastDeviationUseCase saveDeviationUseCase;
+
+    @MockBean
+    private DisableForecastDeviationUseCase disableDeviationUseCase;
 
     @MockBean
     private GetForecastDeviationUseCase getForecastDeviationUseCase;
@@ -52,13 +59,38 @@ public class DeviationControllerTest {
         // GIVEN
         final SaveForecastDeviationInput input = mockSaveForecastDeviationInput();
 
-        when(useCase.execute(input)).thenReturn(new DeviationResponse(200));
+        when(saveDeviationUseCase.execute(input))
+                .thenReturn(new DeviationResponse(200));
 
         // WHEN
         final ResultActions result = mvc.perform(
                 post(URL + "/save", "fbm-wms-outbound")
                         .contentType(APPLICATION_JSON)
                         .content(getResourceAsString("post_forecast_deviation.json"))
+        );
+
+        // THEN
+        result.andExpect(status().isOk());
+    }
+
+    @DisplayName("Disable forecast deviation ")
+    @Test
+    public void disableDeviationOk() throws Exception {
+        // GIVEN
+        final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
+
+        when(disableDeviationUseCase.execute(input))
+                .thenReturn(5);
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                post(URL + "/disable", "fbm-wms-outbound")
+                        .contentType(APPLICATION_JSON)
+                        .param("warehouse_id", WAREHOUSE_ID)
+                        .content(new JSONObject()
+                                .put("warehouse_id", WAREHOUSE_ID)
+                                .toString()
+                        )
         );
 
         // THEN

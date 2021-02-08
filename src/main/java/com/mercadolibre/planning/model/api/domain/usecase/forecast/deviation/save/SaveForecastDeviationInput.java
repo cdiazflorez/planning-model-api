@@ -29,7 +29,7 @@ public class SaveForecastDeviationInput {
                 .logisticCenterId(warehouseId)
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
-                .value(value)
+                .value(value * 0.01)
                 .isActive(true)
                 .userId(userId)
                 .workflow(workflow)

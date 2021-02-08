@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
 
 @Value
-public class DeviationRequest {
+public class SaveDeviationRequest {
 
     @NotNull
     private String warehouseId;

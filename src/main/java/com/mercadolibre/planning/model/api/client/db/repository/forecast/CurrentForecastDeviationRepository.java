@@ -5,11 +5,13 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecas
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CurrentForecastDeviationRepository
         extends CrudRepository<CurrentForecastDeviation, Long> {
+    List<CurrentForecastDeviation> findByLogisticCenterId(String logisticCenterId);
 
     Optional<CurrentForecastDeviation> findBylogisticCenterIdAndWorkflowAndIsActive(
             final String warehouseId, final Workflow workflow, final boolean isActive);

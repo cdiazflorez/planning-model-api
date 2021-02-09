@@ -34,6 +34,8 @@ public class GetPlanningDistributionRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private ZonedDateTime dateInTo;
 
+    private boolean applyDeviation;
+
     public GetPlanningDistributionInput toGetPlanningDistInput(final Workflow workflow) {
         return GetPlanningDistributionInput.builder()
                 .warehouseId(warehouseId)
@@ -42,6 +44,7 @@ public class GetPlanningDistributionRequest {
                 .dateOutTo(dateOutTo)
                 .dateInFrom(dateInFrom)
                 .dateInTo(dateInTo)
+                .applyDeviation(applyDeviation)
                 .build();
     }
 }

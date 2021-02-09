@@ -16,5 +16,6 @@ public class GetPlanningDistributionInput {
     private ZonedDateTime dateOutTo;
     private ZonedDateTime dateInFrom;
     private ZonedDateTime dateInTo;
+    private boolean applyDeviation;
 
 }

@@ -1,27 +1,38 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.get;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
 public class GetForecastMetadataUseCase implements UseCase<GetForecastMetadataInput,
         List<ForecastMetadataView>> {
 
+    private final GetForecastUseCase getForecastUseCase;
     private final ForecastMetadataRepository forecastMetadataRepository;
 
+    @Trace
     @Override
     public List<ForecastMetadataView> execute(final GetForecastMetadataInput input) {
-        final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
+        final List<ForecastIdView> forecastIds =
+                getForecastUseCase.execute(GetForecastInput.builder()
+                        .workflow(input.getWorkflow())
+                        .warehouseId(input.getWarehouseId())
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .build()
+        );
+
         return forecastMetadataRepository
                         .findLastForecastMetadataByWarehouseId(
                                 List.of(
@@ -32,8 +43,9 @@ public class GetForecastMetadataUseCase implements UseCase<GetForecastMetadataIn
                                         WaveCardinality
                                                 .MULTI_ORDER_DISTRIBUTION.toJson()
                                 ),
-                                input.getWarehouseId(),
-                                input.getWorkflow().name(),
-                                forecastWeeks);
+                                forecastIds.stream()
+                                        .map(ForecastIdView::getId)
+                                        .collect(toList())
+                        );
     }
 }

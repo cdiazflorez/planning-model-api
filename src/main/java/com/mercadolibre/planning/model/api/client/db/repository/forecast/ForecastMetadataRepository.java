@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public interface ForecastMetadataRepository
@@ -17,22 +16,9 @@ public interface ForecastMetadataRepository
     @Query(value = "SELECT forecast_metadata.key, forecast_metadata.value"
             + "    FROM forecast_metadata "
             + "    WHERE forecast_metadata.key in (:metadata_keys)"
-            + "    AND forecast_metadata.forecast_id = (SELECT MAX(fm.id) FROM "
-            + "     (SELECT id, "
-            + "     workflow, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'warehouse_id') AS warehouse_id, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'week') AS forecast_week "
-            + "     FROM forecast f) fm "
-            + "     WHERE fm.warehouse_id = :warehouse_id "
-            + "     AND fm.workflow = :workflow "
-            + "     AND fm.forecast_week in (:weeks)"
-            + "     GROUP BY fm.forecast_week)", nativeQuery = true)
+            + "    AND forecast_metadata.forecast_id in (:forecast_ids)", nativeQuery = true)
     List<ForecastMetadataView> findLastForecastMetadataByWarehouseId(
             @Param("metadata_keys") List<String> cardinalityDist,
-            @Param("warehouse_id") String warehouseId,
-            @Param("workflow") String workflow,
-            @Param("weeks") Set<String> weeks
+            @Param("forecast_ids") List<Long> forecastIds
     );
 }

@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.deviation.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.SaveForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
 import lombok.Value;
 
 import javax.validation.constraints.NotNull;

@@ -27,4 +27,6 @@ public class BacklogProjectionRequest {
     private ZonedDateTime dateTo;
 
     private List<CurrentBacklog> currentBacklog;
+
+    private boolean applyDeviation;
 }

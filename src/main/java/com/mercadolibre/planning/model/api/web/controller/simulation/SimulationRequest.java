@@ -44,6 +44,8 @@ public class SimulationRequest {
     @NotNull
     private Long userId;
 
+    private boolean applyDeviation;
+
     public CptProjectionInput toProjectionInput(final List<EntityOutput> throughputs,
                                                 final List<GetPlanningDistributionOutput> units) {
         return CptProjectionInput.builder()
@@ -101,6 +103,7 @@ public class SimulationRequest {
                 .workflow(workflow)
                 .dateOutFrom(dateFrom)
                 .dateOutTo(dateTo)
+                .applyDeviation(applyDeviation)
                 .build();
     }
 }

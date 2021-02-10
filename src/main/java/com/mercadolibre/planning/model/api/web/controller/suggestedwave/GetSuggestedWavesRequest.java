@@ -26,6 +26,8 @@ public class GetSuggestedWavesRequest {
     @NotBlank
     private String backlog;
 
+    private boolean applyDeviation;
+
     public GetSuggestedWavesInput getSuggestedWavesInput(final Workflow workflow) {
         return GetSuggestedWavesInput.builder()
                 .warehouseId(warehouseId)
@@ -33,6 +35,7 @@ public class GetSuggestedWavesRequest {
                 .dateFrom(ZonedDateTime.parse(dateFrom))
                 .dateTo(ZonedDateTime.parse(dateTo))
                 .backlog(Long.parseLong(backlog))
+                .applyDeviation(applyDeviation)
                 .build();
     }
 }

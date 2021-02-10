@@ -323,6 +323,7 @@ public final class TestUtils {
                 .dateFrom(now.plusHours(1).truncatedTo(HOURS).withFixedOffsetZone())
                 .backlog(500)
                 .dateTo(now.plusHours(2).truncatedTo(HOURS).withFixedOffsetZone())
+                .applyDeviation(true)
                 .build();
     }
 

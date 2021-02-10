@@ -20,8 +20,9 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   INNER JOIN forecast_metadata fm2 ON fm.forecast_id = fm2.forecast_id "
             + "   INNER JOIN forecast f ON f.id = fm.forecast_id "
             + "   WHERE (fm.`key` = 'warehouse_id' AND fm.value = :warehouse_id) "
-            + "   AND (fm2.`key` = 'week' AND fm2.value = :weeks) "
-            + "   AND f.workflow = :workflow )"
+            + "   AND (fm2.`key` = 'week' AND fm2.value in :weeks) "
+            + "   AND f.workflow = :workflow "
+            + "   GROUP BY fm2.value, fm.value, f.workflow ) "
             + "SELECT date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM forecast_current fc, "
@@ -47,8 +48,9 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   INNER JOIN forecast_metadata fm2 on fm.forecast_id = fm2.forecast_id"
             + "   INNER JOIN forecast f on f.id = fm.forecast_id"
             + "   WHERE (fm.`key` = 'warehouse_id' and fm.value = :warehouse_id)"
-            + "   AND (fm2.`key` = 'week' and fm2.value = :weeks)"
-            + "   AND f.workflow = :workflow )"
+            + "   AND (fm2.`key` = 'week' and fm2.value in :weeks)"
+            + "   AND f.workflow = :workflow "
+            + "   GROUP BY fm2.value, fm.value, f.workflow ) "
             + "SELECT date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM forecast_current fc, planning_distribution p "
@@ -76,8 +78,9 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   INNER JOIN forecast_metadata fm2 on fm.forecast_id = fm2.forecast_id "
             + "   INNER JOIN forecast f on f.id = fm.forecast_id "
             + "   WHERE (fm.`key` = 'warehouse_id' and fm.value = :warehouse_id) "
-            + "   AND (fm2.`key` = 'week' and fm2.value = :weeks) "
-            + "   AND f.workflow = :workflow ) "
+            + "   AND (fm2.`key` = 'week' and fm2.value in :weeks) "
+            + "   AND f.workflow = :workflow "
+            + "   GROUP BY fm2.value, fm.value, f.workflow ) "
             + "SELECT date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM forecast_current fc, planning_distribution p "
@@ -98,26 +101,29 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             @Param("weeks") Set<String> weeks,
             @Param("apply_deviation") boolean applyDeviation);
 
-    @Query(value = "SELECT sum(quantity) as quantity "
-            + "FROM planning_distribution p "
+    @Query(value = "WITH forecast_current as ( "
+            + "   SELECT max(f.id) as id "
+            + "   from forecast_metadata fm "
+            + "   INNER JOIN forecast_metadata fm2 on fm.forecast_id = fm2.forecast_id "
+            + "   INNER JOIN forecast f on f.id = fm.forecast_id "
+            + "   WHERE (fm.`key` = 'warehouse_id' and fm.value = :warehouse_id) "
+            + "   AND (fm2.`key` = 'week' and fm2.value in :weeks) "
+            + "   AND f.workflow = :workflow "
+            + "   GROUP BY fm2.value, fm.value, f.workflow ) "
+            + "SELECT sum(ROUND(quantity + COALESCE(quantity * cfd.value, 0))) as quantity "
+            + "FROM forecast_current fc, planning_distribution p "
+            + "LEFT JOIN current_forecast_deviation cfd ON "
+            + "   :apply_deviation = true "
+            + "   AND cfd.logistic_center_id = :warehouse_id "
+            + "   AND cfd.is_active = true "
+            + "   AND p.date_in BETWEEN cfd.date_from AND cfd.date_to "
             + "WHERE p.date_in BETWEEN :date_in_from AND :date_in_to "
-            + "AND p.forecast_id in ("
-            + " SELECT MAX(fm.id) FROM "
-            + "     (SELECT id, "
-            + "     workflow, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'warehouse_id') AS warehouse_id, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'week') AS forecast_week "
-            + "     FROM forecast f) fm "
-            + "     WHERE fm.warehouse_id = :warehouse_id "
-            + "     AND fm.workflow = :workflow "
-            + "     AND fm.forecast_week in (:weeks)"
-            + "     GROUP BY fm.forecast_week)", nativeQuery = true)
+            + "AND p.forecast_id in (fc.id)", nativeQuery = true)
     SuggestedWavePlanningDistributionView findByWarehouseIdWorkflowDateInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("workflow") String workflow,
             @Param("date_in_from") ZonedDateTime dateInFrom,
             @Param("date_in_to") ZonedDateTime dateInTo,
-            @Param("weeks") Set<String> weeks);
+            @Param("weeks") Set<String> weeks,
+            @Param("apply_deviation") boolean applyDeviation);
 }

@@ -68,7 +68,8 @@ public class GetSuggestedWavesUseCaseTest {
                 input.getWorkflow().name(),
                 now.truncatedTo(HOURS),
                 now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                forecastWeeks)
+                forecastWeeks,
+                input.isApplyDeviation())
         ).thenReturn(mockPlanningDistSuggestedWaveCurrent());
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
@@ -76,7 +77,8 @@ public class GetSuggestedWavesUseCaseTest {
                 input.getWorkflow().name(),
                 now.plusHours(1).truncatedTo(HOURS),
                 input.getDateTo().minusMinutes(1),
-                forecastWeeks)
+                forecastWeeks,
+                input.isApplyDeviation())
         ).thenReturn(mockPlanningDistSuggestedWaveNext());
 
         when(getRemainingProcessingUseCase.execute(
@@ -155,7 +157,8 @@ public class GetSuggestedWavesUseCaseTest {
                 input.getWorkflow().name(),
                 now.truncatedTo(HOURS),
                 now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                forecastWeeks)
+                forecastWeeks,
+                input.isApplyDeviation())
         ).thenReturn(null);
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
@@ -163,7 +166,8 @@ public class GetSuggestedWavesUseCaseTest {
                 input.getWorkflow().name(),
                 now.plusHours(1).truncatedTo(HOURS),
                 input.getDateTo().minusMinutes(1),
-                forecastWeeks)
+                forecastWeeks,
+                input.isApplyDeviation())
         ).thenReturn(null);
 
         when(getRemainingProcessingUseCase.execute(

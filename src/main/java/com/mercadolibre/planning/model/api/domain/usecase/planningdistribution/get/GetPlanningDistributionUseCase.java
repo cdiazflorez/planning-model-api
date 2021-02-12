@@ -53,7 +53,8 @@ public class GetPlanningDistributionUseCase
                             input.getWorkflow().name(),
                             dateOutFrom,
                             dateOutTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo));
+                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            input.isApplyDeviation());
         } else if (dateInTo != null && dateInFrom == null) {
             return planningDistRepository
                     .findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
@@ -62,7 +63,8 @@ public class GetPlanningDistributionUseCase
                             dateOutFrom,
                             dateOutTo,
                             dateInTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo)
+                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            input.isApplyDeviation()
                     );
         } else {
             return planningDistRepository
@@ -73,7 +75,8 @@ public class GetPlanningDistributionUseCase
                             dateOutTo,
                             dateInFrom,
                             dateInTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo));
+                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            input.isApplyDeviation());
         }
     }
 }

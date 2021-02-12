@@ -53,6 +53,7 @@ public class SuggestedWavesControllerTest {
                         .param("date_from", A_DATE_UTC.toString())
                         .param("date_to", A_DATE_UTC.plusHours(2).toString())
                         .param("backlog", String.valueOf(230))
+                        .param("apply_deviation", "true")
         );
 
         // THEN

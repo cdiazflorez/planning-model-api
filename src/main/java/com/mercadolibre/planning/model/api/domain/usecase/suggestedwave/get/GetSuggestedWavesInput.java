@@ -15,5 +15,6 @@ public class GetSuggestedWavesInput {
     private ZonedDateTime dateFrom;
     private ZonedDateTime dateTo;
     private long backlog;
+    private boolean applyDeviation;
 
 }

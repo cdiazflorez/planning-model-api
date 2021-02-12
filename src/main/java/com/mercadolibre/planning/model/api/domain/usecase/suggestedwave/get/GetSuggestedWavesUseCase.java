@@ -94,14 +94,16 @@ public class GetSuggestedWavesUseCase
                         input.getWorkflow().name(),
                         now.truncatedTo(HOURS),
                         now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                        forecastWeeks);
+                        forecastWeeks,
+                        input.isApplyDeviation());
         final SuggestedWavePlanningDistributionView nextHourSales = planningDistRepository
                 .findByWarehouseIdWorkflowDateInRange(
                         input.getWarehouseId(),
                         input.getWorkflow().name(),
                         now.plusHours(1).truncatedTo(HOURS),
                         input.getDateTo().minusMinutes(1),
-                        forecastWeeks);
+                        forecastWeeks,
+                        input.isApplyDeviation());
 
         return (currentHourSales == null ? 0 : currentHourSalesPercentage(
                 currentHourSales.getQuantity(), now))

@@ -29,4 +29,6 @@ public class CptProjectionRequest {
     private ZonedDateTime dateTo;
 
     private List<QuantityByDate> backlog;
+
+    private boolean applyDeviation;
 }

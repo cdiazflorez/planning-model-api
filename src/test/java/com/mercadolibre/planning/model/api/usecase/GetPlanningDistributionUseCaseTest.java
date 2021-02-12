@@ -44,7 +44,8 @@ public class GetPlanningDistributionUseCaseTest {
                 FBM_WMS_OUTBOUND.name(),
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)))
+                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                false)
         ).thenReturn(planningDistributions());
 
         // WHEN
@@ -77,7 +78,8 @@ public class GetPlanningDistributionUseCaseTest {
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
                 dateInTo,
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)))
+                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                false)
         ).thenReturn(planningDistributions());
 
         // WHEN
@@ -113,7 +115,8 @@ public class GetPlanningDistributionUseCaseTest {
                 A_DATE_UTC.plusDays(3),
                 dateInFrom,
                 A_DATE_UTC,
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)))
+                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                false)
         ).thenReturn(planningDistributions());
 
         // WHEN

@@ -94,6 +94,7 @@ public class ProjectionController {
                         .dateInTo(request.getDateTo().plusDays(1))
                         .dateOutFrom(request.getDateFrom())
                         .dateOutTo(request.getDateTo().plusDays(1))
+                        .applyDeviation(request.isApplyDeviation())
                         .build());
 
         return ResponseEntity
@@ -136,6 +137,7 @@ public class ProjectionController {
                         .warehouseId(request.getWarehouseId())
                         .dateOutFrom(request.getDateFrom())
                         .dateOutTo(request.getDateTo())
+                        .applyDeviation(request.isApplyDeviation())
                         .build());
 
         return ResponseEntity

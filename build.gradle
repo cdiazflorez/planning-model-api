@@ -20,11 +20,8 @@ targetCompatibility = 11
 mainClassName = 'com.mercadolibre.planning.model.api.PlanningModelApplication'
 
 repositories {
-    mavenCentral()
-    jcenter()
-    maven { url "http://git.ml.com:8081/nexus/content/repositories/MLGrailsPlugins" }
-    maven { url "http://git.ml.com:8081/nexus/content/groups/Arquitectura" }
-}
+		maven { url "http://maven.artifacts.furycloud.io/repository/all" }
+	}
 
 dependencies {
     implementation 'com.fury:furyutils:0.0.2'

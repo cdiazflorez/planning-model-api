@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -40,4 +42,10 @@ public class CurrentForecastDeviation {
 
     @Enumerated(EnumType.STRING)
     private Workflow workflow;
+
+    @CreationTimestamp
+    private ZonedDateTime dateCreated;
+
+    @UpdateTimestamp
+    private ZonedDateTime lastUpdated;
 }

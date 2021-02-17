@@ -10,12 +10,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
+import static java.time.ZonedDateTime.now;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,10 +39,11 @@ public class DisableForecastDeviationUseCaseTest {
         final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
 
         when(deviationRepository.findByLogisticCenterId(WAREHOUSE_ID))
-                .thenReturn(mockCurrentForecastDeviation(true));
+                .thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
 
-        final List<CurrentForecastDeviation> toSave = mockCurrentForecastDeviation(false);
-        when(deviationRepository.saveAll(toSave)).thenReturn(toSave);
+        final List<CurrentForecastDeviation> toSave =
+                mockCurrentForecastDeviation(false, now());
+        when(deviationRepository.saveAll(any(List.class))).thenReturn(toSave);
 
         // WHEN
         final int output = useCase.execute(input);
@@ -46,11 +51,12 @@ public class DisableForecastDeviationUseCaseTest {
         // THEN
 
         verify(deviationRepository).findByLogisticCenterId(WAREHOUSE_ID);
-        verify(deviationRepository).saveAll(toSave);
+        verify(deviationRepository).saveAll(any(List.class));
         assertEquals(2, output);
     }
 
-    private List<CurrentForecastDeviation> mockCurrentForecastDeviation(final boolean active) {
+    private List<CurrentForecastDeviation> mockCurrentForecastDeviation(final boolean active,
+                                                                        final ZonedDateTime date) {
         return List.of(
                 CurrentForecastDeviation
                         .builder()
@@ -58,6 +64,8 @@ public class DisableForecastDeviationUseCaseTest {
                         .workflow(FBM_WMS_OUTBOUND)
                         .id(1L)
                         .isActive(active)
+                        .lastUpdated(date)
+                        .dateCreated(date.truncatedTo(HOURS).minusMinutes(5))
                         .build(),
                 CurrentForecastDeviation
                         .builder()
@@ -65,6 +73,8 @@ public class DisableForecastDeviationUseCaseTest {
                         .workflow(FBM_WMS_OUTBOUND)
                         .id(2L)
                         .isActive(active)
+                        .lastUpdated(date)
+                        .dateCreated(date.truncatedTo(HOURS).minusMinutes(5))
                         .build()
             );
     }

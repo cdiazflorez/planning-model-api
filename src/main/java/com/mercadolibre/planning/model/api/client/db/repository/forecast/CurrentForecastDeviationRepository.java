@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface CurrentForecastDeviationRepository
         extends CrudRepository<CurrentForecastDeviation, Long> {
-    List<CurrentForecastDeviation> findByLogisticCenterId(String logisticCenterId);
+    List<CurrentForecastDeviation> findByLogisticCenterId(final String logisticCenterId);
 
     Optional<CurrentForecastDeviation> findBylogisticCenterIdAndWorkflowAndIsActive(
             final String warehouseId, final Workflow workflow, final boolean isActive);

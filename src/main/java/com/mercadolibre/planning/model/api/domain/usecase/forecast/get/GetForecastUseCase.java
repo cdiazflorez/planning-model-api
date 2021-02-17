@@ -10,18 +10,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 
 @Service
 @AllArgsConstructor
-public class GetForecastUseCase implements UseCase<GetForecastInput, List<ForecastIdView>> {
+public class GetForecastUseCase implements UseCase<GetForecastInput, List<Long>> {
 
     private final ForecastRepository forecastRepository;
 
     @Trace
     @Override
-    public List<ForecastIdView> execute(final GetForecastInput input) {
+    public List<Long> execute(final GetForecastInput input) {
         final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
         final List<ForecastIdView> forecastIds = forecastRepository
                 .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
@@ -35,6 +36,8 @@ public class GetForecastUseCase implements UseCase<GetForecastInput, List<Foreca
                     input.getWorkflow().name(), input.getWarehouseId(), forecastWeeks);
         }
 
-        return forecastIds;
+        return forecastIds.stream()
+                .map(ForecastIdView::getId)
+                .collect(Collectors.toList());
     }
 }

@@ -3,6 +3,8 @@ package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +12,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
@@ -21,6 +22,7 @@ public class GetPlanningDistributionUseCase
         implements UseCase<GetPlanningDistributionInput, List<GetPlanningDistributionOutput>> {
 
     private final PlanningDistributionRepository planningDistRepository;
+    private final GetForecastUseCase getForecastUseCase;
 
     @Override
     public List<GetPlanningDistributionOutput> execute(final GetPlanningDistributionInput input) {
@@ -46,36 +48,40 @@ public class GetPlanningDistributionUseCase
         final ZonedDateTime dateInFrom = input.getDateInFrom();
         final ZonedDateTime dateInTo = input.getDateInTo();
 
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(dateOutFrom)
+                .dateTo(dateOutTo)
+                .build());
+
         if (dateInTo == null && dateInFrom == null) {
             return planningDistRepository
                     .findByWarehouseIdWorkflowAndDateOutInRange(
                             input.getWarehouseId(),
-                            input.getWorkflow().name(),
                             dateOutFrom,
                             dateOutTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            forecastIds,
                             input.isApplyDeviation());
         } else if (dateInTo != null && dateInFrom == null) {
             return planningDistRepository
                     .findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
                             input.getWarehouseId(),
-                            input.getWorkflow().name(),
                             dateOutFrom,
                             dateOutTo,
                             dateInTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            forecastIds,
                             input.isApplyDeviation()
                     );
         } else {
             return planningDistRepository
                     .findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
                             input.getWarehouseId(),
-                            input.getWorkflow().name(),
                             dateOutFrom,
                             dateOutTo,
                             dateInFrom,
                             dateInTo,
-                            getForecastWeeks(dateOutFrom, dateOutTo),
+                            forecastIds,
                             input.isApplyDeviation());
         }
     }

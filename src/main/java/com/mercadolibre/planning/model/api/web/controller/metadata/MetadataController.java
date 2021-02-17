@@ -3,8 +3,10 @@ package com.mercadolibre.planning.model.api.web.controller.metadata;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import lombok.AllArgsConstructor;
@@ -27,14 +29,29 @@ import java.util.List;
 public class MetadataController {
 
     private final GetForecastMetadataUseCase getForecastMetadataUseCase;
+    private final GetForecastUseCase getForecastUseCase;
 
     @GetMapping
     public ResponseEntity<List<ForecastMetadataView>> getLastHistoricForecast(
             @PathVariable final Workflow workflow,
             @Valid final GetForecastMetadataRequest request) {
-        final GetForecastMetadataInput input = request.getForecastMetadataInput(workflow);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(getForecastMetadataUseCase.execute(input));
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(workflow)
+                .warehouseId(request.getWarehouseId())
+                .dateFrom(request.getDateFrom())
+                .dateTo(request.getDateTo())
+                .build());
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(getForecastMetadataUseCase.execute(
+                        GetForecastMetadataInput.builder()
+                                .forecastIds(forecastIds)
+                                .dateFrom(request.getDateFrom())
+                                .dateTo(request.getDateTo())
+                                .build()
+                        )
+                );
     }
 
     @InitBinder

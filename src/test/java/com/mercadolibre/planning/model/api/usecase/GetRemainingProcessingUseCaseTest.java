@@ -8,6 +8,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,6 +49,9 @@ public class GetRemainingProcessingUseCaseTest {
     @Mock
     private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
+    @Mock
+    private GetForecastUseCase getForecastUseCase;
+
     @InjectMocks
     private GetRemainingProcessingUseCase useCase;
 
@@ -64,6 +68,14 @@ public class GetRemainingProcessingUseCaseTest {
                 .build();
 
         final List<EntityOutput> throughput = getThroughputUseCaseMock();
+        final List<Long> forecastIds = List.of(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())).thenReturn(forecastIds);
 
         when(getThroughputUseCase.execute(GetEntityInput.builder()
                 .workflow(FBM_WMS_OUTBOUND)
@@ -85,12 +97,10 @@ public class GetRemainingProcessingUseCaseTest {
                 ));
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
                 Set.of(ProcessingType.REMAINING_PROCESSING.name()),
                 List.of(WAVING.name()),
                 A_DATE_UTC, A_DATE_UTC,
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC))
+                forecastIds)
         ).thenReturn(List.of(new ProcessingDistributionViewImpl(
                 1,
                 Date.from(A_DATE_UTC.toInstant()),

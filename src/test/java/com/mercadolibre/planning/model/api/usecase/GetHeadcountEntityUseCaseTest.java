@@ -8,6 +8,8 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessi
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
@@ -30,7 +32,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKE
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
@@ -40,6 +41,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -52,6 +54,9 @@ class GetHeadcountEntityUseCaseTest {
 
     @Mock
     private CurrentProcessingDistributionRepository currentRepository;
+
+    @Mock
+    private GetForecastUseCase getForecastUseCase;
 
     @InjectMocks
     private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
@@ -70,14 +75,21 @@ class GetHeadcountEntityUseCaseTest {
         // GIVEN
         final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST,
                 Set.of(ProcessingType.ACTIVE_WORKERS, ProcessingType.WORKERS), null);
+        final List<Long> forecastIds = List.of(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())).thenReturn(forecastIds);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
+
                 Set.of(ProcessingType.ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
                 List.of(PICKING.name(), PACKING.name()),
                 A_DATE_UTC, A_DATE_UTC.plusDays(2),
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(2)))
+                forecastIds)
         ).thenReturn(processingDistributions());
 
         // WHEN
@@ -119,6 +131,15 @@ class GetHeadcountEntityUseCaseTest {
                                 HEADCOUNT,
                                 List.of(new QuantityByDate(A_DATE_UTC, 100)))))));
 
+        final List<Long> forecastIds = List.of(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())).thenReturn(forecastIds);
+
         when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                 WAREHOUSE_ID,
                 FBM_WMS_OUTBOUND,
@@ -132,12 +153,10 @@ class GetHeadcountEntityUseCaseTest {
         ));
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
                 Set.of(ProcessingType.ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
                 List.of(PICKING.name(), PACKING.name()),
                 A_DATE_UTC, A_DATE_UTC.plusDays(2),
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(2)))
+                forecastIds)
         ).thenReturn(processingDistributions());
 
         // WHEN
@@ -199,15 +218,21 @@ class GetHeadcountEntityUseCaseTest {
     public void testGetHeadcountFromSourceSimulation() {
         // GIVEN
         final GetHeadcountInput input = mockGetHeadcountEntityInput(SIMULATION);
+        final List<Long> forecastIds = singletonList(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())).thenReturn(forecastIds);
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                input.getWarehouseId(),
-                input.getWorkflow().name(),
                 null,
                 input.getProcessNamesAsString(),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()))
+                forecastIds)
         ).thenReturn(processingDistributions());
 
         when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(

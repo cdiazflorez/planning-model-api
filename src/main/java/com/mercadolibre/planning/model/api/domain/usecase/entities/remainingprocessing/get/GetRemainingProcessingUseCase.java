@@ -10,6 +10,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
@@ -34,12 +35,14 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
+@SuppressWarnings({"PMD.ExcessiveImports"})
 public class GetRemainingProcessingUseCase
         implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 
     private final ProcessingDistributionRepository processingDistRepository;
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetForecastUseCase getForecastUseCase;
 
     @Override
     public boolean supportsEntityType(final EntityType entityType) {
@@ -68,15 +71,20 @@ public class GetRemainingProcessingUseCase
                 .summaryStatistics()
                 .getAverage();
 
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build());
+
         final List<ProcessingDistributionView> remainingProcessing = processingDistRepository
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                        input.getWarehouseId(),
-                        input.getWorkflow().name(),
                         Set.of(REMAINING_PROCESSING.name()),
                         input.getProcessNamesAsString(),
                         input.getDateFrom(),
                         input.getDateTo(),
-                        getForecastWeeks(input.getDateFrom(), input.getDateTo())
+                        forecastIds
                 );
 
         return getRemainingProcessingUnits(

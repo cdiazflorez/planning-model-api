@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastRepository;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
@@ -50,17 +49,17 @@ public class GetForecastUseCaseTest {
         )).thenReturn(mockForecastIdView());
 
         // WHEN
-        final List<ForecastIdView> forecasts = getForecastUseCase.execute(input);
+        final List<Long> forecasts = getForecastUseCase.execute(input);
 
         // THEN
         assertFalse(forecasts.isEmpty());
         assertEquals(2, forecasts.size());
 
-        final ForecastIdView forecastId1 = forecasts.get(0);
-        assertEquals(Long.valueOf(1), forecastId1.getId());
+        final Long forecastId1 = forecasts.get(0);
+        assertEquals(Long.valueOf(1), forecastId1);
 
-        final ForecastIdView forecastId2 = forecasts.get(1);
-        assertEquals(Long.valueOf(2), forecastId2.getId());
+        final Long forecastId2 = forecasts.get(1);
+        assertEquals(Long.valueOf(2), forecastId2);
     }
 
     @Test

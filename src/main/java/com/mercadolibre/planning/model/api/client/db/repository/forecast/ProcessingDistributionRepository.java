@@ -20,25 +20,11 @@ public interface ProcessingDistributionRepository
             + "WHERE p.process_name IN (:process_name) "
             + "AND p.date BETWEEN :date_from AND :date_to "
             + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "
-            + "AND p.forecast_id in ("
-            + " SELECT MAX(id) FROM "
-            + "     (SELECT id, "
-            + "     workflow, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'warehouse_id') AS warehouse_id, "
-            + "     (SELECT m.value FROM forecast_metadata m "
-            + "     WHERE m.forecast_id = f.id AND m.key = 'week') AS forecast_week "
-            + "     FROM forecast f) forecast_with_metadata "
-            + "     WHERE warehouse_id = :warehouse_id "
-            + "     AND workflow = :workflow "
-            + "     AND forecast_week IN (:weeks) "
-            + "     GROUP BY forecast_week)", nativeQuery = true)
+            + "AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
     List<ProcessingDistributionView> findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-            @Param("warehouse_id") String warehouseId,
-            @Param("workflow") String workflow,
             @Param("type") Set<String> type,
             @Param("process_name") List<String> processNames,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,
-            @Param("weeks") Set<String> weeks);
+            @Param("forecast_ids") List<Long> forecastIds);
 }

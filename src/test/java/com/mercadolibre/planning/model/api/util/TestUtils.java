@@ -355,10 +355,9 @@ public final class TestUtils {
                 .build();
     }
 
-    public static GetForecastMetadataInput mockForecastMetadataInput() {
+    public static GetForecastMetadataInput  mockForecastMetadataInput() {
         return GetForecastMetadataInput.builder()
-                .warehouseId(WAREHOUSE_ID)
-                .workflow(FBM_WMS_OUTBOUND)
+                .forecastIds(List.of(1L))
                 .dateFrom(DATE_IN)
                 .dateTo(DATE_OUT)
                 .build();
@@ -853,5 +852,9 @@ public final class TestUtils {
                 new ForecastIdViewImpl(1L),
                 new ForecastIdViewImpl(2L)
         );
+    }
+
+    public static List<Long> mockForecastIds() {
+        return List.of(1L, 2L);
     }
 }

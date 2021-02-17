@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
@@ -15,10 +17,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,6 +31,9 @@ public class GetPlanningDistributionUseCaseTest {
     @Mock
     private PlanningDistributionRepository planningDistRepository;
 
+    @Mock
+    private GetForecastUseCase getForecastUseCase;
+
     @InjectMocks
     private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
 
@@ -39,12 +43,19 @@ public class GetPlanningDistributionUseCaseTest {
         // GIVEN
         final GetPlanningDistributionInput input = mockPlanningDistributionInput(null, null);
 
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateOutFrom())
+                .dateTo(input.getDateOutTo())
+                .build())
+        ).thenReturn(mockForecastIds());
+
         when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
+                input.getWarehouseId(),
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                mockForecastIds(),
                 false)
         ).thenReturn(planningDistributions());
 
@@ -72,13 +83,21 @@ public class GetPlanningDistributionUseCaseTest {
         // GIVEN
         final ZonedDateTime dateInTo = A_DATE_UTC.minusDays(3);
         final GetPlanningDistributionInput input = mockPlanningDistributionInput(null, dateInTo);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateOutFrom())
+                .dateTo(input.getDateOutTo())
+                .build())
+        ).thenReturn(mockForecastIds());
+
         when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
                 WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
                 dateInTo,
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                mockForecastIds(),
                 false)
         ).thenReturn(planningDistributions());
 
@@ -108,14 +127,21 @@ public class GetPlanningDistributionUseCaseTest {
         final GetPlanningDistributionInput input = mockPlanningDistributionInput(
                 dateInFrom, A_DATE_UTC);
 
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateOutFrom())
+                .dateTo(input.getDateOutTo())
+                .build())
+        ).thenReturn(mockForecastIds());
+
         when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
                 WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
                 dateInFrom,
                 A_DATE_UTC,
-                getForecastWeeks(A_DATE_UTC, A_DATE_UTC.plusDays(3)),
+                mockForecastIds(),
                 false)
         ).thenReturn(planningDistributions());
 

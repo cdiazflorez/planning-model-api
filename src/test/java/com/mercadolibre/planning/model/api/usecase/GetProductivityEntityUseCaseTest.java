@@ -9,6 +9,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
@@ -30,7 +32,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProdEntity;
@@ -40,6 +41,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -54,6 +56,9 @@ public class GetProductivityEntityUseCaseTest {
     @Mock
     private CurrentHeadcountProductivityRepository currentProductivityRepository;
 
+    @Mock
+    private GetForecastUseCase getForecastUseCase;
+
     @InjectMocks
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
@@ -62,13 +67,21 @@ public class GetProductivityEntityUseCaseTest {
     public void testGetProductivityOk() {
         // GIVEN
         final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null);
+        final List<Long> forecastIds = singletonList(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
+        ).thenReturn(forecastIds);
+
         when(productivityRepository.findBy(
-                "ARBA01",
-                FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                forecastIds,
                 Set.of(1))
         ).thenReturn(productivities());
 
@@ -96,6 +109,17 @@ public class GetProductivityEntityUseCaseTest {
                                 PRODUCTIVITY,
                                 List.of(new QuantityByDate(A_DATE_UTC, 100),
                                         new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))));
+
+        final List<Long> forecastIds = List.of(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
+        ).thenReturn(forecastIds);
+
         when(currentProductivityRepository
                 .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         WAREHOUSE_ID,
@@ -110,12 +134,10 @@ public class GetProductivityEntityUseCaseTest {
         ));
 
         when(productivityRepository.findBy(
-                "ARBA01",
-                FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                forecastIds,
                 Set.of(1))
         ).thenReturn(productivities());
 
@@ -139,15 +161,22 @@ public class GetProductivityEntityUseCaseTest {
         // GIVEN
         final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null);
         final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
+        final List<Long> forecastIds = List.of(1L);
 
         // WHEN
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
+        ).thenReturn(forecastIds);
+
         when(productivityRepository.findBy(
-                "ARBA01",
-                FBM_WMS_OUTBOUND.name(),
                 List.of(PICKING.name(), PACKING.name()),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                forecastIds,
                 Set.of(1))
         ).thenReturn(productivities());
 

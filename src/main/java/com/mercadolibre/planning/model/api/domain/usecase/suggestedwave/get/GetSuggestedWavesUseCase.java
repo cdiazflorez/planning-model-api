@@ -8,8 +8,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,10 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
+import static java.time.ZonedDateTime.now;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.stream.Collectors.toList;
 
@@ -32,7 +33,7 @@ public class GetSuggestedWavesUseCase
 
     private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
     private final GetForecastMetadataUseCase getForecastMetadataUseCase;
-
+    private final GetForecastUseCase getForecastUseCase;
     private final PlanningDistributionRepository planningDistRepository;
 
     private static final long HOUR_IN_MINUTES = 60L;
@@ -40,11 +41,18 @@ public class GetSuggestedWavesUseCase
     @Trace
     @Override
     public List<SuggestedWavesOutput> execute(final GetSuggestedWavesInput input) {
-        final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                        .workflow(input.getWorkflow())
+                        .warehouseId(input.getWarehouseId())
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .build());
 
-        final long sales = getBoundedSales(input,
-                forecastWeeks,
-                ZonedDateTime.now(Clock.systemUTC()));
+        final long sales = getBoundedSales(
+                input,
+                forecastIds,
+                now(Clock.systemUTC())
+        );
 
         final long remainingProcessing = getRemainingProcessing(input);
 
@@ -52,8 +60,7 @@ public class GetSuggestedWavesUseCase
 
         final List<ForecastMetadataView> forecastMetadataPercentage = getForecastMetadataUseCase
                 .execute(GetForecastMetadataInput.builder()
-                        .workflow(input.getWorkflow())
-                        .warehouseId(input.getWarehouseId())
+                        .forecastIds(forecastIds)
                         .dateFrom(input.getDateFrom())
                         .dateTo(input.getDateTo())
                         .build()
@@ -85,24 +92,21 @@ public class GetSuggestedWavesUseCase
     }
 
     private long getBoundedSales(final GetSuggestedWavesInput input,
-                              final Set<String> forecastWeeks,
-                              final ZonedDateTime now) {
-
+                                 final List<Long> forecastIds,
+                                 final ZonedDateTime now) {
         final SuggestedWavePlanningDistributionView currentHourSales = planningDistRepository
                 .findByWarehouseIdWorkflowDateInRange(
                         input.getWarehouseId(),
-                        input.getWorkflow().name(),
                         now.truncatedTo(HOURS),
                         now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                        forecastWeeks,
+                        forecastIds,
                         input.isApplyDeviation());
         final SuggestedWavePlanningDistributionView nextHourSales = planningDistRepository
                 .findByWarehouseIdWorkflowDateInRange(
                         input.getWarehouseId(),
-                        input.getWorkflow().name(),
                         now.plusHours(1).truncatedTo(HOURS),
                         input.getDateTo().minusMinutes(1),
-                        forecastWeeks,
+                        forecastIds,
                         input.isApplyDeviation());
 
         return (currentHourSales == null ? 0 : currentHourSalesPercentage(

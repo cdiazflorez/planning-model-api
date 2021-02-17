@@ -7,8 +7,10 @@ import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.SuggestedWavesOutput;
@@ -22,16 +24,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.HOUR_IN_MINUTES;
-import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastByWarehouseId;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetSuggestedWavesInput;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -52,6 +52,9 @@ public class GetSuggestedWavesUseCaseTest {
     @Mock
     private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
 
+    @Mock
+    private GetForecastUseCase getForecastUseCase;
+
     @InjectMocks
     private GetSuggestedWavesUseCase getSuggestedWavesUseCase;
 
@@ -61,23 +64,28 @@ public class GetSuggestedWavesUseCaseTest {
         // GIVEN
         final ZonedDateTime now = ZonedDateTime.now(Clock.systemUTC());
         final GetSuggestedWavesInput input = mockGetSuggestedWavesInput(now);
-        final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
+        ).thenReturn(mockForecastIds());
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow().name(),
                 now.truncatedTo(HOURS),
                 now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                forecastWeeks,
+                mockForecastIds(),
                 input.isApplyDeviation())
         ).thenReturn(mockPlanningDistSuggestedWaveCurrent());
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow().name(),
                 now.plusHours(1).truncatedTo(HOURS),
                 input.getDateTo().minusMinutes(1),
-                forecastWeeks,
+                mockForecastIds(),
                 input.isApplyDeviation())
         ).thenReturn(mockPlanningDistSuggestedWaveNext());
 
@@ -93,8 +101,7 @@ public class GetSuggestedWavesUseCaseTest {
         ).thenReturn(mockRemainingProcessing());
 
         when(getForecastMetadataUseCase.execute(GetForecastMetadataInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(WAREHOUSE_ID)
+                .forecastIds(mockForecastIds())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .build())
@@ -150,23 +157,29 @@ public class GetSuggestedWavesUseCaseTest {
         // GIVEN
         final ZonedDateTime now = ZonedDateTime.now(Clock.systemUTC());
         final GetSuggestedWavesInput input = mockGetSuggestedWavesInput(now);
-        final Set<String> forecastWeeks = getForecastWeeks(input.getDateFrom(), input.getDateTo());
+        final List<Long> forecastIds = mockForecastIds();
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())
+        ).thenReturn(mockForecastIds());
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow().name(),
                 now.truncatedTo(HOURS),
                 now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                forecastWeeks,
+                forecastIds,
                 input.isApplyDeviation())
         ).thenReturn(null);
 
         when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow().name(),
                 now.plusHours(1).truncatedTo(HOURS),
                 input.getDateTo().minusMinutes(1),
-                forecastWeeks,
+                forecastIds,
                 input.isApplyDeviation())
         ).thenReturn(null);
 
@@ -182,8 +195,7 @@ public class GetSuggestedWavesUseCaseTest {
         ).thenReturn(List.of());
 
         when(getForecastMetadataUseCase.execute(GetForecastMetadataInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(WAREHOUSE_ID)
+                .forecastIds(forecastIds)
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .build())

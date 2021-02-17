@@ -6,6 +6,8 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -29,6 +30,7 @@ public class GetProductivityEntityUseCase
 
     protected final HeadcountProductivityRepository productivityRepository;
     protected final CurrentHeadcountProductivityRepository currentProductivityRepository;
+    protected final GetForecastUseCase getForecastUseCase;
 
     @Override
     public boolean supportsEntityType(final EntityType entityType) {
@@ -109,13 +111,18 @@ public class GetProductivityEntityUseCase
     }
 
     private List<HeadcountProductivityView> findProductivityBy(final GetProductivityInput input) {
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build());
+
         return productivityRepository.findBy(
-                input.getWarehouseId(),
-                input.getWorkflow().name(),
                 input.getProcessNamesAsString(),
                 input.getDateFrom(),
                 input.getDateTo(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo()),
+                forecastIds,
                 input.getAbilityLevel());
     }
 

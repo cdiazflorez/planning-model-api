@@ -7,6 +7,8 @@ import lombok.Value;
 
 import java.time.ZonedDateTime;
 
+import static java.time.ZonedDateTime.now;
+
 @Builder
 @Value
 public class SaveForecastDeviationInput {

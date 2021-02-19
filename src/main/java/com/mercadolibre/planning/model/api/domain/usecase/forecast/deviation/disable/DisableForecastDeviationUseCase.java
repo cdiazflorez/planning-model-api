@@ -10,6 +10,8 @@ import javax.transaction.Transactional;
 
 import java.util.List;
 
+import static java.time.ZonedDateTime.now;
+
 @Service
 @AllArgsConstructor
 public class DisableForecastDeviationUseCase
@@ -23,7 +25,10 @@ public class DisableForecastDeviationUseCase
                 deviationRepository.findByLogisticCenterId(input.getWarehouseId());
 
         warehouseDeviations.forEach(
-                currentForecastDeviation -> currentForecastDeviation.setActive(false)
+                currentForecastDeviation -> {
+                    currentForecastDeviation.setActive(false);
+                    currentForecastDeviation.setLastUpdated(now());
+                }
         );
 
         deviationRepository.saveAll(warehouseDeviations);

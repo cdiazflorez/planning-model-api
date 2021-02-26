@@ -18,19 +18,24 @@ import static java.lang.Math.round;
 public class GetForecastDeviationUseCase implements UseCase<GetForecastDeviationInput,
         GetForecastDeviationResponse> {
 
+    private static final boolean IS_ACTIVE = true;
+
     private final CurrentForecastDeviationRepository deviationRepository;
 
     @Override
     public GetForecastDeviationResponse execute(final GetForecastDeviationInput input) {
 
         final CurrentForecastDeviation deviation = deviationRepository
-                    .findBylogisticCenterIdAndWorkflowAndIsActive(
+                    .findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRange(
                             input.getWarehouseId(),
-                            input.getWorkflow(),
-                            true)
+                            input.getWorkflow().name(),
+                            IS_ACTIVE,
+                            input.getDate().withFixedOffsetZone())
                     .orElseThrow(notFoundException(input.getWarehouseId()));
 
-        return GetForecastDeviationResponse.builder()
+        return deviation == null
+                ? null
+                : GetForecastDeviationResponse.builder()
                 .dateFrom(deviation.getDateFrom())
                 .dateTo(deviation.getDateTo())
                 .value(round((deviation.getValue() * 100) * 10) / 10.0)

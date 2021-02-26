@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.request.Save
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
+import com.mercadolibre.planning.model.api.web.controller.editor.ZonedDateTimeEditor;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+
+import java.time.ZonedDateTime;
 
 @RestController
 @AllArgsConstructor
@@ -58,15 +61,17 @@ public class DeviationController {
     @Trace(dispatcher = true)
     public ResponseEntity<GetForecastDeviationResponse> getDeviation(
             @PathVariable final Workflow workflow,
-            @RequestParam final String warehouseId) {
+            @RequestParam final String warehouseId,
+            @RequestParam final ZonedDateTime date) {
         return ResponseEntity.ok(
                 getForecastDeviationUseCase.execute(
-                        new GetForecastDeviationInput(warehouseId, workflow))
+                        new GetForecastDeviationInput(warehouseId, workflow, date))
         );
     }
 
     @InitBinder
     public void initBinder(final PropertyEditorRegistry dataBinder) {
         dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
+        dataBinder.registerCustomEditor(ZonedDateTime.class, new ZonedDateTimeEditor());
     }
 }

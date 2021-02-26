@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -40,14 +41,16 @@ public class GetForecastDeviationUseCaseTest {
         // GIVEN
 
         final GetForecastDeviationInput input =
-                new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
+                new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
         final Optional<CurrentForecastDeviation> currentForecastDeviation =
                 ofNullable(mockCurrentForecastDeviation());
 
-        when(deviationRepository.findBylogisticCenterIdAndWorkflowAndIsActive(
+        when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow(), true))
+                input.getWorkflow().name(),
+                true,
+                A_DATE_UTC.withFixedOffsetZone()))
                 .thenReturn(currentForecastDeviation);
 
         // WHEN
@@ -67,12 +70,14 @@ public class GetForecastDeviationUseCaseTest {
         // GIVEN
 
         final GetForecastDeviationInput input =
-                new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
+                new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
-        when(deviationRepository.findBylogisticCenterIdAndWorkflowAndIsActive(
+        when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRange(
                 input.getWarehouseId(),
-                input.getWorkflow(), true))
-                .thenReturn(ofNullable(null));
+                input.getWorkflow().name(),
+                true,
+                A_DATE_UTC.withFixedOffsetZone()))
+                .thenReturn(Optional.empty());
 
         // THEN
         assertThrows(EntityNotFoundException.class, () -> useCase.execute(input));

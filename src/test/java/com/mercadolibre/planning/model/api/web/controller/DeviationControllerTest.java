@@ -103,6 +103,7 @@ public class DeviationControllerTest {
         // GIVEN
         final LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap();
         params.add("warehouse_id", WAREHOUSE_ID);
+        params.add("date", "2020-08-19T18:00:00Z");
 
         when(getForecastDeviationUseCase.execute(any(GetForecastDeviationInput.class)))
                 .thenReturn(GetForecastDeviationResponse.builder()

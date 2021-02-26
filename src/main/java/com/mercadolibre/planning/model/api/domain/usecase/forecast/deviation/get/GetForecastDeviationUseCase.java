@@ -24,13 +24,15 @@ public class GetForecastDeviationUseCase implements UseCase<GetForecastDeviation
     public GetForecastDeviationResponse execute(final GetForecastDeviationInput input) {
 
         final CurrentForecastDeviation deviation = deviationRepository
-                    .findBylogisticCenterIdAndWorkflowAndIsActive(
+                    .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
                             input.getWarehouseId(),
                             input.getWorkflow(),
-                            true)
+                            input.getDate().withFixedOffsetZone())
                     .orElseThrow(notFoundException(input.getWarehouseId()));
 
-        return GetForecastDeviationResponse.builder()
+        return deviation == null
+                ? null
+                : GetForecastDeviationResponse.builder()
                 .dateFrom(deviation.getDateFrom())
                 .dateTo(deviation.getDateTo())
                 .value(round((deviation.getValue() * 100) * 10) / 10.0)

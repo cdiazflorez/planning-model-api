@@ -11,13 +11,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -30,8 +31,8 @@ public class CurrentForecastDeviationRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
-    @DisplayName("Find currectForecastDeviation active by warehouse id and workflow")
-    public void findBylogisticCenterIdAndWorkflowAndIsActiveOk() {
+    @DisplayName("Find currentForecastDeviation active by warehouse id and workflow")
+    public void findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRangeOk() {
         // GIVEN
         final CurrentForecastDeviation currentForecastDeviation =
                 mockCurrentForecastDeviation();
@@ -39,12 +40,14 @@ public class CurrentForecastDeviationRepositoryTest {
         entityManager.flush();
 
         // WHEN
-        final CurrentForecastDeviation deviation =
-                repository.findBylogisticCenterIdAndWorkflowAndIsActive(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, true).get();
+        final Optional<CurrentForecastDeviation> optDeviation =
+                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1));
 
         // THEN
-        assertNotNull(deviation);
+        assertTrue(optDeviation.isPresent());
+
+        final CurrentForecastDeviation deviation = optDeviation.get();
         assertEquals(WAREHOUSE_ID, deviation.getLogisticCenterId());
         assertEquals(DATE_IN, deviation.getDateFrom());
         assertEquals(DATE_OUT, deviation.getDateTo());
@@ -53,18 +56,14 @@ public class CurrentForecastDeviationRepositoryTest {
     }
 
     @Test
-    @DisplayName("Find currectForecastDeviation when not exist deviation for a warehouseId")
-    public void findBylogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
-        // GIVEN
-
+    @DisplayName("Find currentForecastDeviation when no deviation exists for a warehouseId")
+    public void findByLogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
         // WHEN
-        final Optional<CurrentForecastDeviation>  deviation =
-                repository.findBylogisticCenterIdAndWorkflowAndIsActive(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, true);
+        final Optional<CurrentForecastDeviation> optDeviation =
+                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
         // THEN
-        assertNotNull(deviation);
-        assertFalse(deviation.isPresent());
+        assertFalse(optDeviation.isPresent());
     }
-
 }

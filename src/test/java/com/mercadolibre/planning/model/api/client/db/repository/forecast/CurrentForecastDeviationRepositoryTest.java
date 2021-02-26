@@ -41,8 +41,8 @@ public class CurrentForecastDeviationRepositoryTest {
 
         // WHEN
         final Optional<CurrentForecastDeviation> optDeviation =
-                repository.findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRange(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND.name(), true, DATE_IN.plusHours(1));
+                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1));
 
         // THEN
         assertTrue(optDeviation.isPresent());
@@ -60,8 +60,8 @@ public class CurrentForecastDeviationRepositoryTest {
     public void findByLogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
         // WHEN
         final Optional<CurrentForecastDeviation> optDeviation =
-                repository.findByLogisticCenterIdAndWorkflowAndIsActiveAndDateInRange(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND.toJson(), true, A_DATE_UTC);
+                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
         // THEN
         assertFalse(optDeviation.isPresent());

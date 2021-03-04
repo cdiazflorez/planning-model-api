@@ -16,6 +16,10 @@ import static java.time.temporal.ChronoUnit.WEEKS;
 
 public final class DateUtils {
 
+    public static ZonedDateTime getCurrentUtcDate() {
+        return ZonedDateTime.now(UTC);
+    }
+
     public static ZonedDateTime fromDate(final Date date) {
         return ofInstant(date.toInstant(), UTC);
     }

@@ -2,7 +2,11 @@ package com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.SuggestedWavePlanningDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -16,13 +20,12 @@ import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
-import static java.time.ZonedDateTime.now;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.stream.Collectors.toList;
 
@@ -35,6 +38,7 @@ public class GetSuggestedWavesUseCase
     private final GetForecastMetadataUseCase getForecastMetadataUseCase;
     private final GetForecastUseCase getForecastUseCase;
     private final PlanningDistributionRepository planningDistRepository;
+    private final ProcessingDistributionRepository processingDistRepository;
 
     private static final long HOUR_IN_MINUTES = 60L;
 
@@ -48,15 +52,13 @@ public class GetSuggestedWavesUseCase
                         .dateTo(input.getDateTo())
                         .build());
 
-        final long sales = getBoundedSales(
-                input,
-                forecastIds,
-                now(Clock.systemUTC())
-        );
-
+        final long initialBacklog = input.getBacklog();
+        final long sales = getBoundedSales(input, forecastIds);
         final long remainingProcessing = getRemainingProcessing(input);
+        final long capex = getCapex(input, forecastIds);
+        final long suggestedWavingUnits = (initialBacklog + sales) / (1 + remainingProcessing);
 
-        final long unitsToWave = Math.max(input.getBacklog() + sales - remainingProcessing, 0);
+        final long unitsToWave = Math.min(suggestedWavingUnits, Math.min(capex, initialBacklog));
 
         final List<ForecastMetadataView> forecastMetadataPercentage = getForecastMetadataUseCase
                 .execute(GetForecastMetadataInput.builder()
@@ -73,7 +75,24 @@ public class GetSuggestedWavesUseCase
                 .collect(toList());
     }
 
-    private long calculateSuggestedWave(final  Long waveSuggest, final float percentage) {
+    private long getCapex(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
+        final List<ProcessingDistributionView> processingDistributionView =
+                processingDistRepository
+                        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                                Set.of(ProcessingType.MAX_CAPACITY.name()),
+                                List.of(ProcessName.GLOBAL.toJson()),
+                                input.getDateTo().minusHours(1),
+                                input.getDateTo().minusHours(1),
+                                forecastIds
+                        );
+
+        return processingDistributionView.stream()
+                .findFirst()
+                .map(ProcessingDistributionView::getQuantity)
+                .orElse(0L);
+    }
+
+    private long calculateSuggestedWave(final Long waveSuggest, final float percentage) {
         return (long) Math.floor((percentage / 100) * waveSuggest);
     }
 
@@ -91,27 +110,33 @@ public class GetSuggestedWavesUseCase
                 .orElse(0L);
     }
 
-    private long getBoundedSales(final GetSuggestedWavesInput input,
-                                 final List<Long> forecastIds,
-                                 final ZonedDateTime now) {
+    private long getBoundedSales(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
+        final ZonedDateTime dateFrom = input.getDateFrom();
+
         final SuggestedWavePlanningDistributionView currentHourSales = planningDistRepository
                 .findByWarehouseIdWorkflowDateInRange(
                         input.getWarehouseId(),
-                        now.truncatedTo(HOURS),
-                        now.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                        forecastIds,
-                        input.isApplyDeviation());
-        final SuggestedWavePlanningDistributionView nextHourSales = planningDistRepository
-                .findByWarehouseIdWorkflowDateInRange(
-                        input.getWarehouseId(),
-                        now.plusHours(1).truncatedTo(HOURS),
-                        input.getDateTo().minusMinutes(1),
+                        dateFrom.truncatedTo(HOURS),
+                        dateFrom.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
                         forecastIds,
                         input.isApplyDeviation());
 
-        return (currentHourSales == null ? 0 : currentHourSalesPercentage(
-                currentHourSales.getQuantity(), now))
-                + (nextHourSales == null ? 0 : nextHourSales.getQuantity());
+        long totalSales = currentHourSales == null ? 0
+                : currentHourSalesPercentage(currentHourSales.getQuantity(), dateFrom);
+
+        if (dateFrom.truncatedTo(HOURS).plusHours(1).isBefore(input.getDateTo())) {
+            final SuggestedWavePlanningDistributionView nextHourSales = planningDistRepository
+                    .findByWarehouseIdWorkflowDateInRange(
+                            input.getWarehouseId(),
+                            dateFrom.truncatedTo(HOURS).plusHours(1),
+                            input.getDateTo().minusMinutes(1),
+                            forecastIds,
+                            input.isApplyDeviation());
+
+            totalSales += nextHourSales == null ? 0 : nextHourSales.getQuantity();
+        }
+
+        return totalSales;
     }
 
     private long currentHourSalesPercentage(final long currentHourSales,

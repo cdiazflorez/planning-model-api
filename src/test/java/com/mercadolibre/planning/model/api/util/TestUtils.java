@@ -67,6 +67,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.M
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
@@ -318,13 +319,15 @@ public final class TestUtils {
                 .build();
     }
 
-    public static GetSuggestedWavesInput mockGetSuggestedWavesInput(final ZonedDateTime now) {
+    public static GetSuggestedWavesInput mockGetSuggestedWavesInput() {
+        final ZonedDateTime now = getCurrentUtcDate();
+
         return GetSuggestedWavesInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .dateFrom(now.plusHours(1).truncatedTo(HOURS).withFixedOffsetZone())
+                .dateFrom(now.withFixedOffsetZone())
                 .backlog(500)
-                .dateTo(now.plusHours(2).truncatedTo(HOURS).withFixedOffsetZone())
+                .dateTo(now.truncatedTo(HOURS).plusHours(2).withFixedOffsetZone())
                 .applyDeviation(true)
                 .build();
     }

@@ -13,8 +13,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.time.Clock;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
@@ -40,8 +38,8 @@ public class SuggestedWavesControllerTest {
     @Test
     public void testGetSuggestedWave() throws Exception {
         // GIVEN
-        final ZonedDateTime now = ZonedDateTime.now(Clock.systemUTC());
-        final GetSuggestedWavesInput input = mockGetSuggestedWavesInput(now);
+        final GetSuggestedWavesInput input = mockGetSuggestedWavesInput();
+
         when(getSuggestedWavesUseCase.execute(input))
                 .thenReturn(mockSuggestedWavesOutput());
 

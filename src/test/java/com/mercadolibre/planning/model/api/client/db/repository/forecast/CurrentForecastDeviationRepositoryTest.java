@@ -40,9 +40,10 @@ public class CurrentForecastDeviationRepositoryTest {
         entityManager.flush();
 
         // WHEN
-        final Optional<CurrentForecastDeviation> optDeviation =
-                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1));
+        final Optional<CurrentForecastDeviation> optDeviation = repository
+                .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1)
+                );
 
         // THEN
         assertTrue(optDeviation.isPresent());
@@ -59,9 +60,10 @@ public class CurrentForecastDeviationRepositoryTest {
     @DisplayName("Find currentForecastDeviation when no deviation exists for a warehouseId")
     public void findByLogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
         // WHEN
-        final Optional<CurrentForecastDeviation> optDeviation =
-                repository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
-                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
+        final Optional<CurrentForecastDeviation> optDeviation = repository
+                .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+                        WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC
+                );
 
         // THEN
         assertFalse(optDeviation.isPresent());

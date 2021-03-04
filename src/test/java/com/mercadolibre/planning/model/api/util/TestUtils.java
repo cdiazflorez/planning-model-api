@@ -58,10 +58,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCE
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -716,13 +718,23 @@ public final class TestUtils {
     }
 
     private static List<ProcessingDistributionRequest> mockProcessingDistributions() {
-        final List<ProcessingDistributionDataRequest> data = asList(
-                new ProcessingDistributionDataRequest(DATE_IN, 172),
-                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
-        );
-
-        return singletonList(
-                new ProcessingDistributionRequest(PERFORMED_PROCESSING, UNITS, WAVING, data)
+        return List.of(
+                new ProcessingDistributionRequest(
+                        PERFORMED_PROCESSING,
+                        UNITS,
+                        WAVING,
+                        List.of(
+                                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+                        )),
+                new ProcessingDistributionRequest(
+                        MAX_CAPACITY,
+                        UNITS_PER_HOUR,
+                        GLOBAL,
+                        List.of(
+                                new ProcessingDistributionDataRequest(DATE_IN, 1000),
+                                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 1000)
+                        ))
         );
     }
 

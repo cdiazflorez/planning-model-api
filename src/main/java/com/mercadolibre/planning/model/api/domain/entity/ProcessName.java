@@ -23,7 +23,8 @@ public enum ProcessName {
     PACKING(singletonList(PICKING), false),
     BATCH_SORTER(singletonList(PICKING),false),
     PACKING_WALL(singletonList(BATCH_SORTER),false),
-    EXPEDITION(singletonList(PACKING), false);
+    EXPEDITION(singletonList(PACKING), false),
+    GLOBAL(null, false);
 
     private final List<ProcessName> previousProcesses;
     private final boolean considerPreviousBacklog;

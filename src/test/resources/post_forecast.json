@@ -77,20 +77,38 @@
             "ability_level": 1
         }
     ],
-    "processing_distributions": [{
-        "type": "performed_processing",
-        "quantity_metric_unit": "units",
-        "process_name": "waving",
-        "data": [{
-            "date": "2020-08-19T18:00Z",
-            "quantity": 172
+    "processing_distributions": [
+        {
+            "type": "performed_processing",
+            "quantity_metric_unit": "units",
+            "process_name": "waving",
+            "data": [
+                {
+                    "date": "2020-08-19T18:00Z",
+                    "quantity": 172
+                },
+                {
+                    "date": "2020-08-19T19:00Z",
+                    "quantity": 295
+                }
+            ]
         },
-            {
-                "date": "2020-08-19T19:00Z",
-                "quantity": 295
-            }
-        ]
-    }],
+        {
+            "type": "max_capacity",
+            "quantity_metric_unit": "units_per_hour",
+            "process_name": "global",
+            "data": [
+                {
+                    "date": "2020-08-19T18:00Z",
+                    "quantity": 1000
+                },
+                {
+                    "date": "2020-08-19T19:00Z",
+                    "quantity": 1000
+                }
+            ]
+        }
+    ],
     "metadata": [
         {
             "key": "warehouse_id",

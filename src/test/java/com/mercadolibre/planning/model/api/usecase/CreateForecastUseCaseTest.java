@@ -28,9 +28,11 @@ import java.util.List;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
@@ -111,7 +113,11 @@ public class CreateForecastUseCaseTest {
                 new ProcessingDistribution(0, DATE_IN, WAVING,
                         172, UNITS, PERFORMED_PROCESSING, forecast),
                 new ProcessingDistribution(0, DATE_IN.plusHours(1), WAVING,
-                        295, UNITS, PERFORMED_PROCESSING, forecast)
+                        295, UNITS, PERFORMED_PROCESSING, forecast),
+                new ProcessingDistribution(0, DATE_IN, GLOBAL,
+                        1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast),
+                new ProcessingDistribution(0, DATE_IN.plusHours(1), GLOBAL,
+                        1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast)
         );
     }
 

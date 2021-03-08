@@ -18,6 +18,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -26,9 +27,12 @@ import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
+import static java.time.format.DateTimeFormatter.ISO_TIME;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class GetSuggestedWavesUseCase
@@ -58,6 +62,8 @@ public class GetSuggestedWavesUseCase
         final long capex = getCapex(input, forecastIds);
         final long suggestedWavingUnits = (initialBacklog + sales) / (1 + remainingProcessing);
 
+        logCalculationsInfo(input, initialBacklog, sales, remainingProcessing, capex);
+
         final long unitsToWave = Math.min(suggestedWavingUnits, Math.min(capex, initialBacklog));
 
         final List<ForecastMetadataView> forecastMetadataPercentage = getForecastMetadataUseCase
@@ -73,6 +79,23 @@ public class GetSuggestedWavesUseCase
                         WaveCardinality.of(fm.getKey()).orElse(null),
                         calculateSuggestedWave(unitsToWave,Float.parseFloat(fm.getValue()))))
                 .collect(toList());
+    }
+
+    private void logCalculationsInfo(final GetSuggestedWavesInput input,
+                                     final long initialBacklog,
+                                     final long sales,
+                                     final long remainingProcessing,
+                                     final long capex) {
+        final String timeFrom = input.getDateFrom().truncatedTo(MINUTES).format(ISO_TIME);
+        final String timeTo = input.getDateTo().truncatedTo(MINUTES).format(ISO_TIME);
+
+        log.info("Calculating suggested waves for period ({} - {})\n"
+                + "Current backlog: {}\n"
+                + "Sales for period: {}\n"
+                + "Healthy backlog after period: {}\n"
+                + "CAPEX: {}\n",
+                timeFrom, timeTo, initialBacklog, sales, remainingProcessing, capex
+        );
     }
 
     private long getCapex(final GetSuggestedWavesInput input, final List<Long> forecastIds) {

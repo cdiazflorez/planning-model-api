@@ -13,6 +13,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.ZonedDateTime;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 
 @Getter
 @SuperBuilder
@@ -28,8 +29,11 @@ public class EntityOutput {
     private long value;
 
     public static EntityOutput fromProcessingDistributionView(
-            final ProcessingDistributionView processingDistributionView) {
+            final ProcessingDistributionView processingDistributionView,
+            final Workflow workflow) {
         return EntityOutput.builder()
+                .workflow(workflow)
+                .source(FORECAST)
                 .processName(processingDistributionView.getProcessName())
                 .type(processingDistributionView.getType())
                 .date(fromDate(processingDistributionView.getDate()))

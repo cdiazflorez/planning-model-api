@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -38,7 +38,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastByW
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetSuggestedWavesInput;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -72,7 +72,7 @@ public class GetSuggestedWavesUseCaseTest {
         final List<Long> forecastIds = mockForecastIds();
         final long firstHourSales = 100L;
         final long nextHourSales = 200L;
-        final long remainingProcessing = 10L;
+        final long remainingProcessing = 308L;
         final long capex = 1000L;
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
@@ -132,8 +132,10 @@ public class GetSuggestedWavesUseCaseTest {
         final long totalSales = firstHourSales
                 * (HOUR_IN_MINUTES - input.getDateFrom().withFixedOffsetZone().getMinute())
                 / HOUR_IN_MINUTES + nextHourSales;
-        final long suggestedWavingUnits =
-                (input.getBacklog() + totalSales) / (1 + remainingProcessing);
+        final long suggestedWavingUnits = (long) Math.floor(
+                (input.getBacklog() + totalSales)
+                        / (1 + ((double) remainingProcessing / HOUR_IN_MINUTES))
+        );
         final long unitsToWave =
                 Math.min(suggestedWavingUnits, Math.min(capex, input.getBacklog()));
 
@@ -170,9 +172,9 @@ public class GetSuggestedWavesUseCaseTest {
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .value(value)
-                        .source(SIMULATION)
+                        .source(FORECAST)
                         .processName(PICKING)
-                        .metricUnit(UNITS)
+                        .metricUnit(MINUTES)
                         .type(ProcessingType.REMAINING_PROCESSING)
                         .build()
         );

@@ -58,9 +58,10 @@ public class GetSuggestedWavesUseCase
 
         final long initialBacklog = input.getBacklog();
         final long sales = getBoundedSales(input, forecastIds);
-        final long remainingProcessing = getRemainingProcessing(input);
+        final double remainingProcessing = (double) getRemainingProcessing(input) / HOUR_IN_MINUTES;
         final long capex = getCapex(input, forecastIds);
-        final long suggestedWavingUnits = (initialBacklog + sales) / (1 + remainingProcessing);
+        final long suggestedWavingUnits =
+                (long) Math.floor((initialBacklog + sales) / (1 + remainingProcessing));
 
         logCalculationsInfo(input, initialBacklog, sales, remainingProcessing, capex);
 
@@ -84,17 +85,18 @@ public class GetSuggestedWavesUseCase
     private void logCalculationsInfo(final GetSuggestedWavesInput input,
                                      final long initialBacklog,
                                      final long sales,
-                                     final long remainingProcessing,
+                                     final double remainingProcessing,
                                      final long capex) {
         final String timeFrom = input.getDateFrom().truncatedTo(MINUTES).format(ISO_TIME);
         final String timeTo = input.getDateTo().truncatedTo(MINUTES).format(ISO_TIME);
 
-        log.info("Calculating suggested waves for period ({} - {})\n"
+        log.info("Calculating suggested waves for warehouse {} in period ({} - {})\n"
                 + "Current backlog: {}\n"
                 + "Sales for period: {}\n"
-                + "Healthy backlog after period: {}\n"
-                + "CAPEX: {}\n",
-                timeFrom, timeTo, initialBacklog, sales, remainingProcessing, capex
+                + "Healthy backlog after period (in hours): {}\n"
+                + "CAPEX (in units per hour): {}\n",
+                input.getWarehouseId(), timeFrom, timeTo, initialBacklog,
+                sales, remainingProcessing, capex
         );
     }
 

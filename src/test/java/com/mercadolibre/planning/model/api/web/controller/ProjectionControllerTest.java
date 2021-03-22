@@ -73,39 +73,6 @@ public class ProjectionControllerTest {
 
         // WHEN
         final ResultActions result = mvc.perform(
-                post(URL, "fbm-wms-outbound")
-                        .contentType(APPLICATION_JSON)
-                        .content(getResourceAsString("get_cpt_projection_request.json"))
-        );
-
-        // THEN
-        verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
-        verify(getThroughputUseCase).execute(any(GetEntityInput.class));
-        verifyZeroInteractions(calculateBacklogProjection);
-
-        result.andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].date")
-                        .value(etd.format(ISO_OFFSET_DATE_TIME)))
-                .andExpect(jsonPath("$[0].projected_end_date")
-                        .value(projectedTime.format(ISO_OFFSET_DATE_TIME)))
-                .andExpect(jsonPath("$[0].remaining_quantity")
-                        .value(100));
-    }
-
-    @Test
-    public void testGetCptProjection2() throws Exception {
-        // GIVEN
-        final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
-        final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
-        final int quantity = 100;
-
-        when(calculateCptProjection.execute(any(CptProjectionInput.class)))
-                .thenReturn(List.of(
-                        new CptProjectionOutput(etd, projectedTime, quantity)
-                ));
-
-        // WHEN
-        final ResultActions result = mvc.perform(
                 post(URL + "/cpts", "fbm-wms-outbound")
                         .contentType(APPLICATION_JSON)
                         .content(getResourceAsString("get_cpt_projection_request.json"))

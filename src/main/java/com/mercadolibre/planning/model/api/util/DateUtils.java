@@ -12,7 +12,6 @@ import java.util.stream.LongStream;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.WEEKS;
 
 public final class DateUtils {
 
@@ -26,10 +25,15 @@ public final class DateUtils {
 
     public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
                                                final ZonedDateTime dateTo) {
+        final int dateFromWeek = dateFrom.withZoneSameInstant(UTC)
+                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
 
-        final long weeks = (int) WEEKS.between(dateFrom, dateTo);
+        final int dateToWeek = dateTo.withZoneSameInstant(UTC)
+                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
 
-        return LongStream.rangeClosed(0, weeks).boxed()
+        final long weeksToConsider = dateToWeek - dateFromWeek;
+
+        return LongStream.rangeClosed(0, weeksToConsider).boxed()
                 .map(integer -> toWeekYear(dateFrom.plusWeeks(integer)))
                 .collect(Collectors.toSet());
     }

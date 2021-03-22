@@ -11,7 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getForecastWeeks;
@@ -45,7 +48,38 @@ public class GetForecastUseCaseTest {
         when(forecastRepository.findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
                 WAREHOUSE_ID,
                 FBM_WMS_OUTBOUND.name(),
-                getForecastWeeks(input.getDateFrom(), input.getDateTo())
+                Set.of("34-2020")
+        )).thenReturn(mockForecastIdView());
+
+        // WHEN
+        final List<Long> forecasts = getForecastUseCase.execute(input);
+
+        // THEN
+        assertFalse(forecasts.isEmpty());
+        assertEquals(2, forecasts.size());
+
+        final Long forecastId1 = forecasts.get(0);
+        assertEquals(Long.valueOf(1), forecastId1);
+
+        final Long forecastId2 = forecasts.get(1);
+        assertEquals(Long.valueOf(2), forecastId2);
+    }
+
+    @Test
+    @DisplayName("Get Forecast by warehouse, workflow and weeks OK on sundays")
+    public void testGetForecastOnSundaysOK() {
+        // GIVEN
+        final GetForecastInput input = GetForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .warehouseId(WAREHOUSE_ID)
+                .dateFrom(ZonedDateTime.of(2021, 3, 21, 21, 0, 0, 0, ZoneId.of("UTC")))
+                .dateTo(ZonedDateTime.of(2021, 3, 22, 21, 0, 0, 0, ZoneId.of("UTC")))
+                .build();
+
+        when(forecastRepository.findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND.name(),
+                Set.of("11-2021", "12-2021")
         )).thenReturn(mockForecastIdView());
 
         // WHEN

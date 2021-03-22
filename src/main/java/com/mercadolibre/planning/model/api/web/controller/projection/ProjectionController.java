@@ -49,15 +49,6 @@ public class ProjectionController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
 
-    @PostMapping
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<CptProjectionOutput>> getProjection(
-            @PathVariable final Workflow workflow,
-            @RequestBody final CptProjectionRequest request) {
-
-        return generateCptProjection(workflow, request);
-    }
-
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
     public ResponseEntity<List<CptProjectionOutput>> getCptProjection(

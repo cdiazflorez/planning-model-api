@@ -5,9 +5,11 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.util.Date;
 
+@Builder
 @AllArgsConstructor
 public class ProcessingDistributionViewImpl implements ProcessingDistributionView {
 

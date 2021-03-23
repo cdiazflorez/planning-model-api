@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -20,7 +22,9 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static java.time.ZonedDateTime.now;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.mockito.ArgumentMatchers.any;
@@ -53,6 +57,9 @@ public class SimulationControllerTest {
     @MockBean
     private ActivateSimulationUseCase activateSimulationUseCase;
 
+    @MockBean
+    private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+
     @Test
     public void testSaveSimulation() throws Exception {
         // GIVEN
@@ -61,6 +68,11 @@ public class SimulationControllerTest {
         when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptProjectionOutput(dateOut, projectedEndDate, 100)
+                ));
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(now().withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100)
                 ));
 
         // WHEN
@@ -96,6 +108,11 @@ public class SimulationControllerTest {
                 .thenReturn(List.of(
                         new CptProjectionOutput(dateOut, projectedEndDate, 150)
         ));
+        when(getCapacityPerHourUseCase.execute(any(List.class)))
+                .thenReturn(List.of(
+                        new CapacityOutput(now().withFixedOffsetZone(),
+                                UNITS_PER_HOUR,100)
+                ));
 
         // WHEN
         final ResultActions result = mvc.perform(

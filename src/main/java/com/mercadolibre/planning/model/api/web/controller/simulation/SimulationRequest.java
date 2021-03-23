@@ -2,7 +2,6 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -15,6 +14,7 @@ import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -46,12 +46,12 @@ public class SimulationRequest {
 
     private boolean applyDeviation;
 
-    public CptProjectionInput toProjectionInput(final List<EntityOutput> throughputs,
+    public CptProjectionInput toProjectionInput(final Map<ZonedDateTime, Integer> capacity,
                                                 final List<GetPlanningDistributionOutput> units) {
         return CptProjectionInput.builder()
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
-                .throughput(throughputs)
+                .capacity(capacity)
                 .planningUnits(units)
                 .backlog(backlog.stream()
                         .map(QuantityByDate::toBacklog)

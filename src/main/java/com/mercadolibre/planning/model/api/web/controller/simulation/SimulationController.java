@@ -2,6 +2,8 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -26,20 +28,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
+import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.web.controller.simulation.RunSimulationResponse.fromProjectionOutputs;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/simulations")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class SimulationController {
 
     private final ActivateSimulationUseCase activateSimulationUseCase;
     private final CalculateCptProjectionUseCase calculateCptProjectionUseCase;
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -52,11 +60,19 @@ public class SimulationController {
         final List<EntityOutput> throughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
+                .execute(fromEntityOutputs(throughput))
+                .stream()
+                .collect(toMap(
+                        CapacityOutput::getDate,
+                        capacityOutput -> (int) capacityOutput.getValue()
+                ));
+
         final List<GetPlanningDistributionOutput> planningDistributions =
                 getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
 
         final List<CptProjectionOutput> cptProjectionOutputs = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(throughput, planningDistributions));
+                .execute(request.toProjectionInput(capacity, planningDistributions));
 
         return ResponseEntity.ok(cptProjectionOutputs.stream()
                 .map(SaveSimulationResponse::fromProjectionOutput)
@@ -75,14 +91,30 @@ public class SimulationController {
         final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
+        final Map<ZonedDateTime, Integer> simulatedCapacity = getCapacityPerHourUseCase
+                .execute(fromEntityOutputs(simulatedThroughput))
+                .stream()
+                .collect(toMap(
+                        CapacityOutput::getDate,
+                        capacityOutput -> (int) capacityOutput.getValue()
+                ));
+
         final List<CptProjectionOutput> projectSimulation = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(simulatedThroughput, planningDistributions));
+                .execute(request.toProjectionInput(simulatedCapacity, planningDistributions));
 
         final List<EntityOutput> actualThroughput = getThroughputUseCase
                 .execute(request.toForecastedThroughputEntityInput(workflow));
 
+        final Map<ZonedDateTime, Integer> actualCapacity = getCapacityPerHourUseCase
+                .execute(fromEntityOutputs(actualThroughput))
+                .stream()
+                .collect(toMap(
+                        CapacityOutput::getDate,
+                        capacityOutput -> (int) capacityOutput.getValue()
+                ));
+
         final List<CptProjectionOutput> projection = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(actualThroughput, planningDistributions));
+                .execute(request.toProjectionInput(actualCapacity, planningDistributions));
 
         return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));
     }

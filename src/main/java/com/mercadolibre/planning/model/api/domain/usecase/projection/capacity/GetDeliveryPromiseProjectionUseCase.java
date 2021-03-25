@@ -10,7 +10,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCapacityProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,10 +22,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
+
 @Component
 @AllArgsConstructor
-public class GetCapacityProjectionUseCase implements
-        UseCase<GetCapacityProjectionInput, List<CptProjectionOutput>> {
+public class GetDeliveryPromiseProjectionUseCase implements
+        UseCase<GetDeliveryPromiseProjectionInput, List<CptProjectionOutput>> {
 
     private final CalculateCptProjectionUseCase projectionUseCase;
 
@@ -34,19 +36,20 @@ public class GetCapacityProjectionUseCase implements
     private final GetForecastUseCase getForecastUseCase;
 
     @Override
-    public List<CptProjectionOutput> execute(final GetCapacityProjectionInput input) {
+    public List<CptProjectionOutput> execute(final GetDeliveryPromiseProjectionInput input) {
         final CptProjectionInput projectionInput = CptProjectionInput.builder()
                 .capacity(getMaxCapacity(input))
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
+                .planningUnits(emptyList())
                 .build();
 
         return projectionUseCase.execute(projectionInput);
     }
 
 
-    private List<Long> getForecastIds(final GetCapacityProjectionInput input) {
+    private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {
         return getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
                 .warehouseId(input.getWarehouseId())
@@ -56,7 +59,8 @@ public class GetCapacityProjectionUseCase implements
         );
     }
 
-    private Map<ZonedDateTime, Integer> getMaxCapacity(final GetCapacityProjectionInput input) {
+    private Map<ZonedDateTime, Integer> getMaxCapacity(
+            final GetDeliveryPromiseProjectionInput input) {
 
         final List<ProcessingDistributionView> processingDistributionView =
                 processingDistRepository

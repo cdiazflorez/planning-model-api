@@ -10,7 +10,7 @@ import java.util.List;
 
 @Value
 @Builder
-public class GetCapacityProjectionInput {
+public class GetDeliveryPromiseProjectionInput {
 
     private String warehouseId;
 

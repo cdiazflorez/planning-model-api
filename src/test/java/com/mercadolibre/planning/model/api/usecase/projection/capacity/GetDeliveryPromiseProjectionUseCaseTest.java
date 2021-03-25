@@ -11,8 +11,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCapacityProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCapacityProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -33,13 +34,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetCapacityProjectionUseCaseTest {
+public class GetDeliveryPromiseProjectionUseCaseTest {
 
     private static final ZonedDateTime CPT_1 = ZonedDateTime.now().plusHours(1);
     private static final ZonedDateTime CPT_2 = ZonedDateTime.now().plusHours(2);
 
     @InjectMocks
-    private GetCapacityProjectionUseCase useCase;
+    private GetDeliveryPromiseProjectionUseCase useCase;
 
     @Mock
     private CalculateCptProjectionUseCase projectionUseCase;
@@ -53,7 +54,7 @@ public class GetCapacityProjectionUseCaseTest {
     @Test
     public void testExecute() {
         //GIVEN
-        final GetCapacityProjectionInput input = GetCapacityProjectionInput.builder()
+        final GetDeliveryPromiseProjectionInput input = GetDeliveryPromiseProjectionInput.builder()
                 .warehouseId("ARBA01")
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .dateFrom(ZonedDateTime.now())
@@ -89,6 +90,7 @@ public class GetCapacityProjectionUseCaseTest {
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
+                .planningUnits(Collections.emptyList())
                 .build())
         ).thenReturn(mockProjectionResponse());
 

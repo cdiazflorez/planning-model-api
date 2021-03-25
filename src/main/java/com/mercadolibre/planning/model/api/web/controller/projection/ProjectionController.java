@@ -16,6 +16,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionRequest;
@@ -51,6 +53,8 @@ public class ProjectionController {
 
     private final CalculateCptProjectionUseCase calculateCptProjection;
     private final CalculateBacklogProjectionUseCase calculateBacklogProjection;
+    private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
+
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
@@ -62,6 +66,23 @@ public class ProjectionController {
             @RequestBody final CptProjectionRequest request) {
 
         return generateCptProjection(workflow, request);
+    }
+
+    @PostMapping("/cpts/delivery_promise")
+    @Trace(dispatcher = true)
+    public ResponseEntity<List<CptProjectionOutput>> getDeliveryPromiseProjection(
+            @PathVariable final Workflow workflow,
+            @RequestBody final CptProjectionRequest request) {
+
+        return ResponseEntity.ok(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput
+                .builder()
+                .warehouseId(request.getWarehouseId())
+                .workflow(workflow)
+                .dateFrom(request.getDateFrom())
+                .dateTo(request.getDateTo())
+                .backlog(getBacklog(request.getBacklog()))
+                .build())
+        );
     }
 
     @PostMapping("/backlogs")

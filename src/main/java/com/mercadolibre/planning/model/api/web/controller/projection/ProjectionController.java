@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -14,6 +16,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionRequest;
@@ -33,10 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
+import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @RestController
 @AllArgsConstructor
@@ -46,8 +53,11 @@ public class ProjectionController {
 
     private final CalculateCptProjectionUseCase calculateCptProjection;
     private final CalculateBacklogProjectionUseCase calculateBacklogProjection;
+    private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
+
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
+    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -56,6 +66,23 @@ public class ProjectionController {
             @RequestBody final CptProjectionRequest request) {
 
         return generateCptProjection(workflow, request);
+    }
+
+    @PostMapping("/cpts/delivery_promise")
+    @Trace(dispatcher = true)
+    public ResponseEntity<List<CptProjectionOutput>> getDeliveryPromiseProjection(
+            @PathVariable final Workflow workflow,
+            @RequestBody final CptProjectionRequest request) {
+
+        return ResponseEntity.ok(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput
+                .builder()
+                .warehouseId(request.getWarehouseId())
+                .workflow(workflow)
+                .dateFrom(request.getDateFrom())
+                .dateTo(request.getDateTo())
+                .backlog(getBacklog(request.getBacklog()))
+                .build())
+        );
     }
 
     @PostMapping("/backlogs")
@@ -122,6 +149,14 @@ public class ProjectionController {
                 .workflow(workflow)
                 .build());
 
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
+                .execute(fromEntityOutputs(throughput))
+                .stream()
+                .collect(toMap(
+                        CapacityOutput::getDate,
+                        capacityOutput -> (int) capacityOutput.getValue()
+                ));
+
         final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
                 GetPlanningDistributionInput.builder()
                         .workflow(workflow)
@@ -135,8 +170,8 @@ public class ProjectionController {
                 .ok(calculateCptProjection.execute(CptProjectionInput.builder()
                         .dateFrom(dateFrom)
                         .dateTo(dateTo)
+                        .capacity(capacity)
                         .backlog(getBacklog(request.getBacklog()))
-                        .throughput(throughput)
                         .planningUnits(planningUnits)
                         .build()));
     }

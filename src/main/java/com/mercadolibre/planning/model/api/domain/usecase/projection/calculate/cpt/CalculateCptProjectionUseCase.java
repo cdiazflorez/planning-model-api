@@ -1,8 +1,5 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +12,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -31,14 +27,11 @@ public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
-
     public List<CptProjectionOutput> execute(final CptProjectionInput input) {
-        final Map<ZonedDateTime, Integer> capacityByDate = getCapacity(input.getThroughput());
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
-        return project(capacityByDate, unitsByDateOutAndDate);
+        return project(input.getCapacity(), unitsByDateOutAndDate);
     }
 
     @SuppressWarnings("PMD.NullAssignment")
@@ -92,15 +85,6 @@ public class CalculateCptProjectionUseCase {
         });
 
         return cptProjectionOutputs;
-    }
-
-    private Map<ZonedDateTime, Integer> getCapacity(final List<EntityOutput> throughput) {
-        return getCapacityPerHourUseCase.execute(fromEntityOutputs(throughput))
-                .stream()
-                .collect(toMap(
-                        CapacityOutput::getDate,
-                        capacityOutput -> (int) capacityOutput.getValue()
-                ));
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(

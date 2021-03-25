@@ -16,7 +16,6 @@ public class CptProjectionRequest {
     @NotNull
     private String warehouseId;
 
-    @NotNull
     private ProjectionType type;
 
     @NotNull

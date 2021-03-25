@@ -1,18 +1,18 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import lombok.Builder;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Value
 @Builder
 public class CptProjectionInput {
 
-    private List<EntityOutput> throughput;
+    private Map<ZonedDateTime, Integer> capacity;
 
     private List<GetPlanningDistributionOutput> planningUnits;
 

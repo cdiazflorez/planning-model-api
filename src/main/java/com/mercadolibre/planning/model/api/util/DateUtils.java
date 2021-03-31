@@ -2,18 +2,21 @@ package com.mercadolibre.planning.model.api.util;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.temporal.IsoFields;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.WeekFields;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.util.stream.Stream.iterate;
 
 public final class DateUtils {
+
+    private static final int HOW_THEY_MANAGE_WEEKS = 1;
 
     public static ZonedDateTime getCurrentUtcDate() {
         return ZonedDateTime.now(UTC);
@@ -24,18 +27,14 @@ public final class DateUtils {
     }
 
     public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
-                                               final ZonedDateTime dateTo) {
-        final int dateFromWeek = dateFrom.withZoneSameInstant(UTC)
-                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+                                               final Temporal dateTo) {
+        final Set<String> weeksToConsider = new HashSet<>();
 
-        final int dateToWeek = dateTo.withZoneSameInstant(UTC)
-                .get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        iterate(dateFrom, date -> date.plusHours(1))
+                .limit(HOURS.between(dateFrom, dateTo))
+                .forEach(dateTime -> weeksToConsider.add(toWeekYear(dateTime)));
 
-        final long weeksToConsider = dateToWeek - dateFromWeek;
-
-        return LongStream.rangeClosed(0, weeksToConsider).boxed()
-                .map(integer -> toWeekYear(dateFrom.plusWeeks(integer)))
-                .collect(Collectors.toSet());
+        return weeksToConsider;
     }
 
     public static ZonedDateTime ignoreMinutes(final ZonedDateTime dateTime) {
@@ -51,7 +50,8 @@ public final class DateUtils {
         final ZonedDateTime utcTimestamp = instant.atZone(UTC);
 
         return String.format("%s-%s",
-                utcTimestamp.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR),
-                utcTimestamp.get(IsoFields.WEEK_BASED_YEAR));
+                utcTimestamp.get(WeekFields.SUNDAY_START.weekOfWeekBasedYear())
+                        - HOW_THEY_MANAGE_WEEKS,
+                utcTimestamp.get(WeekFields.SUNDAY_START.weekBasedYear()));
     }
 }

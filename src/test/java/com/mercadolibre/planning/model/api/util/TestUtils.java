@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.util;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastIdView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -17,7 +16,6 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
@@ -27,7 +25,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
-import com.mercadolibre.planning.model.api.usecase.ForecastIdViewImpl;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
@@ -826,20 +823,6 @@ public final class TestUtils {
         );
     }
 
-    public static SearchEntitiesInput mockSearchEntitiesInput(
-            final Source source,
-            final List<EntityType> entityTypes) {
-        return SearchEntitiesInput.builder()
-                .warehouseId(WAREHOUSE_ID)
-                .workflow(FBM_WMS_OUTBOUND)
-                .entityTypes(entityTypes)
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC.plusDays(2))
-                .source(source)
-                .processName(List.of(PICKING, PACKING))
-                .build();
-    }
-
     public static Map<EntityType, Object> mockSearchEntitiesOutput() {
         return Map.of(
                 HEADCOUNT, mockHeadcountEntityOutput(),
@@ -860,13 +843,6 @@ public final class TestUtils {
                 .logisticCenterId(WAREHOUSE_ID)
                 .isActive(true)
                 .build();
-    }
-
-    public static List<ForecastIdView> mockForecastIdView() {
-        return List.of(
-                new ForecastIdViewImpl(1L),
-                new ForecastIdViewImpl(2L)
-        );
     }
 
     public static List<Long> mockForecastIds() {

@@ -120,6 +120,16 @@ public class GetForecastUseCaseTest {
                         // From sunday to monday
                         ZonedDateTime.of(2021, 4, 4, 4, 0, 0, 0, ZoneId.of("UTC")),
                         ZonedDateTime.of(2021, 4, 5, 4, 0, 0, 0, ZoneId.of("UTC")),
+                        Set.of("14-2021")),
+                arguments(
+                        // From saturday to sunday with a distance less than one hour
+                        ZonedDateTime.of(2021, 4, 3, 23, 10, 0, 0, ZoneId.of("UTC")),
+                        ZonedDateTime.of(2021, 4, 4, 0, 2, 0, 0, ZoneId.of("UTC")),
+                        Set.of("13-2021", "14-2021")),
+                arguments(
+                        // Between two dates with a distance less than one hour
+                        ZonedDateTime.of(2021, 4, 4, 10, 10, 0, 0, ZoneId.of("UTC")),
+                        ZonedDateTime.of(2021, 4, 4, 10, 50, 0, 0, ZoneId.of("UTC")),
                         Set.of("14-2021"))
         );
     }

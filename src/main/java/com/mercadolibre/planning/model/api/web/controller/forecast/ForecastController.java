@@ -7,6 +7,8 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessingTypeEditor;
@@ -33,6 +35,8 @@ public class ForecastController {
 
     private final CreateForecastUseCase createForecastUseCase;
 
+    private final DeleteForecastUseCase deleteForecastUseCase;
+
     @PostMapping
     @Trace(dispatcher = true)
     public ResponseEntity<CreateForecastResponse> createForecast(
@@ -45,6 +49,19 @@ public class ForecastController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new CreateForecastResponse(output.getId()));
+    }
+
+    @PostMapping("/delete/days/{days}")
+    public ResponseEntity<DeleteForecastResponse> deleteOldForecasts(
+            @PathVariable final Workflow workflow,
+            @PathVariable final Integer days) {
+
+        final DeleteForecastInput input = new DeleteForecastInput(workflow, days);
+
+        final Integer updatedRows = deleteForecastUseCase.execute(input);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new DeleteForecastResponse(updatedRows));
     }
 
     @InitBinder

@@ -10,6 +10,8 @@ import javax.transaction.Transactional;
 
 import java.time.ZonedDateTime;
 
+import static java.time.ZoneOffset.UTC;
+
 @Service
 @AllArgsConstructor
 public class DeleteForecastUseCase implements UseCase<DeleteForecastInput, Integer> {
@@ -19,11 +21,11 @@ public class DeleteForecastUseCase implements UseCase<DeleteForecastInput, Integ
     @Transactional
     @Override
     public Integer execute(final DeleteForecastInput input) {
-        if (input.getDays() < 0) {
-            throw new BadRequestException("Day span should not be negative");
+        if (input.getWeeks() < 0) {
+            throw new BadRequestException("Week span should not be negative");
         }
 
-        final ZonedDateTime lastMonth = ZonedDateTime.now().minusDays(input.getDays());
-        return forecastGateway.deleteOlderThan(input.getWorkflow(), lastMonth);
+        final ZonedDateTime limit = ZonedDateTime.now(UTC).minusWeeks(input.getWeeks());
+        return forecastGateway.deleteOlderThan(input.getWorkflow(), limit);
     }
 }

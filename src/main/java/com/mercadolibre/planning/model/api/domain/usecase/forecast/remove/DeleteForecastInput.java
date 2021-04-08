@@ -6,5 +6,5 @@ import lombok.Value;
 @Value
 public class DeleteForecastInput {
     private Workflow workflow;
-    private Integer days;
+    private Integer weeks;
 }

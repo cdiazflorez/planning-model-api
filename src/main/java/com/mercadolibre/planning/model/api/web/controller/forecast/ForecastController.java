@@ -51,12 +51,12 @@ public class ForecastController {
                 .body(new CreateForecastResponse(output.getId()));
     }
 
-    @PostMapping("/delete/days/{days}")
+    @PostMapping("/purge/weeks/{weeks}")
     public ResponseEntity<DeleteForecastResponse> deleteOldForecasts(
             @PathVariable final Workflow workflow,
-            @PathVariable final Integer days) {
+            @PathVariable final Integer weeks) {
 
-        final DeleteForecastInput input = new DeleteForecastInput(workflow, days);
+        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks);
 
         final Integer updatedRows = deleteForecastUseCase.execute(input);
 

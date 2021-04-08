@@ -67,7 +67,7 @@ public class ForecastControllerTest {
     @Test
     public void deleteOldForecastsOk() throws Exception {
         // GIVEN
-        final String url =  URL + "/delete/days/{days}";
+        final String url =  URL + "/purge/weeks/{weeks}";
         when(deleteForecastUseCase.execute(any(DeleteForecastInput.class)))
                 .thenReturn(5);
 
@@ -86,7 +86,7 @@ public class ForecastControllerTest {
     @Test
     public void deleteOldForecastsErr() throws Exception {
         // GIVEN
-        final String url =  URL + "/delete/days/{days}";
+        final String url =  URL + "/purge/weeks/{weeks}";
         when(deleteForecastUseCase.execute(any(DeleteForecastInput.class)))
                 .thenThrow(BadRequestException.class);
 

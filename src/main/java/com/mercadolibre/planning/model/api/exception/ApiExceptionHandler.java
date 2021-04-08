@@ -44,8 +44,9 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handle(final EntityNotFoundException exception,
-                                                final HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
+            final EntityNotFoundException exception,
+            final HttpServletRequest request) {
 
         final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
                 exception.getMessage(), "entity_not_found");
@@ -88,6 +89,19 @@ public class ApiExceptionHandler {
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
         log.error("entity_already_exists", exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(ForecastNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleForecastNotFoundException(
+            final ForecastNotFoundException exception,
+            final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
+                exception.getMessage(), "forecast_not_found");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error("forecast_not_found", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.planningdistribution.PlanningDistributionController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PlanningDistributionController.class)
@@ -58,6 +60,27 @@ public class PlanningDistributionControllerTest {
         // THEN
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_processing_distribution.json")));
+    }
+
+    @DisplayName("Planning distribution returns 404 when forecast doesn't exists")
+    @ParameterizedTest
+    @MethodSource("getParameters")
+    public void testGetPlanningDistributionForecastNotFound(
+            final MultiValueMap<String, String> params) throws Exception {
+        // GIVEN
+        when(getPlanningDistributionUseCase.execute(any(GetPlanningDistributionInput.class)))
+                .thenThrow(ForecastNotFoundException.class);
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound")
+                        .contentType(APPLICATION_JSON)
+                        .params(params)
+        );
+
+        // THEN
+        result.andExpect(status().isNotFound())
+                .andExpect(jsonPath("error").value("forecast_not_found"));
     }
 
     private static Stream<Arguments> getParameters() {

@@ -15,6 +15,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,24 @@ public class ProjectionControllerTest {
 
     @Test
     public void testGetCptProjection() throws Exception {
+        // GIVEN
+        when(getThroughputUseCase.execute(any(GetEntityInput.class)))
+                .thenThrow(ForecastNotFoundException.class);
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                post(URL + "/cpts", "fbm-wms-outbound")
+                        .contentType(APPLICATION_JSON)
+                        .content(getResourceAsString("get_cpt_projection_request.json"))
+        );
+
+        // THEN
+        result.andExpect(status().isNotFound())
+                .andExpect(jsonPath("error").value("forecast_not_found"));
+    }
+
+    @Test
+    public void testGetCptProjectionForecastNotFound() throws Exception {
         // GIVEN
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");

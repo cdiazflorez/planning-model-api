@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Set;
+
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -112,7 +116,7 @@ public class ApiExceptionHandlerTest {
 
         // WHEN
         final ResponseEntity<ErrorResponse> response =
-                apiExceptionHandler.handle(exception, request);
+                apiExceptionHandler.handleEntityNotFoundException(exception, request);
 
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
@@ -133,6 +137,30 @@ public class ApiExceptionHandlerTest {
         // WHEN
         final ResponseEntity<ErrorResponse> response =
                 apiExceptionHandler.handleEntityAlreadyExistsException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    public void handleForecastNotFoundException() {
+        // GIVEN
+        final ForecastNotFoundException exception = new ForecastNotFoundException(
+                FBM_WMS_OUTBOUND.toJson(),
+                WAREHOUSE_ID,
+                Set.of("3-2021")
+        );
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "Forecast not present for "
+                        + "workflow:fbm-wms-outbound, warehouse_id:ARBA01 and weeks:[3-2021]",
+                "forecast_not_found"
+        );
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleForecastNotFoundException(exception, request);
 
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);

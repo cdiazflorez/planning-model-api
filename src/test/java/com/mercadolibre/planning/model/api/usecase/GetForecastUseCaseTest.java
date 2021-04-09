@@ -42,37 +42,6 @@ public class GetForecastUseCaseTest {
     @InjectMocks
     private GetForecastUseCase getForecastUseCase;
 
-    @Test
-    @DisplayName("Get Forecast by warehouse, workflow and weeks OK")
-    public void testGetForecastOK() {
-        // GIVEN
-        final GetForecastInput input = GetForecastInput.builder()
-                .workflow(FBM_WMS_OUTBOUND)
-                .warehouseId(WAREHOUSE_ID)
-                .dateFrom(A_DATE_UTC)
-                .dateTo(A_DATE_UTC.plusDays(1))
-                .build();
-
-        when(forecastRepository.findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(
-                WAREHOUSE_ID,
-                FBM_WMS_OUTBOUND.name(),
-                Set.of("33-2020")
-        )).thenReturn(mockForecastIdView(2));
-
-        // WHEN
-        final List<Long> forecasts = getForecastUseCase.execute(input);
-
-        // THEN
-        assertFalse(forecasts.isEmpty());
-        assertEquals(2, forecasts.size());
-
-        final Long forecastId1 = forecasts.get(0);
-        assertEquals(Long.valueOf(0), forecastId1);
-
-        final Long forecastId2 = forecasts.get(1);
-        assertEquals(Long.valueOf(1), forecastId2);
-    }
-
     @ParameterizedTest
     @MethodSource("datesAndWeeks")
     @DisplayName("Get Forecast by warehouse, workflow and weeks OK everyday")
@@ -110,7 +79,7 @@ public class GetForecastUseCaseTest {
                         // From friday to saturday
                         ZonedDateTime.of(2021, 4, 2, 4, 0, 0, 0, ZoneId.of("UTC")),
                         ZonedDateTime.of(2021, 4, 3, 4, 0, 0, 0, ZoneId.of("UTC")),
-                        Set.of("13-2021")),
+                        Set.of("13-2021", "14-2021")),
                 arguments(
                         // From saturday to sunday
                         ZonedDateTime.of(2021, 4, 3, 6, 0, 0, 0, ZoneId.of("UTC")),
@@ -120,7 +89,7 @@ public class GetForecastUseCaseTest {
                         // From sunday to monday
                         ZonedDateTime.of(2021, 4, 4, 4, 0, 0, 0, ZoneId.of("UTC")),
                         ZonedDateTime.of(2021, 4, 5, 4, 0, 0, 0, ZoneId.of("UTC")),
-                        Set.of("14-2021")),
+                        Set.of("13-2021", "14-2021")),
                 arguments(
                         // From saturday to sunday with a distance less than one hour
                         ZonedDateTime.of(2021, 4, 3, 23, 10, 0, 0, ZoneId.of("UTC")),
@@ -130,7 +99,17 @@ public class GetForecastUseCaseTest {
                         // Between two dates with a distance less than one hour
                         ZonedDateTime.of(2021, 4, 4, 10, 10, 0, 0, ZoneId.of("UTC")),
                         ZonedDateTime.of(2021, 4, 4, 10, 50, 0, 0, ZoneId.of("UTC")),
-                        Set.of("14-2021"))
+                        Set.of("13-2021", "14-2021")),
+                arguments(
+                        // Saturday at 9PM on Buenos Aires but 12AM on UTC
+                        ZonedDateTime.of(2021, 4, 11, 0, 10, 0, 0, ZoneId.of("UTC")),
+                        ZonedDateTime.of(2021, 4, 11, 1, 0, 0, 0, ZoneId.of("UTC")),
+                        Set.of("14-2021", "15-2021")),
+                arguments(
+                        // New year's eve
+                        ZonedDateTime.of(2021, 12, 31, 23, 10, 0, 0, ZoneId.of("UTC")),
+                        ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC")),
+                        Set.of("1-2022"))
         );
     }
 

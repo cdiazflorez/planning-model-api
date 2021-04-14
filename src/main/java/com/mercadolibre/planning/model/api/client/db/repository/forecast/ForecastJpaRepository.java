@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -27,5 +29,16 @@ public class ForecastJpaRepository implements ForecastGateway {
             entityManager.persist(metadata);
         });
         return forecast;
+    }
+
+    @Override
+    public int deleteOlderThan(final Workflow workflow, final ZonedDateTime date) {
+        final String queryStr =
+                "DELETE FROM forecast f WHERE f.last_updated < ?1 AND f.workflow = ?2";
+
+        return entityManager.createNativeQuery(queryStr)
+                .setParameter(1, date)
+                .setParameter(2, workflow.name())
+                .executeUpdate();
     }
 }

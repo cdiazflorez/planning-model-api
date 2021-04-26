@@ -4,6 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Forecas
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -74,8 +75,10 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.GodClass"})
 public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
@@ -246,8 +249,25 @@ public final class TestUtils {
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(2).toInstant()),
                         1200,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        Date.from(A_DATE_UTC.plusDays(1).toInstant()),
+                        Date.from(A_DATE_UTC.plusDays(2).toInstant()),
+                        1250,
                         UNITS)
         );
+    }
+
+    public static List<CurrentPlanningDistribution> currentPlanningDistributions() {
+        final CurrentPlanningDistribution first = mock(CurrentPlanningDistribution.class);
+        final CurrentPlanningDistribution second = mock(CurrentPlanningDistribution.class);
+
+        when(first.getDateOut()).thenReturn(A_DATE_UTC);
+
+        when(second.getDateOut()).thenReturn(A_DATE_UTC.plusDays(2));
+        when(second.getQuantity()).thenReturn(2500L);
+
+        return List.of(first, second);
     }
 
     public static CreateForecastInput mockCreateForecastInput() {

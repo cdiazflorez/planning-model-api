@@ -25,13 +25,14 @@ repositories {
 
 dependencies {
     implementation 'com.fury:furyutils:0.0.2'
-    implementation 'com.mercadolibre.fbm.wms.outbound:commons:1.1.0'
-    implementation 'com.mercadolibre.restclient:restclient-default:0.3.42'
+    implementation 'com.mercadolibre.fbm.wms.outbound:commons:0.1.2'
+    implementation "com.mercadolibre.restclient:meli-restclient-default:0.3.53"
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    testImplementation "com.mercadolibre.restclient:restclient-core:0.3.42:tests"
+    implementation 'com.newrelic.agent.java:newrelic-api:6.4.2'
+    
+    testImplementation "com.mercadolibre.restclient:meli-restclient-core:0.3.52:tests"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.5.1'
     testImplementation 'org.mockito:mockito-core:3.0.0'

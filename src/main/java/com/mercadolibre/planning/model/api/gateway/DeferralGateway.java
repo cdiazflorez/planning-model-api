@@ -5,5 +5,5 @@ import com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralDto;
 
 public interface DeferralGateway {
 
-    DeferralDto getProjection(final String warehouseId, final Workflow workflow);
+    DeferralDto getDeferralProjection(final String warehouseId, final Workflow workflow);
 }

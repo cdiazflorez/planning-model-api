@@ -31,7 +31,7 @@ public class FlowMonitorClient extends HttpClient implements DeferralGateway {
     }
 
     @Override
-    public DeferralDto getProjection(final String warehouseId, final Workflow workflow) {
+    public DeferralDto getDeferralProjection(final String warehouseId, final Workflow workflow) {
         final HttpRequest request = HttpRequest.builder()
                 .url(format(URL + "/projections", warehouseId, workflow))
                 .GET()

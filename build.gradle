@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     implementation 'com.fury:furyutils:0.0.2'
-    implementation 'com.mercadolibre.fbm.wms.outbound:commons:0.1.2'
+    implementation 'com.mercadolibre.fbm.wms.outbound:commons:0.1.5'
     implementation "com.mercadolibre.restclient:meli-restclient-default:0.3.53"
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'

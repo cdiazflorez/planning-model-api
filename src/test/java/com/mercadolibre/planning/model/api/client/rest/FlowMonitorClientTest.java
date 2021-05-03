@@ -51,7 +51,7 @@ public class FlowMonitorClientTest extends BaseClientTest {
                 .build();
 
         //WHEN
-        final DeferralDto response = client.getProjection(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
+        final DeferralDto response = client.getDeferralProjection(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
 
         //THEN
         assertEquals(WAREHOUSE_ID, response.getWarehouseId());

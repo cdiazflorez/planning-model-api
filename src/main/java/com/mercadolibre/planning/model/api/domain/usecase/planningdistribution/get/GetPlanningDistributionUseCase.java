@@ -110,8 +110,11 @@ public class GetPlanningDistributionUseCase
         }
     }
 
-    private Long replace(Map<Instant, Long> map, Instant key, Long value, Long defaultValue) {
-        Long previous = map.getOrDefault(key, defaultValue);
+    private Long replace(final Map<Instant, Long> map,
+                         final Instant key,
+                         final Long value,
+                         final Long defaultValue) {
+        final Long previous = map.getOrDefault(key, defaultValue);
         map.replace(key, value);
         return previous;
     }

@@ -212,14 +212,14 @@ public class GetPlanningDistributionUseCaseTest {
         assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
         assertEquals(1000, output1.getTotal());
 
-        List<GetPlanningDistributionOutput> recordsForSecondDay =
+        final List<GetPlanningDistributionOutput> recordsForSecondDay =
                 output.stream()
                         .filter(item -> item.getDateOut()
                                 .toInstant()
                                 .equals(A_DATE_UTC.plusDays(2).toInstant()))
                         .collect(Collectors.toUnmodifiableList());
 
-        Long outputTotalForSecondDay = recordsForSecondDay.stream()
+        final Long outputTotalForSecondDay = recordsForSecondDay.stream()
                 .map(GetPlanningDistributionOutput::getTotal)
                 .reduce(0L, Long::sum);
 

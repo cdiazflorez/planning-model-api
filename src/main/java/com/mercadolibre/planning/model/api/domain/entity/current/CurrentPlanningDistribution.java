@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.entity.current;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,10 +18,11 @@ import javax.persistence.Id;
 
 import java.time.ZonedDateTime;
 
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CurrentPlanningDistribution {
 
     @Id

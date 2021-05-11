@@ -21,7 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 public class FlowMonitorClientTest extends BaseClientTest {
 
-    private static final String URL = "/fbm/flow/monitor/warehouses/%s/workflows/%s";
+    private static final String URL = "/warehouses/%s/workflows/%s";
 
     private static final String WAREHOUSE_ID = "ARTW01";
 

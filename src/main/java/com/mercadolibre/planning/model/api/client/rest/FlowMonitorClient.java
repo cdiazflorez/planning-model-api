@@ -21,7 +21,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Component
 public class FlowMonitorClient extends HttpClient implements DeferralGateway {
 
-    private static final String URL = "/fbm/flow/monitor/warehouses/%s/workflows/%s";
+    private static final String URL = "/warehouses/%s/workflows/%s";
 
     private final ObjectMapper objectMapper;
 

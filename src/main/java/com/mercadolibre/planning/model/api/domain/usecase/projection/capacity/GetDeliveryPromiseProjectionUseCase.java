@@ -14,15 +14,22 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toSet;
 
 @Component
 @AllArgsConstructor
@@ -71,10 +78,34 @@ public class GetDeliveryPromiseProjectionUseCase implements
                                 input.getDateTo(),
                                 getForecastIds(input)
                         );
-        return processingDistributionView.stream().collect(Collectors.toMap(
-                o -> ZonedDateTime.ofInstant(o.getDate().toInstant(), ZoneOffset.UTC),
-                o -> (int) o.getQuantity(),
+
+        final Map<Instant, Integer> capacityByDate = processingDistributionView.stream()
+                .collect(Collectors.toMap(
+                        o -> o.getDate().toInstant().truncatedTo(SECONDS),
+                        o -> (int) o.getQuantity(),
+                        (intA, intB) -> intB));
+
+        final int defaultCapacity = capacityByDate.values()
+                .stream().max(Integer::compareTo)
+                .orElseThrow(NoSuchElementException::new);
+
+        final Set<Instant> capacityHours = getCapacityHours(
+                input.getDateFrom(), input.getDateTo());
+
+        return capacityHours.stream().collect(Collectors.toMap(
+                o -> ZonedDateTime.from(o.atZone(ZoneOffset.UTC)),
+                o -> capacityByDate.getOrDefault(o, defaultCapacity),
                 (intA, intB) -> intB,
-                TreeMap::new));
+                TreeMap::new
+        ));
+    }
+
+    private Set<Instant> getCapacityHours(final ZonedDateTime dateFrom,
+                                          final Temporal dateTo) {
+
+        final Duration dur = Duration.between(dateFrom, dateTo);
+        return LongStream.range(0, dur.toHours())
+                .mapToObj(i -> dateFrom.plusHours(i).truncatedTo(SECONDS).toInstant())
+                .collect(toSet());
     }
 }

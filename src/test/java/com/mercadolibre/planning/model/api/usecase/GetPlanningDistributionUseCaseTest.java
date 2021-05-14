@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -15,10 +17,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.currentPlanningDistributions;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
@@ -30,6 +35,9 @@ public class GetPlanningDistributionUseCaseTest {
 
     @Mock
     private PlanningDistributionRepository planningDistRepository;
+
+    @Mock
+    private CurrentPlanningDistributionRepository currentplanningDistRepository;
 
     @Mock
     private GetForecastUseCase getForecastUseCase;
@@ -163,5 +171,60 @@ public class GetPlanningDistributionUseCaseTest {
         assertEquals(UNITS, output2.getMetricUnit());
     }
 
+    @Test
+    @DisplayName("Get planning distribution applying current planning distribution")
+    public void testGetPlanningDistributionApplyingCurrentPlanningDistribution() {
+        // GIVEN
+        final GetPlanningDistributionInput input = mockPlanningDistributionInput(null, null);
+
+        final List<CurrentPlanningDistribution> distributions = currentPlanningDistributions();
+
+        when(currentplanningDistRepository
+                .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
+                        FBM_WMS_OUTBOUND,
+                        WAREHOUSE_ID,
+                        A_DATE_UTC,
+                        A_DATE_UTC.plusDays(3)
+                )).thenReturn(distributions);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateOutFrom())
+                .dateTo(input.getDateOutTo())
+                .build())
+        ).thenReturn(mockForecastIds());
+
+        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
+                input.getWarehouseId(),
+                A_DATE_UTC,
+                A_DATE_UTC.plusDays(3),
+                mockForecastIds(),
+                false)
+        ).thenReturn(planningDistributions());
+
+        // WHEN
+        final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase
+                .execute(input);
+
+        // THEN
+        final GetPlanningDistributionOutput output1 = output.get(0);
+        assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
+        assertEquals(1000, output1.getTotal());
+
+        final List<GetPlanningDistributionOutput> recordsForSecondDay =
+                output.stream()
+                        .filter(item -> item.getDateOut()
+                                .toInstant()
+                                .equals(A_DATE_UTC.plusDays(2).toInstant()))
+                        .collect(Collectors.toUnmodifiableList());
+
+        final Long outputTotalForSecondDay = recordsForSecondDay.stream()
+                .map(GetPlanningDistributionOutput::getTotal)
+                .reduce(0L, Long::sum);
+
+        assertEquals(2, recordsForSecondDay.size());
+        assertEquals(Long.valueOf(2500), outputTotalForSecondDay);
+    }
 
 }

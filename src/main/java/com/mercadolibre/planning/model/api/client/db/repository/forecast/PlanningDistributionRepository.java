@@ -84,4 +84,15 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             @Param("date_in_to") ZonedDateTime dateInTo,
             @Param("forecast_ids") List<Long> forecastIds,
             @Param("apply_deviation") boolean applyDeviation);
+
+    @Query(value = "SELECT DISTINCT date_out as dateOut "
+            + "FROM planning_distribution p "
+            + "WHERE :apply_deviation = true "
+            + "AND p.forecast_id in (:forecast_ids)"
+            + "AND p.date_out BETWEEN :date_out_from AND :date_out_to ", nativeQuery = true)
+    List<PlanningDistributionView> findByWarehouseIdWorkflowAndCptRange(
+            @Param("date_out_from") ZonedDateTime dateOutFrom,
+            @Param("date_out_to") ZonedDateTime dateOutTo,
+            @Param("forecast_ids") List<Long> forecastIds,
+            @Param("apply_deviation") boolean applyDeviation);
 }

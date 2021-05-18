@@ -26,8 +26,6 @@ public class CreateProcessingTimeOutput {
 
     private ZonedDateTime cptTo;
 
-    private boolean isActive;
-
     private ZonedDateTime dateCreated;
 
     private ZonedDateTime lastUpdated;
@@ -45,7 +43,6 @@ public class CreateProcessingTimeOutput {
                 .metricUnit(request.getMetricUnit())
                 .cptFrom(request.getCptFrom())
                 .cptTo(request.getCptTo())
-                .isActive(request.isActive)
                 .build();
     }
 }

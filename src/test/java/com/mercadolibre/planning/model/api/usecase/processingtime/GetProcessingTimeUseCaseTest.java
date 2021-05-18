@@ -54,7 +54,6 @@ public class GetProcessingTimeUseCaseTest {
         )).thenReturn(List.of(
                 CurrentProcessingTime.builder()
                         .id(1L)
-                        .isActive(true)
                         .workflow(FBM_WMS_OUTBOUND)
                         .logisticCenterId(WAREHOUSE_ID)
                         .cptFrom(A_DATE_UTC.minusHours(4))

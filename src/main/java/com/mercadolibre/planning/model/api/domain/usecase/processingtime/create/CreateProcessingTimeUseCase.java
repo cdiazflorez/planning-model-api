@@ -42,7 +42,6 @@ public class CreateProcessingTimeUseCase implements
                         .workflow(input.getWorkflow())
                         .cptFrom(input.getCptFrom())
                         .cptTo(input.getCptTo())
-                        .isActive(true)
                         .userId(input.getUserId())
                         .build());
 
@@ -76,7 +75,6 @@ public class CreateProcessingTimeUseCase implements
                 .workflow(currentProcessingTime.getWorkflow())
                 .lastUpdated(currentProcessingTime.getLastUpdated())
                 .userId(currentProcessingTime.getUserId())
-                .isActive(currentProcessingTime.isActive())
                 .build();
     }
 

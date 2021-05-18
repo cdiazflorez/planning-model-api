@@ -19,7 +19,6 @@ public interface CurrentProcessingTimeRepository extends
             + "   cpt.workflow = :workflow "
             + "   AND cpt.logisticCenterId = :warehouse_id "
             + "   AND :date BETWEEN cpt.cptFrom AND cpt.cptTo "
-            + "   AND cpt.isActive = true "
             + "ORDER BY cpt.id desc")
     List<CurrentProcessingTime>
             findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(

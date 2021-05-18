@@ -77,7 +77,6 @@ public class CreateProcessingTimeUseCaseTest {
                         .workflow(input.getWorkflow())
                         .cptFrom(input.getCptFrom())
                         .cptTo(input.getCptTo())
-                        .isActive(true)
                         .userId(input.getUserId())
                         .build();
 

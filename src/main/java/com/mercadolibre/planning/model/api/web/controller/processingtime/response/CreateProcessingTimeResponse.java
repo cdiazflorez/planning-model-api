@@ -25,5 +25,4 @@ public class CreateProcessingTimeResponse {
 
     private ZonedDateTime cptTo;
 
-    private boolean isActive;
 }

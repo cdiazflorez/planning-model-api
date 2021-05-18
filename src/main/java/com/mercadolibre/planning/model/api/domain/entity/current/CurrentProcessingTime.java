@@ -42,8 +42,6 @@ public class CurrentProcessingTime {
 
     private ZonedDateTime cptTo;
 
-    private boolean isActive;
-
     @CreationTimestamp
     private ZonedDateTime dateCreated;
 

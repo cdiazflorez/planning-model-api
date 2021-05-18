@@ -73,7 +73,6 @@ public class CurrentProcessingTimeRepositoryTest {
         return CurrentProcessingTime.builder()
                 .workflow(FBM_WMS_OUTBOUND)
                 .logisticCenterId(WAREHOUSE_ID)
-                .isActive(true)
                 .cptFrom(cptFrom)
                 .cptTo(cptTo)
                 .value(300)

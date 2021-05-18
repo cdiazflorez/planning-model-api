@@ -39,7 +39,7 @@ public class GetPlanningDistributionUseCaseTest {
     private PlanningDistributionRepository planningDistRepository;
 
     @Mock
-    private CurrentPlanningDistributionRepository currentplanningDistRepository;
+    private CurrentPlanningDistributionRepository currentPlanningDistRepository;
 
     @Mock
     private GetForecastUseCase getForecastUseCase;
@@ -88,7 +88,7 @@ public class GetPlanningDistributionUseCaseTest {
     }
 
     @Test
-    @DisplayName("Get planning distribution from forecast wih date in to")
+    @DisplayName("Get planning distribution from forecast with date in to")
     public void testGetPlanningDistributionWithDateInToOk() {
         // GIVEN
         final ZonedDateTime dateInTo = A_DATE_UTC.minusDays(3);
@@ -181,7 +181,7 @@ public class GetPlanningDistributionUseCaseTest {
 
         final List<CurrentPlanningDistribution> distributions = currentPlanningDistributions();
 
-        when(currentplanningDistRepository
+        when(currentPlanningDistRepository
                 .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
                         FBM_WMS_OUTBOUND,
                         WAREHOUSE_ID,
@@ -227,7 +227,7 @@ public class GetPlanningDistributionUseCaseTest {
                 .reduce(0L, Long::sum);
 
         assertEquals(2, recordsForSecondDay.size());
-        assertEquals(Long.valueOf(2500), outputTotalForSecondDay);
+        assertEquals(Long.valueOf(3700), outputTotalForSecondDay);
         assertTrue(recordsForSecondDay.stream()
                 .allMatch(GetPlanningDistributionOutput::isDeferred)
         );

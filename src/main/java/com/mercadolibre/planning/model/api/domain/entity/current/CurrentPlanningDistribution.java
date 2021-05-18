@@ -36,6 +36,8 @@ public class CurrentPlanningDistribution {
 
     private ZonedDateTime dateOut;
 
+    private ZonedDateTime dateInFrom;
+
     private long quantity;
 
     @Enumerated(EnumType.STRING)

@@ -30,6 +30,7 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -336,6 +337,67 @@ public class CalculateCptProjectionUseCaseTest {
         assertEquals(DATE_OUT_13, projection3.getDate());
         assertEquals(parse("2020-01-01T16:00:00Z"), projection3.getProjectedEndDate());
         assertEquals(300, projection3.getRemainingQuantity());
+    }
+
+    @Test
+    @DisplayName("CPT is deferred")
+    public void testCptIsDeferred() {
+        // GIVEN
+        final List<Backlog> backlogs = List.of(
+                new Backlog(DATE_OUT_12, 100),
+                new Backlog(DATE_OUT_12_30, 150),
+                new Backlog(DATE_OUT_13, 200)
+        );
+
+        final List<GetPlanningDistributionOutput> planningUnits = List.of(
+                builder()
+                        .dateOut(DATE_OUT_12)
+                        .dateIn(DATE_IN_11)
+                        .total(100)
+                        .isDeferred(false)
+                        .build(),
+                builder()
+                        .dateOut(DATE_OUT_13)
+                        .dateIn(DATE_IN_11)
+                        .total(350)
+                        .isDeferred(true)
+                        .build(),
+                builder()
+                        .dateOut(DATE_OUT_13)
+                        .dateIn(DATE_IN_11.plusHours(1))
+                        .isDeferred(true)
+                        .total(350)
+                        .build()
+        );
+
+        final CptProjectionInput input = CptProjectionInput.builder()
+                .dateFrom(DATE_FROM_10)
+                .dateTo(DATE_OUT_16)
+                .planningUnits(planningUnits)
+                .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
+                        List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
+                .backlog(backlogs)
+                .build();
+
+        mockProcessingTime();
+
+        // WHEN
+        final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
+
+        // THEN
+        assertEquals(3, projections.size());
+
+        final CptProjectionOutput projection1 = projections.get(0);
+        assertEquals(DATE_OUT_12, projection1.getDate());
+        assertFalse(projection1.isDeferred());
+
+        final CptProjectionOutput projection2 = projections.get(1);
+        assertEquals(DATE_OUT_12_30, projection2.getDate());
+        assertFalse(projection2.isDeferred());
+
+        final CptProjectionOutput projection3 = projections.get(2);
+        assertEquals(DATE_OUT_13, projection3.getDate());
+        assertTrue(projection3.isDeferred());
     }
 
     private Map<ZonedDateTime, Integer> mockCapacity(final Temporal dateTo,

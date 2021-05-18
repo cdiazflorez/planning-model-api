@@ -11,6 +11,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,6 +84,8 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 )).thenReturn(mockProcessingDist());
 
         when(projectionUseCase.execute(CptProjectionInput.builder()
+                .workflow(input.getWorkflow())
+                .logisticCenterId(input.getWarehouseId())
                 .capacity(mockCapacityByHour())
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
@@ -120,8 +124,9 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
     private List<CptProjectionOutput> mockProjectionResponse() {
         return List.of(
-                new CptProjectionOutput(CPT_1, null, 0),
-                new CptProjectionOutput(CPT_2, null,100));
+                new CptProjectionOutput(CPT_1, null, 0, new ProcessingTime(240L, MINUTES), false),
+                new CptProjectionOutput(CPT_2, null,100, new ProcessingTime(240L, MINUTES), false)
+        );
     }
 
     private Map<ZonedDateTime, Integer> mockCapacityByHour() {

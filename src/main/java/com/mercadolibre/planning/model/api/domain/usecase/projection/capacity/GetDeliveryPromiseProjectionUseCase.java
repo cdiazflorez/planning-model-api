@@ -45,6 +45,8 @@ public class GetDeliveryPromiseProjectionUseCase implements
     @Override
     public List<CptProjectionOutput> execute(final GetDeliveryPromiseProjectionInput input) {
         final CptProjectionInput projectionInput = CptProjectionInput.builder()
+                .workflow(input.getWorkflow())
+                .logisticCenterId(input.getWarehouseId())
                 .capacity(getMaxCapacity(input))
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())

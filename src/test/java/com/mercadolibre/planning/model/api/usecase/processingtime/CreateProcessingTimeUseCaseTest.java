@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.usecase;
+package com.mercadolibre.planning.model.api.usecase.processingtime;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingTimeRepository;

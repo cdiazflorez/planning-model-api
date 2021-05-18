@@ -1,6 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,19 +30,25 @@ public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
+    private final GetProcessingTimeUseCase getProcessingTimeUseCase;
+
     public List<CptProjectionOutput> execute(final CptProjectionInput input) {
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
-        return project(input.getCapacity(), unitsByDateOutAndDate);
+        return project(input.getCapacity(), unitsByDateOutAndDate, input);
     }
 
     @SuppressWarnings("PMD.NullAssignment")
     private List<CptProjectionOutput> project(
             final Map<ZonedDateTime, Integer> capacityByDate,
-            final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate) {
+            final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate,
+            final CptProjectionInput input) {
 
         final List<CptProjectionOutput> cptProjectionOutputs = new ArrayList<>();
+        final Map<ZonedDateTime, Boolean> cptByDeferralStatus =
+                getCptsByDeferralStatus(input.getPlanningUnits());
+
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
 
             if (unitsByDate.values().stream().mapToInt(Integer::intValue).sum() == 0) {
@@ -80,11 +89,43 @@ public class CalculateCptProjectionUseCase {
                     }
                 }
             }
+
+            final GetProcessingTimeOutput processingTime = getProcessingTimeUseCase.execute(
+                    GetProcessingTimeInput.builder()
+                            .workflow(input.getWorkflow())
+                            .logisticCenterId(input.getLogisticCenterId())
+                            .cpt(dateOut)
+                            .build()
+            );
+
             cptProjectionOutputs.add(
-                    new CptProjectionOutput(dateOut, projectedDate, remainingQuantity));
+                    new CptProjectionOutput(
+                            dateOut,
+                            projectedDate,
+                            remainingQuantity,
+                            new ProcessingTime(
+                                    processingTime.getValue(),
+                                    processingTime.getMetricUnit()
+                            ),
+                            cptByDeferralStatus.getOrDefault(dateOut, Boolean.FALSE)
+                    )
+            );
         });
 
         return cptProjectionOutputs;
+    }
+
+    private Map<ZonedDateTime, Boolean> getCptsByDeferralStatus(
+            final List<GetPlanningDistributionOutput> planningUnits) {
+        final Map<ZonedDateTime, List<GetPlanningDistributionOutput>> map = planningUnits.stream()
+                .collect(groupingBy(GetPlanningDistributionOutput::getDateOut));
+
+        return map.entrySet().stream()
+                .collect(toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream()
+                                .allMatch(GetPlanningDistributionOutput::isDeferred)
+                ));
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(

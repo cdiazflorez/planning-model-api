@@ -72,7 +72,7 @@ public class SimulationController {
                 getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
 
         final List<CptProjectionOutput> cptProjectionOutputs = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(capacity, planningDistributions));
+                .execute(request.toProjectionInput(capacity, planningDistributions, workflow));
 
         return ResponseEntity.ok(cptProjectionOutputs.stream()
                 .map(SaveSimulationResponse::fromProjectionOutput)
@@ -100,7 +100,9 @@ public class SimulationController {
                 ));
 
         final List<CptProjectionOutput> projectSimulation = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(simulatedCapacity, planningDistributions));
+                .execute(request.toProjectionInput(
+                        simulatedCapacity, planningDistributions, workflow)
+                );
 
         final List<EntityOutput> actualThroughput = getThroughputUseCase
                 .execute(request.toForecastedThroughputEntityInput(workflow));
@@ -114,7 +116,9 @@ public class SimulationController {
                 ));
 
         final List<CptProjectionOutput> projection = calculateCptProjectionUseCase
-                .execute(request.toProjectionInput(actualCapacity, planningDistributions));
+                .execute(request.toProjectionInput(
+                        actualCapacity, planningDistributions, workflow)
+                );
 
         return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));
     }

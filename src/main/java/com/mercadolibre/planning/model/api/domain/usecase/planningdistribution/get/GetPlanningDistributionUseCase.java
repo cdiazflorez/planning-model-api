@@ -58,6 +58,7 @@ public class GetPlanningDistributionUseCase
                                         0L,
                                         pd.getQuantity())
                         )
+                        .isDeferred(currentQuantities.containsKey(pd.getDateOut().toInstant()))
                         .build())
                 .collect(toList());
     }

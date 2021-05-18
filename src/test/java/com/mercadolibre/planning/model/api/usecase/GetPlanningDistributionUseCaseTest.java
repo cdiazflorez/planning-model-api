@@ -28,6 +28,8 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -211,6 +213,7 @@ public class GetPlanningDistributionUseCaseTest {
         final GetPlanningDistributionOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
         assertEquals(1000, output1.getTotal());
+        assertFalse(output1.isDeferred());
 
         final List<GetPlanningDistributionOutput> recordsForSecondDay =
                 output.stream()
@@ -225,6 +228,9 @@ public class GetPlanningDistributionUseCaseTest {
 
         assertEquals(2, recordsForSecondDay.size());
         assertEquals(Long.valueOf(2500), outputTotalForSecondDay);
+        assertTrue(recordsForSecondDay.stream()
+                .allMatch(GetPlanningDistributionOutput::isDeferred)
+        );
     }
 
 }

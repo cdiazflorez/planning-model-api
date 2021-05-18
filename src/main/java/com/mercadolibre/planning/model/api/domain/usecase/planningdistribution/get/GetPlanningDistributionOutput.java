@@ -14,4 +14,5 @@ public class GetPlanningDistributionOutput {
     private ZonedDateTime dateOut;
     private MetricUnit metricUnit;
     private long total;
+    private boolean isDeferred;
 }

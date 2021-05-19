@@ -11,10 +11,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import lombok.AllArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,16 +82,21 @@ public class CreateProcessingTimeUseCase implements
             final CreateProcessingTimeInput input,
             final List<PlanningDistributionView> planningDistributionViews) {
 
-        return planningDistributionViews.stream().map(pd -> CurrentPlanningDistribution
-                .builder()
-                .workflow(input.getWorkflow())
-                .logisticCenterId(input.getLogisticCenterId())
-                .dateOut(pd.getDateOut().toInstant()
-                        .atZone(ZoneId.systemDefault()))
-                .quantity(0)
-                .quantityMetricUnit(MetricUnit.UNITS)
-                .isActive(true)
-                .build())
+        return planningDistributionViews.stream()
+                .map(pd -> {
+                    final ZonedDateTime dateOut =
+                            pd.getDateOut().toInstant().atZone(ZoneId.systemDefault());
+
+                    return CurrentPlanningDistribution.builder()
+                            .workflow(input.getWorkflow())
+                            .logisticCenterId(input.getLogisticCenterId())
+                            .dateOut(dateOut)
+                            .dateInFrom(dateOut.minusMinutes(input.getValue()))
+                            .quantity(0)
+                            .quantityMetricUnit(MetricUnit.UNITS)
+                            .isActive(true)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 }

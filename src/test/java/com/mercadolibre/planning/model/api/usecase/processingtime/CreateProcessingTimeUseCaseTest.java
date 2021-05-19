@@ -115,16 +115,21 @@ public class CreateProcessingTimeUseCaseTest {
             final CreateProcessingTimeInput input,
             final List<PlanningDistributionView> planningDistributionViews) {
 
-        return planningDistributionViews.stream().map(pd -> CurrentPlanningDistribution
-                .builder()
-                .workflow(input.getWorkflow())
-                .logisticCenterId(input.getLogisticCenterId())
-                .dateOut(pd.getDateOut().toInstant()
-                        .atZone(ZoneId.systemDefault()))
-                .quantity(0)
-                .quantityMetricUnit(MetricUnit.UNITS)
-                .isActive(true)
-                .build())
+        return planningDistributionViews.stream()
+                .map(pd -> {
+                    final ZonedDateTime dateOut =
+                            pd.getDateOut().toInstant().atZone(ZoneId.systemDefault());
+
+                    return CurrentPlanningDistribution.builder()
+                            .workflow(input.getWorkflow())
+                            .logisticCenterId(input.getLogisticCenterId())
+                            .dateOut(dateOut)
+                            .dateInFrom(dateOut.minusMinutes(360))
+                            .quantity(0)
+                            .quantityMetricUnit(MetricUnit.UNITS)
+                            .isActive(true)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 

@@ -55,9 +55,6 @@ public class GetPlanningDistributionUseCase
                         .isDeferred(currentPlanningDistributions.containsKey(
                                 pd.getDateOut().toInstant())
                         )
-                        .isDeferred(currentPlanningDistributions.containsKey(
-                                pd.getDateOut().toInstant())
-                        )
                         .build())
                 .collect(toList());
     }

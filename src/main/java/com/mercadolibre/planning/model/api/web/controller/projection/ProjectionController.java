@@ -168,6 +168,8 @@ public class ProjectionController {
 
         return ResponseEntity
                 .ok(calculateCptProjection.execute(CptProjectionInput.builder()
+                        .workflow(workflow)
+                        .logisticCenterId(warehouseId)
                         .dateFrom(dateFrom)
                         .dateTo(dateTo)
                         .capacity(capacity)

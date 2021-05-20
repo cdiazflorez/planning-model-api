@@ -20,6 +20,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 @Slf4j
@@ -104,6 +106,7 @@ public class DeferralCptUseCase implements UseCase<DeferralInput,
                         .workflow(workflow)
                         .logisticCenterId(warehouseId)
                         .dateOut(cptProjection.getEstimatedTimeDeparture())
+                        .dateInFrom(getCurrentUtcDate().truncatedTo(HOURS))
                         .quantity(0)
                         .isActive(true)
                         .build());

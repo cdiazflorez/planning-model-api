@@ -47,8 +47,11 @@ public class SimulationRequest {
     private boolean applyDeviation;
 
     public CptProjectionInput toProjectionInput(final Map<ZonedDateTime, Integer> capacity,
-                                                final List<GetPlanningDistributionOutput> units) {
+                                                final List<GetPlanningDistributionOutput> units,
+                                                final Workflow workflow) {
         return CptProjectionInput.builder()
+                .workflow(workflow)
+                .logisticCenterId(warehouseId)
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .capacity(capacity)

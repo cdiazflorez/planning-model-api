@@ -13,6 +13,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -97,11 +99,16 @@ public class ProjectionControllerTest {
         // GIVEN
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
-        final int quantity = 100;
 
         when(calculateCptProjection.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(etd, projectedTime, quantity)
+                        new CptProjectionOutput(
+                                etd,
+                                projectedTime,
+                                100,
+                                new ProcessingTime(240L, MINUTES),
+                                false
+                        )
                 ));
 
         when(getCapacityPerHourUseCase.execute(any(List.class)))
@@ -136,7 +143,6 @@ public class ProjectionControllerTest {
         // GIVEN
         final ZonedDateTime etd = parse("2021-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2021-01-02T10:00:00Z");
-        final int quantity = 100;
 
         when(getdevPromiseProjection.execute(GetDeliveryPromiseProjectionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
@@ -145,8 +151,15 @@ public class ProjectionControllerTest {
                 .dateTo(parse("2020-01-10T12:00:00Z[UTC]"))
                 .backlog(emptyList())
                 .build()
-        )).thenReturn(List.of(new CptProjectionOutput(etd, projectedTime, quantity)));
-
+        )).thenReturn(List.of(
+                new CptProjectionOutput(
+                        etd,
+                        projectedTime,
+                        100,
+                        new ProcessingTime(240L, MINUTES),
+                        false
+                )
+        ));
 
         // WHEN
         final ResultActions result = mvc.perform(

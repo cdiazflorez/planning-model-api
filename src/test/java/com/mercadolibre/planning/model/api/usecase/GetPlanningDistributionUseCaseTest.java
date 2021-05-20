@@ -28,6 +28,8 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +39,7 @@ public class GetPlanningDistributionUseCaseTest {
     private PlanningDistributionRepository planningDistRepository;
 
     @Mock
-    private CurrentPlanningDistributionRepository currentplanningDistRepository;
+    private CurrentPlanningDistributionRepository currentPlanningDistRepository;
 
     @Mock
     private GetForecastUseCase getForecastUseCase;
@@ -86,7 +88,7 @@ public class GetPlanningDistributionUseCaseTest {
     }
 
     @Test
-    @DisplayName("Get planning distribution from forecast wih date in to")
+    @DisplayName("Get planning distribution from forecast with date in to")
     public void testGetPlanningDistributionWithDateInToOk() {
         // GIVEN
         final ZonedDateTime dateInTo = A_DATE_UTC.minusDays(3);
@@ -179,7 +181,7 @@ public class GetPlanningDistributionUseCaseTest {
 
         final List<CurrentPlanningDistribution> distributions = currentPlanningDistributions();
 
-        when(currentplanningDistRepository
+        when(currentPlanningDistRepository
                 .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
                         FBM_WMS_OUTBOUND,
                         WAREHOUSE_ID,
@@ -211,6 +213,7 @@ public class GetPlanningDistributionUseCaseTest {
         final GetPlanningDistributionOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
         assertEquals(1000, output1.getTotal());
+        assertFalse(output1.isDeferred());
 
         final List<GetPlanningDistributionOutput> recordsForSecondDay =
                 output.stream()
@@ -224,7 +227,10 @@ public class GetPlanningDistributionUseCaseTest {
                 .reduce(0L, Long::sum);
 
         assertEquals(2, recordsForSecondDay.size());
-        assertEquals(Long.valueOf(2500), outputTotalForSecondDay);
+        assertEquals(Long.valueOf(3700), outputTotalForSecondDay);
+        assertTrue(recordsForSecondDay.stream()
+                .allMatch(GetPlanningDistributionOutput::isDeferred)
+        );
     }
 
 }

@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static java.time.ZoneOffset.UTC;
@@ -32,7 +33,7 @@ public class GetPlanningDistributionUseCase
 
     @Override
     public List<GetPlanningDistributionOutput> execute(final GetPlanningDistributionInput input) {
-        final Map<Instant, Long> currentQuantities =
+        final Map<Instant, CurrentPlanningDistribution> currentPlanningDistributions =
                 currentPlanningDistRepository
                         .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
                             input.getWorkflow(),
@@ -41,8 +42,7 @@ public class GetPlanningDistributionUseCase
                             input.getDateOutTo())
                         .stream()
                         .collect(
-                            toMap(d -> d.getDateOut().toInstant(),
-                                    CurrentPlanningDistribution::getQuantity));
+                            toMap(d -> d.getDateOut().toInstant(), Function.identity()));
 
         final List<PlanningDistributionView> planningDistribution = getPlanningDistributions(input);
 
@@ -51,12 +51,9 @@ public class GetPlanningDistributionUseCase
                         .metricUnit(UNITS)
                         .dateIn(ofInstant(pd.getDateIn().toInstant(), UTC))
                         .dateOut(ofInstant(pd.getDateOut().toInstant(), UTC))
-                        .total(
-                                replace(
-                                        currentQuantities,
-                                        pd.getDateOut().toInstant(),
-                                        0L,
-                                        pd.getQuantity())
+                        .total(getTotal(currentPlanningDistributions, pd))
+                        .isDeferred(currentPlanningDistributions.containsKey(
+                                pd.getDateOut().toInstant())
                         )
                         .build())
                 .collect(toList());
@@ -110,12 +107,32 @@ public class GetPlanningDistributionUseCase
         }
     }
 
-    private Long replace(final Map<Instant, Long> map,
+    private long getTotal(final Map<Instant, CurrentPlanningDistribution> currentQuantities,
+                          final PlanningDistributionView forecastedDistribution) {
+        final CurrentPlanningDistribution current =
+                currentQuantities.get(forecastedDistribution.getDateOut().toInstant());
+
+        if (current == null
+                || forecastedDistribution.getDateIn().toInstant()
+                .isBefore(current.getDateInFrom().toInstant())) {
+            return forecastedDistribution.getQuantity();
+        }
+
+        return replace(
+                currentQuantities,
+                forecastedDistribution.getDateOut().toInstant(),
+                0L,
+                current
+        );
+    }
+
+    private Long replace(final Map<Instant, CurrentPlanningDistribution> map,
                          final Instant key,
                          final Long value,
-                         final Long defaultValue) {
-        final Long previous = map.getOrDefault(key, defaultValue);
-        map.replace(key, value);
+                         final CurrentPlanningDistribution current) {
+        final long previous = current.getQuantity();
+        current.setQuantity(value);
+        map.replace(key, current);
         return previous;
     }
 }

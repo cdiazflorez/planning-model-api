@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.time.ZonedDateTime.now;
@@ -67,7 +69,13 @@ public class SimulationControllerTest {
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
         when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, projectedEndDate, 100)
+                        new CptProjectionOutput(
+                                dateOut,
+                                projectedEndDate,
+                                100,
+                                new ProcessingTime(240L, MINUTES),
+                                false
+                        )
                 ));
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
@@ -104,9 +112,20 @@ public class SimulationControllerTest {
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
         when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, simulatedEndDate, 100)))
-                .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, projectedEndDate, 150)
+                        new CptProjectionOutput(
+                                dateOut,
+                                simulatedEndDate,
+                                100,
+                                new ProcessingTime(240L, MINUTES),
+                                false
+                        )
+                )).thenReturn(List.of(
+                        new CptProjectionOutput(
+                                dateOut, projectedEndDate,
+                                150,
+                                new ProcessingTime(240L, MINUTES),
+                                false
+                        )
         ));
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(

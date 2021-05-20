@@ -12,4 +12,8 @@ public class CptProjectionOutput {
     private ZonedDateTime projectedEndDate;
 
     private int remainingQuantity;
+
+    private ProcessingTime processingTime;
+
+    private boolean isDeferred;
 }

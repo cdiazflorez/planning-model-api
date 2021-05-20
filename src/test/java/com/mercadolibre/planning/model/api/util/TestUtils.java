@@ -265,6 +265,7 @@ public final class TestUtils {
         when(first.getDateOut()).thenReturn(A_DATE_UTC);
 
         when(second.getDateOut()).thenReturn(A_DATE_UTC.plusDays(2));
+        when(second.getDateInFrom()).thenReturn(A_DATE_UTC.plusDays(1));
         when(second.getQuantity()).thenReturn(2500L);
 
         return List.of(first, second);

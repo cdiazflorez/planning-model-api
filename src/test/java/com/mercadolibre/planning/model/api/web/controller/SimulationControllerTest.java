@@ -101,7 +101,13 @@ public class SimulationControllerTest {
                 .andExpect(jsonPath("$[0].projected_end_date")
                         .value(projectedEndDate.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
-                        .value(100));
+                        .value(100))
+                .andExpect(jsonPath("$[0].processing_time.value")
+                        .value(240))
+                .andExpect(jsonPath("$[0].processing_time.unit_metric")
+                        .value(MINUTES.toJson()))
+                .andExpect(jsonPath("$[0].deferred")
+                        .value(false));
     }
 
     @Test
@@ -154,6 +160,12 @@ public class SimulationControllerTest {
                 .andExpect(jsonPath("$[0].simulated_end_date")
                         .value(simulatedEndDate.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
-                        .value(100));
+                        .value(100))
+                .andExpect(jsonPath("$[0].processing_time.value")
+                        .value(240))
+                .andExpect(jsonPath("$[0].processing_time.unit_metric")
+                        .value(MINUTES.toJson()))
+                .andExpect(jsonPath("$[0].deferred")
+                        .value(false));
     }
 }

@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -16,8 +17,17 @@ public class SaveSimulationResponse {
 
     private int remainingQuantity;
 
+    private ProcessingTime processingTime;
+
+    private boolean isDeferred;
+
     public static SaveSimulationResponse fromProjectionOutput(final CptProjectionOutput output) {
         return new SaveSimulationResponse(
-                output.getDate(), output.getProjectedEndDate(), output.getRemainingQuantity());
+                output.getDate(),
+                output.getProjectedEndDate(),
+                output.getRemainingQuantity(),
+                output.getProcessingTime(),
+                output.isDeferred()
+        );
     }
 }

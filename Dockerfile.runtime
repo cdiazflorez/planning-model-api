@@ -1,7 +1,7 @@
 FROM hub.furycloud.io/mercadolibre/java:1.11-runtime-mini
 
 # Enable JMX
-ENV JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.local.only=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+ENV JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=7199 -Dcom.sun.management.jmxremote.local.only=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -XX:-OmitStackTraceInFastThrow"
 
 # IGNORE STATUS New Relic
 ENV NEWRELIC_IGNORE_STATUS_CODES=400,404

@@ -30,6 +30,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistrib
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -233,4 +234,36 @@ public class GetPlanningDistributionUseCaseTest {
         );
     }
 
+    @Test
+    @DisplayName("Get planning distribution duplicate key")
+    public void testGetPlanningDistributionDuplicateKey() {
+
+        try {
+            // GIVEN
+            final GetPlanningDistributionInput input = mockPlanningDistributionInput(null, null);
+
+            final CurrentPlanningDistribution first = mock(CurrentPlanningDistribution.class);
+            final CurrentPlanningDistribution second = mock(CurrentPlanningDistribution.class);
+
+            final List<CurrentPlanningDistribution> currentPlanningDistributions =
+                    List.of(first, second);
+
+            when(first.getDateOut()).thenReturn(A_DATE_UTC);
+            when(second.getDateOut()).thenReturn(A_DATE_UTC);
+
+            when(currentPlanningDistRepository
+                    .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
+                            FBM_WMS_OUTBOUND,
+                            WAREHOUSE_ID,
+                            A_DATE_UTC,
+                            A_DATE_UTC.plusDays(3)
+                    )).thenReturn(currentPlanningDistributions);
+
+            // WHEN
+            getPlanningDistributionUseCase.execute(input);
+
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("Duplicate key"));
+        }
+    }
 }

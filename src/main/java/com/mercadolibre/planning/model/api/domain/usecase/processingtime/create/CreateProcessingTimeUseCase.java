@@ -14,11 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,28 +79,6 @@ public class CreateProcessingTimeUseCase implements
                 .build();
     }
 
-    private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList(
-            final CreateProcessingTimeInput input,
-            final List<ZonedDateTime> plannedCpts,
-            final List<CurrentPlanningDistribution> currentPlanningDistributions) {
-
-        final Map<ZonedDateTime, CurrentPlanningDistribution> planningByCpt =
-                currentPlanningDistributions.stream()
-                        .collect(Collectors.toMap(
-                                CurrentPlanningDistribution::getDateOut,
-                                Function.identity(),
-                                (pd1, pd2) -> pd2));
-
-        return plannedCpts.stream()
-                        .map(plannedCpt -> processCpt(
-                                input,
-                                plannedCpt,
-                                planningByCpt.get(plannedCpt)))
-                        .filter(Predicate.not(Optional::isEmpty))
-                        .map(Optional::get)
-                        .collect(Collectors.toList());
-    }
-
     private List<ZonedDateTime> getPlannedCpts(final CreateProcessingTimeInput input) {
 
         final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
@@ -120,26 +97,46 @@ public class CreateProcessingTimeUseCase implements
                 .collect(Collectors.toList());
     }
 
-    private Optional<CurrentPlanningDistribution> processCpt(
+    private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList(
             final CreateProcessingTimeInput input,
-            final ZonedDateTime cpt,
-            final CurrentPlanningDistribution currentPlanning) {
+            final List<ZonedDateTime> plannedCpts,
+            final List<CurrentPlanningDistribution> currentPlanningDistributions) {
 
-        if (currentPlanning == null) {
-            return Optional.of(CurrentPlanningDistribution
+        final Map<ZonedDateTime, CurrentPlanningDistribution> planningByCpt =
+                currentPlanningDistributions.stream()
+                        .collect(Collectors.toMap(
+                                CurrentPlanningDistribution::getDateOut,
+                                Function.identity(),
+                                (pd1, pd2) -> pd2));
+
+        final List<CurrentPlanningDistribution>
+                newCurrentDistributions = new ArrayList<>();
+
+        plannedCpts.stream().forEach(plannedCpt -> {
+
+            newCurrentDistributions.add(CurrentPlanningDistribution
                     .builder()
                     .workflow(input.getWorkflow())
                     .logisticCenterId(input.getLogisticCenterId())
-                    .dateOut(cpt)
-                    .dateInFrom(cpt.minusMinutes(input.getValue()))
+                    .dateOut(plannedCpt)
+                    .dateInFrom(plannedCpt.minusMinutes(input.getValue()))
                     .quantity(0)
                     .quantityMetricUnit(MetricUnit.UNITS)
                     .isActive(true)
                     .build());
-        } else {
-            currentPlanning.setActive(false);
-            return Optional.of(currentPlanning);
-        }
+
+            final CurrentPlanningDistribution currentPlanningDistribution
+                    = planningByCpt.get(plannedCpt);
+
+            if (currentPlanningDistribution != null) {
+                currentPlanningDistribution.setActive(false);
+
+                newCurrentDistributions
+                        .add(currentPlanningDistribution);
+            }
+        });
+
+        return newCurrentDistributions;
     }
 }
 

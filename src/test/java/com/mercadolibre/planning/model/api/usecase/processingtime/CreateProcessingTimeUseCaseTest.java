@@ -4,7 +4,6 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingTimeRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
@@ -13,22 +12,23 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.CreateProcessingTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.CreateProcessingTimeOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.CreateProcessingTimeUseCase;
+import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
 import static java.time.ZonedDateTime.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,18 +50,27 @@ public class CreateProcessingTimeUseCaseTest {
     @Mock
     private CurrentPlanningDistributionRepository currentPlanningDistributionRep;
 
+    private final ZonedDateTime cptFrom = parse("2020-01-01T15:00:00Z");
+    private final ZonedDateTime cptTo = parse("2020-01-12T15:00:00Z");
+    private final ZonedDateTime dateOut = parse("2020-01-07T15:00:00Z[UTC]");
+    private final ZonedDateTime dateInFrom = parse("2020-01-07T09:00:00Z[UTC]");
+
     @Test
     public void testCreateProcessingTime() {
 
-        final List<PlanningDistributionView> planningDistributionData = planningDistributions();
-        final ZonedDateTime cptFrom = parse("2020-01-01T11:00:00Z[UTC]");
-        final ZonedDateTime cptTo = parse("2020-01-02T10:00:00Z[UTC]");
+        final List<PlanningDistributionView> planningDistributionViews = planningDistributions();
+
+        final CurrentPlanningDistribution first = mock(CurrentPlanningDistribution.class);
+        final CurrentPlanningDistribution second = mock(CurrentPlanningDistribution.class);
+
+        final List<CurrentPlanningDistribution> currentPlanningDistributions =
+                List.of(first, second);
 
         // GIVEN
         final CreateProcessingTimeInput input =
                 CreateProcessingTimeInput.builder()
                         .value(360)
-                        .metricUnit(MetricUnit.MINUTES)
+                        .metricUnit(MINUTES)
                         .logisticCenterId(WAREHOUSE_ID)
                         .workflow(Workflow.FBM_WMS_OUTBOUND)
                         .cptFrom(cptFrom)
@@ -81,15 +90,22 @@ public class CreateProcessingTimeUseCaseTest {
                         .build();
 
         final List<CurrentPlanningDistribution> inputCurrentPlanningDist =
-                getCurrentPlanningDistributionList(input, planningDistributionData);
+                getCurrentPlanningDistributionList();
 
         // WHEN
+        when(currentPlanningDistributionRep
+                .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
+                        input.getWorkflow(),
+                        input.getLogisticCenterId(),
+                        input.getCptFrom(),
+                        input.getCptTo())).thenReturn(currentPlanningDistributions);
+
         when(planningDistributionRepository.findByWarehouseIdWorkflowAndCptRange(
                 input.getCptFrom(),
                 input.getCptTo(),
                 getForecastIds(),
                 true))
-                .thenReturn(planningDistributionData);
+                .thenReturn(planningDistributionViews);
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
@@ -111,26 +127,56 @@ public class CreateProcessingTimeUseCaseTest {
         verify(currentPlanningDistributionRep).saveAll(inputCurrentPlanningDist);
     }
 
-    private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList(
-            final CreateProcessingTimeInput input,
-            final List<PlanningDistributionView> planningDistributionViews) {
+    private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList() {
 
-        return planningDistributionViews.stream()
-                .map(pd -> {
-                    final ZonedDateTime dateOut =
-                            pd.getDateOut().toInstant().atZone(ZoneId.systemDefault());
+        return List.of(
+                CurrentPlanningDistribution.builder()
+                        .logisticCenterId("ARBA01")
+                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                        .dateInFrom(dateInFrom.plusDays(1))
+                        .dateOut(dateOut.plusDays(1))
+                        .quantity(0)
+                        .quantityMetricUnit(UNITS)
+                        .isActive(true)
+                        .build(),
+                CurrentPlanningDistribution.builder()
+                        .logisticCenterId("ARBA01")
+                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                        .dateInFrom(dateInFrom.plusDays(2))
+                        .dateOut(dateOut.plusDays(2))
+                        .quantity(0)
+                        .quantityMetricUnit(UNITS)
+                        .isActive(true)
+                        .build(),
+                CurrentPlanningDistribution.builder()
+                        .logisticCenterId("ARBA01")
+                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                        .dateInFrom(dateInFrom.plusDays(3))
+                        .dateOut(dateOut.plusDays(3))
+                        .quantity(0)
+                        .quantityMetricUnit(UNITS)
+                        .isActive(true)
+                        .build());
+    }
 
-                    return CurrentPlanningDistribution.builder()
-                            .workflow(input.getWorkflow())
-                            .logisticCenterId(input.getLogisticCenterId())
-                            .dateOut(dateOut)
-                            .dateInFrom(dateOut.minusMinutes(360))
-                            .quantity(0)
-                            .quantityMetricUnit(MetricUnit.UNITS)
-                            .isActive(true)
-                            .build();
-                })
-                .collect(Collectors.toList());
+    public List<PlanningDistributionView> planningDistributions() {
+        return List.of(
+                new PlanningDistributionViewImpl(
+                        Date.from(dateOut.toInstant()),
+                        Date.from(dateOut.plusDays(1).toInstant()),
+                        1000,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        Date.from(dateOut.toInstant()),
+                        Date.from(dateOut.plusDays(2).toInstant()),
+                        1200,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        Date.from(dateOut.toInstant()),
+                        Date.from(dateOut.plusDays(3).toInstant()),
+                        1250,
+                        UNITS)
+        );
     }
 
     private List<Long> getForecastIds() {

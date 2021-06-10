@@ -3,7 +3,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.processingtime.create
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingTimeRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
@@ -16,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,22 +48,21 @@ public class CreateProcessingTimeUseCase implements
                         .userId(input.getUserId())
                         .build());
 
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getLogisticCenterId())
-                .dateFrom(input.getCptFrom())
-                .dateTo(input.getCptTo())
-                .build());
+        final List<ZonedDateTime> plannedCpts = getPlannedCpts(input);
 
-        final List<PlanningDistributionView> planningDistributions = planningDistributionRepository
-                .findByWarehouseIdWorkflowAndCptRange(
-                        input.getCptFrom(),
-                        input.getCptTo(),
-                        forecastIds,
-                        true);
+        final List<CurrentPlanningDistribution> currentPlanningDistributions =
+                currentPlanningDistributionRep
+                        .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
+                                input.getWorkflow(),
+                                input.getLogisticCenterId(),
+                                input.getCptFrom(),
+                                input.getCptTo());
 
         final List<CurrentPlanningDistribution> inputCurrentPlanningDist =
-                getCurrentPlanningDistributionList(input, planningDistributions);
+                getCurrentPlanningDistributionList(
+                        input,
+                        plannedCpts,
+                        currentPlanningDistributions);
 
         currentPlanningDistributionRep.saveAll(inputCurrentPlanningDist);
 
@@ -80,24 +82,64 @@ public class CreateProcessingTimeUseCase implements
 
     private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList(
             final CreateProcessingTimeInput input,
-            final List<PlanningDistributionView> planningDistributionViews) {
+            final List<ZonedDateTime> plannedCpts,
+            final List<CurrentPlanningDistribution> currentPlanningDistributions) {
 
-        return planningDistributionViews.stream()
-                .map(pd -> {
-                    final ZonedDateTime dateOut =
-                            pd.getDateOut().toInstant().atZone(ZoneId.systemDefault());
+        final Map<ZonedDateTime, CurrentPlanningDistribution> planningByCpt =
+                currentPlanningDistributions.stream()
+                        .collect(Collectors.toMap(
+                                CurrentPlanningDistribution::getDateOut,
+                                Function.identity(),
+                                (pd1, pd2) -> pd2));
 
-                    return CurrentPlanningDistribution.builder()
-                            .workflow(input.getWorkflow())
-                            .logisticCenterId(input.getLogisticCenterId())
-                            .dateOut(dateOut)
-                            .dateInFrom(dateOut.minusMinutes(input.getValue()))
-                            .quantity(0)
-                            .quantityMetricUnit(MetricUnit.UNITS)
-                            .isActive(true)
-                            .build();
-                })
+        return plannedCpts.stream()
+                        .map(plannedCpt -> processCpt(
+                                input,
+                                plannedCpt,
+                                planningByCpt.get(plannedCpt)))
+                        .filter(Predicate.not(Optional::isEmpty))
+                        .map(Optional::get)
+                        .collect(Collectors.toList());
+    }
+
+    private List<ZonedDateTime> getPlannedCpts(final CreateProcessingTimeInput input) {
+
+        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getLogisticCenterId())
+                .dateFrom(input.getCptFrom())
+                .dateTo(input.getCptTo())
+                .build());
+
+        return planningDistributionRepository.findByWarehouseIdWorkflowAndCptRange(
+                input.getCptFrom(),
+                input.getCptTo(),
+                forecastIds,
+                true)
+                .stream().map(item -> item.getDateOut().toInstant().atZone(ZoneId.of("UTC")))
                 .collect(Collectors.toList());
+    }
+
+    private Optional<CurrentPlanningDistribution> processCpt(
+            final CreateProcessingTimeInput input,
+            final ZonedDateTime cpt,
+            final CurrentPlanningDistribution currentPlanning) {
+
+        if (currentPlanning == null) {
+            return Optional.of(CurrentPlanningDistribution
+                    .builder()
+                    .workflow(input.getWorkflow())
+                    .logisticCenterId(input.getLogisticCenterId())
+                    .dateOut(cpt)
+                    .dateInFrom(cpt.minusMinutes(input.getValue()))
+                    .quantity(0)
+                    .quantityMetricUnit(MetricUnit.UNITS)
+                    .isActive(true)
+                    .build());
+        } else {
+            currentPlanning.setActive(false);
+            return Optional.of(currentPlanning);
+        }
     }
 }
 

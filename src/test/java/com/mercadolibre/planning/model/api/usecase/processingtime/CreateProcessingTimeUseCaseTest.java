@@ -13,8 +13,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.CreateProcessingTimeOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.create.CreateProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,16 +24,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static java.time.ZonedDateTime.parse;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("all")
 @ExtendWith(MockitoExtension.class)
 public class CreateProcessingTimeUseCaseTest {
 
@@ -50,21 +52,17 @@ public class CreateProcessingTimeUseCaseTest {
     @Mock
     private CurrentPlanningDistributionRepository currentPlanningDistributionRep;
 
-    private final ZonedDateTime cptFrom = parse("2020-01-01T15:00:00Z");
-    private final ZonedDateTime cptTo = parse("2020-01-12T15:00:00Z");
-    private final ZonedDateTime dateOut = parse("2020-01-07T15:00:00Z[UTC]");
-    private final ZonedDateTime dateInFrom = parse("2020-01-07T09:00:00Z[UTC]");
+    private final ZonedDateTime cptFrom = parse("2020-01-07T00:00:00Z");
+    private final ZonedDateTime cptTo = parse("2020-01-08T15:00:00Z");
+    private static final String WAREHOUSE_ID = "ARBA01";
+    private static final ZonedDateTime GENERIC_DATE = parse("2020-01-07T08:00:00Z[UTC]");
 
-    @Test
-    public void testCreateProcessingTime() {
-
-        final List<PlanningDistributionView> planningDistributionViews = planningDistributions();
-
-        final CurrentPlanningDistribution first = mock(CurrentPlanningDistribution.class);
-        final CurrentPlanningDistribution second = mock(CurrentPlanningDistribution.class);
-
-        final List<CurrentPlanningDistribution> currentPlanningDistributions =
-                List.of(first, second);
+    @ParameterizedTest
+    @MethodSource("getDataMock")
+    public void testCreateProcessingAndCurrentPlanningDistributions(
+            final List<CurrentPlanningDistribution> currentPlanningDistributions,
+            final List<PlanningDistributionView> planningDistributions,
+            final List<CurrentPlanningDistribution> expectedDistributions) {
 
         // GIVEN
         final CreateProcessingTimeInput input =
@@ -89,9 +87,6 @@ public class CreateProcessingTimeUseCaseTest {
                         .userId(input.getUserId())
                         .build();
 
-        final List<CurrentPlanningDistribution> inputCurrentPlanningDist =
-                getCurrentPlanningDistributionList();
-
         // WHEN
         when(currentPlanningDistributionRep
                 .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
@@ -105,7 +100,7 @@ public class CreateProcessingTimeUseCaseTest {
                 input.getCptTo(),
                 getForecastIds(),
                 true))
-                .thenReturn(planningDistributionViews);
+                .thenReturn(planningDistributions);
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
@@ -124,58 +119,255 @@ public class CreateProcessingTimeUseCaseTest {
         assertEquals(response.getMetricUnit(), input.getMetricUnit());
         assertEquals(response.getLogisticCenterId(), input.getLogisticCenterId());
 
-        verify(currentPlanningDistributionRep).saveAll(inputCurrentPlanningDist);
+        verify(currentPlanningDistributionRep).saveAll(expectedDistributions);
     }
 
-    private List<CurrentPlanningDistribution> getCurrentPlanningDistributionList() {
+    public static Stream<Arguments> getDataMock() {
 
-        return List.of(
-                CurrentPlanningDistribution.builder()
-                        .logisticCenterId("ARBA01")
-                        .workflow(Workflow.FBM_WMS_OUTBOUND)
-                        .dateInFrom(dateInFrom.plusDays(1))
-                        .dateOut(dateOut.plusDays(1))
-                        .quantity(0)
-                        .quantityMetricUnit(UNITS)
-                        .isActive(true)
-                        .build(),
-                CurrentPlanningDistribution.builder()
-                        .logisticCenterId("ARBA01")
-                        .workflow(Workflow.FBM_WMS_OUTBOUND)
-                        .dateInFrom(dateInFrom.plusDays(2))
-                        .dateOut(dateOut.plusDays(2))
-                        .quantity(0)
-                        .quantityMetricUnit(UNITS)
-                        .isActive(true)
-                        .build(),
-                CurrentPlanningDistribution.builder()
-                        .logisticCenterId("ARBA01")
-                        .workflow(Workflow.FBM_WMS_OUTBOUND)
-                        .dateInFrom(dateInFrom.plusDays(3))
-                        .dateOut(dateOut.plusDays(3))
-                        .quantity(0)
-                        .quantityMetricUnit(UNITS)
-                        .isActive(true)
-                        .build());
-    }
+        // (+): IsActive = true
+        // (-): IsActive = false
+        // (*): Interseccion
+        return Stream.of(
+                // Interseccion Parcial
+                // CurrentDistribution -> PlanningDistribution = expectedDistributions
+                // 1, 2, 3 -> _, 2*, _ = +2, -2
+                Arguments.of(
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(1))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(3))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build()),
+                        List.of(
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(2).toInstant()),
+                                        900,
+                                        UNITS)),
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(4))
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(false)
+                                        .build())
+                ),
+                // Agregacion Total
+                // CurrentDistribution -> PlanningDistribution = expectedDistributions
+                // 1, 2, 3 -> 4, 5, 6 = +4, +5, +6
+                Arguments.of(
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(1))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(3))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build()),
+                        List.of(
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(4).toInstant()),
+                                        700,
+                                        UNITS),
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(5).toInstant()),
+                                        900,
+                                        UNITS),
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(6).toInstant()),
+                                        1200,
+                                        UNITS)),
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(2))
+                                        .dateOut(GENERIC_DATE.plusHours(4))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(1))
+                                        .dateOut(GENERIC_DATE.plusHours(5))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(6))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build())
 
-    public List<PlanningDistributionView> planningDistributions() {
-        return List.of(
-                new PlanningDistributionViewImpl(
-                        Date.from(dateOut.toInstant()),
-                        Date.from(dateOut.plusDays(1).toInstant()),
-                        1000,
-                        UNITS),
-                new PlanningDistributionViewImpl(
-                        Date.from(dateOut.toInstant()),
-                        Date.from(dateOut.plusDays(2).toInstant()),
-                        1200,
-                        UNITS),
-                new PlanningDistributionViewImpl(
-                        Date.from(dateOut.toInstant()),
-                        Date.from(dateOut.plusDays(3).toInstant()),
-                        1250,
-                        UNITS)
+                ),
+                // Interseccion Total
+                // CurrentDistribution -> PlanningDistribution = expectedDistributions
+                // 1, 2, 3 -> 1, 2, 3 = +1, -1, +2, -2, +3, -3
+                Arguments.of(
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(1))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(3))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build()),
+                        List.of(
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(1).toInstant()),
+                                        700,
+                                        UNITS),
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(2).toInstant()),
+                                        900,
+                                        UNITS),
+                                new PlanningDistributionViewImpl(
+                                        Date.from(GENERIC_DATE.toInstant()),
+                                        Date.from(GENERIC_DATE.plusHours(3).toInstant()),
+                                        1200,
+                                        UNITS)),
+                        List.of(
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(5))
+                                        .dateOut(GENERIC_DATE.plusHours(1))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(1))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(false)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(4))
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(2))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(false)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE.minusHours(3))
+                                        .dateOut(GENERIC_DATE.plusHours(3))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(true)
+                                        .build(),
+                                CurrentPlanningDistribution.builder()
+                                        .logisticCenterId(WAREHOUSE_ID)
+                                        .workflow(Workflow.FBM_WMS_OUTBOUND)
+                                        .dateInFrom(GENERIC_DATE)
+                                        .dateOut(GENERIC_DATE.plusHours(3))
+                                        .quantity(0)
+                                        .quantityMetricUnit(UNITS)
+                                        .isActive(false)
+                                        .build())
+                )
         );
     }
 

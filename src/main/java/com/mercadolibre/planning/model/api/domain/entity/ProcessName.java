@@ -24,6 +24,7 @@ public enum ProcessName {
     BATCH_SORTER(singletonList(PICKING),false),
     PACKING_WALL(singletonList(BATCH_SORTER),false),
     EXPEDITION(singletonList(PACKING), false),
+    WALL_IN(null, false),
     GLOBAL(null, false);
 
     private final List<ProcessName> previousProcesses;

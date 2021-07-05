@@ -144,6 +144,7 @@ public class GetProductivityEntityUseCase
                                             .processName(simulation.getProcessName())
                                             .source(SIMULATION)
                                             .value(quantityByDate.getQuantity())
+                                            .abilityLevel(1)
                                             .build()));
                         }));
         return simulatedEntities;

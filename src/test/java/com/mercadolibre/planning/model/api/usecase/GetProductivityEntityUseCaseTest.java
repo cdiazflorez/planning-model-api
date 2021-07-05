@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
@@ -18,7 +17,6 @@ import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationE
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
@@ -36,9 +33,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProdEntity;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProductivityEntityInput;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.singletonList;
@@ -231,23 +226,16 @@ public class GetProductivityEntityUseCaseTest {
         );
     }
 
-    private static Stream<Arguments> getSupportedEntitites() {
-        return Stream.of(
-                Arguments.of(PRODUCTIVITY, true),
-                Arguments.of(HEADCOUNT, false),
-                Arguments.of(THROUGHPUT, false)
-        );
-    }
-
-    private void outputPropertiesEqualTo(final EntityOutput entityOutput,
+    private void outputPropertiesEqualTo(final ProductivityOutput productivityOutput,
                                          final ProcessName processName,
                                          final Source source,
                                          final int quantity) {
 
-        assertEquals(processName, entityOutput.getProcessName());
-        assertEquals(source, entityOutput.getSource());
-        assertEquals(quantity, entityOutput.getValue());
-        assertEquals(UNITS_PER_HOUR, entityOutput.getMetricUnit());
-        assertEquals(FBM_WMS_OUTBOUND, entityOutput.getWorkflow());
+        assertEquals(processName, productivityOutput.getProcessName());
+        assertEquals(source, productivityOutput.getSource());
+        assertEquals(quantity, productivityOutput.getValue());
+        assertEquals(UNITS_PER_HOUR, productivityOutput.getMetricUnit());
+        assertEquals(FBM_WMS_OUTBOUND, productivityOutput.getWorkflow());
+        assertThat(productivityOutput.getAbilityLevel()).isIn(1, 2);
     }
 }

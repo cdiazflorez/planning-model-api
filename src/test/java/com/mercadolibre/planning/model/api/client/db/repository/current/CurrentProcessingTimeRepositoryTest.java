@@ -38,9 +38,7 @@ public class CurrentProcessingTimeRepositoryTest {
         final List<CurrentProcessingTime> queryResult = repository
                 .findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
                         FBM_WMS_OUTBOUND,
-                        WAREHOUSE_ID,
-                        A_DATE_UTC.plusHours(1)
-                );
+                        WAREHOUSE_ID);
 
         // THEN
         assertFalse(queryResult.isEmpty());
@@ -59,10 +57,7 @@ public class CurrentProcessingTimeRepositoryTest {
         // WHEN
         final List<CurrentProcessingTime> result = repository
                 .findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
-                        FBM_WMS_OUTBOUND,
-                        WAREHOUSE_ID,
-                        A_DATE_UTC.minusHours(1)
-                );
+                        FBM_WMS_OUTBOUND,"ARTW01");
 
         // THEN
         assertTrue(result.isEmpty());

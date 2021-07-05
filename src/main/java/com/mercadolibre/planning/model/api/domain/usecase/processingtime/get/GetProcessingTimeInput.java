@@ -7,6 +7,7 @@ import lombok.Value;
 import javax.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Value
 @Builder
@@ -19,6 +20,6 @@ public class GetProcessingTimeInput {
     private Workflow workflow;
 
     @NotNull
-    private ZonedDateTime cpt;
+    private List<ZonedDateTime> cpt;
 
 }

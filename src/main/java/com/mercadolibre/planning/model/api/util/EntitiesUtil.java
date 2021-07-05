@@ -2,12 +2,16 @@ package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -60,5 +64,24 @@ public class EntitiesUtil {
             pages.add(entities.subList(offset, limit));
         });
         return pages;
+    }
+
+    public static List<CptProjectionOutput> getProcessingTime(
+            final List<CptProjectionOutput> cptProjectionOutputs,
+            final List<GetProcessingTimeOutput> processingTimeOutputs) {
+
+        cptProjectionOutputs.stream().forEach(cptProjectionOutput -> {
+
+            final Optional<GetProcessingTimeOutput> processingTime =
+                    processingTimeOutputs.stream()
+                            .filter(item -> item.getCpt().equals(cptProjectionOutput.getDate()))
+                            .findFirst();
+
+            cptProjectionOutput.setProcessingTime(new ProcessingTime(
+                    processingTime.get().getValue(),
+                    processingTime.get().getMetricUnit()));
+        });
+
+        return cptProjectionOutputs;
     }
 }

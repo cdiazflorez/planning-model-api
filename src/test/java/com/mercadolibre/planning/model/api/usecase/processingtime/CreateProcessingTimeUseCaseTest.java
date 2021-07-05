@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("all")
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(MockitoExtension.class)
 public class CreateProcessingTimeUseCaseTest {
 

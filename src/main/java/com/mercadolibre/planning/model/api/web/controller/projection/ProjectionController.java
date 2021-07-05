@@ -9,6 +9,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.ge
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
@@ -40,15 +43,17 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
+import static com.mercadolibre.planning.model.api.util.EntitiesUtil.getProcessingTime;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/projections")
-@SuppressWarnings("PMD.ExcessiveImports")
+
 public class ProjectionController {
 
     private final CalculateCptProjectionUseCase calculateCptProjection;
@@ -58,6 +63,7 @@ public class ProjectionController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetProcessingTimeUseCase getProcessingTimeUseCase;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -166,8 +172,8 @@ public class ProjectionController {
                         .applyDeviation(request.isApplyDeviation())
                         .build());
 
-        return ResponseEntity
-                .ok(calculateCptProjection.execute(CptProjectionInput.builder()
+        final List<CptProjectionOutput> cptProjectionOutputs =
+                calculateCptProjection.execute(CptProjectionInput.builder()
                         .workflow(workflow)
                         .logisticCenterId(warehouseId)
                         .dateFrom(dateFrom)
@@ -175,7 +181,21 @@ public class ProjectionController {
                         .capacity(capacity)
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
-                        .build()));
+                        .build());
+
+        final List<GetProcessingTimeOutput> processingTimeOutputs =
+                getProcessingTimeUseCase.execute(
+                        GetProcessingTimeInput.builder()
+                                .workflow(workflow)
+                                .logisticCenterId(warehouseId)
+                                .cpt(cptProjectionOutputs.stream()
+                                        .map(CptProjectionOutput::getDate)
+                                        .collect(toList()))
+                                .build());
+
+        return ResponseEntity.ok(getProcessingTime(
+                cptProjectionOutputs,
+                processingTimeOutputs));
     }
 
     private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {

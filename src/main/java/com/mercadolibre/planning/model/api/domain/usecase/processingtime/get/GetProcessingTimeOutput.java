@@ -5,9 +5,13 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.ZonedDateTime;
+
 @Value
 @Builder
 public class GetProcessingTimeOutput {
+
+    private ZonedDateTime cpt;
 
     private Workflow workflow;
 

@@ -8,6 +8,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
@@ -33,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
+import static com.mercadolibre.planning.model.api.util.EntitiesUtil.getProcessingTime;
 import static com.mercadolibre.planning.model.api.web.controller.simulation.RunSimulationResponse.fromProjectionOutputs;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -48,6 +52,7 @@ public class SimulationController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetProcessingTimeUseCase getProcessingTimeUseCase;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -74,7 +79,19 @@ public class SimulationController {
         final List<CptProjectionOutput> cptProjectionOutputs = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(capacity, planningDistributions, workflow));
 
-        return ResponseEntity.ok(cptProjectionOutputs.stream()
+        final List<GetProcessingTimeOutput> processingTimeOutputs =
+                getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
+                        .workflow(workflow)
+                        .logisticCenterId(request.getWarehouseId())
+                        .cpt(cptProjectionOutputs.stream()
+                                .map(CptProjectionOutput::getDate)
+                                .collect(toList()))
+                        .build());
+
+        final List<CptProjectionOutput> newCptProjectionOutputs = getProcessingTime(
+                cptProjectionOutputs, processingTimeOutputs);
+
+        return ResponseEntity.ok(newCptProjectionOutputs.stream()
                 .map(SaveSimulationResponse::fromProjectionOutput)
                 .collect(toList()));
     }
@@ -120,7 +137,19 @@ public class SimulationController {
                         actualCapacity, planningDistributions, workflow)
                 );
 
-        return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));
+        final List<GetProcessingTimeOutput> processingTimeOutputs =
+                getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
+                        .workflow(workflow)
+                        .logisticCenterId(request.getWarehouseId())
+                        .cpt(projection.stream()
+                                .map(CptProjectionOutput::getDate)
+                                .collect(toList()))
+                        .build());
+
+        return ResponseEntity.ok(
+                fromProjectionOutputs(
+                        getProcessingTime(projectSimulation, processingTimeOutputs),
+                        getProcessingTime(projection, processingTimeOutputs)));
     }
 
     @InitBinder

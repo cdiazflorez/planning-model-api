@@ -49,8 +49,7 @@ public class GetProcessingTimeUseCaseTest {
 
         when(repository.findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
                 input.getWorkflow(),
-                input.getLogisticCenterId(),
-                input.getCpt()
+                input.getLogisticCenterId()
         )).thenReturn(List.of(
                 CurrentProcessingTime.builder()
                         .id(1L)
@@ -61,19 +60,26 @@ public class GetProcessingTimeUseCaseTest {
                         .value(300)
                         .metricUnit(MINUTES)
                         .userId(USER_ID)
-                        .build()
-                )
-        );
+                        .build()));
+
+        when(getConfigurationUseCase.execute(
+                new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
+        ).thenReturn(Optional.of(Configuration.builder()
+                .logisticCenterId(WAREHOUSE_ID)
+                .key("processing_time")
+                .value(300)
+                .metricUnit(MINUTES)
+                .build()));
 
         // WHEN
-        final GetProcessingTimeOutput output = useCase.execute(input);
+        final List<GetProcessingTimeOutput> outputs = useCase.execute(input);
 
         // THEN
-        assertNotNull(output);
-        assertEquals(FBM_WMS_OUTBOUND, output.getWorkflow());
-        assertEquals(WAREHOUSE_ID, output.getLogisticCenterId());
-        assertEquals(300, output.getValue());
-        assertEquals(MINUTES, output.getMetricUnit());
+        assertNotNull(outputs.get(0));
+        assertEquals(FBM_WMS_OUTBOUND, outputs.get(0).getWorkflow());
+        assertEquals(WAREHOUSE_ID, outputs.get(0).getLogisticCenterId());
+        assertEquals(300, outputs.get(0).getValue());
+        assertEquals(MINUTES, outputs.get(0).getMetricUnit());
     }
 
     @Test
@@ -85,8 +91,7 @@ public class GetProcessingTimeUseCaseTest {
 
         when(repository.findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
                 input.getWorkflow(),
-                input.getLogisticCenterId(),
-                input.getCpt())).thenReturn(List.of());
+                input.getLogisticCenterId())).thenReturn(List.of());
 
         when(getConfigurationUseCase.execute(
                 new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
@@ -99,14 +104,14 @@ public class GetProcessingTimeUseCaseTest {
                 ));
 
         // WHEN
-        final GetProcessingTimeOutput output = useCase.execute(input);
+        final List<GetProcessingTimeOutput> outputs = useCase.execute(input);
 
         // THEN
-        assertNotNull(output);
-        assertEquals(FBM_WMS_OUTBOUND, output.getWorkflow());
-        assertEquals(WAREHOUSE_ID, output.getLogisticCenterId());
-        assertEquals(360, output.getValue());
-        assertEquals(MINUTES, output.getMetricUnit());
+        assertNotNull(outputs.get(0));
+        assertEquals(FBM_WMS_OUTBOUND, outputs.get(0).getWorkflow());
+        assertEquals(WAREHOUSE_ID, outputs.get(0).getLogisticCenterId());
+        assertEquals(360, outputs.get(0).getValue());
+        assertEquals(MINUTES, outputs.get(0).getMetricUnit());
     }
 
     @Test
@@ -117,8 +122,7 @@ public class GetProcessingTimeUseCaseTest {
 
         when(repository.findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
                 input.getWorkflow(),
-                input.getLogisticCenterId(),
-                input.getCpt())).thenReturn(List.of());
+                input.getLogisticCenterId())).thenReturn(List.of());
 
         when(getConfigurationUseCase.execute(
                 new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
@@ -131,13 +135,11 @@ public class GetProcessingTimeUseCaseTest {
         assertThrows(EntityNotFoundException.class, () -> useCase.execute(input));
     }
 
-
     private GetProcessingTimeInput getGetProcessingTimeInput() {
         return GetProcessingTimeInput.builder()
                 .logisticCenterId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .cpt(A_DATE_UTC)
+                .cpt(List.of(A_DATE_UTC))
                 .build();
     }
-
 }

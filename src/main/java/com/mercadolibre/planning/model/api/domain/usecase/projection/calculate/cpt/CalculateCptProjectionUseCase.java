@@ -1,9 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +27,6 @@ import static java.util.stream.Stream.iterate;
 public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
-
-    private final GetProcessingTimeUseCase getProcessingTimeUseCase;
 
     public List<CptProjectionOutput> execute(final CptProjectionInput input) {
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
@@ -90,26 +86,13 @@ public class CalculateCptProjectionUseCase {
                 }
             }
 
-            final GetProcessingTimeOutput processingTime = getProcessingTimeUseCase.execute(
-                    GetProcessingTimeInput.builder()
-                            .workflow(input.getWorkflow())
-                            .logisticCenterId(input.getLogisticCenterId())
-                            .cpt(dateOut)
-                            .build()
-            );
-
             cptProjectionOutputs.add(
-                    new CptProjectionOutput(
-                            dateOut,
-                            projectedDate,
-                            remainingQuantity,
-                            new ProcessingTime(
-                                    processingTime.getValue(),
-                                    processingTime.getMetricUnit()
-                            ),
-                            cptByDeferralStatus.getOrDefault(dateOut, Boolean.FALSE)
-                    )
-            );
+                    CptProjectionOutput.builder()
+                            .date(dateOut)
+                            .projectedEndDate(projectedDate)
+                            .remainingQuantity(remainingQuantity)
+                            .isDeferred(cptByDeferralStatus.getOrDefault(dateOut, Boolean.FALSE))
+                            .build());
         });
 
         return cptProjectionOutputs;

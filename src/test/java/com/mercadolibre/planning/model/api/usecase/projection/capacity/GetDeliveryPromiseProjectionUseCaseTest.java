@@ -5,6 +5,8 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
@@ -15,8 +17,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,18 +32,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(MockitoExtension.class)
 public class GetDeliveryPromiseProjectionUseCaseTest {
 
     private static final ZonedDateTime CPT_1 = ZonedDateTime.now().plusHours(1);
     private static final ZonedDateTime CPT_2 = ZonedDateTime.now().plusHours(2);
+    private static final ZonedDateTime CPT_SATURDAY = parse("2021-07-03T18:00:00Z");
+    private static final ZonedDateTime CPT_SUNDAY = parse("2021-07-04T18:00:00Z");
     private static final ZonedDateTime NOW = ZonedDateTime.now(UTC);
 
     @InjectMocks
@@ -54,11 +63,16 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     @Mock
     private GetForecastUseCase getForecastUseCase;
 
-    @Test
-    public void testExecute() {
+    @Mock
+    private GetConfigurationCycleTimeUseCase getConfigurationUseCase;
+
+    @ParameterizedTest
+    @MethodSource("getDataMock")
+    public void testExecute(final String warehouseId,
+                            final List<CptProjectionOutput> projectionOutputs) {
         //GIVEN
         final GetDeliveryPromiseProjectionInput input = GetDeliveryPromiseProjectionInput.builder()
-                .warehouseId("ARBA01")
+                .warehouseId(warehouseId)
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .dateFrom(NOW)
                 .dateTo(NOW.plusHours(6))
@@ -92,13 +106,27 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateTo(input.getDateTo())
                 .planningUnits(Collections.emptyList())
                 .build())
-        ).thenReturn(mockProjectionResponse());
+        ).thenReturn(projectionOutputs);
+
+        when(getConfigurationUseCase.execute(input.getWarehouseId()))
+                .thenReturn(List.of(
+                        Configuration.builder()
+                                .value(360L)
+                                .metricUnit(MINUTES)
+                                .key("cycle_time_16_00")
+                                .build(),
+                        Configuration.builder()
+                                .value(360L)
+                                .metricUnit(MINUTES)
+                                .key("processing_time")
+                                .build()
+                ));
 
         //WHEN
         final List<CptProjectionOutput> response = useCase.execute(input);
 
         //THEN
-        assertEquals(mockProjectionResponse(), response);
+        assertEquals(projectionOutputs, response);
     }
 
     private List<ProcessingDistributionView> mockProcessingDist() {
@@ -122,13 +150,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
         );
     }
 
-    private List<CptProjectionOutput> mockProjectionResponse() {
-        return List.of(
-                new CptProjectionOutput(CPT_1, null, 0, new ProcessingTime(240L, MINUTES), false),
-                new CptProjectionOutput(CPT_2, null,100, new ProcessingTime(240L, MINUTES), false)
-        );
-    }
-
     private Map<ZonedDateTime, Integer> mockCapacityByHour() {
         final Map<ZonedDateTime, Integer> map = new TreeMap<>();
         map.put(NOW.truncatedTo(SECONDS), 130);
@@ -140,5 +161,49 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
         return map;
 
+    }
+
+    public static Stream<Arguments> getDataMock() {
+
+        return Stream.of(
+                Arguments.of(
+                        "ARBA01",
+                        List.of(
+                                CptProjectionOutput.builder()
+                                        .date(CPT_1)
+                                        .projectedEndDate(null)
+                                        .remainingQuantity(0)
+                                        .processingTime(new ProcessingTime(360L, MINUTES))
+                                        .isDeferred(false)
+                                        .build(),
+                                CptProjectionOutput.builder()
+                                        .date(CPT_2)
+                                        .projectedEndDate(null)
+                                        .remainingQuantity(0)
+                                        .processingTime(new ProcessingTime(360L, MINUTES))
+                                        .isDeferred(false)
+                                        .build()
+                        )
+                ),
+                Arguments.of(
+                        "MXJC01",
+                        List.of(
+                                CptProjectionOutput.builder()
+                                        .date(CPT_SATURDAY)
+                                        .projectedEndDate(null)
+                                        .remainingQuantity(0)
+                                        .processingTime(new ProcessingTime(360L, MINUTES))
+                                        .isDeferred(false)
+                                        .build(),
+                                CptProjectionOutput.builder()
+                                        .date(CPT_SUNDAY)
+                                        .projectedEndDate(null)
+                                        .remainingQuantity(0)
+                                        .processingTime(new ProcessingTime(360L, MINUTES))
+                                        .isDeferred(false)
+                                        .build()
+                        )
+                )
+        );
     }
 }

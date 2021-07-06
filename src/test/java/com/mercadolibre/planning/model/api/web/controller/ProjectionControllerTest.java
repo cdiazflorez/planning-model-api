@@ -7,6 +7,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
@@ -76,6 +79,9 @@ public class ProjectionControllerTest {
     @MockBean
     private GetDeliveryPromiseProjectionUseCase getdevPromiseProjection;
 
+    @MockBean
+    private GetProcessingTimeUseCase getProcessingTimeUseCase;
+
     @Test
     public void testGetCptProjection() throws Exception {
         // GIVEN
@@ -102,20 +108,30 @@ public class ProjectionControllerTest {
 
         when(calculateCptProjection.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(
-                                etd,
-                                projectedTime,
-                                100,
-                                new ProcessingTime(240L, MINUTES),
-                                false
-                        )
-                ));
+                        CptProjectionOutput.builder()
+                                .date(etd)
+                                .projectedEndDate(projectedTime)
+                                .remainingQuantity(100)
+                                .processingTime(new ProcessingTime(240L, MINUTES))
+                                .isDeferred(false)
+                                .build()));
 
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR,100)
                 ));
+
+        when(getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
+                .workflow(Workflow.FBM_WMS_OUTBOUND)
+                .logisticCenterId("ARBA01")
+                .cpt(List.of(etd))
+                .build()))
+                .thenReturn(List.of(GetProcessingTimeOutput.builder()
+                        .cpt(etd)
+                        .value(100L)
+                        .metricUnit(MINUTES)
+                        .build()));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -152,14 +168,13 @@ public class ProjectionControllerTest {
                 .backlog(emptyList())
                 .build()
         )).thenReturn(List.of(
-                new CptProjectionOutput(
-                        etd,
-                        projectedTime,
-                        100,
-                        new ProcessingTime(240L, MINUTES),
-                        false
-                )
-        ));
+                CptProjectionOutput.builder()
+                        .date(etd)
+                        .projectedEndDate(projectedTime)
+                        .remainingQuantity(100)
+                        .processingTime(new ProcessingTime(240L, MINUTES))
+                        .isDeferred(false)
+                        .build()));
 
         // WHEN
         final ResultActions result = mvc.perform(

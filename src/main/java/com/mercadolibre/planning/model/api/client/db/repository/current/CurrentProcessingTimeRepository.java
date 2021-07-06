@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface CurrentProcessingTimeRepository extends
@@ -18,12 +17,10 @@ public interface CurrentProcessingTimeRepository extends
             + "WHERE "
             + "   cpt.workflow = :workflow "
             + "   AND cpt.logisticCenterId = :warehouse_id "
-            + "   AND :date BETWEEN cpt.cptFrom AND cpt.cptTo "
             + "ORDER BY cpt.id desc")
     List<CurrentProcessingTime>
             findByWorkflowAndLogisticCenterIdAndIsActiveTrueAndDateBetweenCpt(
                     @Param("workflow") Workflow workflow,
-                    @Param("warehouse_id") String warehouseId,
-                    @Param("date") ZonedDateTime date
+                    @Param("warehouse_id") String warehouseId
     );
 }

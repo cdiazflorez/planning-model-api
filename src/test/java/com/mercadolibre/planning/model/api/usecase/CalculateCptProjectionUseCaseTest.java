@@ -1,8 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
@@ -14,7 +12,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -24,7 +21,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -34,8 +30,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CalculateCptProjectionUseCaseTest {
@@ -50,9 +44,6 @@ public class CalculateCptProjectionUseCaseTest {
 
     @InjectMocks
     private CalculateCptProjectionUseCase calculateCptProjection;
-
-    @Mock
-    private GetProcessingTimeUseCase getProcessingTimeUseCase;
 
     @Test
     @DisplayName("The projected end date is the same as the date out and all units were processed")
@@ -71,8 +62,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
-
-        mockProcessingTime();
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -104,8 +93,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .build();
 
-        mockProcessingTime();
-
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
@@ -136,8 +123,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
-
-        mockProcessingTime();
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -171,8 +156,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .capacity(mockCapacity(dateOut, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .build();
-
-        mockProcessingTime();
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -214,8 +197,6 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
-
-        mockProcessingTime();
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -278,8 +259,6 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .build();
 
-        mockProcessingTime();
-
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
@@ -314,8 +293,6 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .build();
-
-        mockProcessingTime();
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
@@ -379,8 +356,6 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .build();
 
-        mockProcessingTime();
-
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);
 
@@ -409,13 +384,5 @@ public class CalculateCptProjectionUseCaseTest {
             capacity.put(DATE_FROM_10.plusHours(i), values.get(i));
         }
         return capacity;
-    }
-
-    private void mockProcessingTime() {
-        when(getProcessingTimeUseCase.execute(any()))
-                .thenReturn(GetProcessingTimeOutput.builder()
-                        .value(240)
-                        .metricUnit(MINUTES)
-                        .build());
     }
 }

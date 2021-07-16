@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static java.time.ZoneOffset.UTC;
-import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -47,8 +46,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
     private static final ZonedDateTime CPT_1 = ZonedDateTime.now().plusHours(1);
     private static final ZonedDateTime CPT_2 = ZonedDateTime.now().plusHours(2);
-    private static final ZonedDateTime CPT_SATURDAY = parse("2021-07-03T18:00:00Z");
-    private static final ZonedDateTime CPT_SUNDAY = parse("2021-07-04T18:00:00Z");
     private static final ZonedDateTime NOW = ZonedDateTime.now(UTC);
 
     @InjectMocks
@@ -178,25 +175,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                                         .build(),
                                 CptProjectionOutput.builder()
                                         .date(CPT_2)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build()
-                        )
-                ),
-                Arguments.of(
-                        "MXJC01",
-                        List.of(
-                                CptProjectionOutput.builder()
-                                        .date(CPT_SATURDAY)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build(),
-                                CptProjectionOutput.builder()
-                                        .date(CPT_SUNDAY)
                                         .projectedEndDate(null)
                                         .remainingQuantity(0)
                                         .processingTime(new ProcessingTime(360L, MINUTES))

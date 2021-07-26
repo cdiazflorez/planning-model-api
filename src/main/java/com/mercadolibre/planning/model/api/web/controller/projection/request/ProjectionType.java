@@ -12,7 +12,8 @@ import static java.util.stream.Collectors.toMap;
 public enum ProjectionType {
 
     BACKLOG,
-    CPT;
+    CPT,
+    DEFERRAL;
 
     private static final Map<String, ProjectionType> LOOKUP = Arrays.stream(values()).collect(
             toMap(ProjectionType::toString, Function.identity())

@@ -6,7 +6,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
@@ -35,9 +37,11 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.ExcessiveImports")
@@ -61,7 +65,10 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     private GetForecastUseCase getForecastUseCase;
 
     @Mock
-    private GetConfigurationCycleTimeUseCase getConfigurationUseCase;
+    private GetConfigurationsUseCase getConfigurationUseCase;
+
+    @Mock
+    private GetCycleTimeUseCase getCycleTimeUseCase;
 
     @ParameterizedTest
     @MethodSource("getDataMock")
@@ -102,22 +109,29 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .planningUnits(Collections.emptyList())
+                .projectionType(DEFERRAL)
                 .build())
         ).thenReturn(projectionOutputs);
 
+        final Configuration cycleTimeConfig = Configuration.builder()
+                .value(360L)
+                .metricUnit(MINUTES)
+                .key("cycle_time_16_00")
+                .build();
+
         when(getConfigurationUseCase.execute(input.getWarehouseId()))
                 .thenReturn(List.of(
-                        Configuration.builder()
-                                .value(360L)
-                                .metricUnit(MINUTES)
-                                .key("cycle_time_16_00")
-                                .build(),
+                        cycleTimeConfig,
                         Configuration.builder()
                                 .value(360L)
                                 .metricUnit(MINUTES)
                                 .key("processing_time")
                                 .build()
                 ));
+
+        when(getCycleTimeUseCase.execute(any(GetCycleTimeInput.class)))
+                .thenReturn(cycleTimeConfig)
+                .thenReturn(cycleTimeConfig);
 
         //WHEN
         final List<CptProjectionOutput> response = useCase.execute(input);
@@ -161,7 +175,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     }
 
     public static Stream<Arguments> getDataMock() {
-
         return Stream.of(
                 Arguments.of(
                         "ARBA01",

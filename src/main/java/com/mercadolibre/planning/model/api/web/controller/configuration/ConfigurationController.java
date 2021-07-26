@@ -2,8 +2,8 @@ package com.mercadolibre.planning.model.api.web.controller.configuration;
 
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.configuration.request.CreateConfigurationRequest;
@@ -27,7 +27,7 @@ import javax.validation.Valid;
 @RequestMapping("/planning/model/configuration")
 public class ConfigurationController {
 
-    private final GetConfigurationUseCase getConfiguration;
+    private final GetConfigurationByKeyUseCase getConfiguration;
     private final CreateConfigurationUseCase createConfigurationUseCase;
     private final UpdateConfigurationUseCase updateConfigurationUseCase;
 

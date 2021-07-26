@@ -2,12 +2,13 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
@@ -27,13 +28,13 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
@@ -50,24 +51,47 @@ public class GetDeliveryPromiseProjectionUseCase implements
 
     private final GetForecastUseCase getForecastUseCase;
 
-    private final GetConfigurationCycleTimeUseCase getConfigurationUseCase;
+    private final GetCycleTimeUseCase getCycleTimeUseCase;
+
+    private final GetConfigurationsUseCase getConfigurationsUseCase;
 
     @Override
     public List<CptProjectionOutput> execute(final GetDeliveryPromiseProjectionInput input) {
+        final String logisticCenterId = input.getWarehouseId();
         final CptProjectionInput projectionInput = CptProjectionInput.builder()
                 .workflow(input.getWorkflow())
-                .logisticCenterId(input.getWarehouseId())
+                .logisticCenterId(logisticCenterId)
                 .capacity(getMaxCapacity(input))
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .planningUnits(emptyList())
+                .projectionType(DEFERRAL)
                 .build();
 
-        final List<Configuration> configurations = getConfigurationUseCase
-                .execute(input.getWarehouseId());
+        final List<CptProjectionOutput> projections = projectionUseCase.execute(projectionInput);
 
-        return getCycleTime(projectionUseCase.execute(projectionInput), configurations);
+        return addProcessingTimes(logisticCenterId, projections);
+    }
+
+    private List<CptProjectionOutput> addProcessingTimes(
+            final String warehouseId, final List<CptProjectionOutput> projections) {
+
+        final List<Configuration> configurations = getConfigurationsUseCase.execute(warehouseId);
+
+        projections.stream().forEach(projectionOutput -> {
+
+            final Configuration cycleTime = getCycleTimeUseCase.execute(
+                    GetCycleTimeInput.builder()
+                            .cptDate(projectionOutput.getDate())
+                            .configurations(configurations)
+                            .build());
+
+            projectionOutput.setProcessingTime(
+                    new ProcessingTime(cycleTime.getValue(), cycleTime.getMetricUnit()));
+        });
+
+        return projections;
     }
 
     private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {
@@ -122,41 +146,4 @@ public class GetDeliveryPromiseProjectionUseCase implements
                 .collect(toSet());
     }
 
-    private List<CptProjectionOutput> getCycleTime(final List<CptProjectionOutput> projections,
-                                                   final List<Configuration> configurations) {
-
-        projections.stream().forEach(projectionOutput -> {
-
-            final String cycleTimeKey = getCycleTimeKey(projectionOutput);
-
-            final Optional<Configuration> cycleTimeConfig = configurations.stream()
-                    .filter(configuration -> cycleTimeKey.equals(configuration.getKey()))
-                    .findFirst();
-
-            final long cycleTimeValue = cycleTimeConfig
-                    .map(Configuration::getValue)
-                    .orElseGet(() -> getProcessingTimeConfig(configurations).getValue());
-
-            final MetricUnit cycleTimeMetric = cycleTimeConfig
-                    .map(Configuration::getMetricUnit)
-                    .orElseGet(() -> getProcessingTimeConfig(configurations).getMetricUnit());
-
-            projectionOutput.setProcessingTime(
-                    new ProcessingTime(cycleTimeValue, cycleTimeMetric));
-        });
-
-        return projections;
-    }
-
-    private String getCycleTimeKey(final CptProjectionOutput cptProjectionOutput) {
-        final ZonedDateTime cptDate = cptProjectionOutput.getDate();
-        return String.format("cycle_time_%02d_%02d", cptDate.getHour(), cptDate.getMinute());
-    }
-
-    private Configuration getProcessingTimeConfig(final List<Configuration> configurations) {
-        return configurations.stream()
-                .filter(configuration -> "processing_time".equals(configuration.getKey()))
-                .findFirst()
-                .get();
-    }
 }

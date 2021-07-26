@@ -50,6 +50,6 @@ public class ProjectionTypeEditorTest {
 
         // THEN
         assertEquals("Value aaa is invalid, instead it should be one of"
-                + " [BACKLOG, CPT]", exception.getMessage());
+                + " [BACKLOG, CPT, DEFERRAL]", exception.getMessage());
     }
 }

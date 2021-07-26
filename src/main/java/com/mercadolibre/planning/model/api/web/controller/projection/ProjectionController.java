@@ -44,6 +44,7 @@ import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.getProcessingTime;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -63,7 +64,7 @@ public class ProjectionController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
-    private final GetProcessingTimeUseCase getProcessingTimeUseCase;
+    private final GetProcessingTimeUseCase getSboCycleTimesUseCase;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -181,10 +182,11 @@ public class ProjectionController {
                         .capacity(capacity)
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
+                        .projectionType(CPT)
                         .build());
 
         final List<GetProcessingTimeOutput> processingTimeOutputs =
-                getProcessingTimeUseCase.execute(
+                getSboCycleTimesUseCase.execute(
                         GetProcessingTimeInput.builder()
                                 .workflow(workflow)
                                 .logisticCenterId(warehouseId)
@@ -193,9 +195,7 @@ public class ProjectionController {
                                         .collect(toList()))
                                 .build());
 
-        return ResponseEntity.ok(getProcessingTime(
-                cptProjectionOutputs,
-                processingTimeOutputs));
+        return ResponseEntity.ok(getProcessingTime(cptProjectionOutputs, processingTimeOutputs));
     }
 
     private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {

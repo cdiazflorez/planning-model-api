@@ -3,8 +3,8 @@ package com.mercadolibre.planning.model.api.usecase.processingtime;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingTimeRepository;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
@@ -39,7 +39,7 @@ public class GetProcessingTimeUseCaseTest {
     private CurrentProcessingTimeRepository repository;
 
     @Mock
-    private GetConfigurationUseCase getConfigurationUseCase;
+    private GetConfigurationByKeyUseCase getConfigurationByKeyUseCase;
 
     @Test
     @DisplayName("When a deviation was loaded for processing time it must be returned")
@@ -62,7 +62,7 @@ public class GetProcessingTimeUseCaseTest {
                         .userId(USER_ID)
                         .build()));
 
-        when(getConfigurationUseCase.execute(
+        when(getConfigurationByKeyUseCase.execute(
                 new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
         ).thenReturn(Optional.of(Configuration.builder()
                 .logisticCenterId(WAREHOUSE_ID)
@@ -93,7 +93,7 @@ public class GetProcessingTimeUseCaseTest {
                 input.getWorkflow(),
                 input.getLogisticCenterId())).thenReturn(List.of());
 
-        when(getConfigurationUseCase.execute(
+        when(getConfigurationByKeyUseCase.execute(
                 new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
         ).thenReturn(Optional.of(Configuration.builder()
                         .logisticCenterId(WAREHOUSE_ID)
@@ -124,7 +124,7 @@ public class GetProcessingTimeUseCaseTest {
                 input.getWorkflow(),
                 input.getLogisticCenterId())).thenReturn(List.of());
 
-        when(getConfigurationUseCase.execute(
+        when(getConfigurationByKeyUseCase.execute(
                 new GetConfigurationInput(WAREHOUSE_ID, "processing_time"))
         ).thenThrow(new EntityNotFoundException(
                 "CONFIGURATION",

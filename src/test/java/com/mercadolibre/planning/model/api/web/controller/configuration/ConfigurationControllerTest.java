@@ -3,8 +3,8 @@ package com.mercadolibre.planning.model.api.web.controller.configuration;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.ConfigurationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ public class ConfigurationControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private GetConfigurationUseCase getConfiguration;
+    private GetConfigurationByKeyUseCase getConfiguration;
 
     @MockBean
     private CreateConfigurationUseCase createConfiguration;

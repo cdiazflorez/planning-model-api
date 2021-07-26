@@ -5,8 +5,8 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationUseCase;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +22,7 @@ public class GetProcessingTimeUseCase implements
         UseCase<GetProcessingTimeInput, List<GetProcessingTimeOutput>> {
 
     private final CurrentProcessingTimeRepository repository;
-    private final GetConfigurationUseCase getConfigurationUseCase;
+    private final GetConfigurationByKeyUseCase getConfigurationByKeyUseCase;
 
     private static final MetricUnit CT_DEFAULT_METRICS = MINUTES;
     private static final long CT_DEFAULT_VALUE = 240;
@@ -35,7 +35,7 @@ public class GetProcessingTimeUseCase implements
                         input.getWorkflow(),
                         input.getLogisticCenterId());
 
-        final Configuration configurationDefault = getConfigurationUseCase.execute(
+        final Configuration configurationDefault = getConfigurationByKeyUseCase.execute(
                 new GetConfigurationInput(
                         input.getLogisticCenterId(),
                         "processing_time"))

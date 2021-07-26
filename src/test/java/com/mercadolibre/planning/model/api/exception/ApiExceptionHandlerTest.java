@@ -57,7 +57,7 @@ public class ApiExceptionHandlerTest {
         final ErrorResponse expectedResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
-                        + " [BACKLOG, CPT]", "invalid_projection_type");
+                        + " [BACKLOG, CPT, DEFERRAL]", "invalid_projection_type");
 
         // WHEN
         final ResponseEntity<ErrorResponse> response =

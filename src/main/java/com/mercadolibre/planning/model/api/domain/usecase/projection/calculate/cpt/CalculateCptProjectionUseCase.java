@@ -41,7 +41,9 @@ public class CalculateCptProjectionUseCase {
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
-        return project(input.getCapacity(), unitsByDateOutAndDate, input);
+        final Map<ZonedDateTime, Integer> capacity = input.getCapacity();
+        adaptMinutesFirstCapacity(capacity);
+        return project(capacity, unitsByDateOutAndDate, input);
     }
 
     // TODO: Refactor of nested if statements
@@ -219,4 +221,15 @@ public class CalculateCptProjectionUseCase {
         final int remainingMinutes = HOUR_IN_MINUTES - LocalTime.now().getMinute();
         return backlogQty + (remainingMinutes * planningQty / HOUR_IN_MINUTES);
     }
+
+    private void adaptMinutesFirstCapacity(final Map<ZonedDateTime, Integer> capacity) {
+        final ZonedDateTime currentDate = ZonedDateTime.now();
+        final int remainingMinutes = HOUR_IN_MINUTES - currentDate.getMinute();
+        capacity.keySet().forEach(date -> {
+            if (currentDate.truncatedTo(HOURS).isEqual(date)) {
+                capacity.put(date, capacity.get(date) * remainingMinutes / HOUR_IN_MINUTES);
+            }
+        });
+    }
+
 }

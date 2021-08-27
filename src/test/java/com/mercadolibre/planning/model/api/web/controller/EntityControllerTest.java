@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
@@ -32,6 +33,7 @@ import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetPerformedProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
@@ -69,6 +71,9 @@ public class EntityControllerTest {
 
     @MockBean
     private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+
+    @MockBean
+    private GetPerformedProcessingUseCase getPerformedProcessingUseCase;
 
     @MockBean
     private SearchEntitiesUseCase searchEntitiesUseCase;
@@ -211,6 +216,31 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content()
                 .json(getResourceAsString("get_remaining_processing_response.json")));
+    }
+
+    @DisplayName("Get Performed_processing entity works ok")
+    @Test
+    public void testGetPerformedProcessingEntityOk() throws Exception {
+        // GIVEN
+        when(getPerformedProcessingUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockGetPerformedProcessingOutput());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "performed_processing")
+                        .param("warehouse_id", "ARBA01")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+                        .param("process_name", "waving")
+        );
+
+        // THEN
+        verifyZeroInteractions(getHeadcountEntityUseCase);
+        verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyZeroInteractions(getThroughputUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content()
+                        .json(getResourceAsString("get_performed_processing_response.json")));
     }
 
     @DisplayName("Search entities returns all entities")

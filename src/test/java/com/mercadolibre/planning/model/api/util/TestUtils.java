@@ -844,6 +844,29 @@ public final class TestUtils {
         );
     }
 
+    public static List<EntityOutput> mockGetPerformedProcessingOutput() {
+        return List.of(
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(UNITS)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(PERFORMED_PROCESSING)
+                        .value(1500)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build(),
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(UNITS)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(PERFORMED_PROCESSING)
+                        .value(1500)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build()
+        );
+    }
+
     public static Map<EntityType, Object> mockSearchEntitiesOutput() {
         return Map.of(
                 HEADCOUNT, mockHeadcountEntityOutput(),

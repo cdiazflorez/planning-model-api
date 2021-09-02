@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
@@ -30,11 +31,13 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.A
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetPerformedProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
@@ -68,6 +71,9 @@ public class SearchEntitiesUseCaseTest {
     @Mock
     private GetThroughputUseCase getThroughputUseCase;
 
+    @Mock
+    private GetPerformedProcessingUseCase getPerformedProcessingUseCase;
+
     @Test
     @DisplayName("Search all entities")
     public void testSearchAllEntitiesOk() {
@@ -75,7 +81,8 @@ public class SearchEntitiesUseCaseTest {
         final SearchEntitiesInput input = SearchEntitiesInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, REMAINING_PROCESSING, THROUGHPUT))
+                .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, REMAINING_PROCESSING, THROUGHPUT,
+                        PERFORMED_PROCESSING))
                 .source(FORECAST)
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC.plusHours(12))
@@ -125,6 +132,11 @@ public class SearchEntitiesUseCaseTest {
         when(getRemainingProcessingUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockGetRemainingProcessingOutput());
 
+        when(getEntitiesStrategy.getBy(PERFORMED_PROCESSING))
+                .thenReturn(Optional.of(getPerformedProcessingUseCase));
+        when(getPerformedProcessingUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(mockGetPerformedProcessingOutput());
+
         when(getEntitiesStrategy.getBy(THROUGHPUT))
                 .thenReturn(Optional.of(getThroughputUseCase));
         when(getThroughputUseCase.execute(any(GetEntityInput.class)))
@@ -136,7 +148,7 @@ public class SearchEntitiesUseCaseTest {
         // THEN
         assertNotNull(results);
         assertFalse(results.isEmpty());
-        assertEquals(4, results.size());
+        assertEquals(5, results.size());
         assertTrue(results.keySet().containsAll(Arrays.asList(EntityType.values().clone())));
     }
 }

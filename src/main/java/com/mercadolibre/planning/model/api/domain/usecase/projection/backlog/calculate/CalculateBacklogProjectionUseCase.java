@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ca
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutputValue;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.nextHour;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
@@ -31,29 +33,30 @@ public class CalculateBacklogProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    private final BacklogProjectionStrategy backlogProjectionStrategy;
+    private final BacklogProjectionStrategy projectionStrategy;
 
     public List<BacklogProjectionOutput> execute(final BacklogProjectionInput input) {
         final List<BacklogProjectionOutput> outputs = new ArrayList<>(estimateSize(input));
 
-        for (final ProcessName processName : input.getProcessNames()) {
-            final ProcessParams processParams = backlogProjectionStrategy.getBy(processName)
-                    .orElseThrow() //TODO: Add Exception
-                    .execute(input);
+        for (final ProcessName process : input.getProcessNames()) {
+            final Optional<BacklogProjectionUseCase> useCase = projectionStrategy.getBy(process);
+            if (useCase.isPresent()) {
+                final ProcessParams processParams = useCase.get().execute(input);
 
-            if (processParams.getProcessName().isConsiderPreviousBacklog()) {
-                for (final ProcessName previousProcess : processName.getPreviousProcesses()) {
-                    final List<BacklogProjectionOutputValue> previousBacklogs = outputs.stream()
-                            .filter(o -> o.getProcessName() == previousProcess)
-                            .findFirst()
-                            .get()
-                            .getValues();
+                if (processParams.getProcessName().isConsiderPreviousBacklog()) {
+                    for (final ProcessName previousProcess : process.getPreviousProcesses()) {
+                        final List<BacklogProjectionOutputValue> previousBacklogs = outputs
+                                .stream()
+                                .filter(o -> o.getProcessName() == previousProcess)
+                                .findFirst()
+                                .get()
+                                .getValues();
 
-                    processParams.setPreviousBacklogsByDate(adaptToMap(previousBacklogs));
+                        processParams.setPreviousBacklogsByDate(adaptToMap(previousBacklogs));
+                    }
                 }
+                outputs.add(calculateProjectionOutput(input, processParams));
             }
-
-            outputs.add(calculateProjectionOutput(input, processParams));
         }
 
         return outputs;

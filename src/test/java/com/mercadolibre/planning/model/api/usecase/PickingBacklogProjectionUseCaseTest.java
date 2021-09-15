@@ -1,6 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.PickingBacklogProjectionUseCase;
@@ -13,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -34,12 +38,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PickingBacklogProjectionUseCaseTest {
 
     @InjectMocks
     private PickingBacklogProjectionUseCase pickingBacklogProjection;
+
+    @Mock
+    private GetCapacityPerHourUseCase getCapacityUseCase;
 
     @Test
     public void createPickingProcessParams() {
@@ -50,6 +58,12 @@ public class PickingBacklogProjectionUseCaseTest {
                         new CurrentBacklog(PICKING, 3000),
                         new CurrentBacklog(PACKING, 1110)),
                 A_FIXED_DATE.plusHours(4));
+
+        when(getCapacityUseCase.execute(CapacityInput.fromEntityOutputs(input.getThroughputs())))
+                .thenReturn(getMinCapacity().stream()
+                        .map(entityOutput -> new CapacityOutput(
+                                entityOutput.getDate(), null, entityOutput.getValue()))
+                        .collect(toList()));
 
         // WHEN
         final ProcessParams processParams = pickingBacklogProjection.execute(input);

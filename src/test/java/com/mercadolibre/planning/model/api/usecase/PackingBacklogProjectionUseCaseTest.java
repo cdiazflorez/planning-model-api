@@ -21,12 +21,13 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.A_FIXED_DATE;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.assertCapacityByDate;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockBacklogProjectionInput;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockThroughputs;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockPlanningDistributionOutputs;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockThroughputEntity;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,12 +44,17 @@ public class PackingBacklogProjectionUseCaseTest {
     @Test
     public void createPackingProcessParams() {
         // GIVEN
-        final BacklogProjectionInput input = mockBacklogProjectionInput(
-                List.of(WAVING, PICKING, PACKING),
-                List.of(new CurrentBacklog(WAVING, 0),
+        final BacklogProjectionInput input = BacklogProjectionInput.builder()
+                .processNames(List.of(WAVING, PICKING, PACKING, PACKING_WALL))
+                .throughputs(mockThroughputs())
+                .currentBacklogs(List.of(
+                        new CurrentBacklog(WAVING, 0),
                         new CurrentBacklog(PICKING, 3000),
-                        new CurrentBacklog(PACKING, 1110)),
-                A_FIXED_DATE.plusHours(4));
+                        new CurrentBacklog(PACKING, 1110)))
+                .dateFrom(A_FIXED_DATE.minusMinutes(15))
+                .dateTo(A_FIXED_DATE.plusHours(4))
+                .planningUnits(mockPlanningDistributionOutputs())
+                .build();
 
         // WHEN
         final ProcessParams processParams = packingBacklogProjection.execute(input);
@@ -58,9 +64,12 @@ public class PackingBacklogProjectionUseCaseTest {
         assertEquals(1110, processParams.getCurrentBacklog());
         assertNull(processParams.getPreviousBacklogsByDate());
 
-        final List<EntityOutput> packingCapacity = mockThroughputs().stream()
-                .filter(e -> e.getProcessName() == PACKING).collect(toList());
-        assertCapacityByDate(processParams.getCapacityByDate(), packingCapacity);
+        assertEquals(650, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.minusHours(1)));
+        assertEquals(550, (int)processParams.getCapacityByDate().get(A_FIXED_DATE));
+        assertEquals(700, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(1)));
+        assertEquals(700, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(2)));
+        assertEquals(50, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(3)));
+        assertEquals(1500, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(4)));
 
         final List<EntityOutput> pickingCapacity = mockThroughputs().stream()
                 .filter(e -> e.getProcessName() == PICKING).collect(toList());
@@ -105,6 +114,24 @@ public class PackingBacklogProjectionUseCaseTest {
                 Arguments.of(WAVING, false),
                 Arguments.of(PICKING, false),
                 Arguments.of(PACKING, true)
+        );
+    }
+
+    private static List<EntityOutput> mockThroughputs() {
+        return List.of(
+                mockThroughputEntity(A_FIXED_DATE.minusHours(1), PICKING, 850),
+                mockThroughputEntity(A_FIXED_DATE.minusHours(1), PACKING, 650),
+                mockThroughputEntity(A_FIXED_DATE, PICKING, 800),
+                mockThroughputEntity(A_FIXED_DATE, PACKING, 550),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(1), PICKING, 600),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(1), PACKING, 700),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(2), PICKING, 600),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(2), PACKING, 700),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(3), PICKING, 0),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(3), PACKING, 50),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PICKING, 1000),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING, 910),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING_WALL, 590)
         );
     }
 }

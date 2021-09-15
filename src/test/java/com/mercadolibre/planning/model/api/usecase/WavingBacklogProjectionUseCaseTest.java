@@ -1,6 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
@@ -13,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -30,16 +34,21 @@ import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.getM
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockBacklogProjectionInput;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockPlanningDistributionOutputs;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class WavingBacklogProjectionUseCaseTest {
 
     @InjectMocks
     private WavingBacklogProjectionUseCase wavingBacklogProjection;
+
+    @Mock
+    private GetCapacityPerHourUseCase getCapacityUseCase;
 
     @Test
     public void createWavingProcessParams() {
@@ -50,6 +59,12 @@ public class WavingBacklogProjectionUseCaseTest {
                         new CurrentBacklog(PICKING, 3000),
                         new CurrentBacklog(PACKING, 1110)),
                 A_FIXED_DATE.plusHours(4));
+
+        when(getCapacityUseCase.execute(CapacityInput.fromEntityOutputs(input.getThroughputs())))
+                .thenReturn(getMinCapacity().stream()
+                        .map(entityOutput -> new CapacityOutput(
+                                entityOutput.getDate(), null, entityOutput.getValue()))
+                        .collect(toList()));
 
         // WHEN
         final ProcessParams processParams = wavingBacklogProjection.execute(input);
@@ -67,6 +82,12 @@ public class WavingBacklogProjectionUseCaseTest {
         // GIVEN
         final BacklogProjectionInput input = mockBacklogProjectionInput(
                 List.of(WAVING, PICKING, PACKING), emptyList(), A_FIXED_DATE.plusHours(4));
+
+        when(getCapacityUseCase.execute(CapacityInput.fromEntityOutputs(input.getThroughputs())))
+                .thenReturn(getMinCapacity().stream()
+                        .map(entityOutput -> new CapacityOutput(
+                                entityOutput.getDate(), null, entityOutput.getValue()))
+                        .collect(toList()));
 
         // WHEN
         final BadRequestException exception = assertThrows(

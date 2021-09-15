@@ -54,7 +54,7 @@ public class ProjectionTestsUtils {
         );
     }
 
-    private static EntityOutput mockThroughputEntity(final ZonedDateTime date,
+    public static EntityOutput mockThroughputEntity(final ZonedDateTime date,
                                                      final ProcessName processName,
                                                      final long quantity) {
         return EntityOutput.builder()

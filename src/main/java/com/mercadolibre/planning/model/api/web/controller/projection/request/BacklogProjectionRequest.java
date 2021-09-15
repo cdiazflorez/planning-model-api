@@ -15,9 +15,6 @@ public class BacklogProjectionRequest {
     private String warehouseId;
 
     @NotNull
-    private Long userId;
-
-    @NotNull
     private List<ProcessName> processName;
 
     @NotNull

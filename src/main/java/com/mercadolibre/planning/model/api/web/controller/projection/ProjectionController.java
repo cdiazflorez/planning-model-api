@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class ProjectionController {
     @Trace(dispatcher = true)
     public ResponseEntity<List<CptProjectionOutput>> getCptProjection(
             @PathVariable final Workflow workflow,
-            @RequestBody final CptProjectionRequest request) {
+           @Valid @RequestBody final CptProjectionRequest request) {
 
         return generateCptProjection(workflow, request);
     }
@@ -79,7 +80,7 @@ public class ProjectionController {
     @Trace(dispatcher = true)
     public ResponseEntity<List<CptProjectionOutput>> getDeliveryPromiseProjection(
             @PathVariable final Workflow workflow,
-            @RequestBody final CptProjectionRequest request) {
+            @Valid @RequestBody final CptProjectionRequest request) {
 
         return ResponseEntity.ok(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput
                 .builder()
@@ -96,7 +97,7 @@ public class ProjectionController {
     @Trace(dispatcher = true)
     public ResponseEntity<List<BacklogProjectionOutput>> getBacklogProjections(
             @PathVariable final Workflow workflow,
-            @RequestBody final BacklogProjectionRequest request) {
+            @Valid @RequestBody final BacklogProjectionRequest request) {
 
         final String warehouseId = request.getWarehouseId();
         final ZonedDateTime dateFrom = request.getDateFrom();

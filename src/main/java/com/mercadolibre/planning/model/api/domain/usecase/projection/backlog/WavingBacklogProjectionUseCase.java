@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import lombok.AllArgsConstructor;
@@ -18,6 +20,8 @@ import static java.util.stream.Collectors.toMap;
 @AllArgsConstructor
 public class WavingBacklogProjectionUseCase implements BacklogProjectionUseCase {
 
+    private final GetCapacityPerHourUseCase getCapacityUseCase;
+
     @Override
     public boolean supportsProcessName(final ProcessName processName) {
         return processName == WAVING;
@@ -25,16 +29,20 @@ public class WavingBacklogProjectionUseCase implements BacklogProjectionUseCase 
 
     @Override
     public ProcessParams execute(final BacklogProjectionInput input) {
+
         final Map<ZonedDateTime, Long> planningSalesByDate = input.getPlanningUnits().stream()
                 .collect(toMap(o -> ignoreMinutes(o.getDateIn()),
                         GetPlanningDistributionOutput::getTotal,
                         Long::sum));
 
-        final Map<ZonedDateTime, Integer> wavingCapacityByDate = input.getThroughputs().stream()
+        final Map<ZonedDateTime, Integer> wavingCapacityByDate = getCapacityUseCase.execute(
+                CapacityInput.fromEntityOutputs(input.getThroughputs()))
+                .stream()
                 .collect(toMap(
-                        EntityOutput::getDate,
+                        CapacityOutput::getDate,
                         entityOutput -> (int) entityOutput.getValue(),
-                        Math::min));
+                        (integer1, integer2) -> integer2)
+                );
 
         final long currentBacklog = input.getCurrentBacklogs().stream()
                 .filter(cb -> WAVING == cb.getProcessName())

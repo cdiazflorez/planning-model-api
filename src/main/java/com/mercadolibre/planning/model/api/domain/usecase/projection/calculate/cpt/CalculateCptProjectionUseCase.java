@@ -7,9 +7,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycle
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.iterate;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class CalculateCptProjectionUseCase {
 
@@ -42,7 +43,7 @@ public class CalculateCptProjectionUseCase {
                 getUnitsByDateOutAndDate(input);
 
         final Map<ZonedDateTime, Integer> capacity = input.getCapacity();
-        adaptMinutesFirstCapacity(capacity);
+        adaptMinutesFirstCapacity(capacity, input.getCurrentDate());
         return project(capacity, unitsByDateOutAndDate, input);
     }
 
@@ -165,6 +166,7 @@ public class CalculateCptProjectionUseCase {
         final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
         final TreeSet<ZonedDateTime> datesOut =
                 new TreeSet(planningUnitsByDateInByDateOut.keySet());
+
         datesOut.addAll(currentUnitsBacklogByDateOut.keySet());
 
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
@@ -174,9 +176,12 @@ public class CalculateCptProjectionUseCase {
             final Map<ZonedDateTime, Integer> unitsByDate = new TreeMap<>();
             final Integer backlogQty = currentUnitsBacklogByDateOut.getOrDefault(dateOut, 0);
 
-            unitsByDate.put(dateFrom, calculateExactBacklog(backlogQty,
+            unitsByDate.put(input.getCurrentDate(), calculateExactBacklog(backlogQty,
                     planningUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap())
-                            .getOrDefault(dateFrom, 0)));
+                            .getOrDefault(dateFrom, 0),
+                    input.getCurrentDate().getMinute()));
+
+            log.info("breakpoint");
 
             iterate(dateFrom.plusHours(1), date -> date.plusHours(1))
                     .limit(HOURS.between(dateFrom, input.getDateTo()))
@@ -217,19 +222,25 @@ public class CalculateCptProjectionUseCase {
         return date.plusMinutes((processedUnits * HOUR_IN_MINUTES) / capacity);
     }
 
-    private int calculateExactBacklog(final int backlogQty, final int planningQty) {
-        final int remainingMinutes = HOUR_IN_MINUTES - LocalTime.now().getMinute();
+    private int calculateExactBacklog(final int backlogQty,
+                                      final int planningQty,
+                                      final int nowMinutes) {
+        final int remainingMinutes = HOUR_IN_MINUTES - nowMinutes;
         return backlogQty + (remainingMinutes * planningQty / HOUR_IN_MINUTES);
     }
 
-    private void adaptMinutesFirstCapacity(final Map<ZonedDateTime, Integer> capacity) {
-        final ZonedDateTime currentDate = ZonedDateTime.now();
+    private void adaptMinutesFirstCapacity(final Map<ZonedDateTime, Integer> capacity,
+                                           final ZonedDateTime currentDate) {
         final int remainingMinutes = HOUR_IN_MINUTES - currentDate.getMinute();
         capacity.keySet().forEach(date -> {
-            if (currentDate.truncatedTo(HOURS).isEqual(date)) {
+            if (ignoreMinutes(currentDate).isEqual(date.withFixedOffsetZone())) {
                 capacity.put(date, capacity.get(date) * remainingMinutes / HOUR_IN_MINUTES);
             }
         });
+
+        final int currentDateCapacity = capacity.get(ignoreMinutes(currentDate));
+        capacity.remove(ignoreMinutes(currentDate));
+        capacity.put(currentDate, currentDateCapacity);
     }
 
 }

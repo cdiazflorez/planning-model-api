@@ -10,6 +10,7 @@ import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.iterate;
 
 public final class DateUtils {
@@ -17,7 +18,7 @@ public final class DateUtils {
     private static final int HOW_THEY_MANAGE_WEEKS_2021 = 1;
 
     public static ZonedDateTime getCurrentUtcDate() {
-        return ZonedDateTime.now(UTC);
+        return ZonedDateTime.now(UTC).truncatedTo(SECONDS);
     }
 
     public static ZonedDateTime fromDate(final Date date) {

@@ -29,4 +29,6 @@ public class CptProjectionInput {
     private List<Backlog> backlog;
 
     private ProjectionType projectionType;
+
+    private ZonedDateTime currentDate;
 }

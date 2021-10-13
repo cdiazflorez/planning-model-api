@@ -37,6 +37,7 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -110,6 +111,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateTo(input.getDateTo())
                 .planningUnits(Collections.emptyList())
                 .projectionType(DEFERRAL)
+                .currentDate(getCurrentUtcDate())
                 .build())
         ).thenReturn(projectionOutputs);
 

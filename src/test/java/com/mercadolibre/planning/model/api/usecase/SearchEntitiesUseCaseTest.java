@@ -74,6 +74,7 @@ public class SearchEntitiesUseCaseTest {
     @Mock
     private GetPerformedProcessingUseCase getPerformedProcessingUseCase;
 
+
     @Test
     @DisplayName("Search all entities")
     public void testSearchAllEntitiesOk() {
@@ -142,7 +143,6 @@ public class SearchEntitiesUseCaseTest {
         when(getThroughputUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockThroughputEntityOutput());
 
-        // WHEN
         final Map<EntityType, Object> results = searchEntitiesUseCase.execute(input);
 
         // THEN

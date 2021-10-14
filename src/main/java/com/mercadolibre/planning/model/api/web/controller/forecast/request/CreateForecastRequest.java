@@ -36,6 +36,10 @@ public class CreateForecastRequest {
     @Valid
     private List<PlanningDistributionRequest> planningDistributions;
 
+    @NotEmpty
+    @Valid
+    private List<ProcessingDistributionRequest> backlogLimits;
+
     public CreateForecastInput toCreateForecastInput(final Workflow workflow) {
         return CreateForecastInput.builder()
                 .workflow(workflow)
@@ -45,6 +49,7 @@ public class CreateForecastRequest {
                 .planningDistributions(planningDistributions)
                 .polyvalentProductivities(polyvalentProductivities)
                 .processingDistributions(processingDistributions)
+                .backlogLimits(backlogLimits)
                 .build();
     }
 }

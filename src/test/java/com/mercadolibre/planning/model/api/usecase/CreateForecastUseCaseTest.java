@@ -39,6 +39,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,6 +87,7 @@ public class CreateForecastUseCaseTest {
         verify(processingDistributionGateway).create(
                 getProcessingDists(savedForecast),
                 savedForecast.getId());
+
         verify(headcountDistributionGateway).create(
                 getHeadcountDists(savedForecast),
                 savedForecast.getId());

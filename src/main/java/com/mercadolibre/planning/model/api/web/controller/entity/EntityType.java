@@ -13,6 +13,7 @@ import java.util.function.Function;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+
 import static java.util.stream.Collectors.toMap;
 
 @AllArgsConstructor

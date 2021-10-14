@@ -15,7 +15,9 @@ public enum ProcessingType {
     PERFORMED_PROCESSING,
     REMAINING_PROCESSING,
     WORKERS,
-    MAX_CAPACITY;
+    MAX_CAPACITY,
+    BACKLOG_LOWER_LIMIT,
+    BACKLOG_UPPER_LIMIT;
 
     private static final Map<String, ProcessingType> LOOKUP = Arrays.stream(values()).collect(
             toMap(ProcessingType::toString, Function.identity())

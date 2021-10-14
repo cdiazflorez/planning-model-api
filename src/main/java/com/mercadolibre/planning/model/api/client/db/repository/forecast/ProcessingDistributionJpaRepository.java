@@ -30,6 +30,7 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
             final Query query = entityManager.createNativeQuery(getInsertQuery(page.size()));
 
             int paramIndex = 1;
+
             for (final Object object : page) {
                 final ProcessingDistribution entity = (ProcessingDistribution) object;
 

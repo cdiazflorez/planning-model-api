@@ -109,6 +109,53 @@
             ]
         }
     ],
+    "backlog_limits": [
+        {
+            "type": "backlog_lower_limit",
+            "quantity_metric_unit": "minutes",
+            "process_name": "waving",
+            "data": [
+                {
+                    "date": "2020-08-19T18:00Z",
+                    "quantity": 172
+                },
+                {
+                    "date": "2020-08-19T19:00Z",
+                    "quantity": 295
+                }
+            ]
+        },
+        {
+            "type": "backlog_upper_limit",
+            "quantity_metric_unit": "minutes",
+            "process_name": "picking",
+            "data": [
+                {
+                    "date": "2020-08-19T18:00Z",
+                    "quantity": 172
+                },
+                {
+                    "date": "2020-08-19T19:00Z",
+                    "quantity": 295
+                }
+            ]
+        },
+        {
+            "type": "backlog_lower_limit",
+            "quantity_metric_unit": "minutes",
+            "process_name": "packing",
+            "data": [
+                {
+                    "date": "2020-08-19T18:00Z",
+                    "quantity": 172
+                },
+                {
+                    "date": "2020-08-19T19:00Z",
+                    "quantity": 295
+                }
+            ]
+        }
+    ],
     "metadata": [
         {
             "key": "warehouse_id",

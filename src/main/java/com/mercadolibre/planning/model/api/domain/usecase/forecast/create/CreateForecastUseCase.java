@@ -48,6 +48,7 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
         saveHeadcountDistribution(input, forecast);
         saveHeadcountProductivity(input, forecast);
         savePlanningDistributions(input, forecast);
+        saveBackloglimit(input, forecast);
 
         return new CreateForecastOutput(forecast.getId());
     }
@@ -107,5 +108,18 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
                 .collect(toList());
 
         planningDistributionGateway.create(pDistributions, forecast.getId());
+    }
+
+    private  void saveBackloglimit(final CreateForecastInput input,
+                                   final Forecast forecast) {
+
+        final List<ProcessingDistribution> backlogList =
+                input.getBacklogLimits().stream()
+                        .map(e -> e.toProcessingDistributions(forecast))
+                        .flatMap(List::stream).distinct().collect(toList());
+
+        processingDistributionGateway.create(backlogList, forecast.getId());
+
+
     }
 }

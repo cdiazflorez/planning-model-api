@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Metad
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.PlanningDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.PolyvalentProductivityRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -23,4 +24,5 @@ public class CreateForecastInput {
     private List<PolyvalentProductivityRequest> polyvalentProductivities;
     private List<HeadcountProductivityRequest> headcountProductivities;
     private List<PlanningDistributionRequest> planningDistributions;
+    private List<ProcessingDistributionRequest> backlogLimits;
 }

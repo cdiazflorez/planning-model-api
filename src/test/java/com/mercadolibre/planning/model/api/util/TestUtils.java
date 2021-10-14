@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -61,6 +62,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
@@ -279,6 +282,7 @@ public final class TestUtils {
                 .planningDistributions(mockPlanningDistributions())
                 .processingDistributions(mockProcessingDistributions())
                 .polyvalentProductivities(mockPolyvalentProductivities())
+                .backlogLimits(mockBacklogLimits())
                 .metadata(mockMetadatas())
                 .build();
     }
@@ -759,12 +763,42 @@ public final class TestUtils {
         );
     }
 
+    private static List<ProcessingDistributionRequest> mockBacklogLimits() {
+        return List.of(
+                new ProcessingDistributionRequest(
+                        BACKLOG_LOWER_LIMIT,
+                        MINUTES,
+                        WAVING,
+                        List.of(
+                                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+                        )),
+                new ProcessingDistributionRequest(
+                        BACKLOG_UPPER_LIMIT,
+                        MINUTES,
+                        PICKING,
+                        List.of(
+                                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+                        )),
+                new ProcessingDistributionRequest(
+                        BACKLOG_LOWER_LIMIT,
+                        MINUTES,
+                        PACKING,
+                        List.of(
+                                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+                        ))
+        );
+    }
+
     private static List<PolyvalentProductivityRequest> mockPolyvalentProductivities() {
         return asList(
                 new PolyvalentProductivityRequest(PACKING, PERCENTAGE, 90, 1),
                 new PolyvalentProductivityRequest(PICKING, PERCENTAGE, 86, 1)
         );
     }
+
 
     private static List<PlanningDistributionRequest> mockPlanningDistributions() {
         return singletonList(

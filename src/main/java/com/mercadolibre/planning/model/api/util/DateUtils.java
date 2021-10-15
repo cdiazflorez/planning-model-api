@@ -10,7 +10,6 @@ import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.iterate;
 
 public final class DateUtils {
@@ -20,7 +19,7 @@ public final class DateUtils {
     private DateUtils() {}
 
     public static ZonedDateTime getCurrentUtcDate() {
-        return ZonedDateTime.now(UTC).truncatedTo(SECONDS);
+        return ZonedDateTime.now(UTC);
     }
 
     public static ZonedDateTime fromDate(final Date date) {

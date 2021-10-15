@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Set;
+import org.springframework.validation.BindException;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -27,6 +28,25 @@ public class ApiExceptionHandlerTest {
     public void setUp() {
         apiExceptionHandler = new ApiExceptionHandler();
         request = mock(HttpServletRequest.class);
+    }
+
+    @Test
+    @DisplayName("Handle BindException")
+    void handleBindException() {
+        // GIVEN
+        final BindException exception = new BindException("warehouseId", "string");
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                "missing_parameter"
+        );
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleBindException(
+                exception, request);
+
+        // THEN
+        assertErrorResponse(expectedResponse, response);
     }
 
     @Test

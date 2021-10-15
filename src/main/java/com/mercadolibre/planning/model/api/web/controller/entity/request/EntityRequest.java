@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.web.controller.entity.request;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,19 @@ public class EntityRequest {
         return GetEntityInput.builder()
                 .warehouseId(warehouseId)
                 .workflow(workflow)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
+                .source(source)
+                .processName(processName)
+                .simulations(simulations)
+                .build();
+    }
+
+    public GetEntityInput toGetEntityInput(final Workflow workflow, final EntityType entityType) {
+        return GetEntityInput.builder()
+                .warehouseId(warehouseId)
+                .workflow(workflow)
+                .entityType(entityType)
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .source(source)

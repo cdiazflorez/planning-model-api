@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
@@ -29,16 +29,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetPerformedProcessingUseCaseTest {
+public class SearchEntityUseCaseTest {
+
+    @InjectMocks
+    private SearchEntityUseCase useCase;
 
     @Mock
     private ProcessingDistributionRepository processingDistRepository;
 
     @Mock
     private GetForecastUseCase getForecastUseCase;
-
-    @InjectMocks
-    private GetPerformedProcessingUseCase useCase;
 
     @Test
     public void testGetPerformedProcessingOk() {
@@ -91,5 +91,58 @@ public class GetPerformedProcessingUseCaseTest {
         assertEquals(FBM_WMS_OUTBOUND, performedProcessing.getWorkflow());
         assertEquals(FORECAST, performedProcessing.getSource());
         assertEquals(ProcessingType.PERFORMED_PROCESSING, performedProcessing.getType());
+    }
+
+    @Test
+    public void testGetRemainingProcessingOk() {
+        // GIVEN
+        final GetEntityInput input = GetEntityInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .processName(List.of(WAVING))
+                .warehouseId(WAREHOUSE_ID)
+                .entityType(EntityType.REMAINING_PROCESSING)
+                .dateFrom(A_DATE_UTC)
+                .dateTo(A_DATE_UTC)
+                .build();
+
+        final List<Long> forecastIds = List.of(1L);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .build())).thenReturn(forecastIds);
+
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                Set.of(ProcessingType.REMAINING_PROCESSING.name()),
+                List.of(WAVING.name()),
+                A_DATE_UTC, A_DATE_UTC,
+                forecastIds)
+        ).thenReturn(List.of(new ProcessingDistributionViewImpl(
+                1,
+                Date.from(A_DATE_UTC.toInstant()),
+                WAVING,
+                308,
+                MINUTES,
+                ProcessingType.REMAINING_PROCESSING)));
+
+        // WHEN
+        final List<EntityOutput> outputs = useCase.execute(input);
+
+        // THEN
+        assertNotNull(outputs);
+        assertEquals(1, outputs.size());
+
+        final EntityOutput remainingProcessing = outputs.get(0);
+
+        assertNotNull(remainingProcessing);
+        assertEquals(308, remainingProcessing.getValue());
+        assertEquals(A_DATE_UTC.withFixedOffsetZone(), remainingProcessing.getDate());
+        assertEquals(WAVING, remainingProcessing.getProcessName());
+        assertEquals(MINUTES, remainingProcessing.getMetricUnit());
+        assertEquals(FBM_WMS_OUTBOUND, remainingProcessing.getWorkflow());
+        assertEquals(FORECAST, remainingProcessing.getSource());
+        assertEquals(ProcessingType.REMAINING_PROCESSING, remainingProcessing.getType());
     }
 }

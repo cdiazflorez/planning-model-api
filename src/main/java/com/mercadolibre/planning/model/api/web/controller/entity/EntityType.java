@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
@@ -23,7 +24,9 @@ public enum EntityType {
     PRODUCTIVITY(UNITS_PER_HOUR),
     THROUGHPUT(UNITS_PER_HOUR),
     REMAINING_PROCESSING(UNITS),
-    PERFORMED_PROCESSING(UNITS);
+    PERFORMED_PROCESSING(UNITS),
+    BACKLOG_LOWER_LIMIT(MINUTES),
+    BACKLOG_UPPER_LIMIT(MINUTES);
 
     private final MetricUnit metricUnit;
 

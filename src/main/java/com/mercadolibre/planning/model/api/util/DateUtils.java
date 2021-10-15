@@ -17,6 +17,8 @@ public final class DateUtils {
 
     private static final int HOW_THEY_MANAGE_WEEKS_2021 = 1;
 
+    private DateUtils() {}
+
     public static ZonedDateTime getCurrentUtcDate() {
         return ZonedDateTime.now(UTC).truncatedTo(SECONDS);
     }

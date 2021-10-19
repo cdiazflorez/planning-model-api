@@ -81,7 +81,12 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.GodClass"})
+@SuppressWarnings({
+        "PMD.ExcessiveImports",
+        "PMD.CouplingBetweenObjects",
+        "PMD.GodClass",
+        "PMD.ExcessivePublicCount"
+})
 public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
@@ -100,6 +105,8 @@ public final class TestUtils {
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
     public static final long USER_ID = 1234L;
+
+    private TestUtils() {}
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -896,6 +903,52 @@ public final class TestUtils {
                         .source(FORECAST)
                         .type(PERFORMED_PROCESSING)
                         .value(1500)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build()
+        );
+    }
+
+    public static List<EntityOutput> mockSearchBacklogLowerLimitOutput() {
+        return List.of(
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(MINUTES)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(BACKLOG_LOWER_LIMIT)
+                        .value(0)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build(),
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(MINUTES)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(BACKLOG_LOWER_LIMIT)
+                        .value(15)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build()
+        );
+    }
+
+    public static List<EntityOutput> mockSearchBacklogUpperLimitOutput() {
+        return List.of(
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(MINUTES)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(BACKLOG_UPPER_LIMIT)
+                        .value(360)
+                        .workflow(FBM_WMS_OUTBOUND)
+                        .build(),
+                EntityOutput.builder()
+                        .date(A_DATE_UTC)
+                        .metricUnit(MINUTES)
+                        .processName(WAVING)
+                        .source(FORECAST)
+                        .type(BACKLOG_UPPER_LIMIT)
+                        .value(180)
                         .workflow(FBM_WMS_OUTBOUND)
                         .build()
         );

@@ -19,12 +19,16 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
+import com.mercadolibre.planning.model.api.util.DateUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
@@ -37,12 +41,12 @@ import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.ExcessiveImports")
@@ -70,6 +74,22 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
     @Mock
     private GetCycleTimeUseCase getCycleTimeUseCase;
+
+    private MockedStatic<DateUtils> mockedDates;
+
+    @BeforeEach
+    public void setUp() {
+        mockedDates = mockStatic(DateUtils.class);
+        mockedDates.when(DateUtils::getCurrentUtcDate)
+                .thenReturn(ZonedDateTime.now(UTC).truncatedTo(SECONDS));
+        mockedDates.when(() -> DateUtils.ignoreMinutes(any())).thenCallRealMethod();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        mockedDates.close();
+    }
+
 
     @ParameterizedTest
     @MethodSource("getDataMock")
@@ -111,7 +131,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateTo(input.getDateTo())
                 .planningUnits(Collections.emptyList())
                 .projectionType(DEFERRAL)
-                .currentDate(getCurrentUtcDate())
                 .build())
         ).thenReturn(projectionOutputs);
 

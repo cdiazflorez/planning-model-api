@@ -11,7 +11,7 @@ import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toList;
 public class GetSuggestedWavesUseCase
         implements UseCase<GetSuggestedWavesInput, List<SuggestedWavesOutput>> {
 
-    private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+    private final SearchEntityUseCase searchEntityUseCase;
     private final GetForecastMetadataUseCase getForecastMetadataUseCase;
     private final GetForecastUseCase getForecastUseCase;
     private final PlanningDistributionRepository planningDistRepository;
@@ -122,7 +122,7 @@ public class GetSuggestedWavesUseCase
     }
 
     private long getRemainingProcessing(final GetSuggestedWavesInput input) {
-        return getRemainingProcessingUseCase.execute(GetEntityInput.builder()
+        return searchEntityUseCase.execute(GetEntityInput.builder()
                 .workflow(input.getWorkflow())
                 .processName(List.of(PICKING))
                 .warehouseId(input.getWarehouseId())

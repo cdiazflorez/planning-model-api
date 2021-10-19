@@ -44,7 +44,7 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -142,7 +142,7 @@ public class ProjectionControllerTest {
         // THEN
         verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
         verify(getThroughputUseCase).execute(any(GetEntityInput.class));
-        verifyNoInteractions(calculateBacklogProjection);
+        verifyZeroInteractions(calculateBacklogProjection);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
@@ -215,7 +215,7 @@ public class ProjectionControllerTest {
                         .content(getResourceAsString("get_backlog_projection_request.json")));
 
         // THEN
-        verifyNoInteractions(calculateCptProjection);
+        verifyZeroInteractions(calculateCptProjection);
         //TODO: Add asserts
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));

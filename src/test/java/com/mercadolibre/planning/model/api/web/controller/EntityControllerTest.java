@@ -5,10 +5,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityController;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +43,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -70,13 +69,10 @@ public class EntityControllerTest {
     private GetThroughputUseCase getThroughputUseCase;
 
     @MockBean
-    private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
-
-    @MockBean
-    private GetPerformedProcessingUseCase getPerformedProcessingUseCase;
-
-    @MockBean
     private SearchEntitiesUseCase searchEntitiesUseCase;
+
+    @MockBean
+    private SearchEntityUseCase searchEntityUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -98,8 +94,8 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
@@ -119,7 +115,7 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
         result.andExpect(status().isNotFound());
     }
 
@@ -142,8 +138,8 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        verifyZeroInteractions(getThroughputUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_productivity_response.json")));
     }
@@ -167,8 +163,8 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        verifyZeroInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_throughput_response.json")));
     }
@@ -188,9 +184,9 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputUseCase);
-        verifyZeroInteractions(getRemainingProcessingUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
+        verifyNoInteractions(searchEntityUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
     }
@@ -199,7 +195,7 @@ public class EntityControllerTest {
     @Test
     public void testGetRemainingProcessingEntityOk() throws Exception {
         // GIVEN
-        when(getRemainingProcessingUseCase.execute(any(GetEntityInput.class)))
+        when(searchEntityUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockGetRemainingProcessingOutput());
 
         // WHEN
@@ -210,9 +206,9 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content()
                 .json(getResourceAsString("get_remaining_processing_response.json")));
@@ -222,7 +218,7 @@ public class EntityControllerTest {
     @Test
     public void testGetPerformedProcessingEntityOk() throws Exception {
         // GIVEN
-        when(getPerformedProcessingUseCase.execute(any(GetEntityInput.class)))
+        when(searchEntityUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockGetPerformedProcessingOutput());
 
         // WHEN
@@ -235,9 +231,9 @@ public class EntityControllerTest {
         );
 
         // THEN
-        verifyZeroInteractions(getHeadcountEntityUseCase);
-        verifyZeroInteractions(getProductivityEntityUseCase);
-        verifyZeroInteractions(getThroughputUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content()
                         .json(getResourceAsString("get_performed_processing_response.json")));

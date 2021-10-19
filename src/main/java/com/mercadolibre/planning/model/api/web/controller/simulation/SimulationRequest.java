@@ -16,7 +16,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.stream.Collectors.toList;
@@ -60,7 +59,6 @@ public class SimulationRequest {
                 .backlog(backlog.stream()
                         .map(QuantityByDate::toBacklog)
                         .collect(toList()))
-                .currentDate(getCurrentUtcDate())
                 .build();
     }
 

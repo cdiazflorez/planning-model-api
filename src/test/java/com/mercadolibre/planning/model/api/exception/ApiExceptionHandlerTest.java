@@ -37,7 +37,7 @@ public class ApiExceptionHandlerTest {
                 HttpStatus.BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
                         + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
-                        + " PERFORMED_PROCESSING]",
+                        + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT]",
                 "invalid_entity_type");
 
         // WHEN

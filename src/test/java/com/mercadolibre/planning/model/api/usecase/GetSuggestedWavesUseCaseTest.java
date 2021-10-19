@@ -7,7 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
@@ -56,7 +56,7 @@ public class GetSuggestedWavesUseCaseTest {
     private GetForecastMetadataUseCase getForecastMetadataUseCase;
 
     @Mock
-    private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
+    private SearchEntityUseCase searchEntityUseCase;
 
     @Mock
     private GetForecastUseCase getForecastUseCase;
@@ -107,7 +107,7 @@ public class GetSuggestedWavesUseCaseTest {
                 input.isApplyDeviation())
         ).thenReturn(new SuggestedWavePlanningDistributionViewImpl(nextHourSales));
 
-        when(getRemainingProcessingUseCase.execute(
+        when(searchEntityUseCase.execute(
                 GetEntityInput.builder()
                         .workflow(input.getWorkflow())
                         .processName(List.of(PICKING))
@@ -211,7 +211,7 @@ public class GetSuggestedWavesUseCaseTest {
                 forecastIds)
         ).thenReturn(List.of());
 
-        when(getRemainingProcessingUseCase.execute(
+        when(searchEntityUseCase.execute(
                 GetEntityInput.builder()
                         .workflow(input.getWorkflow())
                         .processName(List.of(PICKING))

@@ -6,10 +6,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +34,11 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetPerforme
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSearchBacklogLowerLimitOutput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSearchBacklogUpperLimitOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.BACKLOG_LOWER_LIMIT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.BACKLOG_UPPER_LIMIT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
@@ -66,13 +69,10 @@ public class SearchEntitiesUseCaseTest {
     private GetProductivityEntityUseCase getProductivityEntityUseCase;
 
     @Mock
-    private GetRemainingProcessingUseCase getRemainingProcessingUseCase;
-
-    @Mock
     private GetThroughputUseCase getThroughputUseCase;
 
     @Mock
-    private GetPerformedProcessingUseCase getPerformedProcessingUseCase;
+    private SearchEntityUseCase searchEntityUseCase;
 
 
     @Test
@@ -83,7 +83,7 @@ public class SearchEntitiesUseCaseTest {
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
                 .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, REMAINING_PROCESSING, THROUGHPUT,
-                        PERFORMED_PROCESSING))
+                        PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT))
                 .source(FORECAST)
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC.plusHours(12))
@@ -129,13 +129,13 @@ public class SearchEntitiesUseCaseTest {
                 .thenReturn(mockProductivityEntityOutput());
 
         when(getEntitiesStrategy.getBy(REMAINING_PROCESSING))
-                .thenReturn(Optional.of(getRemainingProcessingUseCase));
-        when(getRemainingProcessingUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(Optional.of(searchEntityUseCase));
+        when(searchEntityUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockGetRemainingProcessingOutput());
 
         when(getEntitiesStrategy.getBy(PERFORMED_PROCESSING))
-                .thenReturn(Optional.of(getPerformedProcessingUseCase));
-        when(getPerformedProcessingUseCase.execute(any(GetEntityInput.class)))
+                .thenReturn(Optional.of(searchEntityUseCase));
+        when(searchEntityUseCase.execute(getMockInput(PERFORMED_PROCESSING)))
                 .thenReturn(mockGetPerformedProcessingOutput());
 
         when(getEntitiesStrategy.getBy(THROUGHPUT))
@@ -143,12 +143,35 @@ public class SearchEntitiesUseCaseTest {
         when(getThroughputUseCase.execute(any(GetEntityInput.class)))
                 .thenReturn(mockThroughputEntityOutput());
 
+        when(getEntitiesStrategy.getBy(BACKLOG_LOWER_LIMIT))
+                .thenReturn(Optional.of(searchEntityUseCase));
+        when(searchEntityUseCase.execute(getMockInput(BACKLOG_LOWER_LIMIT)))
+                .thenReturn(mockSearchBacklogLowerLimitOutput());
+
+        when(getEntitiesStrategy.getBy(BACKLOG_UPPER_LIMIT))
+                .thenReturn(Optional.of(searchEntityUseCase));
+        when(searchEntityUseCase.execute(getMockInput(BACKLOG_UPPER_LIMIT)))
+                .thenReturn(mockSearchBacklogUpperLimitOutput());
+
         final Map<EntityType, Object> results = searchEntitiesUseCase.execute(input);
 
         // THEN
         assertNotNull(results);
         assertFalse(results.isEmpty());
-        assertEquals(5, results.size());
+        assertEquals(7, results.size());
         assertTrue(results.keySet().containsAll(Arrays.asList(EntityType.values().clone())));
     }
+
+    private GetEntityInput getMockInput(final EntityType entityType) {
+        return GetEntityInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .source(FORECAST)
+                .dateFrom(A_DATE_UTC)
+                .dateTo(A_DATE_UTC.plusHours(12))
+                .processName(List.of(PICKING, PACKING))
+                .entityType(entityType)
+                .build();
+    }
+
 }

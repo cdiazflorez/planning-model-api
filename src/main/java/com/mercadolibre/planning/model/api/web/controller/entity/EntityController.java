@@ -9,11 +9,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.performedprocessing.get.GetPerformedProcessingUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.remainingprocessing.get.GetRemainingProcessingUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
@@ -51,12 +50,11 @@ import static org.springframework.http.HttpStatus.OK;
 @RequestMapping("/planning/model/workflows/{workflow}/entities")
 public class EntityController {
 
+    private final SearchEntitiesUseCase searchEntitiesUseCase;
     private final GetHeadcountEntityUseCase getHeadcountUseCase;
     private final GetProductivityEntityUseCase getProductivityUseCase;
     private final GetThroughputUseCase getThroughputUseCase;
-    private final GetRemainingProcessingUseCase getRemainingProcessingUseCase;
-    private final GetPerformedProcessingUseCase getPerformedProcessingUseCase;
-    private final SearchEntitiesUseCase searchEntitiesUseCase;
+    private final SearchEntityUseCase searchEntityUseCase;
 
     @GetMapping("/headcount")
     @Trace(dispatcher = true)
@@ -94,8 +92,10 @@ public class EntityController {
             @PathVariable final Workflow workflow,
             @Valid final EntityRequest request) {
 
-        final GetEntityInput input = request.toGetEntityInput(workflow);
-        return ResponseEntity.status(OK).body(getPerformedProcessingUseCase.execute(input));
+        final GetEntityInput input =
+                request.toGetEntityInput(workflow, EntityType.PERFORMED_PROCESSING);
+
+        return ResponseEntity.status(OK).body(searchEntityUseCase.execute(input));
     }
 
     @PostMapping("/search")
@@ -142,9 +142,11 @@ public class EntityController {
             @PathVariable final Workflow workflow,
             @RequestBody @Valid final EntityRequest request) {
 
-        final GetEntityInput input = request.toGetEntityInput(workflow);
+        final GetEntityInput input =
+                request.toGetEntityInput(workflow, EntityType.REMAINING_PROCESSING);
+
         return ResponseEntity.status(OK)
-                .body(getRemainingProcessingUseCase.execute(input));
+                .body(searchEntityUseCase.execute(input));
     }
 
     @InitBinder

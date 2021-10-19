@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.getProcessingTime;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -186,7 +185,6 @@ public class ProjectionController {
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
                         .projectionType(CPT)
-                        .currentDate(getCurrentUtcDate())
                         .build());
 
         final List<GetProcessingTimeOutput> processingTimeOutputs =

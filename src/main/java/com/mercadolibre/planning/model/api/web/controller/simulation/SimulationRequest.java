@@ -2,12 +2,14 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -48,7 +50,8 @@ public class SimulationRequest {
 
     public CptProjectionInput toProjectionInput(final Map<ZonedDateTime, Integer> capacity,
                                                 final List<GetPlanningDistributionOutput> units,
-                                                final Workflow workflow) {
+                                                final Workflow workflow,
+                                                final Map<ZonedDateTime, Configuration> dateOutCt) {
         return CptProjectionInput.builder()
                 .workflow(workflow)
                 .logisticCenterId(warehouseId)
@@ -59,6 +62,7 @@ public class SimulationRequest {
                 .backlog(backlog.stream()
                         .map(QuantityByDate::toBacklog)
                         .collect(toList()))
+                .configurationByDateOut(dateOutCt)
                 .build();
     }
 

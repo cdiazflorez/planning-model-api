@@ -1,13 +1,12 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,11 +15,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,8 +39,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CalculateCptProjectionUseCaseTest {
@@ -53,28 +50,49 @@ public class CalculateCptProjectionUseCaseTest {
     private static final ZonedDateTime DATE_OUT_13 = parse("2020-01-01T13:00:00Z");
     private static final ZonedDateTime DATE_TO_14 = parse("2020-01-01T14:00:00Z");
     private static final ZonedDateTime DATE_OUT_16 = parse("2020-01-01T16:00:00Z");
+    private static final Map<ZonedDateTime, Configuration> CT_BY_DATE_OUT = new HashMap<>();
 
     @InjectMocks
     private CalculateCptProjectionUseCase calculateCptProjection;
 
-    @Mock
-    private GetConfigurationsUseCase getConfigurationsUseCase;
-
-    @Mock
-    private GetCycleTimeUseCase getCycleTimeUseCase;
-
     @BeforeEach
     public void setUp() {
-        when(getConfigurationsUseCase.execute(WAREHOUSE_ID))
-                .thenReturn(singletonList(new Configuration(
-                        WAREHOUSE_ID, "processing_time", 240, MINUTES, null, null)));
+
+        final Configuration configuration = new Configuration(
+                WAREHOUSE_ID,
+                "processing_time",
+                240,
+                MINUTES,
+                null,
+                null);
+
+        CT_BY_DATE_OUT.put(DATE_OUT_12, new Configuration(
+                WAREHOUSE_ID,
+                "processing_time",
+                60,
+                MINUTES,
+                null,
+                null));
+
+        CT_BY_DATE_OUT.put(DATE_OUT_13, configuration);
+
+        CT_BY_DATE_OUT.put(DATE_OUT_16, configuration);
+
+        CT_BY_DATE_OUT.put(DATE_OUT_12_30, configuration);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        CT_BY_DATE_OUT.clear();
     }
 
     @Test
     @DisplayName("The projected end date is the same as the date out and all units were processed")
     public void testSameProjectedEndDateAndDateOut() {
+
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
+
         final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
                 .dateOut(DATE_OUT_12)
                 .dateIn(DATE_IN_11)
@@ -88,6 +106,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .logisticCenterId(WAREHOUSE_ID)
                 .backlog(backlogs)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -120,6 +139,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -153,6 +173,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -188,6 +209,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -231,6 +253,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -262,6 +285,7 @@ public class CalculateCptProjectionUseCaseTest {
                         builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(0).build()))
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -296,6 +320,7 @@ public class CalculateCptProjectionUseCaseTest {
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -333,6 +358,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -397,6 +423,7 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
 
         // WHEN
@@ -433,14 +460,8 @@ public class CalculateCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(DEFERRAL)
+                .configurationByDateOut(CT_BY_DATE_OUT)
                 .build();
-
-        when(getCycleTimeUseCase.execute(any())).thenReturn(Configuration.builder()
-                .key("cycle_time_12_00")
-                .logisticCenterId(WAREHOUSE_ID)
-                .metricUnit(MINUTES)
-                .value(60)
-                .build());
 
         // WHEN
         final List<CptProjectionOutput> projections = calculateCptProjection.execute(input);

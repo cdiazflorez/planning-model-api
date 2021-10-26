@@ -5,6 +5,8 @@ import lombok.Value;
 
 @Value
 public class ProcessingTime {
+
     private long value;
+
     private MetricUnit unitMetric;
 }

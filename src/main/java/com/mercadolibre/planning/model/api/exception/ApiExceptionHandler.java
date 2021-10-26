@@ -25,13 +25,13 @@ public class ApiExceptionHandler {
                                                              final HttpServletRequest request) {
 
         final ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 exception.getMessage(),
                 "missing_parameter"
         );
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error(exception.getMessage(), exception);
+        log.error("bind_error", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 

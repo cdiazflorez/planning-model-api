@@ -1,17 +1,17 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
-import static com.mercadolibre.planning.model.api.util.EntitiesUtil.getProcessingTime;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
@@ -66,7 +65,7 @@ public class ProjectionController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final GetPlanningDistributionUseCase getPlanningUseCase;
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
-    private final GetProcessingTimeUseCase getSboCycleTimesUseCase;
+    private final GetCycleTimeUseCase getCycleTimeUseCase;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -185,24 +184,25 @@ public class ProjectionController {
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
                         .projectionType(CPT)
+                        .configurationByDateOut(getCtByDateOut(warehouseId, planningUnits))
                         .build());
 
-        final List<GetProcessingTimeOutput> processingTimeOutputs =
-                getSboCycleTimesUseCase.execute(
-                        GetProcessingTimeInput.builder()
-                                .workflow(workflow)
-                                .logisticCenterId(warehouseId)
-                                .cpt(cptProjectionOutputs.stream()
-                                        .map(CptProjectionOutput::getDate)
-                                        .collect(toList()))
-                                .build());
-
-        return ResponseEntity.ok(getProcessingTime(cptProjectionOutputs, processingTimeOutputs));
+        return ResponseEntity.ok(cptProjectionOutputs);
     }
 
     private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {
         return backlogs == null
                 ? emptyList()
                 : backlogs.stream().map(QuantityByDate::toBacklog).collect(toList());
+    }
+
+    private Map<ZonedDateTime, Configuration> getCtByDateOut(
+            final String warehouseId,
+            final List<GetPlanningDistributionOutput> planningUnits) {
+
+        return getCycleTimeUseCase.execute(
+                new GetCycleTimeInput(warehouseId, planningUnits.stream()
+                        .map(GetPlanningDistributionOutput::getDateOut)
+                        .collect(toList())));
     }
 }

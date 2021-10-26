@@ -4,6 +4,8 @@ import java.util.Date;
 
 public interface PlanningDistributionView {
 
+    long getForecastId();
+
     Date getDateIn();
 
     Date getDateOut();

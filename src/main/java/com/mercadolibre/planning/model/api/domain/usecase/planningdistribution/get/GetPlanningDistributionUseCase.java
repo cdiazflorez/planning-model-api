@@ -7,7 +7,12 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanning
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,6 +24,7 @@ import java.util.function.Function;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -41,10 +47,10 @@ public class GetPlanningDistributionUseCase
                             input.getDateOutFrom(),
                             input.getDateOutTo())
                         .stream()
-                        .collect(
-                            toMap(d -> d.getDateOut().toInstant(), Function.identity()));
+                        .collect(toMap(d -> d.getDateOut().toInstant(), Function.identity()));
 
-        final List<PlanningDistributionView> planningDistribution = getPlanningDistributions(input);
+        final List<PlanningDistributionView> planningDistribution = removeDuplicatedData(
+                getPlanningDistributions(input));
 
         return planningDistribution.stream()
                 .map(pd -> GetPlanningDistributionOutput.builder()
@@ -56,6 +62,7 @@ public class GetPlanningDistributionUseCase
                                 pd.getDateOut().toInstant())
                         )
                         .build())
+                .sorted(comparing(GetPlanningDistributionOutput::getDateOut))
                 .collect(toList());
     }
 
@@ -134,5 +141,27 @@ public class GetPlanningDistributionUseCase
         current.setQuantity(value);
         map.replace(key, current);
         return previous;
+    }
+
+    // TODO Eliminar este metodo cuando dejemos guardar el forecast por semana
+    private List<PlanningDistributionView> removeDuplicatedData(
+            final List<PlanningDistributionView> duplicatedPlanning) {
+
+        final Map<Pair<Date, Date>, Long> dateByForecastId = new HashMap<>();
+        final List<PlanningDistributionView> planning = new ArrayList<>();
+
+        duplicatedPlanning.forEach(p -> {
+            Pair<Date, Date> dateOutDateIn = new ImmutablePair<>(p.getDateOut(), p.getDateIn());
+
+            if (dateByForecastId.containsKey(dateOutDateIn)) {
+                if (p.getForecastId() == dateByForecastId.get(dateOutDateIn)) {
+                    planning.add(p);
+                }
+            } else {
+                dateByForecastId.put(dateOutDateIn, p.getForecastId());
+                planning.add(p);
+            }
+        });
+        return planning;
     }
 }

@@ -81,11 +81,11 @@ public class GetPlanningDistributionUseCaseTest {
         assertEquals(1000, output1.getTotal());
         assertEquals(UNITS, output1.getMetricUnit());
 
-        final GetPlanningDistributionOutput output2 = output.get(1);
-        assertEquals(A_DATE_UTC.toInstant(), output2.getDateIn().toInstant());
-        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output2.getDateOut().toInstant());
-        assertEquals(1200, output2.getTotal());
-        assertEquals(UNITS, output2.getMetricUnit());
+        final GetPlanningDistributionOutput output3 = output.get(2);
+        assertEquals(A_DATE_UTC.toInstant(), output3.getDateIn().toInstant());
+        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output3.getDateOut().toInstant());
+        assertEquals(1200, output3.getTotal());
+        assertEquals(UNITS, output3.getMetricUnit());
     }
 
     @Test
@@ -125,9 +125,15 @@ public class GetPlanningDistributionUseCaseTest {
 
         final GetPlanningDistributionOutput output2 = output.get(1);
         assertEquals(A_DATE_UTC.toInstant(), output2.getDateIn().toInstant());
-        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output2.getDateOut().toInstant());
-        assertEquals(1200, output2.getTotal());
+        assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output2.getDateOut().toInstant());
+        assertEquals(300, output2.getTotal());
         assertEquals(UNITS, output2.getMetricUnit());
+
+        final GetPlanningDistributionOutput output3 = output.get(2);
+        assertEquals(A_DATE_UTC.toInstant(), output3.getDateIn().toInstant());
+        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output3.getDateOut().toInstant());
+        assertEquals(1200, output3.getTotal());
+        assertEquals(UNITS, output3.getMetricUnit());
     }
 
     @Test
@@ -167,11 +173,11 @@ public class GetPlanningDistributionUseCaseTest {
         assertEquals(1000, output1.getTotal());
         assertEquals(UNITS, output1.getMetricUnit());
 
-        final GetPlanningDistributionOutput output2 = output.get(1);
-        assertEquals(A_DATE_UTC.toInstant(), output2.getDateIn().toInstant());
-        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output2.getDateOut().toInstant());
-        assertEquals(1200, output2.getTotal());
-        assertEquals(UNITS, output2.getMetricUnit());
+        final GetPlanningDistributionOutput output3 = output.get(2);
+        assertEquals(A_DATE_UTC.toInstant(), output3.getDateIn().toInstant());
+        assertEquals(A_DATE_UTC.plusDays(2).toInstant(), output3.getDateOut().toInstant());
+        assertEquals(1200, output3.getTotal());
+        assertEquals(UNITS, output3.getMetricUnit());
     }
 
     @Test

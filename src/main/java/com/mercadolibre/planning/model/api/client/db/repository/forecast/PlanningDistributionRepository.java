@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public interface PlanningDistributionRepository extends CrudRepository<PlanningDistribution, Long> {
 
-    @Query(value = "SELECT date_in as dateIn, date_out as dateOut, "
+    @Query(value = "SELECT p.forecast_id as forecastId, date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM planning_distribution p "
             + "LEFT JOIN current_forecast_deviation cfd ON "
@@ -22,7 +22,8 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   AND cfd.is_active = true "
             + "   AND p.date_in BETWEEN cfd.date_from AND cfd.date_to "
             + "WHERE p.date_out BETWEEN :date_out_from AND :date_out_to "
-            + "   AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
+            + "   AND p.forecast_id in (:forecast_ids) ORDER BY p.forecast_id DESC ",
+            nativeQuery = true)
     List<PlanningDistributionView> findByWarehouseIdWorkflowAndDateOutInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("date_out_from") ZonedDateTime dateOutFrom,
@@ -30,7 +31,7 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             @Param("forecast_ids") List<Long> forecastIds,
             @Param("apply_deviation") boolean applyDeviation);
 
-    @Query(value = "SELECT date_in as dateIn, date_out as dateOut, "
+    @Query(value = "SELECT p.forecast_id as forecastId, date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM planning_distribution p "
             + "LEFT JOIN current_forecast_deviation cfd ON "
@@ -40,7 +41,8 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   AND p.date_in BETWEEN cfd.date_from AND cfd.date_to "
             + "WHERE p.date_out BETWEEN :date_out_from AND :date_out_to "
             + "   AND p.date_in BETWEEN :date_in_from AND :date_in_to "
-            + "   AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
+            + "   AND p.forecast_id in (:forecast_ids) ORDER BY p.forecast_id DESC",
+            nativeQuery = true)
     List<PlanningDistributionView> findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
             @Param("warehouse_id") String warehouseId,
             @Param("date_out_from") ZonedDateTime dateOutFrom,
@@ -50,7 +52,7 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             @Param("forecast_ids") List<Long> forecastIds,
             @Param("apply_deviation") boolean applyDeviation);
 
-    @Query(value = "SELECT date_in as dateIn, date_out as dateOut, "
+    @Query(value = "SELECT p.forecast_id as forecastId, date_in as dateIn, date_out as dateOut, "
             + "   round(quantity + COALESCE(quantity * cfd.value, 0)) as quantity "
             + "FROM planning_distribution p "
             + "LEFT JOIN current_forecast_deviation cfd ON "
@@ -60,7 +62,8 @@ public interface PlanningDistributionRepository extends CrudRepository<PlanningD
             + "   AND p.date_in BETWEEN cfd.date_from AND cfd.date_to "
             + "WHERE p.date_out BETWEEN :date_out_from AND :date_out_to "
             + "   AND p.date_in <= :date_in_to "
-            + "   AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
+            + "   AND p.forecast_id in (:forecast_ids) ORDER BY p.forecast_id DESC",
+            nativeQuery = true)
     List<PlanningDistributionView> findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
             @Param("warehouse_id") String warehouseId,
             @Param("date_out_from") ZonedDateTime dateOutFrom,

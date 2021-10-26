@@ -9,6 +9,8 @@ import java.util.Date;
 @AllArgsConstructor
 public class PlanningDistributionViewImpl implements PlanningDistributionView {
 
+    private long forecastId;
+
     private Date dateIn;
 
     private Date dateOut;
@@ -16,6 +18,11 @@ public class PlanningDistributionViewImpl implements PlanningDistributionView {
     private long quantity;
 
     private MetricUnit quantityMetricUnit;
+
+    @Override
+    public long getForecastId() {
+        return forecastId;
+    }
 
     @Override
     public Date getDateIn() {

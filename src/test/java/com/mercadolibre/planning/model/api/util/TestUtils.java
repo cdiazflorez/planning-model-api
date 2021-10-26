@@ -251,19 +251,34 @@ public final class TestUtils {
     public static List<PlanningDistributionView> planningDistributions() {
         return List.of(
                 new PlanningDistributionViewImpl(
+                        2,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         1000,
                         UNITS),
                 new PlanningDistributionViewImpl(
+                        2,
+                        Date.from(A_DATE_UTC.toInstant()),
+                        Date.from(A_DATE_UTC.plusDays(1).toInstant()),
+                        300,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        1,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(2).toInstant()),
                         1200,
                         UNITS),
                 new PlanningDistributionViewImpl(
+                        1,
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         Date.from(A_DATE_UTC.plusDays(2).toInstant()),
                         1250,
+                        UNITS),
+                new PlanningDistributionViewImpl(
+                        1,
+                        Date.from(A_DATE_UTC.toInstant()),
+                        Date.from(A_DATE_UTC.plusDays(1).toInstant()),
+                        500,
                         UNITS)
         );
     }

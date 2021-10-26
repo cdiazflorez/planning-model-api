@@ -162,6 +162,7 @@ public class CreateProcessingTimeUseCaseTest {
                                         .build()),
                         List.of(
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(2).toInstant()),
                                         900,
@@ -220,16 +221,19 @@ public class CreateProcessingTimeUseCaseTest {
                                         .build()),
                         List.of(
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(4).toInstant()),
                                         700,
                                         UNITS),
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(5).toInstant()),
                                         900,
                                         UNITS),
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(6).toInstant()),
                                         1200,
@@ -298,16 +302,19 @@ public class CreateProcessingTimeUseCaseTest {
                                         .build()),
                         List.of(
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(1).toInstant()),
                                         700,
                                         UNITS),
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(2).toInstant()),
                                         900,
                                         UNITS),
                                 new PlanningDistributionViewImpl(
+                                        1,
                                         Date.from(GENERIC_DATE.toInstant()),
                                         Date.from(GENERIC_DATE.plusHours(3).toInstant()),
                                         1200,

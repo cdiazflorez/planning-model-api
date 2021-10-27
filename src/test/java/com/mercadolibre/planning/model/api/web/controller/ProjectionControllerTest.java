@@ -1,15 +1,15 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
@@ -29,7 +29,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -79,7 +81,7 @@ public class ProjectionControllerTest {
     private GetDeliveryPromiseProjectionUseCase getdevPromiseProjection;
 
     @MockBean
-    private GetProcessingTimeUseCase getProcessingTimeUseCase;
+    private GetCycleTimeUseCase getCycleTimeUseCase;
 
     @Test
     public void testGetCptProjection() throws Exception {
@@ -104,6 +106,12 @@ public class ProjectionControllerTest {
         // GIVEN
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
+        final Map<ZonedDateTime, Configuration> ctByDateOut = new HashMap<>();
+        ctByDateOut.put(etd, Configuration.builder()
+                .value(360L)
+                .metricUnit(MINUTES)
+                .key("processing_time")
+                .build());
 
         when(calculateCptProjection.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
@@ -118,19 +126,11 @@ public class ProjectionControllerTest {
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
-                                UNITS_PER_HOUR,100)
+                                UNITS_PER_HOUR, 100)
                 ));
 
-        when(getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .logisticCenterId("ARBA01")
-                .cpt(List.of(etd))
-                .build()))
-                .thenReturn(List.of(GetProcessingTimeOutput.builder()
-                        .cpt(etd)
-                        .value(100L)
-                        .metricUnit(MINUTES)
-                        .build()));
+        when(getCycleTimeUseCase.execute(new GetCycleTimeInput("ARBA01",
+                List.of(etd)))).thenReturn(ctByDateOut);
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -198,8 +198,8 @@ public class ProjectionControllerTest {
         when(calculateBacklogProjection.execute(any(BacklogProjectionInput.class)))
                 .thenReturn(List.of(
                         BacklogProjectionOutput.builder()
-                        .processName(WAVING)
-                        .values(emptyList()).build(),
+                                .processName(WAVING)
+                                .values(emptyList()).build(),
                         BacklogProjectionOutput.builder()
                                 .processName(PICKING)
                                 .values(emptyList()).build(),

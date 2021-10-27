@@ -1,9 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
-import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 
 import lombok.AllArgsConstructor;
@@ -34,9 +31,6 @@ public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    private final GetConfigurationsUseCase getConfigurationsUseCase;
-    private final GetCycleTimeUseCase getCycleTimeUseCase;
-
     public List<CptProjectionOutput> execute(final CptProjectionInput input) {
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
@@ -55,15 +49,13 @@ public class CalculateCptProjectionUseCase {
 
         final List<CptProjectionOutput> cptProjectionOutputs = new ArrayList<>();
 
-        final List<Configuration> configurations = getConfigurationsUseCase
-                .execute(input.getLogisticCenterId());
-
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
 
             if (unitsByDate.values().stream().mapToInt(Integer::intValue).sum() == 0) {
                 return;
             }
 
+            final long cycleTimeValue = input.getCycleTime(dateOut);
             int nextBacklog = 0;
             int remainingQuantity = 0;
             boolean isDeferred = false;
@@ -103,13 +95,8 @@ public class CalculateCptProjectionUseCase {
 
                 // TODO: Remover la lógica de proyección de CAP 5 a otro lado
                 if (DEFERRAL == input.getProjectionType()) {
-                    final Configuration cycleTimeConfig = getCycleTimeUseCase.execute(
-                            GetCycleTimeInput.builder()
-                                    .cptDate(dateOut)
-                                    .configurations(configurations)
-                                    .build());
 
-                    final ZonedDateTime cutOff =  dateOut.minusMinutes(cycleTimeConfig.getValue());
+                    final ZonedDateTime cutOff = dateOut.minusMinutes(cycleTimeValue);
 
                     if (cutOff.truncatedTo(HOURS).isEqual(time)) {
                         final int minutes = (int) MINUTES.between(time, cutOff);
@@ -130,6 +117,7 @@ public class CalculateCptProjectionUseCase {
                             .date(dateOut)
                             .projectedEndDate(projectedDate)
                             .remainingQuantity(remainingQuantity)
+                            .processingTime(new ProcessingTime(cycleTimeValue, MetricUnit.MINUTES))
                             .isDeferred(isDeferred)
                             .build());
         });
@@ -231,5 +219,4 @@ public class CalculateCptProjectionUseCase {
             }
         });
     }
-
 }

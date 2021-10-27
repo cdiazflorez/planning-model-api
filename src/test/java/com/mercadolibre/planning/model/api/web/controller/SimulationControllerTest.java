@@ -1,15 +1,14 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.processingtime.get.GetProcessingTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
@@ -25,7 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -67,13 +68,20 @@ public class SimulationControllerTest {
     private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @MockBean
-    private GetProcessingTimeUseCase getProcessingTimeUseCase;
+    private GetCycleTimeUseCase getCycleTimeUseCase;
 
     @Test
     public void testSaveSimulation() throws Exception {
         // GIVEN
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
+        final Map<ZonedDateTime, Configuration> ctByDateOut = new HashMap<>();
+        ctByDateOut.put(dateOut, Configuration.builder()
+                .value(360L)
+                .metricUnit(MINUTES)
+                .key("processing_time")
+                .build());
+
         when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
                         CptProjectionOutput.builder()
@@ -87,19 +95,11 @@ public class SimulationControllerTest {
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
-                                UNITS_PER_HOUR,100)
+                                UNITS_PER_HOUR, 100)
                 ));
 
-        when(getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .logisticCenterId("ARBA01")
-                .cpt(List.of(dateOut))
-                .build()))
-                .thenReturn(List.of(GetProcessingTimeOutput.builder()
-                        .cpt(dateOut)
-                        .value(240L)
-                        .metricUnit(MINUTES)
-                        .build()));
+        when(getCycleTimeUseCase.execute(new GetCycleTimeInput("ARBA01",
+                List.of(dateOut)))).thenReturn(ctByDateOut);
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -135,6 +135,13 @@ public class SimulationControllerTest {
         final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
 
+        final Map<ZonedDateTime, Configuration> ctByDateOut = new HashMap<>();
+        ctByDateOut.put(dateOut, Configuration.builder()
+                .value(360L)
+                .metricUnit(MINUTES)
+                .key("processing_time")
+                .build());
+
         when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
                         CptProjectionOutput.builder()
@@ -145,31 +152,23 @@ public class SimulationControllerTest {
                                 .isDeferred(false)
                                 .build()
                 )).thenReturn(List.of(
-                CptProjectionOutput.builder()
-                        .date(dateOut)
-                        .projectedEndDate(projectedEndDate)
-                        .remainingQuantity(150)
-                        .processingTime(new ProcessingTime(240L, MINUTES))
-                        .isDeferred(false)
-                        .build()
-        ));
+                        CptProjectionOutput.builder()
+                                .date(dateOut)
+                                .projectedEndDate(projectedEndDate)
+                                .remainingQuantity(150)
+                                .processingTime(new ProcessingTime(240L, MINUTES))
+                                .isDeferred(false)
+                                .build()
+                ));
 
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
-                                UNITS_PER_HOUR,100)
+                                UNITS_PER_HOUR, 100)
                 ));
 
-        when(getProcessingTimeUseCase.execute(GetProcessingTimeInput.builder()
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .logisticCenterId("ARBA01")
-                .cpt(List.of(dateOut))
-                .build()))
-                .thenReturn(List.of(GetProcessingTimeOutput.builder()
-                        .cpt(dateOut)
-                        .value(240L)
-                        .metricUnit(MINUTES)
-                        .build()));
+        when(getCycleTimeUseCase.execute(new GetCycleTimeInput("ARBA01",
+                List.of(dateOut)))).thenReturn(ctByDateOut);
 
         // WHEN
         final ResultActions result = mvc.perform(

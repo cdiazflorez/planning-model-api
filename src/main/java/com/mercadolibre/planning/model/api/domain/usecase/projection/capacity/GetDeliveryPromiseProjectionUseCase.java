@@ -6,15 +6,14 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -53,45 +52,22 @@ public class GetDeliveryPromiseProjectionUseCase implements
 
     private final GetCycleTimeUseCase getCycleTimeUseCase;
 
-    private final GetConfigurationsUseCase getConfigurationsUseCase;
-
     @Override
     public List<CptProjectionOutput> execute(final GetDeliveryPromiseProjectionInput input) {
-        final String logisticCenterId = input.getWarehouseId();
+
         final CptProjectionInput projectionInput = CptProjectionInput.builder()
                 .workflow(input.getWorkflow())
-                .logisticCenterId(logisticCenterId)
+                .logisticCenterId(input.getWarehouseId())
                 .capacity(getMaxCapacity(input))
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .planningUnits(emptyList())
                 .projectionType(DEFERRAL)
+                .configurationByDateOut(getCtByDateOut(input))
                 .build();
 
-        final List<CptProjectionOutput> projections = projectionUseCase.execute(projectionInput);
-
-        return addProcessingTimes(logisticCenterId, projections);
-    }
-
-    private List<CptProjectionOutput> addProcessingTimes(
-            final String warehouseId, final List<CptProjectionOutput> projections) {
-
-        final List<Configuration> configurations = getConfigurationsUseCase.execute(warehouseId);
-
-        projections.stream().forEach(projectionOutput -> {
-
-            final Configuration cycleTime = getCycleTimeUseCase.execute(
-                    GetCycleTimeInput.builder()
-                            .cptDate(projectionOutput.getDate())
-                            .configurations(configurations)
-                            .build());
-
-            projectionOutput.setProcessingTime(
-                    new ProcessingTime(cycleTime.getValue(), cycleTime.getMetricUnit()));
-        });
-
-        return projections;
+        return projectionUseCase.execute(projectionInput);
     }
 
     private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {
@@ -146,4 +122,15 @@ public class GetDeliveryPromiseProjectionUseCase implements
                 .collect(toSet());
     }
 
+    private Map<ZonedDateTime, Configuration> getCtByDateOut(
+            final GetDeliveryPromiseProjectionInput input) {
+
+        final GetCycleTimeInput getCycleTimeInput = new GetCycleTimeInput(input.getWarehouseId(),
+                input.getBacklog() == null
+                        ? emptyList()
+                        : input.getBacklog().stream().map(Backlog::getDate)
+                        .collect(Collectors.toList()));
+
+        return getCycleTimeUseCase.execute(getCycleTimeInput);
+    }
 }

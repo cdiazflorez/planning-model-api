@@ -1,22 +1,24 @@
 package com.mercadolibre.planning.model.api.exception;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
+import org.assertj.core.util.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Set;
-import org.springframework.validation.BindException;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 public class ApiExceptionHandlerTest {
 
@@ -31,12 +33,13 @@ public class ApiExceptionHandlerTest {
     }
 
     @Test
+    @VisibleForTesting
     @DisplayName("Handle BindException")
     void handleBindException() {
         // GIVEN
         final BindException exception = new BindException("warehouseId", "string");
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 exception.getMessage(),
                 "missing_parameter"
         );
@@ -54,7 +57,7 @@ public class ApiExceptionHandlerTest {
         // GIVEN
         final InvalidEntityTypeException exception = new InvalidEntityTypeException("invalid");
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
                         + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
                         + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT]",
@@ -76,7 +79,7 @@ public class ApiExceptionHandlerTest {
                 new InvalidProjectionTypeException("invalid");
 
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
                         + " [BACKLOG, CPT, DEFERRAL]", "invalid_projection_type");
 
@@ -96,7 +99,7 @@ public class ApiExceptionHandlerTest {
                 new ProjectionTypeNotSupportedException(null);
 
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 "Projection type null is not supported", "projection_type_not_supported");
 
         // WHEN
@@ -113,7 +116,7 @@ public class ApiExceptionHandlerTest {
         // GIVEN
         final EntityTypeNotSupportedException exception = new EntityTypeNotSupportedException(null);
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 "Entity type null is not supported", "entity_type_not_supported");
 
         // WHEN
@@ -151,7 +154,7 @@ public class ApiExceptionHandlerTest {
                 "configuration", "ARBA01-expedition_processing_time");
 
         final ErrorResponse expectedResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                BAD_REQUEST,
                 "Entity configuration with id ARBA01-expedition_processing_time already exists",
                 "entity_already_exists");
 

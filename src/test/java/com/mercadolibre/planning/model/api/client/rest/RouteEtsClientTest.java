@@ -3,10 +3,13 @@ package com.mercadolibre.planning.model.api.client.rest;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.FixedEtsByDayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
 import com.mercadolibre.restclient.MockResponse;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,17 +17,14 @@ import java.util.Map;
 
 import static com.mercadolibre.restclient.http.ContentType.APPLICATION_JSON;
 import static com.mercadolibre.restclient.http.ContentType.HEADER_NAME;
-import static com.mercadolibre.restclient.http.HttpMethod.GET;
-import static java.lang.String.format;
+import static com.mercadolibre.restclient.http.HttpMethod.POST;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.http.HttpStatus.OK;
 
 public class RouteEtsClientTest  extends BaseClientTest {
 
-    private static final String URL = "/multisearch/estimated-times?from=%s";
-
-    private static final String WAREHOUSE_ID = "ARBA01";
+    private static final String URL = "/multisearch/estimated-times";
 
     private RouteEtsClient client;
 
@@ -49,18 +49,21 @@ public class RouteEtsClientTest  extends BaseClientTest {
 
     @Test
     public void testGetProjection() {
-
         // GIVEN
-        MockResponse.builder()
-                .withMethod(GET)
-                .withURL(BASE_URL_ROUTE + format(URL, WAREHOUSE_ID))
-                .withStatusCode(OK.value())
-                .withResponseHeader(HEADER_NAME, APPLICATION_JSON.toString())
-                .withResponseBody(
-                        getResourceAsString("get_route_ets_response.json"))
+        final RouteEtsRequest request = RouteEtsRequest.builder()
+                .fromFilter(List.of(new String[]{"ARBA01"}))
                 .build();
 
-        final List<RouteEtsDto> response = client.getRoutEts(WAREHOUSE_ID);
+        MockResponse.builder()
+                .withMethod(POST)
+                .withURL(BASE_URL_ROUTE + URL)
+                .withRequestBody(getResourceAsString("post_route_ets_request.json"))
+                .withResponseBody(getResourceAsString("post_route_ets_response.json"))
+                .withStatusCode(HttpStatus.OK.value())
+                .withResponseHeader(HEADER_NAME, APPLICATION_JSON.toString())
+                .build();
+
+        final List<RouteEtsDto> response = client.postRoutEts(request);
 
         //TEST
         for (final RouteEtsDto routeEts: response) {

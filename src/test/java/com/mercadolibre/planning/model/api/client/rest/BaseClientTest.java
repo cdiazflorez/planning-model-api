@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 public class BaseClientTest {
 
     protected static final String BASE_URL = "http://internal.mercadolibre.com";
+    protected static final String BASE_URL_ROUTE = "http://internal-api.mercadolibre.com/shipping/route";
 
     protected MeliRestClient getRestTestClient() throws IOException {
 
@@ -26,8 +27,12 @@ public class BaseClientTest {
                 new RestClientConfig.FlowMonitorClientProperties();
         flowMonitorClientProperties.setBaseUrl(BASE_URL);
 
+        final RestClientConfig.RouteEtsClientProperties routeEtsClientProperties =
+                new RestClientConfig.RouteEtsClientProperties();
+        routeEtsClientProperties.setBaseUrl(BASE_URL_ROUTE);
+
         return new RestClientConfig(
-                flowMonitorClientProperties
+                flowMonitorClientProperties, routeEtsClientProperties
         ).restClient();
     }
 

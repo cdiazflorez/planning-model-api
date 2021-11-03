@@ -1,0 +1,116 @@
+[
+    {
+        "id": "ARBA01_SCF1_158662",
+        "from": "ARBA01",
+        "canalization": "SCF1",
+        "service_id": "158662",
+        "fixed_ets_by_day": {
+            "sunday": [],
+            "monday": [
+                {
+                    "et_day": "monday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "tuesday": [
+                {
+                    "et_day": "tuesday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "wednesday": [
+                {
+                    "et_day": "wednesday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "thursday": [
+                {
+                    "et_day": "thursday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "friday": [
+                {
+                    "et_day": "friday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "saturday": []
+        },
+        "date_created": "2021-05-26",
+        "last_updated": "2021-10-12"
+    },
+    {
+        "id": "ARBA01_SCF1_158662",
+        "from": "ARBA01",
+        "canalization": "SCF1",
+        "service_id": "158662",
+        "fixed_ets_by_day": {
+            "sunday": [],
+            "monday": [
+                {
+                    "et_day": "monday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "tuesday": [
+                {
+                    "et_day": "tuesday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "wednesday": [
+                {
+                    "et_day": "wednesday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "thursday": [
+                {
+                    "et_day": "thursday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "friday": [
+                {
+                    "et_day": "friday",
+                    "et_hour": "0200",
+                    "processing_time": "0400",
+                    "type": "cpt",
+                    "should_deferral": false
+                }
+            ],
+            "saturday": []
+        },
+        "date_created": "2021-05-26",
+        "last_updated": "2021-10-12"
+    }
+]

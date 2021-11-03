@@ -16,16 +16,19 @@ import java.io.IOException;
 
 @Configuration
 @AllArgsConstructor
-@EnableConfigurationProperties({RestClientConfig.FlowMonitorClientProperties.class})
+@EnableConfigurationProperties({RestClientConfig.FlowMonitorClientProperties.class,
+                                RestClientConfig.RouteEtsClientProperties.class})
 public class RestClientConfig {
     private FlowMonitorClientProperties flowMonitorClientProperties;
+    private RouteEtsClientProperties routeEtsClientProperties;
 
     @Bean
     public MeliRestClient restClient() throws IOException {
         return MeliRestClient
                 .builder()
                 .withPool(
-                        restPool(RestPool.FLOW_MONITOR.name(), flowMonitorClientProperties)
+                        restPool(RestPool.FLOW_MONITOR.name(), flowMonitorClientProperties),
+                        restPool(RestPool.ROUTE_ETS.name(), routeEtsClientProperties)
                 )
                 .build();
     }
@@ -62,5 +65,9 @@ public class RestClientConfig {
 
     @ConfigurationProperties("restclient.pool.flow-monitor")
     public static class FlowMonitorClientProperties extends RestClientProperties {
+    }
+
+    @ConfigurationProperties("restclient.pool.route-ets")
+    public static class RouteEtsClientProperties extends RestClientProperties {
     }
 }

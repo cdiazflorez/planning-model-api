@@ -7,9 +7,6 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanning
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -17,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -42,10 +42,10 @@ public class GetPlanningDistributionUseCase
         final Map<Instant, CurrentPlanningDistribution> currentPlanningDistributions =
                 currentPlanningDistRepository
                         .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
-                            input.getWorkflow(),
-                            input.getWarehouseId(),
-                            input.getDateOutFrom(),
-                            input.getDateOutTo())
+                                input.getWorkflow(),
+                                input.getWarehouseId(),
+                                input.getDateOutFrom(),
+                                input.getDateOutTo())
                         .stream()
                         .collect(toMap(d -> d.getDateOut().toInstant(), Function.identity()));
 
@@ -151,9 +151,11 @@ public class GetPlanningDistributionUseCase
         final List<PlanningDistributionView> planning = new ArrayList<>();
 
         duplicatedPlanning.forEach(p -> {
-            Pair<Date, Date> dateOutDateIn = new ImmutablePair<>(p.getDateOut(), p.getDateIn());
+            final Pair<Date, Date> dateOutDateIn = new ImmutablePair<>(
+                    p.getDateOut(), p.getDateIn());
 
-            if (dateByForecastId.containsKey(dateOutDateIn)) {
+            final Boolean value =  dateByForecastId.containsKey(dateOutDateIn);
+            if (value) {
                 if (p.getForecastId() == dateByForecastId.get(dateOutDateIn)) {
                     planning.add(p);
                 }

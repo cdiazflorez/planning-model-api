@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,13 +42,15 @@ public class CalculateCptProjectionUseCase {
     }
 
     // TODO: Refactor of nested if statements
-    @SuppressWarnings({"PMD.NullAssignment", "PMD.AvoidDeeplyNestedIfStmts"})
+    @SuppressWarnings({"PMD.NullAssignment", "PMD.AvoidDeeplyNestedIfStmts", "PMD.NPathComplexity"})
     private List<CptProjectionOutput> project(
             final Map<ZonedDateTime, Integer> capacityByDate,
             final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate,
             final CptProjectionInput input) {
 
         final List<CptProjectionOutput> cptProjectionOutputs = new ArrayList<>();
+        final Map<ZonedDateTime, Integer> originalCapacityByDate = new HashMap<>(capacityByDate);
+        final Map<ZonedDateTime, Integer> projectionEndMinutes = new HashMap<>();
 
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
 
@@ -74,8 +77,19 @@ public class CalculateCptProjectionUseCase {
                 }
                 // update projectedDate when all units were processed
                 if (nextBacklog == 0 && currentBacklog + unitsToProcess != 0) {
-                    projectedDate = calculateProjectedDate(time, capacity,
-                            unitsBeingProcessed);
+                    final Integer shift = projectionEndMinutes.getOrDefault(time, 0);
+                    final Integer currentHourCapacity = originalCapacityByDate.get(time);
+
+                    projectedDate = calculateProjectedDate(
+                            time,
+                            currentHourCapacity,
+                            unitsBeingProcessed,
+                            shift);
+
+                    if (projectedDate != null) {
+                        projectionEndMinutes.put(time, projectedDate.getMinute());
+                    }
+
                 }
 
                 capacityByDate.put(time, capacity - unitsBeingProcessed);
@@ -196,13 +210,15 @@ public class CalculateCptProjectionUseCase {
 
     private ZonedDateTime calculateProjectedDate(final ZonedDateTime date,
                                                  final int capacity,
-                                                 final int processedUnits) {
+                                                 final int processedUnits,
+                                                 final Integer shiftMinutes) {
 
         if (capacity == 0 && processedUnits == 0) {
             return null;
         }
 
-        return date.plusMinutes((processedUnits * HOUR_IN_MINUTES) / capacity);
+        int minutes = ((processedUnits * HOUR_IN_MINUTES) / capacity) + shiftMinutes;
+        return date.plusMinutes(minutes);
     }
 
     private int calculateExactBacklog(final int backlogQty, final int planningQty) {

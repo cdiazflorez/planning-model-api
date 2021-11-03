@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 
+import com.mercadolibre.planning.model.api.util.DateUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,7 @@ public class CalculateCptProjectionUseCase {
         final List<CptProjectionOutput> cptProjectionOutputs = new ArrayList<>();
         final Map<ZonedDateTime, Integer> originalCapacityByDate = new HashMap<>(capacityByDate);
         final Map<ZonedDateTime, Integer> projectionEndMinutes = new HashMap<>();
+        projectionEndMinutes.put(ignoreMinutes(ZonedDateTime.now()), ZonedDateTime.now().getMinute());
 
         unitsByDateOutAndDate.forEach((dateOut, unitsByDate) -> {
 

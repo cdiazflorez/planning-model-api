@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.client.rest;
 
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
-import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.FixedEtsByDayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
 import com.mercadolibre.restclient.MockResponse;
@@ -22,7 +21,7 @@ import static com.mercadolibre.restclient.http.HttpMethod.POST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class RouteEtsClientTest  extends BaseClientTest {
+class RouteEtsClientTest  extends BaseClientTest {
 
     private static final String URL = "/multisearch/estimated-times";
 
@@ -76,17 +75,15 @@ public class RouteEtsClientTest  extends BaseClientTest {
             testWeek(generateWeek(routeEts.getFixedEtsByDay()));
 
         }
-
-
     }
 
-    private Map<Integer, DayDto> generateWeek(final FixedEtsByDayDto fixedEtsByDayDto) {
+    private Map<Integer, DayDto> generateWeek(final Map<String, List<DayDto>> days) {
         return Map.of(
-                0, fixedEtsByDayDto.getMonday().get(0),
-                1, fixedEtsByDayDto.getTuesday().get(0),
-                2, fixedEtsByDayDto.getWednesday().get(0),
-                3, fixedEtsByDayDto.getThursday().get(0),
-                4, fixedEtsByDayDto.getFriday().get(0)
+                0, days.get("monday").get(0),
+                1, days.get("tuesday").get(0),
+                2, days.get("wednesday").get(0),
+                3, days.get("thursday").get(0),
+                4, days.get("friday").get(0)
         );
     }
 

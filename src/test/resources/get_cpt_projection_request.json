@@ -3,5 +3,6 @@
     "type" : "cpt",
     "date_from": "2020-01-01T12:00:00Z",
     "date_to": "2020-01-10T12:00:00Z",
-    "process_name": ["picking","packing"]
+    "process_name": ["picking","packing"],
+    "time_zone": "America/Argentina/Buenos_Aires"
 }

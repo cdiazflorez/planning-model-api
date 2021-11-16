@@ -13,6 +13,7 @@ import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 
 import com.mercadolibre.restclient.MeliRestClient;
 import com.mercadolibre.restclient.exception.ParseException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Set;
 
 import static org.springframework.http.HttpStatus.OK;
 
+@Slf4j
 @Component
 public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
 
@@ -41,6 +43,8 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
                 .acceptedHttpStatuses(Set.of(OK))
                 .build();
 
+        log.info("Call RouteApi [{}]", String.join(", ", routeEtsRequest.getFromFilter()));
+
         final List<Object> apiResponse = send(request, response ->
                 response.getData(new TypeReference<>() {})
         );
@@ -59,7 +63,6 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
         return list;
     }
 
-
     private <T> RequestBodyHandler requestSupplier(final T requestBody) {
         return () -> {
             try {
@@ -69,5 +72,4 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
             }
         };
     }
-
 }

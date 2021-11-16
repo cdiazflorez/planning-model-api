@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -29,14 +29,14 @@ public class RunSimulationResponse {
     private boolean isDeferred;
 
     public static List<RunSimulationResponse> fromProjectionOutputs(
-            final List<CptProjectionOutput> simulationOutputs,
-            final List<CptProjectionOutput> actualOutputs) {
+            final List<CptCalculationOutput> simulationOutputs,
+            final List<CptCalculationOutput> actualOutputs) {
 
         final List<RunSimulationResponse> runSimulationResponses = new ArrayList<>();
 
-        final Map<ZonedDateTime, List<CptProjectionOutput>> actualOutputsByDate = actualOutputs
+        final Map<ZonedDateTime, List<CptCalculationOutput>> actualOutputsByDate = actualOutputs
                 .stream()
-                .collect(groupingBy(CptProjectionOutput::getDate));
+                .collect(groupingBy(CptCalculationOutput::getDate));
 
         if (simulationOutputs.size() == actualOutputs.size()) {
             simulationOutputs.forEach(s -> {
@@ -45,9 +45,7 @@ public class RunSimulationResponse {
                         actualOutputsByDate.get(s.getDate()).get(0).getProjectedEndDate(),
                         s.getProjectedEndDate(),
                         s.getRemainingQuantity(),
-                        s.getProcessingTime(),
-                        s.isDeferred()
-                ));
+                        null, false));
             });
         }
 

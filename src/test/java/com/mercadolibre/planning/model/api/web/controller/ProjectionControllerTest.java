@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -14,9 +14,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.Bac
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
@@ -29,9 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -46,7 +44,7 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,7 +79,7 @@ public class ProjectionControllerTest {
     private GetDeliveryPromiseProjectionUseCase getdevPromiseProjection;
 
     @MockBean
-    private GetCycleTimeUseCase getCycleTimeUseCase;
+    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
 
     @Test
     public void testGetCptProjection() throws Exception {
@@ -106,22 +104,10 @@ public class ProjectionControllerTest {
         // GIVEN
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
-        final Map<ZonedDateTime, Configuration> ctByDateOut = new HashMap<>();
-        ctByDateOut.put(etd, Configuration.builder()
-                .value(360L)
-                .metricUnit(MINUTES)
-                .key("processing_time")
-                .build());
 
         when(calculateCptProjection.execute(any(CptProjectionInput.class)))
                 .thenReturn(List.of(
-                        CptProjectionOutput.builder()
-                                .date(etd)
-                                .projectedEndDate(projectedTime)
-                                .remainingQuantity(100)
-                                .processingTime(new ProcessingTime(240L, MINUTES))
-                                .isDeferred(false)
-                                .build()));
+                        new CptCalculationOutput(etd, projectedTime, 100)));
 
         when(getCapacityPerHourUseCase.execute(any(List.class)))
                 .thenReturn(List.of(
@@ -129,8 +115,10 @@ public class ProjectionControllerTest {
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCycleTimeUseCase.execute(new GetCycleTimeInput("ARBA01",
-                List.of(etd)))).thenReturn(ctByDateOut);
+        when(getCptByWarehouseUseCase.execute(
+                new GetCptByWarehouseInput("ARBA01", null, null,
+                        emptyList(), "America/Argentina/Buenos_Aires")))
+                .thenReturn(emptyList());
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -142,7 +130,7 @@ public class ProjectionControllerTest {
         // THEN
         verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
         verify(getThroughputUseCase).execute(any(GetEntityInput.class));
-        verifyZeroInteractions(calculateBacklogProjection);
+        verifyNoInteractions(calculateBacklogProjection);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
@@ -154,7 +142,7 @@ public class ProjectionControllerTest {
     }
 
     @Test
-    public void testGetCapacityProjection() throws Exception {
+    public void testGetDeliveryPromise() throws Exception {
         // GIVEN
         final ZonedDateTime etd = parse("2021-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2021-01-02T10:00:00Z");
@@ -164,16 +152,17 @@ public class ProjectionControllerTest {
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .dateFrom(parse("2020-01-01T12:00:00Z[UTC]"))
                 .dateTo(parse("2020-01-10T12:00:00Z[UTC]"))
+                .timeZone("America/Argentina/Buenos_Aires")
                 .backlog(emptyList())
                 .build()
         )).thenReturn(List.of(
-                CptProjectionOutput.builder()
-                        .date(etd)
-                        .projectedEndDate(projectedTime)
-                        .remainingQuantity(100)
-                        .processingTime(new ProcessingTime(240L, MINUTES))
-                        .isDeferred(false)
-                        .build()));
+                new CptProjectionOutput(
+                        etd,
+                        projectedTime,
+                        100,
+                        null,
+                        new ProcessingTime(240L, MINUTES),
+                        false)));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -215,7 +204,7 @@ public class ProjectionControllerTest {
                         .content(getResourceAsString("get_backlog_projection_request.json")));
 
         // THEN
-        verifyZeroInteractions(calculateCptProjection);
+        verifyNoInteractions(calculateCptProjection);
         //TODO: Add asserts
         result.andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));

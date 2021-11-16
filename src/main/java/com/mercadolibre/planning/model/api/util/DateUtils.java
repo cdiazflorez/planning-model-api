@@ -10,16 +10,33 @@ import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.iterate;
 
 public final class DateUtils {
+
+    public static final String SUNDAY = "sunday";
+    public static final String MONDAY = "monday";
+    public static final String TUESDAY = "tuesday";
+    public static final String WEDNESDAY = "wednesday";
+    public static final String THURSDAY = "thursday";
+    public static final String FRIDAY = "friday";
+    public static final String SATURDAY = "saturday";
+
+    public static final String DOMINGO = "domingo";
+    public static final String LUNES = "lunes";
+    public static final String MARTES = "martes";
+    public static final String MIERCOLES = "miércoles";
+    public static final String JUEVES = "jueves";
+    public static final String VIERNES = "viernes";
+    public static final String SABADO = "sábado";
 
     private static final int HOW_THEY_MANAGE_WEEKS_2021 = 1;
 
     private DateUtils() {}
 
     public static ZonedDateTime getCurrentUtcDate() {
-        return ZonedDateTime.now(UTC);
+        return ZonedDateTime.now(UTC).truncatedTo(SECONDS);
     }
 
     public static ZonedDateTime fromDate(final Date date) {

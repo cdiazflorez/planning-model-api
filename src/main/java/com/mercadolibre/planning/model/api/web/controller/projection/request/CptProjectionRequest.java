@@ -29,5 +29,8 @@ public class CptProjectionRequest {
 
     private List<QuantityByDate> backlog;
 
+    @NotNull
+    private String timeZone;
+
     private boolean applyDeviation;
 }

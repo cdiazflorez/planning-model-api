@@ -2,7 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -18,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.stream.Collectors.toList;
@@ -46,12 +47,17 @@ public class SimulationRequest {
     @NotNull
     private Long userId;
 
+    @NotNull
+    private String timeZone;
+
     private boolean applyDeviation;
 
-    public CptProjectionInput toProjectionInput(final Map<ZonedDateTime, Integer> capacity,
-                                                final List<GetPlanningDistributionOutput> units,
-                                                final Workflow workflow,
-                                                final Map<ZonedDateTime, Configuration> dateOutCt) {
+    public CptProjectionInput toProjectionInput(
+            final Map<ZonedDateTime, Integer> capacity,
+            final List<GetPlanningDistributionOutput> units,
+            final Workflow workflow,
+            final List<GetCptByWarehouseOutput> cptByWarehouse) {
+
         return CptProjectionInput.builder()
                 .workflow(workflow)
                 .logisticCenterId(warehouseId)
@@ -62,7 +68,8 @@ public class SimulationRequest {
                 .backlog(backlog.stream()
                         .map(QuantityByDate::toBacklog)
                         .collect(toList()))
-                .configurationByDateOut(dateOutCt)
+                .cptByWarehouse(cptByWarehouse)
+                .currentDate(getCurrentUtcDate())
                 .build();
     }
 

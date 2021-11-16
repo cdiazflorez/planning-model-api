@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class DeferralCptUseCaseTest {
+public class DeferralGetCptOutputUseCaseTest {
 
     private static final String WAREHOUSE_ID = "ARTW01";
 

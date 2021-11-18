@@ -14,6 +14,4 @@ public class ProcessingTimeByDate {
     private int minutes;
 
     private int processingTime;
-
-    private String type;
 }

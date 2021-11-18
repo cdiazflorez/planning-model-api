@@ -11,8 +11,12 @@ import java.time.ZonedDateTime;
 public class GetPlanningDistributionOutput {
 
     private ZonedDateTime dateIn;
+
     private ZonedDateTime dateOut;
+
     private MetricUnit metricUnit;
+
     private long total;
+
     private boolean isDeferred;
 }

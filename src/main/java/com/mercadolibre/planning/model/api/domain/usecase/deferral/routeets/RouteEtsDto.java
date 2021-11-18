@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +21,7 @@ public class RouteEtsDto {
 
     private String serviceId;
 
-    private FixedEtsByDayDto fixedEtsByDay;
+    private Map<String, List<DayDto>> fixedEtsByDay;
 
     private Date dateCreated;
 

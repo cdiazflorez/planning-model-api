@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
+package com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import lombok.Value;

@@ -4,6 +4,7 @@
     "date_from": "2020-07-27T11:00:00Z",
     "date_to": "2020-07-28T11:00:00Z",
     "user_id": 1234,
+    "time_zone": "America/Argentina/Buenos_Aires",
     "backlog": [{
         "date": "2020-07-27T11:00:00Z",
         "quantity": 15002

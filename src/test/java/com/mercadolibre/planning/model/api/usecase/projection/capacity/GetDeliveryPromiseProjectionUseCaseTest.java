@@ -6,62 +6,64 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
-import com.mercadolibre.planning.model.api.util.DateUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(MockitoExtension.class)
 public class GetDeliveryPromiseProjectionUseCaseTest {
 
-    private static final ZonedDateTime CPT_1 = ZonedDateTime.now().plusHours(1);
-    private static final ZonedDateTime CPT_2 = ZonedDateTime.now().plusHours(2);
+    private static final String WAREHOUSE_ID = "ARBA01";
     private static final ZonedDateTime NOW = ZonedDateTime.now(UTC);
+    private static final ZonedDateTime CPT_1 = NOW.plusHours(1);
+    private static final ZonedDateTime CPT_2 = NOW.plusHours(2);
 
     @InjectMocks
-    private GetDeliveryPromiseProjectionUseCase useCase;
+    private GetDeliveryPromiseProjectionUseCase getDeliveryPromiseUseCase;
 
     @Mock
-    private CalculateCptProjectionUseCase projectionUseCase;
+    private CalculateCptProjectionUseCase calculatedProjectionUseCase;
 
     @Mock
     private ProcessingDistributionRepository processingDistRepository;
@@ -72,28 +74,19 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     @Mock
     private GetCycleTimeUseCase getCycleTimeUseCase;
 
-    private MockedStatic<DateUtils> mockedDates;
-
-    @BeforeEach
-    public void setUp() {
-        mockedDates = mockStatic(DateUtils.class);
-        mockedDates.when(DateUtils::getCurrentUtcDate)
-                .thenReturn(ZonedDateTime.now(UTC).truncatedTo(SECONDS));
-        mockedDates.when(() -> DateUtils.ignoreMinutes(any())).thenCallRealMethod();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        mockedDates.close();
-    }
+    @Mock
+    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
 
     @ParameterizedTest
-    @MethodSource("getDataMock")
-    public void testExecute(final String warehouseId,
-                            final List<CptProjectionOutput> projectionOutputs,
+    @MethodSource("mockParameterizedConfiguration")
+    public void testExecute(final String assertionsGroup,
+                            final String warehouseId,
+                            final List<CptProjectionOutput> cptProjectionOutput,
                             final List<Backlog> backlogs,
                             final List<ZonedDateTime> cptDates) {
         //GIVEN
+        final List<GetCptByWarehouseOutput> cptByWarehouse = mockCptByWarehouse();
+
         final GetDeliveryPromiseProjectionInput input = GetDeliveryPromiseProjectionInput.builder()
                 .warehouseId(warehouseId)
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
@@ -120,7 +113,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                         forecastIds
                 )).thenReturn(mockProcessingDist());
 
-        when(projectionUseCase.execute(CptProjectionInput.builder()
+        when(calculatedProjectionUseCase.execute(CptProjectionInput.builder()
                 .workflow(input.getWorkflow())
                 .logisticCenterId(input.getWarehouseId())
                 .capacity(mockCapacityByHour())
@@ -129,18 +122,43 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateTo(input.getDateTo())
                 .planningUnits(emptyList())
                 .projectionType(DEFERRAL)
-                .configurationByDateOut(getDateOutCt())
+                .cptByWarehouse(cptByWarehouse)
+                .currentDate(getCurrentUtcDate())
                 .build())
-        ).thenReturn(projectionOutputs);
+        ).thenReturn(cptProjectionOutput.stream().map(item ->
+                        new CptCalculationOutput(item.getDate(),
+                                item.getProjectedEndDate(),
+                                item.getRemainingQuantity()))
+                .collect(Collectors.toList()));
 
         when(getCycleTimeUseCase.execute(new GetCycleTimeInput(warehouseId, cptDates)))
-                .thenReturn(getDateOutCt());
+                .thenReturn(mockCycleTimeByCpt());
+
+        when(getCptByWarehouseUseCase.execute(new
+                GetCptByWarehouseInput(warehouseId, NOW, NOW.plusHours(6),
+                cptDates,null))).thenReturn(cptByWarehouse);
 
         //WHEN
-        final List<CptProjectionOutput> response = useCase.execute(input);
+        final List<CptProjectionOutput> response = getDeliveryPromiseUseCase.execute(input);
 
         //THEN
-        assertEquals(projectionOutputs, response);
+        if ("TestValues".equals(assertionsGroup)) {
+
+            assertEquals(cptProjectionOutput.size(), response.size());
+            assertEquals(cptProjectionOutput.get(0).getDate(), response.get(0).getDate());
+            assertEquals(cptProjectionOutput.get(0).getProjectedEndDate(), response.get(0)
+                    .getProjectedEndDate());
+            assertEquals(cptProjectionOutput.get(0).getRemainingQuantity(), response.get(0)
+                    .getRemainingQuantity());
+            assertEquals(cptProjectionOutput.get(0).getEtdCutoff(), response.get(0).getEtdCutoff());
+            assertEquals(cptProjectionOutput.get(0).isDeferred(), response.get(0).isDeferred());
+            assertEquals(cptProjectionOutput.get(0).getProcessingTime(), response.get(0)
+                    .getProcessingTime());
+        }
+        if ("TestSomeFieldNullPointerException".equals(assertionsGroup)) {
+
+            assertEquals(cptProjectionOutput.isEmpty(), response.isEmpty());
+        }
     }
 
     private List<ProcessingDistributionView> mockProcessingDist() {
@@ -177,38 +195,54 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
     }
 
-    private Map<ZonedDateTime, Configuration> getDateOutCt() {
+    private Map<ZonedDateTime, Configuration> mockCycleTimeByCpt() {
 
-        final Map<ZonedDateTime, Configuration> dateOutCt = new HashMap<>();
+        final Map<ZonedDateTime, Configuration> ctByCpt = new HashMap<>();
 
-        dateOutCt.put(CPT_1, Configuration.builder()
+        ctByCpt.put(CPT_1, Configuration.builder()
                 .value(360L).metricUnit(MINUTES).key("processing_time").build());
 
-        dateOutCt.put(CPT_2, Configuration.builder()
+        ctByCpt.put(CPT_2, Configuration.builder()
                 .value(360L).metricUnit(MINUTES).key("processing_time").build());
 
-        return dateOutCt;
+        return ctByCpt;
     }
 
-    public static Stream<Arguments> getDataMock() {
+    private List<GetCptByWarehouseOutput> mockCptByWarehouse() {
+
+        final List<GetCptByWarehouseOutput> getCptByWarehouseOutputs = new ArrayList<>();
+
+        getCptByWarehouseOutputs.add(GetCptByWarehouseOutput.builder()
+                .date(CPT_1)
+                .processingTime(new ProcessingTime(360L, MINUTES)).build());
+
+        getCptByWarehouseOutputs.add(GetCptByWarehouseOutput.builder()
+                .date(CPT_2)
+                .processingTime(new ProcessingTime(360L, MINUTES)).build());
+
+        return getCptByWarehouseOutputs;
+    }
+
+    public static Stream<Arguments> mockParameterizedConfiguration() {
         return Stream.of(
                 Arguments.of(
-                        "ARBA01",
+                        "TestValues",
+                        WAREHOUSE_ID,
                         List.of(
-                                CptProjectionOutput.builder()
-                                        .date(CPT_1)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build(),
-                                CptProjectionOutput.builder()
-                                        .date(CPT_2)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build()
+                                new CptProjectionOutput(
+                                        CPT_1,
+                                        CPT_1.minusHours(2),
+                                        0,
+                                        CPT_1.minusHours(6),
+                                        new ProcessingTime(360L, MINUTES),
+                                        false),
+                                new CptProjectionOutput(
+                                        CPT_2,
+                                        CPT_2.minusHours(2),
+                                        0,
+                                        CPT_2.minusHours(6),
+                                        new ProcessingTime(360L, MINUTES),
+                                        false)
                         ),
                         List.of(
                                 new Backlog(CPT_1, 100),
@@ -216,24 +250,10 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                         List.of(CPT_1, CPT_2)
                 ),
                 Arguments.of(
-                        "ARBA01",
-                        List.of(
-                                CptProjectionOutput.builder()
-                                        .date(CPT_1)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build(),
-                                CptProjectionOutput.builder()
-                                        .date(CPT_2)
-                                        .projectedEndDate(null)
-                                        .remainingQuantity(0)
-                                        .processingTime(new ProcessingTime(360L, MINUTES))
-                                        .isDeferred(false)
-                                        .build()
-                        ),
-                        null,
+                        "TestSomeFieldNullPointerException",
+                        WAREHOUSE_ID,
+                        emptyList(),
+                        emptyList(),
                         emptyList()
                 )
         );

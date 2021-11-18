@@ -21,4 +21,6 @@ public class GetDeliveryPromiseProjectionInput {
     private ZonedDateTime dateTo;
 
     private List<Backlog> backlog;
+
+    private String timeZone;
 }

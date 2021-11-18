@@ -105,6 +105,7 @@ public final class TestUtils {
     public static final String LOGISTIC_CENTER_ID = "ARBA01";
     public static final String CONFIG_KEY = "expedition_processing_time";
     public static final long USER_ID = 1234L;
+    public static final long CALLER_ID = 1234;
 
     private TestUtils() {}
 
@@ -112,13 +113,15 @@ public final class TestUtils {
                                         final Set<HeadcountProductivity> productivities,
                                         final Set<PlanningDistribution> planningDists,
                                         final Set<ProcessingDistribution> procDists,
-                                        final Set<ForecastMetadata> forecastMetadatas) {
+                                        final Set<ForecastMetadata> forecastMetadatas,
+                                        final long callerId) {
         return forecastEntityBuilder()
                 .headcountDistributions(headcountDists)
                 .processingDistributions(procDists)
                 .headcountProductivities(productivities)
                 .planningDistributions(planningDists)
                 .metadatas(forecastMetadatas)
+                .userId(callerId)
                 .build();
     }
 
@@ -130,7 +133,8 @@ public final class TestUtils {
         return Forecast.builder()
                 .workflow(FBM_WMS_OUTBOUND)
                 .dateCreated(A_DATE_UTC)
-                .lastUpdated(A_DATE_UTC);
+                .lastUpdated(A_DATE_UTC)
+                .userId(CALLER_ID);
     }
 
     public static PlanningDistribution mockPlanningDist(final Forecast forecast) {
@@ -306,6 +310,7 @@ public final class TestUtils {
                 .polyvalentProductivities(mockPolyvalentProductivities())
                 .backlogLimits(mockBacklogLimits())
                 .metadata(mockMetadatas())
+                .userId(CALLER_ID)
                 .build();
     }
 

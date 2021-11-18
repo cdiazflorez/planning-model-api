@@ -70,10 +70,13 @@ public class CreateForecastUseCaseTest {
         // GIVEN
         final Forecast forecast = new Forecast();
         forecast.setWorkflow(Workflow.FBM_WMS_OUTBOUND);
+        forecast.setUserId(1234);
 
         final Forecast savedForecast = new Forecast();
         savedForecast.setWorkflow(Workflow.FBM_WMS_OUTBOUND);
         savedForecast.setId(1L);
+        savedForecast.setUserId(1234);
+
         final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
 
         when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);

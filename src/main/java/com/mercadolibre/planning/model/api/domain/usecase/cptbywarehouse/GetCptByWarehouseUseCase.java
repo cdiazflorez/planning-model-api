@@ -51,7 +51,7 @@ public class GetCptByWarehouseUseCase
             log.error("RouteApi error, run list cpt default", e);
             return getCptByZonedDateTimes(input);
         }
-
+      
         return getCptByRouteEts(input, routes);
     }
 
@@ -125,7 +125,7 @@ public class GetCptByWarehouseUseCase
     private ProcessingTimeByDate toProcessingTimeByDate(final DayDto dayDto) {
         final int processingTime = Integer.parseInt(dayDto.getProcessingTime().substring(2))
                         + Integer.parseInt(dayDto.getProcessingTime().substring(0, 2))
-                * MINUTES_IN_HOUR;
+                        * MINUTES_IN_HOUR;
 
         return new ProcessingTimeByDate(
                 DayOfWeek.valueOf(dayDto.getEtDay().toUpperCase(Locale.ROOT)),

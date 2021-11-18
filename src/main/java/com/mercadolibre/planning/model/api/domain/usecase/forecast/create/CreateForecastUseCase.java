@@ -54,7 +54,10 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     }
 
     private Forecast saveForecast(final CreateForecastInput input) {
-        final Forecast forecast = Forecast.builder().workflow(input.getWorkflow()).build();
+
+        final Forecast forecast = Forecast.builder()
+                .userId(input.getUserId())
+                .workflow(input.getWorkflow()).build();
         final List<ForecastMetadata> metadata = input.getMetadata().stream()
                 .map(metadataRequest -> ForecastMetadata.builder()
                         .key(metadataRequest.getKey())

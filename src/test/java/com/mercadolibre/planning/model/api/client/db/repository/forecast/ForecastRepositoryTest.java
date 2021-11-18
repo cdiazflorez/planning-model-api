@@ -16,6 +16,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecast;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountDist;
@@ -96,7 +97,8 @@ public class ForecastRepositoryTest {
                 Set.of(headcountProductivity),
                 Set.of(planningDistribution),
                 Set.of(processingDistribution),
-                null);
+                null,
+                USER_ID);
 
         entityManager.persistAndFlush(forecast);
 

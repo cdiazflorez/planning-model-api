@@ -2,5 +2,6 @@
     "logistic_center_id": "ARBA01",
     "key": "expedition_processing_time",
     "value": "60",
-    "metric_unit": "minutes"
+    "metric_unit": "minutes",
+    "caller_id": 1234
 }

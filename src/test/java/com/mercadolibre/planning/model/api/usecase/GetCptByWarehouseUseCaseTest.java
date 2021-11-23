@@ -10,23 +10,23 @@ import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.Process
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class GetCptByWarehouseUseCaseTest {
+public class GetCptByWarehouseUseCaseTest {
     private static final String TIME_ZONE = "America/Argentina/Buenos_Aires";
 
     private static final ZonedDateTime DAY =
@@ -40,7 +40,7 @@ class GetCptByWarehouseUseCaseTest {
     private RouteEtsClient routeEtsClient;
 
     @Test
-    void obtainCptbyZonedDate() {
+    public void obtainCptbyZonedDate() {
         // GIVEN
         final ClientException exception = mock(ClientException.class);
         when(exception.getMessage()).thenReturn("exception");
@@ -65,7 +65,7 @@ class GetCptByWarehouseUseCaseTest {
     }
 
     @Test
-    void obtainCpt() {
+    public void obtainCpt() {
         // GIVEN
         when(routeEtsClient.postRoutEts(
                 RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
@@ -91,8 +91,6 @@ class GetCptByWarehouseUseCaseTest {
     private List<GetCptByWarehouseOutput> mockCptOutput() {
         final GetCptByWarehouseOutput getCptByWarehouseOutput =
                 GetCptByWarehouseOutput.builder()
-                        .serviceId("831")
-                        .canalizationId("X")
                         .logisticCenterId("ARBA01")
                         .date(DAY)
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
@@ -100,14 +98,19 @@ class GetCptByWarehouseUseCaseTest {
 
         final GetCptByWarehouseOutput getCptByWarehouseOutput2 =
                 GetCptByWarehouseOutput.builder()
-                        .serviceId("831")
-                        .canalizationId("X")
+                        .logisticCenterId("ARBA01")
+                        .date(DAY.plusHours(1))
+                        .processingTime(new ProcessingTime(120, MetricUnit.MINUTES))
+                        .build();
+
+        final GetCptByWarehouseOutput getCptByWarehouseOutput3 =
+                GetCptByWarehouseOutput.builder()
                         .logisticCenterId("ARBA01")
                         .date(DAY.plusHours(11))
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        return List.of(getCptByWarehouseOutput, getCptByWarehouseOutput2);
+        return List.of(getCptByWarehouseOutput, getCptByWarehouseOutput2, getCptByWarehouseOutput3);
     }
 
     private List<GetCptByWarehouseOutput> mockCptOutputByZonedDate() {

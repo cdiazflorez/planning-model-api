@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayD
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.ProcessingTimeByDate;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,40 +31,31 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 @AllArgsConstructor
+@SuppressWarnings("PMD.CloseResource")
+@SuppressFBWarnings("OCP_OVERLY_CONCRETE_PARAMETER")
 public class GetCptByWarehouseUseCase
         implements UseCase<GetCptByWarehouseInput, List<GetCptByWarehouseOutput>> {
 
     private static final int MINUTES_IN_HOUR = 60;
+
     private static final int SECONDS = 60;
-    private static final String TYPE_CPT = "cpt";
+
     private RouteEtsClient routeEtsClient;
 
     @Override
     public List<GetCptByWarehouseOutput> execute(final GetCptByWarehouseInput input) {
         final List<ProcessingTimeByDate> routes;
         try {
-            routes = getRouteEtds(input);
+            routes = getRouteEtd(input);
         } catch (ClientException | NoEtdsFoundException e) {
-            log.error(e.getMessage(), e);
-            return obtainCPtsByZonedDateTimes(input);
+            log.error("RouteApi error, run list cpt default", e);
+            return getCptByZonedDateTimes(input);
         }
 
-        final List<GetCptByWarehouseOutput> getCptByWarehouse =
-                obtainCptsByRouteEts(input, routes);
-
-        log.info(
-                "RouteEts: DateFrom [{}] - DateTo [{}]: [{}]",
-                input.getCptFrom(),
-                input.getCptTo(),
-                getCptByWarehouse.stream()
-                        .map(item -> item.getDate().toString() + " - " +
-                                item.getProcessingTime().getValue())
-                        .collect(Collectors.joining(", ")));
-
-        return getCptByWarehouse;
+        return getCptByRouteEts(input, routes);
     }
 
-    private List<GetCptByWarehouseOutput> obtainCPtsByZonedDateTimes(
+    private List<GetCptByWarehouseOutput> getCptByZonedDateTimes(
             final GetCptByWarehouseInput input) {
 
         final ProcessingTime ptDefault = new ProcessingTime(240, MetricUnit.MINUTES);
@@ -78,24 +70,23 @@ public class GetCptByWarehouseUseCase
                 .collect(Collectors.toList());
     }
 
-    private List<ProcessingTimeByDate> getRouteEtds(final GetCptByWarehouseInput input) {
+    private List<ProcessingTimeByDate> getRouteEtd(final GetCptByWarehouseInput input) {
         final List<RouteEtsDto> routes = routeEtsClient.postRoutEts(
                         RouteEtsRequest.builder()
                                 .fromFilter(List.of(input.getLogisticCenterId()))
                                 .build());
 
         if (routes.isEmpty()) {
-            throw new NoEtdsFoundException("No se encontraron cpts disponibles");
+            throw new NoEtdsFoundException("No available cpt found");
         }
 
-        final Stream<DayDto> filteredDays =
+        final Stream<DayDto> allCptDays =
                 routes.stream()
                         .flatMap(route -> route.getFixedEtsByDay().values().stream())
-                        .flatMap(Collection::stream)
-                        .filter(day -> TYPE_CPT.equals(day.getType()));
+                        .flatMap(Collection::stream);
 
         final Map<DayOfWeek, List<ProcessingTimeByDate>> distinctProcessingTimesByDate =
-                filteredDays
+                allCptDays
                         .map(this::toProcessingTimeByDate)
                         .collect(
                                 Collectors.groupingBy(
@@ -111,7 +102,7 @@ public class GetCptByWarehouseUseCase
                 .collect(Collectors.toList());
     }
 
-    private int getProcessingTimeId(ProcessingTimeByDate processingTimeByDate) {
+    private int getProcessingTimeId(final ProcessingTimeByDate processingTimeByDate) {
         return processingTimeByDate.getHour() * SECONDS + processingTimeByDate.getMinutes();
     }
 
@@ -133,14 +124,14 @@ public class GetCptByWarehouseUseCase
 
     private ProcessingTimeByDate toProcessingTimeByDate(final DayDto dayDto) {
         final int processingTime = Integer.parseInt(dayDto.getProcessingTime().substring(2))
-                        + Integer.parseInt(dayDto.getProcessingTime().substring(0, 2)) * MINUTES_IN_HOUR;
+                        + Integer.parseInt(dayDto.getProcessingTime().substring(0, 2))
+                * MINUTES_IN_HOUR;
 
         return new ProcessingTimeByDate(
                 DayOfWeek.valueOf(dayDto.getEtDay().toUpperCase(Locale.ROOT)),
                 Integer.parseInt(dayDto.getEtHour().substring(0, 2)),
                 Integer.parseInt(dayDto.getEtHour().substring(2)),
-                processingTime,
-                dayDto.getType());
+                processingTime);
     }
 
     private boolean isBetweenInclusive(final ZonedDateTime date,
@@ -150,7 +141,7 @@ public class GetCptByWarehouseUseCase
         return date.equals(from) || date.equals(to) || date.isAfter(from) && date.isBefore(to);
     }
 
-    private List<GetCptByWarehouseOutput> obtainCptsByRouteEts(
+    private List<GetCptByWarehouseOutput> getCptByRouteEts(
             final GetCptByWarehouseInput input, final List<ProcessingTimeByDate> routes) {
 
         final ZonedDateTime cptFromTimeZoneWarehouse =

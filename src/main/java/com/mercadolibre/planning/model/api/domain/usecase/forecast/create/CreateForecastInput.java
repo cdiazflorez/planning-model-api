@@ -25,4 +25,5 @@ public class CreateForecastInput {
     private List<HeadcountProductivityRequest> headcountProductivities;
     private List<PlanningDistributionRequest> planningDistributions;
     private List<ProcessingDistributionRequest> backlogLimits;
+    private long userId;
 }

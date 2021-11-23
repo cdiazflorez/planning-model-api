@@ -6,6 +6,7 @@ import lombok.Value;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -40,6 +41,10 @@ public class CreateForecastRequest {
     @Valid
     private List<ProcessingDistributionRequest> backlogLimits;
 
+    @NotNull
+    @Valid
+    private long userId;
+
     public CreateForecastInput toCreateForecastInput(final Workflow workflow) {
         return CreateForecastInput.builder()
                 .workflow(workflow)
@@ -50,6 +55,7 @@ public class CreateForecastRequest {
                 .polyvalentProductivities(polyvalentProductivities)
                 .processingDistributions(processingDistributions)
                 .backlogLimits(backlogLimits)
+                .userId(userId)
                 .build();
     }
 }

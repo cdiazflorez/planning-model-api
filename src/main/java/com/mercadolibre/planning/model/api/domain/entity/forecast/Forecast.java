@@ -48,6 +48,9 @@ public class Forecast {
     @UpdateTimestamp
     private ZonedDateTime lastUpdated;
 
+    @Column(updatable = false)
+    private long userId;
+
     @Fetch(FetchMode.SELECT)
     @BatchSize(size = 50)
     @OneToMany(mappedBy = "forecast", cascade = CascadeType.ALL)

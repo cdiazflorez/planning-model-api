@@ -1,11 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -16,11 +11,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.Bac
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -30,6 +25,7 @@ import com.mercadolibre.planning.model.api.web.controller.projection.request.Pro
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -43,24 +39,17 @@ import javax.validation.Valid;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @SuppressWarnings("PMD.ExcessiveImports")
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/projections")
-
+@Slf4j
 public class ProjectionController {
-
-    private final CalculateCptProjectionUseCase calculateCptProjection;
 
     private final CalculateBacklogProjectionUseCase calculateBacklogProjection;
 
@@ -70,9 +59,7 @@ public class ProjectionController {
 
     private final GetPlanningDistributionUseCase getPlanningUseCase;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
-
-    private final GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private final GetCptProjectionUseCase getCptProjectionUseCase;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -80,12 +67,23 @@ public class ProjectionController {
             @PathVariable final Workflow workflow,
             @Valid @RequestBody final CptProjectionRequest request) {
 
-        return generateCptProjection(workflow, request);
+        return ResponseEntity.ok(getCptProjectionUseCase.execute(
+            new GetCptProjectionInput(
+                    workflow,
+                    request.getWarehouseId(),
+                    request.getType(),
+                    request.getProcessName(),
+                    request.getDateFrom(),
+                    request.getDateTo(),
+                    request.getBacklog(),
+                    request.getTimeZone(),
+                    request.isApplyDeviation())
+            ));
     }
 
     @PostMapping("/cpts/delivery_promise")
     @Trace(dispatcher = true)
-    public ResponseEntity<List<CptProjectionOutput>> getDeliveryPromiseProjection(
+    public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getDeliveryPromiseProjection(
             @PathVariable final Workflow workflow,
             @Valid @RequestBody final CptProjectionRequest request) {
 
@@ -148,76 +146,9 @@ public class ProjectionController {
         dataBinder.registerCustomEditor(ProjectionType.class, new ProjectionTypeEditor());
     }
 
-    private ResponseEntity<List<CptProjectionOutput>> generateCptProjection(
-            final Workflow workflow,
-            final CptProjectionRequest request) {
-
-        final String warehouseId = request.getWarehouseId();
-        final ZonedDateTime dateFrom = request.getDateFrom();
-        final ZonedDateTime dateTo = request.getDateTo();
-        final String timeZone = request.getTimeZone();
-
-        final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
-                .builder()
-                .warehouseId(warehouseId)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .processName(request.getProcessName())
-                .workflow(workflow)
-                .build());
-
-        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(throughput))
-                .stream()
-                .collect(toMap(
-                        CapacityOutput::getDate,
-                        capacityOutput -> (int) capacityOutput.getValue()
-                ));
-
-        final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
-                GetPlanningDistributionInput.builder()
-                        .workflow(workflow)
-                        .warehouseId(request.getWarehouseId())
-                        .dateOutFrom(request.getDateFrom())
-                        .dateOutTo(request.getDateTo())
-                        .applyDeviation(request.isApplyDeviation())
-                        .build());
-
-        final List<GetCptByWarehouseOutput> cptByWarehouse = getCptByWarehouseUseCase
-                .execute(new GetCptByWarehouseInput(warehouseId, dateFrom, dateTo,
-                        getCptDefaultFromBacklog(request.getBacklog()), timeZone));
-
-        final List<CptCalculationOutput> cptProjectionOutputs =
-                calculateCptProjection.execute(CptProjectionInput.builder()
-                        .workflow(workflow)
-                        .logisticCenterId(warehouseId)
-                        .dateFrom(dateFrom)
-                        .dateTo(dateTo)
-                        .capacity(capacity)
-                        .backlog(getBacklog(request.getBacklog()))
-                        .planningUnits(planningUnits)
-                        .projectionType(CPT)
-                        .cptByWarehouse(cptByWarehouse)
-                        .currentDate(getCurrentUtcDate())
-                        .build());
-
-        return ResponseEntity.ok(cptProjectionOutputs.stream()
-                .map(item -> new CptProjectionOutput(
-                        item.getDate(),
-                        item.getProjectedEndDate(),
-                        item.getRemainingQuantity(),
-                        null, null, false)).collect(toList()));
-    }
-
     private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {
         return backlogs == null
                 ? emptyList()
                 : backlogs.stream().map(QuantityByDate::toBacklog).collect(toList());
-    }
-
-    private List<ZonedDateTime> getCptDefaultFromBacklog(final List<QuantityByDate> backlogs) {
-        return backlogs == null
-                ? emptyList()
-                : backlogs.stream().map(QuantityByDate::getDate).distinct().collect(toList());
     }
 }

@@ -18,7 +18,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
@@ -81,7 +81,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     @MethodSource("mockParameterizedConfiguration")
     public void testExecute(final String assertionsGroup,
                             final String warehouseId,
-                            final List<CptProjectionOutput> cptProjectionOutput,
+                            final List<DeliveryPromiseProjectionOutput> output,
                             final List<Backlog> backlogs,
                             final List<ZonedDateTime> cptDates) {
         //GIVEN
@@ -125,7 +125,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .cptByWarehouse(cptByWarehouse)
                 .currentDate(getCurrentUtcDate())
                 .build())
-        ).thenReturn(cptProjectionOutput.stream().map(item ->
+        ).thenReturn(output.stream().map(item ->
                         new CptCalculationOutput(item.getDate(),
                                 item.getProjectedEndDate(),
                                 item.getRemainingQuantity()))
@@ -139,25 +139,26 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 cptDates,null))).thenReturn(cptByWarehouse);
 
         //WHEN
-        final List<CptProjectionOutput> response = getDeliveryPromiseUseCase.execute(input);
+        final List<DeliveryPromiseProjectionOutput> response =
+                getDeliveryPromiseUseCase.execute(input);
 
         //THEN
         if ("TestValues".equals(assertionsGroup)) {
 
-            assertEquals(cptProjectionOutput.size(), response.size());
-            assertEquals(cptProjectionOutput.get(0).getDate(), response.get(0).getDate());
-            assertEquals(cptProjectionOutput.get(0).getProjectedEndDate(), response.get(0)
+            assertEquals(output.size(), response.size());
+            assertEquals(output.get(0).getDate(), response.get(0).getDate());
+            assertEquals(output.get(0).getProjectedEndDate(), response.get(0)
                     .getProjectedEndDate());
-            assertEquals(cptProjectionOutput.get(0).getRemainingQuantity(), response.get(0)
+            assertEquals(output.get(0).getRemainingQuantity(), response.get(0)
                     .getRemainingQuantity());
-            assertEquals(cptProjectionOutput.get(0).getEtdCutoff(), response.get(0).getEtdCutoff());
-            assertEquals(cptProjectionOutput.get(0).isDeferred(), response.get(0).isDeferred());
-            assertEquals(cptProjectionOutput.get(0).getProcessingTime(), response.get(0)
+            assertEquals(output.get(0).getEtdCutoff(), response.get(0).getEtdCutoff());
+            assertEquals(output.get(0).isDeferred(), response.get(0).isDeferred());
+            assertEquals(output.get(0).getProcessingTime(), response.get(0)
                     .getProcessingTime());
         }
         if ("TestSomeFieldNullPointerException".equals(assertionsGroup)) {
 
-            assertEquals(cptProjectionOutput.isEmpty(), response.isEmpty());
+            assertEquals(output.isEmpty(), response.isEmpty());
         }
     }
 
@@ -229,19 +230,21 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                         "TestValues",
                         WAREHOUSE_ID,
                         List.of(
-                                new CptProjectionOutput(
+                                new DeliveryPromiseProjectionOutput(
                                         CPT_1,
                                         CPT_1.minusHours(2),
                                         0,
                                         CPT_1.minusHours(6),
                                         new ProcessingTime(360L, MINUTES),
+                                        CPT_1.minusHours(7),
                                         false),
-                                new CptProjectionOutput(
+                                new DeliveryPromiseProjectionOutput(
                                         CPT_2,
                                         CPT_2.minusHours(2),
                                         0,
                                         CPT_2.minusHours(6),
                                         new ProcessingTime(360L, MINUTES),
+                                        CPT_1.minusHours(7),
                                         false)
                         ),
                         List.of(

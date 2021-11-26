@@ -51,7 +51,7 @@ public class GetCptByWarehouseUseCase
             log.error("RouteApi error, run list cpt default", e);
             return getCptByZonedDateTimes(input);
         }
-      
+
         return getCptByRouteEts(input, routes);
     }
 
@@ -61,6 +61,7 @@ public class GetCptByWarehouseUseCase
         final ProcessingTime ptDefault = new ProcessingTime(240, MetricUnit.MINUTES);
 
         return input.getCptDefault().stream()
+                .sorted()
                 .map(item -> GetCptByWarehouseOutput.builder()
                                         .date(item)
                                         .processingTime(ptDefault)

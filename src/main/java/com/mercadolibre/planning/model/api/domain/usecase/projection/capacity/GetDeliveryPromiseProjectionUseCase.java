@@ -20,6 +20,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.util.TestLogisticCenterMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +68,7 @@ public class GetDeliveryPromiseProjectionUseCase {
         final List<GetCptByWarehouseOutput> allCptByWarehouse =
                 getCptByWarehouseUseCase.execute(
                         new GetCptByWarehouseInput(
-                                input.getWarehouseId(),
+                                TestLogisticCenterMapper.toRealLogisticCenter(input.getWarehouseId()),
                                 input.getDateFrom(),
                                 input.getDateTo(),
                                 getCptDefaultFromBacklog(input.getBacklog()),

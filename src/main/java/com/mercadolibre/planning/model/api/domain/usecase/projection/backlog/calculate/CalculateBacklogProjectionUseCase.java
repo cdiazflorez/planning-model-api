@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.nextHour;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
@@ -38,7 +40,11 @@ public class CalculateBacklogProjectionUseCase {
     public List<BacklogProjectionOutput> execute(final BacklogProjectionInput input) {
         final List<BacklogProjectionOutput> outputs = new ArrayList<>(estimateSize(input));
 
-        for (final ProcessName process : input.getProcessNames()) {
+        final List<ProcessName> processes = input.getProcessNames().stream()
+                .sorted()
+                .collect(Collectors.toList());
+
+        for (final ProcessName process : processes) {
             final Optional<BacklogProjectionUseCase> useCase = projectionStrategy.getBy(process);
             if (useCase.isPresent()) {
                 final ProcessParams processParams = useCase.get().execute(input);
@@ -49,8 +55,8 @@ public class CalculateBacklogProjectionUseCase {
                                 .stream()
                                 .filter(o -> o.getProcessName() == previousProcess)
                                 .findFirst()
-                                .get()
-                                .getValues();
+                                .map(BacklogProjectionOutput::getValues)
+                                .orElseGet(Collections::emptyList);
 
                         processParams.setPreviousBacklogsByDate(adaptToMap(previousBacklogs));
                     }

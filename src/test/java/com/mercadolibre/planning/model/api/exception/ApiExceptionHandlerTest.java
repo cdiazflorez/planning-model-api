@@ -192,6 +192,30 @@ public class ApiExceptionHandlerTest {
     }
 
     @Test
+    public void handleInvalidForecastException() {
+        // GIVEN
+        final InvalidForecastException exception = new InvalidForecastException(
+                WAREHOUSE_ID,
+                FBM_WMS_OUTBOUND.name()
+        );
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                HttpStatus.CONFLICT,
+                "The currently loaded forecast is invalid or has missing values, "
+                        + "warehouse_id:ARBA01, workflow:FBM_WMS_OUTBOUND",
+                "invalid_forecast"
+        );
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response =
+                apiExceptionHandler.handleInvalidForecastException(exception, request);
+
+        // THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
     @DisplayName("Handle Exception")
     public void handleGenericException() {
         // GIVEN

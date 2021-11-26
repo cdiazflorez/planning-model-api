@@ -20,6 +20,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.exception.InvalidForecastException;
 import com.mercadolibre.planning.model.api.util.TestLogisticCenterMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,6 @@ import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.LongStream;
@@ -134,7 +134,11 @@ public class GetDeliveryPromiseProjectionUseCase {
         final int defaultCapacity =
                 capacityByDate.values().stream()
                         .max(Integer::compareTo)
-                        .orElseThrow(NoSuchElementException::new);
+                        .orElseThrow(() ->
+                                new InvalidForecastException(
+                                        input.getWarehouseId(),
+                                        input.getWorkflow().name())
+                        );
 
         final Set<Instant> capacityHours = getCapacityHours(input.getDateFrom(), input.getDateTo());
 

@@ -16,10 +16,9 @@ import java.io.IOException;
 
 @Configuration
 @AllArgsConstructor
-@EnableConfigurationProperties({RestClientConfig.FlowMonitorClientProperties.class,
-                                RestClientConfig.RouteEtsClientProperties.class})
+@EnableConfigurationProperties({RestClientConfig.RouteEtsClientProperties.class})
+
 public class RestClientConfig {
-    private FlowMonitorClientProperties flowMonitorClientProperties;
     private RouteEtsClientProperties routeEtsClientProperties;
 
     @Bean
@@ -27,7 +26,6 @@ public class RestClientConfig {
         return MeliRestClient
                 .builder()
                 .withPool(
-                        restPool(RestPool.FLOW_MONITOR.name(), flowMonitorClientProperties),
                         restPool(RestPool.ROUTE_ETS.name(), routeEtsClientProperties)
                 )
                 .build();
@@ -61,10 +59,6 @@ public class RestClientConfig {
 
     private RESTLocalCache localCache(final String name, final int elements) {
         return new RESTLocalCache(name, elements);
-    }
-
-    @ConfigurationProperties("restclient.pool.flow-monitor")
-    public static class FlowMonitorClientProperties extends RestClientProperties {
     }
 
     @ConfigurationProperties("restclient.pool.route-ets")

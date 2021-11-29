@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
@@ -118,6 +119,19 @@ public class ApiExceptionHandler {
 
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
         log.error("forecast_not_found", exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(InvalidForecastException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidForecastException(
+            final InvalidForecastException exception,
+            final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(CONFLICT,
+                exception.getMessage(), "invalid_forecast");
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error("invalid_forecast", exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 

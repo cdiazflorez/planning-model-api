@@ -35,7 +35,7 @@ public interface ProcessingDistributionRepository
             + "FROM processing_distribution p "
             + "JOIN forecast f ON f.id = p.forecast_id "
             + "JOIN forecast_metadata m ON m.forecast_id = p.forecast_id "
-            + "WHERE p.type := 'MAX_CAPACITY' "
+            + "WHERE p.type = 'MAX_CAPACITY' "
             + "AND f.workflow = :workflow "
             + "AND p.date BETWEEN :date_from AND :date_to "
             + "AND m.key = 'warehouse_id' "

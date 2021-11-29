@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.usecase;
+package com.mercadolibre.planning.model.api.usecase.entities;
 
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntitiesStrategy;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -156,10 +155,19 @@ public class SearchEntitiesUseCaseTest {
         final Map<EntityType, Object> results = searchEntitiesUseCase.execute(input);
 
         // THEN
+        final Set<EntityType> searchableEntityType = Set.of(
+                HEADCOUNT,
+                PRODUCTIVITY,
+                THROUGHPUT,
+                REMAINING_PROCESSING,
+                PERFORMED_PROCESSING,
+                BACKLOG_LOWER_LIMIT,
+                BACKLOG_UPPER_LIMIT);
+
         assertNotNull(results);
         assertFalse(results.isEmpty());
         assertEquals(7, results.size());
-        assertTrue(results.keySet().containsAll(Arrays.asList(EntityType.values().clone())));
+        assertTrue(results.keySet().containsAll(searchableEntityType));
     }
 
     private GetEntityInput getMockInput(final EntityType entityType) {
@@ -173,5 +181,4 @@ public class SearchEntitiesUseCaseTest {
                 .entityType(entityType)
                 .build();
     }
-
 }

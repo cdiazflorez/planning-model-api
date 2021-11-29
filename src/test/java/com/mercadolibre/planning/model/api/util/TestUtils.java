@@ -11,12 +11,14 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.MaxCapacityView;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
@@ -40,6 +42,7 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Proce
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -87,6 +90,7 @@ import static org.mockito.Mockito.when;
         "PMD.GodClass",
         "PMD.ExcessivePublicCount"
 })
+@SuppressFBWarnings("OCP_OVERLY_CONCRETE_PARAMETER")
 public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
@@ -107,7 +111,8 @@ public final class TestUtils {
     public static final long USER_ID = 1234L;
     public static final long CALLER_ID = 1234;
 
-    private TestUtils() {}
+    private TestUtils() {
+    }
 
     public static Forecast mockForecast(final Set<HeadcountDistribution> headcountDists,
                                         final Set<HeadcountProductivity> productivities,
@@ -316,14 +321,14 @@ public final class TestUtils {
 
     public static SaveForecastDeviationInput mockSaveForecastDeviationInput() {
         return SaveForecastDeviationInput
-                    .builder()
-                    .workflow(FBM_WMS_OUTBOUND)
-                    .dateFrom(DATE_IN)
-                    .dateTo(DATE_OUT)
-                    .value(5.6)
-                    .userId(USER_ID)
-                    .warehouseId(WAREHOUSE_ID)
-                    .build();
+                .builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateFrom(DATE_IN)
+                .dateTo(DATE_OUT)
+                .value(5.6)
+                .userId(USER_ID)
+                .warehouseId(WAREHOUSE_ID)
+                .build();
     }
 
     public static DisableForecastDeviationInput mockDisableForecastDeviationInput() {
@@ -409,7 +414,7 @@ public final class TestUtils {
                 .build();
     }
 
-    public static GetForecastMetadataInput  mockForecastMetadataInput() {
+    public static GetForecastMetadataInput mockForecastMetadataInput() {
         return GetForecastMetadataInput.builder()
                 .forecastIds(List.of(1L))
                 .dateFrom(DATE_IN)
@@ -893,7 +898,7 @@ public final class TestUtils {
                         .value(1500)
                         .workflow(FBM_WMS_OUTBOUND)
                         .build(),
-                        EntityOutput.builder()
+                EntityOutput.builder()
                         .date(A_DATE_UTC)
                         .metricUnit(UNITS)
                         .processName(WAVING)
@@ -972,6 +977,36 @@ public final class TestUtils {
                         .workflow(FBM_WMS_OUTBOUND)
                         .build()
         );
+    }
+
+    public static List<MaxCapacityOutput> getMockOutputCapacities() {
+        return List.of(
+                new MaxCapacityOutput(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 300),
+                new MaxCapacityOutput(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 350),
+                new MaxCapacityOutput(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 400));
+    }
+
+    public static List<MaxCapacityView> getMockEntityCapacities() {
+
+        return List.of(
+                getMockView(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 300),
+                getMockView(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 350),
+                getMockView(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC, 400));
+    }
+
+    private static MaxCapacityView getMockView(final String warehouse,
+                                        final ZonedDateTime dateFrom,
+                                        final ZonedDateTime dateTo,
+                                        final long quantity) {
+
+        final MaxCapacityView maxCapacityView = mock(MaxCapacityView.class);
+
+        when(maxCapacityView.getLogisticCenterId()).thenReturn(warehouse);
+        when(maxCapacityView.getLoadDate()).thenReturn(Date.from(dateFrom.toInstant()));
+        when(maxCapacityView.getMaxCapacityDate()).thenReturn(Date.from(dateTo.toInstant()));
+        when(maxCapacityView.getMaxCapacityValue()).thenReturn(quantity);
+
+        return maxCapacityView;
     }
 
     public static Map<EntityType, Object> mockSearchEntitiesOutput() {

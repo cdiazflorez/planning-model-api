@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.usecase;
+package com.mercadolibre.planning.model.api.usecase.entities;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

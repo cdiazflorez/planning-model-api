@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.usecase;
+package com.mercadolibre.planning.model.api.usecase.entities;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.usecase.HeadcountProductivityViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;

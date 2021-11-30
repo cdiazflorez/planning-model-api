@@ -60,7 +60,8 @@ public class ApiExceptionHandlerTest {
                 BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
                         + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
-                        + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT]",
+                        + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT,"
+                        + " MAX_CAPACITY]",
                 "invalid_entity_type");
 
         // WHEN

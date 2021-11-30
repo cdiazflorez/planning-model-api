@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
@@ -31,6 +32,7 @@ import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.PROCESSING_TYPE;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.getMockOutputCapacities;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetPerformedProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
@@ -73,6 +75,9 @@ public class EntityControllerTest {
 
     @MockBean
     private SearchEntityUseCase searchEntityUseCase;
+
+    @MockBean
+    private GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -202,7 +207,7 @@ public class EntityControllerTest {
         final ResultActions result = mvc.perform(
                 post(URL, "fbm-wms-outbound", "remaining_processing")
                         .contentType(APPLICATION_JSON)
-                        .content(getResourceAsString("get_remaining_processing_request.json"))
+                        .content(getResourceAsString("post_remaining_processing_request.json"))
         );
 
         // THEN
@@ -211,7 +216,7 @@ public class EntityControllerTest {
         verifyNoInteractions(getThroughputUseCase);
         result.andExpect(status().isOk())
                 .andExpect(content()
-                .json(getResourceAsString("get_remaining_processing_response.json")));
+                .json(getResourceAsString("post_remaining_processing_response.json")));
     }
 
     @DisplayName("Get Performed_processing entity works ok")
@@ -237,6 +242,31 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content()
                         .json(getResourceAsString("get_performed_processing_response.json")));
+    }
+
+    @DisplayName("Get Max_capacities entity works ok")
+    @Test
+    public void testGetMaxCapacitiesEntityOk() throws Exception {
+        // GIVEN
+        when(getMaxCapacityEntityUseCase.execute(
+                FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC.plusHours(1)))
+                .thenReturn(getMockOutputCapacities());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+                get(URL, "fbm-wms-outbound", "max_capacity")
+                        .param("date_from", A_DATE_UTC.toString())
+                        .param("date_to", A_DATE_UTC.plusHours(1).toString())
+        );
+
+        // THEN
+        verifyNoInteractions(searchEntityUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getThroughputUseCase);
+        result.andExpect(status().isOk())
+                .andExpect(content()
+                        .string(getResourceAsString("get_max_capacity_response.csv").trim()));
     }
 
     @DisplayName("Search entities returns all entities")
@@ -271,5 +301,4 @@ public class EntityControllerTest {
                 .andExpect(content()
                         .json(getResourceAsString("search_entities_response.json")));
     }
-
 }

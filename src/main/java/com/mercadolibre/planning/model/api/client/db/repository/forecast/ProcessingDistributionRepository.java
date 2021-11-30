@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import com.mercadolibre.planning.model.api.domain.entity.forecast.MaxCapacityView;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -27,4 +28,20 @@ public interface ProcessingDistributionRepository
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,
             @Param("forecast_ids") List<Long> forecastIds);
+
+    @Query(value = "SELECT m.value as logisticCenterId, "
+            + "f.date_created as loadDate, p.date as maxCapacityDate, "
+            + "p.quantity as maxCapacityValue "
+            + "FROM processing_distribution p "
+            + "JOIN forecast f ON f.id = p.forecast_id "
+            + "JOIN forecast_metadata m ON m.forecast_id = p.forecast_id "
+            + "WHERE p.type = 'MAX_CAPACITY' "
+            + "AND f.workflow = :workflow "
+            + "AND p.date BETWEEN :date_from AND :date_to "
+            + "AND m.key = 'warehouse_id' "
+            + "ORDER BY m.value, f.date_created, p.date", nativeQuery = true)
+    List<MaxCapacityView> findMaxCapacitiesByDateInRange(
+            @Param("workflow") String workflow,
+            @Param("date_from") ZonedDateTime dateFrom,
+            @Param("date_to") ZonedDateTime dateTo);
 }

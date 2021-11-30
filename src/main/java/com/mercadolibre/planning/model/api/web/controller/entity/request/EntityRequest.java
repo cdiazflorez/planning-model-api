@@ -54,6 +54,7 @@ public class EntityRequest {
     }
 
     public GetEntityInput toGetEntityInput(final Workflow workflow, final EntityType entityType) {
+
         return GetEntityInput.builder()
                 .warehouseId(warehouseId)
                 .workflow(workflow)

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.g
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -57,11 +58,12 @@ public class GetThroughputUseCase
         final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(
                 createProductivityInput(input));
 
-        return createThroughput(headcounts, productivity);
+        return createThroughput(headcounts, productivity, input.getWorkflow());
     }
 
     private List<EntityOutput> createThroughput(final List<EntityOutput> headcounts,
-                                                final List<ProductivityOutput> productivity) {
+                                                final List<ProductivityOutput> productivity,
+                                                final Workflow workflow) {
 
         final Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>> headcountsMap =
                 toMapByProcessNameDateAndSource(headcounts);
@@ -98,16 +100,16 @@ public class GetThroughputUseCase
                                 polyvalentProductivityMap.get(processName).get(dateTime);
 
                         tph = calculateTphValue(
-                                headcount.getValue(),
+                                headcount == null ? 0 : headcount.getValue(),
                                 simulatedHeadcount.getValue(),
                                 currentProductivity.getValue(),
-                                currentPolyvalentProductivity.getValue());
+                                currentPolyvalentProductivity == null ? 0 : currentPolyvalentProductivity.getValue());
                     }
                     throughput.add(EntityOutput.builder()
-                            .workflow(headcount.getWorkflow())
-                            .date(headcount.getDate().withFixedOffsetZone())
+                            .workflow(workflow)
+                            .date(dateTime)
                             .source(currentProductivity.getSource())
-                            .processName(headcount.getProcessName())
+                            .processName(processName)
                             .metricUnit(UNITS_PER_HOUR)
                             .value(tph)
                             .build());

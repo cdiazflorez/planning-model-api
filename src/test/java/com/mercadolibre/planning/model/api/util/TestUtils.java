@@ -517,14 +517,6 @@ public final class TestUtils {
                         .build(),
                 EntityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
-                        .date(A_DATE_UTC.plusHours(1))
-                        .processName(PACKING)
-                        .metricUnit(WORKERS)
-                        .source(FORECAST)
-                        .value(30)
-                        .build(),
-                EntityOutput.builder()
-                        .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
                         .processName(PACKING)
                         .metricUnit(WORKERS)
@@ -537,7 +529,7 @@ public final class TestUtils {
                         .processName(PACKING)
                         .metricUnit(WORKERS)
                         .source(SIMULATION)
-                        .value(20)
+                        .value(40)
                         .build()
         );
     }

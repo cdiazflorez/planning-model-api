@@ -168,7 +168,7 @@ public class GetThroughputUseCaseTest {
         final EntityOutput output4 = output.get(3);
         assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output4.getDate());
         assertEquals(PACKING, output4.getProcessName());
-        assertEquals(2000, output4.getValue());
+        assertEquals(1800, output4.getValue());
         assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
         assertEquals(SIMULATION, output4.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());

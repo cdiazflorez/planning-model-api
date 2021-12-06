@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
@@ -34,13 +33,17 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.CALLER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,11 +72,11 @@ public class CreateForecastUseCaseTest {
     public void createSaveOk() {
         // GIVEN
         final Forecast forecast = new Forecast();
-        forecast.setWorkflow(Workflow.FBM_WMS_OUTBOUND);
+        forecast.setWorkflow(FBM_WMS_OUTBOUND);
         forecast.setUserId(1234);
 
         final Forecast savedForecast = new Forecast();
-        savedForecast.setWorkflow(Workflow.FBM_WMS_OUTBOUND);
+        savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
         savedForecast.setId(1L);
         savedForecast.setUserId(1234);
 
@@ -100,6 +103,41 @@ public class CreateForecastUseCaseTest {
         verify(planningDistributionGateway).create(
                 getPlanningDistributions(savedForecast),
                 savedForecast.getId());
+
+        assertEquals(1L, output.getId());
+    }
+
+    @Test
+    @DisplayName("An empty forecast is created successfully ")
+    public void emptySaveOk() {
+        // GIVEN
+        final Forecast forecast = new Forecast();
+        forecast.setWorkflow(FBM_WMS_OUTBOUND);
+        forecast.setUserId(1234);
+
+        final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
+
+        final Forecast savedForecast = new Forecast();
+        savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+        savedForecast.setId(1L);
+        savedForecast.setUserId(1234);
+
+        when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);
+
+        final CreateForecastInput input = CreateForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .metadata(mockMetadatas())
+                .userId(CALLER_ID)
+                .build();
+
+        // WHEN
+        final CreateForecastOutput output = createForecastUseCase.execute(input);
+
+        // THEN
+        verifyNoInteractions(processingDistributionGateway);
+        verifyNoInteractions(headcountDistributionGateway);
+        verifyNoInteractions(headcountProductivityGateway);
+        verifyNoInteractions(planningDistributionGateway);
 
         assertEquals(1L, output.getId());
     }

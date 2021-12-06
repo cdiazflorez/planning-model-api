@@ -11,6 +11,7 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
 
 public enum Workflow {
+    FBM_WMS_INBOUND,
     FBM_WMS_OUTBOUND;
 
     private static final Map<String, Workflow> LOOKUP = Arrays.stream(values()).collect(

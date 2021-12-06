@@ -4,45 +4,25 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import lombok.Value;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import java.util.List;
 
 @Value
 public class CreateForecastRequest {
 
-    @NotEmpty
-    @Valid
     private List<MetadataRequest> metadata;
 
-    @NotEmpty
-    @Valid
     private List<ProcessingDistributionRequest> processingDistributions;
 
-    @NotEmpty
-    @Valid
     private List<HeadcountDistributionRequest> headcountDistributions;
 
-    @NotEmpty
-    @Valid
     private List<PolyvalentProductivityRequest> polyvalentProductivities;
 
-    @NotEmpty
-    @Valid
     private List<HeadcountProductivityRequest> headcountProductivities;
 
-    @NotEmpty
-    @Valid
     private List<PlanningDistributionRequest> planningDistributions;
 
-    @NotEmpty
-    @Valid
     private List<ProcessingDistributionRequest> backlogLimits;
 
-    @NotNull
-    @Valid
     private long userId;
 
     public CreateForecastInput toCreateForecastInput(final Workflow workflow) {

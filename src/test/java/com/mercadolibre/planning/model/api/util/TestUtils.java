@@ -835,7 +835,7 @@ public final class TestUtils {
         );
     }
 
-    private static List<MetadataRequest> mockMetadatas() {
+    public static List<MetadataRequest> mockMetadatas() {
         return asList(
                 new MetadataRequest("warehouse_id", WAREHOUSE_ID),
                 new MetadataRequest("week", "26-2020"),

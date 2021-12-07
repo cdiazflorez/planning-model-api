@@ -12,6 +12,10 @@ import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
 import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.PlanningDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 
 @Service
@@ -71,8 +76,14 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     private void saveProcessingDistributions(final CreateForecastInput input,
                                              final Forecast forecast) {
 
-        final List<ProcessingDistribution> processingDistributions =
-                input.getProcessingDistributions().stream()
+        final List<ProcessingDistributionRequest> distributions =
+                input.getProcessingDistributions();
+
+        if (isEmpty(distributions)) {
+            return;
+        }
+
+        final List<ProcessingDistribution> processingDistributions = distributions.stream()
                         .map(e -> e.toProcessingDistributions(forecast))
                         .flatMap(List::stream).distinct().collect(toList());
 
@@ -82,8 +93,12 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     private void saveHeadcountDistribution(final CreateForecastInput input,
                                            final Forecast forecast) {
 
-        final List<HeadcountDistribution> headcountDistributions =
-                input.getHeadcountDistributions().stream()
+        final List<HeadcountDistributionRequest> distributions = input.getHeadcountDistributions();
+        if (isEmpty(distributions)) {
+            return;
+        }
+
+        final List<HeadcountDistribution> headcountDistributions = distributions.stream()
                         .map(e -> e.toHeadcountDists(forecast))
                         .flatMap(List::stream).distinct().collect(toList());
 
@@ -93,8 +108,14 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     private void saveHeadcountProductivity(final CreateForecastInput input,
                                            final Forecast forecast) {
 
-        final List<HeadcountProductivity> headcountProductivities =
-                input.getHeadcountProductivities().stream()
+        final List<HeadcountProductivityRequest> productivities =
+                input.getHeadcountProductivities();
+
+        if (isEmpty(productivities)) {
+            return;
+        }
+
+        final List<HeadcountProductivity> headcountProductivities = productivities.stream()
                         .map(e -> e.toHeadcountProductivities(
                                 forecast,
                                 input.getPolyvalentProductivities()))
@@ -106,23 +127,30 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     private void savePlanningDistributions(final CreateForecastInput input,
                                            final Forecast forecast) {
 
-        final List<PlanningDistribution> pDistributions = input.getPlanningDistributions().stream()
+        final List<PlanningDistributionRequest> distributions = input.getPlanningDistributions();
+        if (isEmpty(distributions)) {
+            return;
+        }
+
+        final List<PlanningDistribution> planningDistributions = distributions.stream()
                 .map(pdr -> pdr.toPlanningDistribution(forecast))
                 .collect(toList());
 
-        planningDistributionGateway.create(pDistributions, forecast.getId());
+        planningDistributionGateway.create(planningDistributions, forecast.getId());
     }
 
-    private  void saveBackloglimit(final CreateForecastInput input,
+    private void saveBackloglimit(final CreateForecastInput input,
                                    final Forecast forecast) {
 
-        final List<ProcessingDistribution> backlogList =
-                input.getBacklogLimits().stream()
+        final List<ProcessingDistributionRequest> limits = input.getBacklogLimits();
+        if (isEmpty(limits)) {
+            return;
+        }
+
+        final List<ProcessingDistribution> backlogList = limits.stream()
                         .map(e -> e.toProcessingDistributions(forecast))
                         .flatMap(List::stream).distinct().collect(toList());
 
         processingDistributionGateway.create(backlogList, forecast.getId());
-
-
     }
 }

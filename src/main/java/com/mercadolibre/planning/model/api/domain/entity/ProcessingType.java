@@ -12,12 +12,15 @@ import static java.util.stream.Collectors.toMap;
 public enum ProcessingType {
 
     ACTIVE_WORKERS,
+    ACTIVE_WORKERS_NS,
     PERFORMED_PROCESSING,
     REMAINING_PROCESSING,
     WORKERS,
+    WORKERS_NS,
     MAX_CAPACITY,
     BACKLOG_LOWER_LIMIT,
-    BACKLOG_UPPER_LIMIT;
+    BACKLOG_UPPER_LIMIT,
+    THROUGHPUT;
 
     private static final Map<String, ProcessingType> LOOKUP = Arrays.stream(values()).collect(
             toMap(ProcessingType::toString, Function.identity())

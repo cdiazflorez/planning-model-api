@@ -16,6 +16,11 @@ import static java.util.stream.Collectors.toMap;
 @Getter
 @AllArgsConstructor
 public enum ProcessName {
+    // FBM WMS INBOUND
+    STAGE_IN(null, false),
+    RECEIVING(singletonList(STAGE_IN), false),
+    CHECK_IN(singletonList(RECEIVING), false),
+    PUT_AWAY(singletonList(CHECK_IN), false),
 
     // FBM WMS OUTBOUND
     WAVING(null, false),

@@ -1,15 +1,19 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
-import com.mercadolibre.planning.model.api.client.rest.RouteEtsClient;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.Canalization;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.CarrierServiceId;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
+import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
+import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,14 +41,19 @@ public class GetCptByWarehouseUseCaseTest {
     private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
 
     @Mock
-    private RouteEtsClient routeEtsClient;
+    private RouteEtsGateway routeEtsGateway;
+
+    @Mock
+    private RouteCoverageClientGateway routeCoverageClientGateway;
+
 
     @Test
     public void obtainCptbyZonedDate() {
         // GIVEN
         final ClientException exception = mock(ClientException.class);
         when(exception.getMessage()).thenReturn("exception");
-        when(routeEtsClient.postRoutEts(
+
+        when(routeEtsGateway.postRoutEts(
                 RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
                 .thenThrow(exception);
 
@@ -67,9 +76,12 @@ public class GetCptByWarehouseUseCaseTest {
     @Test
     public void obtainCpt() {
         // GIVEN
-        when(routeEtsClient.postRoutEts(
+        when(routeEtsGateway.postRoutEts(
                 RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
                 .thenReturn(mockResponse());
+
+        when(routeCoverageClientGateway.get("ARBA01"))
+                .thenReturn(mockResponseCoverageWithResult());
 
         final GetCptByWarehouseInput input =
                 new GetCptByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), null, TIME_ZONE);
@@ -150,6 +162,66 @@ public class GetCptByWarehouseUseCaseTest {
                         new Date(2020, 1, 20),
                         new Date(2021, 1, 21));
 
-        return List.of(routeEtsDto, routeEtsDto);
+        final RouteEtsDto routeEtsDtoBadCanalization =
+                new RouteEtsDto(
+                        "ARBA01_I_931",
+                        "ARBA01",
+                        "X",
+                        "831",
+                        Map.of(
+                                "monday",
+                                List.of(
+                                        new DayDto("monday", "2100", "0400", "cpt", false),
+                                        new DayDto("monday", "2200", "0200", "ets", false)),
+                                "tuesday",
+                                List.of(
+                                        new DayDto("tuesday", "0800", "0600", "cpt", false),
+                                        new DayDto("tuesday", "0800", "0400", "cpt", false),
+                                        new DayDto("tuesday", "0800", "0500", "cpt", false)),
+                                "saturday",
+                                List.of(new DayDto("saturday", "0800", "0400", "cpt", false))),
+                        new Date(2020, 1, 20),
+                        new Date(2021, 1, 21));
+
+        final RouteEtsDto routeEtsDtoBadServiceId =
+                new RouteEtsDto(
+                        "ARBA01_I_931",
+                        "ARBA01",
+                        "X",
+                        "8312",
+                        Map.of(
+                                "monday",
+                                List.of(
+                                        new DayDto("monday", "2100", "0400", "cpt", false),
+                                        new DayDto("monday", "2200", "0200", "ets", false)),
+                                "tuesday",
+                                List.of(
+                                        new DayDto("tuesday", "0800", "0600", "cpt", false),
+                                        new DayDto("tuesday", "0800", "0400", "cpt", false),
+                                        new DayDto("tuesday", "0800", "0500", "cpt", false)),
+                                "saturday",
+                                List.of(new DayDto("saturday", "0800", "0400", "cpt", false))),
+                        new Date(2020, 1, 20),
+                        new Date(2021, 1, 21));
+
+        return List.of(routeEtsDto, routeEtsDto,
+                routeEtsDtoBadCanalization, routeEtsDtoBadServiceId);
+    }
+
+
+    private List<RouteCoverageResult> mockResponseCoverageWithResult() {
+
+        return List.of(
+                new RouteCoverageResult(
+                        new Canalization("X",
+                                List.of(
+                                        new CarrierServiceId("831"))),
+                        "active"),
+                new RouteCoverageResult(
+                        new Canalization("12345",
+                                List.of(
+                                        new CarrierServiceId("158663"))),
+                        "inactive"));
+
     }
 }

@@ -1,13 +1,14 @@
 package com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse;
 
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
-import com.mercadolibre.planning.model.api.client.rest.RouteEtsClient;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.ProcessingTimeByDate;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
+import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
+import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,9 @@ public class GetCptByWarehouseUseCase
 
     private static final int SECONDS = 60;
 
-    private RouteEtsClient routeEtsClient;
+    private RouteEtsGateway routeEtsGateway;
+
+    private RouteCoverageClientGateway routeCoverageClientGateway;
 
     @Override
     public List<GetCptByWarehouseOutput> execute(final GetCptByWarehouseInput input) {
@@ -63,23 +66,25 @@ public class GetCptByWarehouseUseCase
         return input.getCptDefault().stream()
                 .sorted()
                 .map(item -> GetCptByWarehouseOutput.builder()
-                                        .date(item)
-                                        .processingTime(ptDefault)
-                                        .canalizationId(null)
-                                        .logisticCenterId(input.getLogisticCenterId())
-                                        .build())
+                        .date(item)
+                        .processingTime(ptDefault)
+                        .logisticCenterId(input.getLogisticCenterId())
+                        .build())
                 .collect(Collectors.toList());
     }
 
     private List<ProcessingTimeByDate> getRouteEtd(final GetCptByWarehouseInput input) {
-        final List<RouteEtsDto> routes = routeEtsClient.postRoutEts(
-                        RouteEtsRequest.builder()
-                                .fromFilter(List.of(input.getLogisticCenterId()))
-                                .build());
+        final List<RouteEtsDto> routesAux = routeEtsGateway.postRoutEts(
+                RouteEtsRequest.builder()
+                        .fromFilter(List.of(input.getLogisticCenterId()))
+                        .build());
 
-        if (routes.isEmpty()) {
+        if (routesAux.isEmpty()) {
             throw new NoEtdsFoundException("No available cpt found");
         }
+
+        final List<RouteEtsDto> routes = filterActiveCpts(routesAux,
+                input.getLogisticCenterId());
 
         final Stream<DayDto> allCptDays =
                 routes.stream()
@@ -101,6 +106,33 @@ public class GetCptByWarehouseUseCase
         return distinctProcessingTimesByDate.values().stream()
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+    }
+
+    private List<RouteEtsDto> filterActiveCpts(
+            final List<RouteEtsDto> routes,
+            final String logisticCenterId) {
+
+        final List<RouteCoverageResult> routeCoverageResults = routeCoverageClientGateway
+                .get(logisticCenterId);
+
+        final Map<String, List<String>> routeCoverageMap = routeCoverageResults.stream()
+                .map(RouteCoverageResult::getCanalization)
+                .collect(Collectors.toMap(
+                        Canalization::getId,
+                        canalization ->
+                                canalization.getCarrierServices()
+                                        .stream()
+                                        .map(CarrierServiceId::getId)
+                                        .collect(Collectors.toList())
+                ));
+
+        return routes.stream()
+                .filter(r ->
+                        routeCoverageMap.get(r.getCanalization()) != null
+                                && routeCoverageMap.get(r.getCanalization())
+                                .contains(r.getServiceId()))
+                .collect(Collectors.toList());
+
     }
 
     private int getProcessingTimeId(final ProcessingTimeByDate processingTimeByDate) {
@@ -125,8 +157,8 @@ public class GetCptByWarehouseUseCase
 
     private ProcessingTimeByDate toProcessingTimeByDate(final DayDto dayDto) {
         final int processingTime = Integer.parseInt(dayDto.getProcessingTime().substring(2))
-                        + Integer.parseInt(dayDto.getProcessingTime().substring(0, 2))
-                        * MINUTES_IN_HOUR;
+                + Integer.parseInt(dayDto.getProcessingTime().substring(0, 2))
+                * MINUTES_IN_HOUR;
 
         return new ProcessingTimeByDate(
                 DayOfWeek.valueOf(dayDto.getEtDay().toUpperCase(Locale.ROOT)),

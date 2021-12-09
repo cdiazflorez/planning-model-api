@@ -1,0 +1,70 @@
+{
+    "results": [
+        {
+            "id": "5ce35750-973e-43af-bd5c-2dc8b1b6aa4e",
+            "site": "MLA",
+            "from": {
+                "id": "ARBA01",
+                "type": "logistic_center",
+                "path": null
+            },
+            "to": {
+                "id": "831",
+                "type": "location",
+                "path": [
+                    "831",
+                    "AR-SRV",
+                    "AR",
+                    "AMERICA"
+                ]
+            },
+            "next": {},
+            "type": "last_mile",
+            "canalization": {
+                "id": "1234",
+                "carrier_services": [
+                    {
+                        "id": 831
+                    }
+                ]
+            },
+            "status": "active"
+        },
+        {
+            "id": "e4cb18d5-7d34-4ae1-81dc-7bb16e176208",
+            "site": "MLA",
+            "from": {
+                "id": "ARBA01",
+                "type": "logistic_center",
+                "path": null
+            },
+            "to": {
+                "path": null
+            },
+            "destinations": [
+                {
+                    "id": "422-COR140",
+                    "type": "location",
+                    "path": []
+                }
+            ],
+            "next": {
+                "id": "SARANDI_TEST",
+                "type": "logistic_center"
+            },
+            "type": "middle_mile",
+            "canalization": {
+                "id": "12345",
+                "carrier_services": [
+                    {
+                        "id": 158663
+                    }
+                ]
+            },
+            "status": "active",
+            "date_created": "2021-07-27T14:39:53.030697712Z",
+            "last_updated": "2021-07-27T14:39:53.030697712Z"
+        }
+    ],
+    "scroll_id": "c2FuZGJveC1hbHBoYQ"
+}

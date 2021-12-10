@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCo
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.restclient.MeliRestClient;
+import com.newrelic.api.agent.Trace;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,7 @@ public class RouteCoverageClient extends HttpClient implements RouteCoverageClie
         super(client, RestPool.ROUTE_COVERAGE.name());
     }
 
+    @Trace
     @Override
     public List<RouteCoverageResult> get(String warehouse) {
 

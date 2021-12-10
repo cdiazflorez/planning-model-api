@@ -13,6 +13,7 @@ import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 
 import com.mercadolibre.restclient.MeliRestClient;
 import com.mercadolibre.restclient.exception.ParseException;
+import com.newrelic.api.agent.Trace;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
         this.objectMapper = objectMapper;
     }
 
+    @Trace
     @Override
     public List<RouteEtsDto> postRoutEts(final RouteEtsRequest routeEtsRequest) {
         final HttpRequest request = HttpRequest.builder()

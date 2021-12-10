@@ -16,17 +16,20 @@ import java.io.IOException;
 
 @Configuration
 @AllArgsConstructor
-@EnableConfigurationProperties({RestClientConfig.RouteEtsClientProperties.class})
+@EnableConfigurationProperties({RestClientConfig.RouteEtsClientProperties.class,
+        RestClientConfig.RouteCoverageClientProperties.class})
 
 public class RestClientConfig {
     private RouteEtsClientProperties routeEtsClientProperties;
+    private RouteCoverageClientProperties routeCoverageClientProperties;
 
     @Bean
     public MeliRestClient restClient() throws IOException {
         return MeliRestClient
                 .builder()
                 .withPool(
-                        restPool(RestPool.ROUTE_ETS.name(), routeEtsClientProperties)
+                        restPool(RestPool.ROUTE_ETS.name(), routeEtsClientProperties),
+                        restPool(RestPool.ROUTE_COVERAGE.name(), routeCoverageClientProperties)
                 )
                 .build();
     }
@@ -64,4 +67,9 @@ public class RestClientConfig {
     @ConfigurationProperties("restclient.pool.route-ets")
     public static class RouteEtsClientProperties extends RestClientProperties {
     }
+
+    @ConfigurationProperties("restclient.pool.route-coverage")
+    public static class RouteCoverageClientProperties extends RestClientProperties {
+    }
 }
+

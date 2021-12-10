@@ -68,7 +68,8 @@ public class GetDeliveryPromiseProjectionUseCase {
         final List<GetCptByWarehouseOutput> allCptByWarehouse =
                 getCptByWarehouseUseCase.execute(
                         new GetCptByWarehouseInput(
-                                TestLogisticCenterMapper.toRealLogisticCenter(input.getWarehouseId()),
+                                TestLogisticCenterMapper
+                                        .toRealLogisticCenter(input.getWarehouseId()),
                                 input.getDateFrom(),
                                 input.getDateTo(),
                                 getCptDefaultFromBacklog(input.getBacklog()),
@@ -99,7 +100,8 @@ public class GetDeliveryPromiseProjectionUseCase {
                                         .map(CptCalculationOutput::getDate)
                                         .collect(toList())));
 
-        return calculatedDeferralCpt(allCptProjectionCalculated, allCptByWarehouse, cycleTimeByCpt);
+        return calculatedDeferralCpt(allCptProjectionCalculated, allCptByWarehouse,
+                cycleTimeByCpt);
     }
 
     private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {

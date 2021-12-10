@@ -16,7 +16,6 @@ import com.mercadolibre.restclient.exception.ParseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +25,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Component
 public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
 
-    private static final String URL = "/multisearch/estimated-times";
+    private static final String URL = "/shipping/route/multisearch/estimated-times";
 
     private final ObjectMapper objectMapper;
 
@@ -45,22 +44,9 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
 
         log.info("Call RouteApi [{}]", String.join(", ", routeEtsRequest.getFromFilter()));
 
-        final List<Object> apiResponse = send(request, response ->
+        return send(request, response ->
                 response.getData(new TypeReference<>() {})
         );
-
-        return parseListRouteEts(apiResponse);
-    }
-
-    private List<RouteEtsDto> parseListRouteEts(final List apiResponse) {
-
-        final List<RouteEtsDto> list = new ArrayList<>(apiResponse.size());
-
-        for (final Object obj: apiResponse) {
-            list.add(objectMapper.convertValue(obj, RouteEtsDto.class));
-        }
-
-        return list;
     }
 
     private <T> RequestBodyHandler requestSupplier(final T requestBody) {

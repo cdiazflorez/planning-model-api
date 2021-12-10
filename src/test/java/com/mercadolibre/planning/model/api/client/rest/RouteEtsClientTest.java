@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class RouteEtsClientTest  extends BaseClientTest {
 
-    private static final String URL = "/multisearch/estimated-times";
+    private static final String URL = "/shipping/route/multisearch/estimated-times";
 
     private RouteEtsClient client;
 

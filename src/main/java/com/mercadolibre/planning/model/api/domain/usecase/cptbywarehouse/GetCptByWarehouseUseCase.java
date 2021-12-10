@@ -123,7 +123,13 @@ public class GetCptByWarehouseUseCase
                                 canalization.getCarrierServices()
                                         .stream()
                                         .map(CarrierServiceId::getId)
-                                        .collect(Collectors.toList())
+                                        .collect(Collectors.toList()),
+                        (serviceIdA, serviceIdB) -> {
+                            List<String> services = new ArrayList<>(serviceIdA);
+                            services.addAll(serviceIdB);
+                            return services;
+                        }
+
                 ));
 
         return routes.stream()

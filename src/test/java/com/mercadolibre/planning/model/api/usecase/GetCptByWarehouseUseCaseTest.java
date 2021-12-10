@@ -218,6 +218,11 @@ public class GetCptByWarehouseUseCaseTest {
                                         new CarrierServiceId("831"))),
                         "active"),
                 new RouteCoverageResult(
+                        new Canalization("X",
+                                List.of(
+                                        new CarrierServiceId("123"))),
+                        "active"),
+                new RouteCoverageResult(
                         new Canalization("12345",
                                 List.of(
                                         new CarrierServiceId("158663"))),

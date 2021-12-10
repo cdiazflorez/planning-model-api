@@ -35,6 +35,7 @@ public class RouteEtsClient extends HttpClient implements RouteEtsGateway {
         this.objectMapper = objectMapper;
     }
 
+
     @Trace
     @Override
     public List<RouteEtsDto> postRoutEts(final RouteEtsRequest routeEtsRequest) {

@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 public enum Scope {
     DEVELOPMENT,
     PROD,
+    PROD_SLAVE,
     TEST,
     STAGE;
 

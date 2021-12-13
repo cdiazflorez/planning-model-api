@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,7 +89,8 @@ public class GetCptByWarehouseUseCase
 
         final Stream<DayDto> allCptDays =
                 routes.stream()
-                        .flatMap(route -> route.getFixedEtsByDay().values().stream())
+                        .flatMap(route -> route.getFixedEtsByDay().values().stream()
+                                .filter(Objects::nonNull))
                         .flatMap(Collection::stream);
 
         final Map<DayOfWeek, List<ProcessingTimeByDate>> distinctProcessingTimesByDate =

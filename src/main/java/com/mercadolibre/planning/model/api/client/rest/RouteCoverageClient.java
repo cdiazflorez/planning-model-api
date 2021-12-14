@@ -29,7 +29,7 @@ public class RouteCoverageClient extends HttpClient implements RouteCoverageClie
             "AR", "MLA",
             "MX", "MLM",
             "CL", "MLC",
-            "CO", "MLC",
+            "CO", "MLO",
             "BR", "MLB"
     );
 

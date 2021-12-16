@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class RouteCoverageResult {
-    Canalization canalization;
-    String status;
+    private Canalization canalization;
+    private String status;
 }

@@ -37,6 +37,8 @@ public class GetCptByWarehouseUseCaseTest {
             ZonedDateTime.parse(
                     "2021-11-02T00:00:00.000000-00:00" + "[UTC]"); // /LUNES 2021-11-01 A LAS 21
 
+    private static final ZonedDateTime NOW =  ZonedDateTime.now();
+
     @InjectMocks
     private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
 
@@ -83,8 +85,10 @@ public class GetCptByWarehouseUseCaseTest {
         when(routeCoverageClientGateway.get("ARBA01"))
                 .thenReturn(mockResponseCoverageWithResult());
 
+        final List<ZonedDateTime> backlog = List.of(NOW, DAY);
+
         final GetCptByWarehouseInput input =
-                new GetCptByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), null, TIME_ZONE);
+                new GetCptByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), backlog, TIME_ZONE);
 
         // WHEN
         final List<GetCptByWarehouseOutput> actual = getCptByWarehouseUseCase.execute(input);
@@ -122,7 +126,15 @@ public class GetCptByWarehouseUseCaseTest {
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        return List.of(getCptByWarehouseOutput, getCptByWarehouseOutput2, getCptByWarehouseOutput3);
+        final GetCptByWarehouseOutput getCptByWarehouseOutput4 =
+                GetCptByWarehouseOutput.builder()
+                        .logisticCenterId("ARBA01")
+                        .date(NOW)
+                        .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+                        .build();
+
+        return List.of(getCptByWarehouseOutput, getCptByWarehouseOutput2,
+                getCptByWarehouseOutput3, getCptByWarehouseOutput4);
     }
 
     private List<GetCptByWarehouseOutput> mockCptOutputByZonedDate() {
@@ -229,4 +241,5 @@ public class GetCptByWarehouseUseCaseTest {
                         "inactive"));
 
     }
+
 }

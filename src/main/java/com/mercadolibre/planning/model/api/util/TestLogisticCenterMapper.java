@@ -2,7 +2,8 @@ package com.mercadolibre.planning.model.api.util;
 
 import java.util.Map;
 
-public class TestLogisticCenterMapper {
+@SuppressWarnings("PMD.ClassNamingConventions")
+public final class TestLogisticCenterMapper {
     private static final Map<String, String> CAP5_TO_PACK_WHS = Map.of(
             "MXTP01", "MXCD01",
             "MXTP02", "MXCD02",

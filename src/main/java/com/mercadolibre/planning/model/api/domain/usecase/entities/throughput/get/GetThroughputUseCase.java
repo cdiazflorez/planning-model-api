@@ -36,6 +36,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
+@SuppressWarnings("PMD.ExcessiveImports")
 public class GetThroughputUseCase
         implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 

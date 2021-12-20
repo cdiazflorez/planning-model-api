@@ -59,8 +59,8 @@ public class GetGetCptOutputUseCaseTest {
     }
 
     @Test
-    @DisplayName("Get the default processing time when there is no cycle time for CPT")
-    public void testGetProcessingTimeKey() {
+    @DisplayName("Get the default cycle time when there is no cycle time for CPT")
+    public void testGetDefaultCycleTimeKey() {
         // GIVEN
         when(getConfigurationsUseCase.execute("ARBA01"))
                 .thenReturn(List.of(
@@ -74,7 +74,7 @@ public class GetGetCptOutputUseCaseTest {
                                 .logisticCenterId(WAREHOUSE_ID)
                                 .metricUnit(MINUTES)
                                 .value(240)
-                                .key("processing_time")
+                                .key("cycle_time")
                                 .build()));
 
         final GetCycleTimeInput input = new GetCycleTimeInput(WAREHOUSE_ID, List.of(A_DATE_UTC));
@@ -86,7 +86,7 @@ public class GetGetCptOutputUseCaseTest {
         assertEquals(WAREHOUSE_ID, ctByDateOut.get(A_DATE_UTC).getLogisticCenterId());
         assertEquals(MINUTES, ctByDateOut.get(A_DATE_UTC).getMetricUnit());
         assertEquals(240, ctByDateOut.get(A_DATE_UTC).getValue());
-        assertEquals("processing_time", ctByDateOut.get(A_DATE_UTC).getKey());
+        assertEquals("cycle_time", ctByDateOut.get(A_DATE_UTC).getKey());
     }
 
     @Test

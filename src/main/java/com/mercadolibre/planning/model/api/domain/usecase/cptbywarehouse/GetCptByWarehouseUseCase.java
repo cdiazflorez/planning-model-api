@@ -9,7 +9,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.Rout
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,11 +19,14 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,8 +34,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Service
 @AllArgsConstructor
-@SuppressWarnings("PMD.CloseResource")
-@SuppressFBWarnings("OCP_OVERLY_CONCRETE_PARAMETER")
+@SuppressWarnings({"PMD.CloseResource", "PMD.ExcessiveImports"})
 public class GetCptByWarehouseUseCase
         implements UseCase<GetCptByWarehouseInput, List<GetCptByWarehouseOutput>> {
 
@@ -47,15 +48,33 @@ public class GetCptByWarehouseUseCase
 
     @Override
     public List<GetCptByWarehouseOutput> execute(final GetCptByWarehouseInput input) {
-        final List<ProcessingTimeByDate> routes;
+
+        final List<ProcessingTimeByDate> routes = getCptByWarehouse(input);
+
+        final List<GetCptByWarehouseOutput> cptRoute = getCptByRouteEts(input, routes);
+
+        final HashSet<ZonedDateTime> cptRouteDates = cptRoute.stream()
+                .map(GetCptByWarehouseOutput::getDate)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        final List<GetCptByWarehouseOutput> cptBacklog = getCptByZonedDateTimes(input).stream()
+                .filter(backlog -> !cptRouteDates.contains(backlog.getDate()))
+                .collect(Collectors.toList());
+
+        cptRoute.addAll(cptBacklog);
+
+        return cptRoute.stream()
+                .sorted(Comparator.comparing(GetCptByWarehouseOutput::getDate))
+                .collect(Collectors.toList());
+    }
+
+    private List<ProcessingTimeByDate> getCptByWarehouse(final GetCptByWarehouseInput input) {
         try {
-            routes = getRouteEtd(input);
+            return getRouteEtd(input);
         } catch (ClientException | NoEtdsFoundException e) {
             log.error("RouteApi error, run list cpt default", e);
-            return getCptByZonedDateTimes(input);
+            return Collections.emptyList();
         }
-
-        return getCptByRouteEts(input, routes);
     }
 
     private List<GetCptByWarehouseOutput> getCptByZonedDateTimes(
@@ -88,7 +107,8 @@ public class GetCptByWarehouseUseCase
 
         final Stream<DayDto> allCptDays =
                 routes.stream()
-                        .flatMap(route -> route.getFixedEtsByDay().values().stream())
+                        .flatMap(route -> route.getFixedEtsByDay().values().stream()
+                                .filter(Objects::nonNull))
                         .flatMap(Collection::stream);
 
         final Map<DayOfWeek, List<ProcessingTimeByDate>> distinctProcessingTimesByDate =

@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 
 public class Canalization {
-    String id;
-    List<CarrierServiceId> carrierServices;
+    private String id;
+    private List<CarrierServiceId> carrierServices;
 }

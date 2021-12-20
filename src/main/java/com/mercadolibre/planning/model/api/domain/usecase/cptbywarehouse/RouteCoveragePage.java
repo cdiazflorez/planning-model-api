@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 
 public class RouteCoveragePage {
-    List<RouteCoverageResult> results;
-    String scrollId;
+    private List<RouteCoverageResult> results;
+    private String scrollId;
 }

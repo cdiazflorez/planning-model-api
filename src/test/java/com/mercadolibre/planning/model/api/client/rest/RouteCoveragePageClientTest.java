@@ -3,10 +3,8 @@ package com.mercadolibre.planning.model.api.client.rest;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.Canalization;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.CarrierServiceId;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
-import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.restclient.MockResponse;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
@@ -17,18 +15,14 @@ import static com.mercadolibre.restclient.http.ContentType.APPLICATION_JSON;
 import static com.mercadolibre.restclient.http.ContentType.HEADER_NAME;
 import static com.mercadolibre.restclient.http.HttpMethod.GET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class RouteCoveragePageClientTest extends BaseClientTest {
 
     private static final String URL = "/shipping/routes/rules?status=active&site=MLA&from=ARBA01";
     private static final String SCROLL_ID = "&scroll_id=c2FuZGJveC1hbHBoYQ";
-
-    private RouteCoverageClientGateway client;
-
-    @BeforeEach
-    public void setUp() throws IOException {
-        client = new RouteCoverageClient(getRestTestClient());
-    }
+    private static final long MAX_AGE = 60L * 60L * 1_000_000_000L;
+    private long nanoTime;
 
     @AfterEach
     public void tearDown() {
@@ -36,7 +30,15 @@ public class RouteCoveragePageClientTest extends BaseClientTest {
     }
 
     @Test
-    public void testGet() {
+    public void testGet() throws IOException {
+
+        final var client = new RouteCoverageClient(getRestTestClient(), new NanoTimeService() {
+            @Override
+            public long getNanoTime() {
+                return nanoTime;
+            }
+        }, () -> Runnable::run);
+
 
         MockResponse.builder()
                 .withMethod(GET)
@@ -57,9 +59,16 @@ public class RouteCoveragePageClientTest extends BaseClientTest {
 
 
         final List<RouteCoverageResult> response = client.get("ARBA01");
+
+        nanoTime += MAX_AGE;
+
+        final List<RouteCoverageResult> responseCached = client.get("ARBA01");
+
         final List<RouteCoverageResult> expected = expected();
 
         assertEquals(expected, response);
+        assertNotNull(responseCached);
+
 
     }
 
@@ -77,7 +86,7 @@ public class RouteCoveragePageClientTest extends BaseClientTest {
                                 List.of(
                                         new CarrierServiceId("158663"))),
                         "active"
-                        )
+                )
 
         );
     }

@@ -20,7 +20,7 @@ import static java.lang.String.format;
 public class GetCycleTimeUseCase implements
         UseCase<GetCycleTimeInput, Map<ZonedDateTime, Configuration>> {
 
-    private static final String DEFAULT_PROCESSING_TIME_KEY = "processing_time";
+    private static final String DEFAULT_CYCLE_TIME_KEY = "cycle_time";
     private static final String CYCLE_TIME_KEY_PATTERN = "cycle_time_%02d_%02d";
     private static final String CONFIGURATION_ENTITY = "configuration";
 
@@ -43,7 +43,7 @@ public class GetCycleTimeUseCase implements
                     .findFirst();
 
             ctByDateOut.put(cptDate,
-                    cycleTimeConfig.orElseGet(() -> getDefaultProcessingTime(configurations)));
+                    cycleTimeConfig.orElseGet(() -> getCycleTimeDefault(configurations)));
         });
 
         return ctByDateOut;
@@ -53,11 +53,11 @@ public class GetCycleTimeUseCase implements
         return format(CYCLE_TIME_KEY_PATTERN, cptDate.getHour(), cptDate.getMinute());
     }
 
-    private Configuration getDefaultProcessingTime(final List<Configuration> configurations) {
+    private Configuration getCycleTimeDefault(final List<Configuration> configurations) {
         return configurations.stream()
-                .filter(configuration -> DEFAULT_PROCESSING_TIME_KEY.equals(configuration.getKey()))
+                .filter(configuration -> DEFAULT_CYCLE_TIME_KEY.equals(configuration.getKey()))
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException(
-                        CONFIGURATION_ENTITY, DEFAULT_PROCESSING_TIME_KEY));
+                        CONFIGURATION_ENTITY, DEFAULT_CYCLE_TIME_KEY));
     }
 }

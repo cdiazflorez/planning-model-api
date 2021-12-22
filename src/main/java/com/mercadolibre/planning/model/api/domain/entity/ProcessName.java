@@ -5,34 +5,32 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 
 @Getter
 @AllArgsConstructor
 public enum ProcessName {
     // FBM WMS INBOUND
-    STAGE_IN(null, false),
-    RECEIVING(singletonList(STAGE_IN), false),
-    CHECK_IN(singletonList(RECEIVING), false),
-    PUT_AWAY(singletonList(CHECK_IN), false),
+    RECEIVING(null, false),
+    STAGE_IN(RECEIVING, false),
+    CHECK_IN(STAGE_IN, false),
+    PUT_AWAY(CHECK_IN, false),
 
     // FBM WMS OUTBOUND
     WAVING(null, false),
-    PICKING(singletonList(WAVING), true),
-    PACKING(singletonList(PICKING), false),
-    BATCH_SORTER(singletonList(PICKING),false),
-    PACKING_WALL(singletonList(BATCH_SORTER),false),
-    EXPEDITION(singletonList(PACKING), false),
+    PICKING(WAVING, true),
+    PACKING(PICKING, false),
+    BATCH_SORTER(PICKING,false),
+    PACKING_WALL(BATCH_SORTER,false),
+    EXPEDITION(PACKING, false),
     WALL_IN(null, false),
     GLOBAL(null, false);
 
-    private final List<ProcessName> previousProcesses;
+    private final ProcessName previousProcesses;
     private final boolean considerPreviousBacklog;
 
     private static final Map<String, ProcessName> LOOKUP = Arrays.stream(values()).collect(

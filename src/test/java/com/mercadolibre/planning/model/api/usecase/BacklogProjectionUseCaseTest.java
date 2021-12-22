@@ -2,14 +2,14 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.PackingBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.PickingBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.WavingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.WavingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionStrategy;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutputValue;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 import org.junit.jupiter.api.DisplayName;
@@ -75,7 +75,7 @@ public class BacklogProjectionUseCaseTest {
         mockPackingBacklogProjection(input);
 
         // WHEN
-        final List<BacklogProjectionOutput> results = calculateBacklogProjection.execute(input);
+        final List<BacklogProjection> results = calculateBacklogProjection.execute(input);
 
         // THEN
         assertEquals(3, results.size());
@@ -87,7 +87,7 @@ public class BacklogProjectionUseCaseTest {
 
     private void assertBacklogOutputs(final List<Long> wantedQuantities,
                                       final ProcessName wantedProcess,
-                                      final BacklogProjectionOutput backlogOutputs) {
+                                      final BacklogProjection backlogOutputs) {
 
         assertEquals(wantedProcess, backlogOutputs.getProcessName());
 
@@ -103,13 +103,13 @@ public class BacklogProjectionUseCaseTest {
         when(backlogProjectionStrategy.getBy(WAVING))
                 .thenReturn(Optional.of(wavingBacklogProjection));
 
-        when(wavingBacklogProjection.execute(input))
+        when(wavingBacklogProjection.execute(WAVING, input))
                 .thenReturn(ProcessParams.builder()
                         .processName(WAVING)
                         .currentBacklog(0)
                         .capacityByDate(mockThroughputs().stream().collect(toMap(
                                 EntityOutput::getDate,
-                                entityOutput -> (int) entityOutput.getValue(),
+                                EntityOutput::getValue,
                                 Math::min)))
                         .planningUnitsByDate(mockPlanningSalesByDate())
                         .previousBacklogsByDate(null)
@@ -120,16 +120,15 @@ public class BacklogProjectionUseCaseTest {
         when(backlogProjectionStrategy.getBy(PICKING))
                 .thenReturn(Optional.of(pickingBacklogProjection));
 
-        when(pickingBacklogProjection.execute(input))
+        when(pickingBacklogProjection.execute(PICKING, input))
                 .thenReturn(ProcessParams.builder()
                         .processName(PICKING)
                         .currentBacklog(3000)
                         .capacityByDate(mockThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PICKING)
-                                .collect(toMap(EntityOutput::getDate, e -> (int) e.getValue())))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .planningUnitsByDate(input.getThroughputs().stream()
-                                .collect(toMap(
-                                        EntityOutput::getDate, EntityOutput::getValue, Math::min)))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Math::min)))
                         .previousBacklogsByDate(Map.of(
                                 A_FIXED_DATE, 50L,
                                 A_FIXED_DATE.plusHours(1), 0L,
@@ -143,13 +142,13 @@ public class BacklogProjectionUseCaseTest {
         when(backlogProjectionStrategy.getBy(PACKING))
                 .thenReturn(Optional.of(packingBacklogProjection));
 
-        when(packingBacklogProjection.execute(input))
+        when(packingBacklogProjection.execute(PACKING, input))
                 .thenReturn(ProcessParams.builder()
                         .processName(PACKING)
                         .currentBacklog(1110)
                         .capacityByDate(mockThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PACKING)
-                                .collect(toMap(EntityOutput::getDate, e -> (int) e.getValue())))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .planningUnitsByDate(input.getThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PICKING)
                                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))

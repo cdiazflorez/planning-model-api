@@ -1,15 +1,10 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
@@ -37,10 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -51,15 +44,11 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class ProjectionController {
 
-    private final CalculateBacklogProjectionUseCase calculateBacklogProjection;
-
     private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
 
-    private final GetThroughputUseCase getThroughputUseCase;
-
-    private final GetPlanningDistributionUseCase getPlanningUseCase;
-
     private final GetCptProjectionUseCase getCptProjectionUseCase;
+
+    private final BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
     @PostMapping("/cpts")
     @Trace(dispatcher = true)
@@ -101,43 +90,19 @@ public class ProjectionController {
 
     @PostMapping("/backlogs")
     @Trace(dispatcher = true)
-    public ResponseEntity<List<BacklogProjectionOutput>> getBacklogProjections(
+    public ResponseEntity<List<BacklogProjection>> getBacklogProjections(
             @PathVariable final Workflow workflow,
             @Valid @RequestBody final BacklogProjectionRequest request) {
 
-        final String warehouseId = request.getWarehouseId();
-        final ZonedDateTime dateFrom = request.getDateFrom();
-        final ZonedDateTime dateTo = request.getDateTo();
+        final GetBacklogProjectionUseCase useCase = backlogProjectionUseCaseFactory.getUseCase(workflow);
 
-        final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
-                .builder()
-                .warehouseId(warehouseId)
-                .dateFrom(dateFrom.minusHours(1))
-                .dateTo(dateTo)
-                .source(SIMULATION)
-                .processName(request.getProcessName())
-                .workflow(workflow)
-                .build());
-
-        final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
-                GetPlanningDistributionInput.builder()
-                        .workflow(workflow)
-                        .warehouseId(request.getWarehouseId())
-                        .dateInTo(request.getDateTo().plusDays(1))
-                        .dateOutFrom(request.getDateFrom())
-                        .dateOutTo(request.getDateTo().plusDays(1))
-                        .applyDeviation(request.isApplyDeviation())
-                        .build());
-
-        return ResponseEntity
-                .ok(calculateBacklogProjection.execute(BacklogProjectionInput.builder()
-                        .dateFrom(dateFrom)
-                        .dateTo(dateTo)
-                        .throughputs(throughput)
-                        .currentBacklogs(request.getCurrentBacklog())
-                        .processNames(request.getProcessName())
-                        .planningUnits(planningUnits)
-                        .build()));
+        return ResponseEntity.ok(useCase.execute(BacklogProjectionInput.builder()
+                .logisticCenterId(request.getWarehouseId())
+                .dateFrom(request.getDateFrom())
+                .dateTo(request.getDateTo())
+                .currentBacklogs(request.getCurrentBacklog())
+                .processNames(request.getProcessName())
+                .build()));
     }
 
     @InitBinder

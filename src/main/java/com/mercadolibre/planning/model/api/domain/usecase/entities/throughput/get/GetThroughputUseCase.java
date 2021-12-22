@@ -78,7 +78,7 @@ public class GetThroughputUseCase
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .source(input.getSource())
-                .processName(input.getProcessName())
+                .processName(List.of(ProcessName.RECEIVING))
                 .build();
     }
 

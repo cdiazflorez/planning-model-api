@@ -17,7 +17,7 @@ public enum ProcessName {
     // FBM WMS INBOUND
     RECEIVING(null, false),
     STAGE_IN(RECEIVING, false),
-    CHECK_IN(STAGE_IN, false),
+    CHECK_IN(RECEIVING, false),
     PUT_AWAY(CHECK_IN, false),
 
     // FBM WMS OUTBOUND

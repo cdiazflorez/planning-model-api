@@ -53,13 +53,33 @@ public class GetThroughputUseCase
 
     @Override
     public List<EntityOutput> execute(final GetEntityInput input) {
+        List<EntityOutput> allThroughputs = new ArrayList<>();
+
+        // Esto es temporal hasta que agreguen la columna de Reps Sistemicos de Receiving al forecast
+        if (input.getProcessName().contains(ProcessName.RECEIVING)) {
+             allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
+        }
+
         final List<EntityOutput> headcounts = headcountEntityUseCase.execute(
                 createHeadcountInput(input));
 
         final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(
                 createProductivityInput(input));
 
-        return createThroughput(headcounts, productivity, input.getWorkflow());
+        allThroughputs.addAll(createThroughput(headcounts, productivity, input.getWorkflow()));
+        return allThroughputs;
+    }
+
+    private GetHeadcountInput createReceivingTph(GetEntityInput input) {
+        return GetHeadcountInput.builder()
+                .warehouseId(input.getWarehouseId())
+                .workflow(input.getWorkflow())
+                .entityType(THROUGHPUT)
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .source(input.getSource())
+                .processName(input.getProcessName())
+                .build();
     }
 
     private List<EntityOutput> createThroughput(final List<EntityOutput> headcounts,

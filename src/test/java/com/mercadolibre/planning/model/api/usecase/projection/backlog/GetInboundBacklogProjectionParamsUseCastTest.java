@@ -41,8 +41,8 @@ public class GetInboundBacklogProjectionParamsUseCastTest {
 
     private List<EntityOutput> mockThroughput() {
         return List.of(
-                EntityOutput.builder().processName(STAGE_IN).date(NOW).value(100).build(),
-                EntityOutput.builder().processName(STAGE_IN).date(NOW.plusHours(1)).value(150).build(),
+                EntityOutput.builder().processName(RECEIVING).date(NOW).value(100).build(),
+                EntityOutput.builder().processName(RECEIVING).date(NOW.plusHours(1)).value(150).build(),
                 EntityOutput.builder().processName(CHECK_IN).date(NOW).value(200).build(),
                 EntityOutput.builder().processName(CHECK_IN).date(NOW).value(200).build(),
                 EntityOutput.builder().processName(CHECK_IN).date(NOW.plusHours(1)).value(70).build(),

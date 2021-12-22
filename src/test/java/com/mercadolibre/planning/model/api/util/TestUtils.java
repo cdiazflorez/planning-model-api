@@ -60,10 +60,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCE
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.*;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
@@ -395,7 +392,7 @@ public final class TestUtils {
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC.plusDays(1))
                 .source(source)
-                .processName(List.of(PICKING, PACKING))
+                .processName(List.of(PICKING, PACKING, RECEIVING))
                 .simulations(simulations)
                 .build();
     }

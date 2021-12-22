@@ -17,9 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -48,15 +50,18 @@ public class GetInboundBacklogProjectionUseCaseTest {
                 .processNames(List.of(ProcessName.CHECK_IN, ProcessName.PUT_AWAY))
                 .build();
         final List<BacklogProjection> backlogProjection = mockBacklogProjection();
+        final List<ProcessName> tphProcessNames = new ArrayList<>(input.getProcessNames());
+        tphProcessNames.add(RECEIVING);
 
         when(getThroughputUseCase.execute(GetEntityInput.builder()
                         .warehouseId(input.getLogisticCenterId())
                         .dateFrom(input.getDateFrom().minusHours(1))
                         .dateTo(input.getDateTo())
-                        .processName(input.getProcessNames())
+                        .processName(tphProcessNames)
                         .source(Source.SIMULATION)
                         .workflow(Workflow.FBM_WMS_INBOUND)
                 .build())).thenReturn(emptyList());
+
         when(calculateBacklogProjection.execute(BacklogProjectionInput.builder()
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())

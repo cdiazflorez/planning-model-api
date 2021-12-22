@@ -5,9 +5,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.PickingBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ public class PickingBacklogProjectionUseCaseTest {
                         .collect(toList()));
 
         // WHEN
-        final ProcessParams processParams = pickingBacklogProjection.execute(input);
+        final ProcessParams processParams = pickingBacklogProjection.execute(null, input);
 
         // THEN
         assertEquals(PICKING, processParams.getProcessName());
@@ -88,7 +88,7 @@ public class PickingBacklogProjectionUseCaseTest {
         // WHEN
         final BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> pickingBacklogProjection.execute(input));
+                () -> pickingBacklogProjection.execute(null, input));
 
         // THEN
         assertEquals("No current backlog for Picking", exception.getMessage());

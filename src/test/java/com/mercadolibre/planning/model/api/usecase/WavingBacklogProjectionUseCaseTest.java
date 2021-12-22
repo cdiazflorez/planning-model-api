@@ -5,9 +5,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.WavingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.WavingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 import org.junit.jupiter.api.Test;
@@ -67,7 +67,7 @@ public class WavingBacklogProjectionUseCaseTest {
                         .collect(toList()));
 
         // WHEN
-        final ProcessParams processParams = wavingBacklogProjection.execute(input);
+        final ProcessParams processParams = wavingBacklogProjection.execute(null, input);
 
         // THEN
         assertEquals(WAVING, processParams.getProcessName());
@@ -92,7 +92,7 @@ public class WavingBacklogProjectionUseCaseTest {
         // WHEN
         final BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> wavingBacklogProjection.execute(input));
+                () -> wavingBacklogProjection.execute(null, input));
 
         // THEN
         assertEquals("No current backlog for Waving", exception.getMessage());

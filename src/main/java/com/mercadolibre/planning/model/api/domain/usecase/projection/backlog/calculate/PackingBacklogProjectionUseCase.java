@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
+package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -16,7 +16,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Service
 @AllArgsConstructor
-public class PackingBacklogProjectionUseCase implements BacklogProjectionUseCase {
+public class PackingBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
 
     @Override
     public boolean supportsProcessName(final ProcessName processName) {
@@ -24,14 +24,14 @@ public class PackingBacklogProjectionUseCase implements BacklogProjectionUseCase
     }
 
     @Override
-    public ProcessParams execute(final BacklogProjectionInput input) {
+    public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
         final Map<ZonedDateTime, Long> previousProcessCapacity = input.getThroughputs().stream()
-                .filter(e -> e.getProcessName() == PACKING.getPreviousProcesses().get(0))
-                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue));
+                .filter(e -> e.getProcessName() == PACKING.getPreviousProcesses())
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
 
-        final Map<ZonedDateTime, Integer> packingCapacity = input.getThroughputs().stream()
+        final Map<ZonedDateTime, Long> packingCapacity = input.getThroughputs().stream()
                 .filter(e -> List.of(PACKING, PACKING_WALL).contains(e.getProcessName()))
-                .collect(toMap(EntityOutput::getDate, e -> (int) e.getValue(), Integer::sum));
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
 
         final long currentBacklog = input.getCurrentBacklogs().stream()
                 .filter(cb -> PACKING == cb.getProcessName())

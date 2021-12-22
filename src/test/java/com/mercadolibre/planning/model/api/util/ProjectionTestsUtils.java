@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.util;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 
 import java.time.ZonedDateTime;
@@ -113,11 +113,11 @@ public class ProjectionTestsUtils {
                         .build());
     }
 
-    public static void assertCapacityByDate(final Map<ZonedDateTime, Integer> capacityByDate,
+    public static void assertCapacityByDate(final Map<ZonedDateTime, Long> capacityByDate,
                                             final List<EntityOutput> entityOutputs) {
         for (final EntityOutput output : entityOutputs) {
             assertTrue(capacityByDate.containsKey(output.getDate()));
-            assertEquals(output.getValue(), (long) capacityByDate.get(output.getDate()));
+            assertEquals(output.getValue(), capacityByDate.get(output.getDate()));
         }
     }
 }

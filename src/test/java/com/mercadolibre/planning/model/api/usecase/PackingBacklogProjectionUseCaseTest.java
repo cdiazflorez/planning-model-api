@@ -2,9 +2,9 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.PackingBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ProcessParams;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 import org.junit.jupiter.api.Test;
@@ -57,19 +57,19 @@ public class PackingBacklogProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final ProcessParams processParams = packingBacklogProjection.execute(input);
+        final ProcessParams processParams = packingBacklogProjection.execute(null, input);
 
         // THEN
         assertEquals(PACKING, processParams.getProcessName());
         assertEquals(1110, processParams.getCurrentBacklog());
         assertNull(processParams.getPreviousBacklogsByDate());
 
-        assertEquals(650, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.minusHours(1)));
-        assertEquals(550, (int)processParams.getCapacityByDate().get(A_FIXED_DATE));
-        assertEquals(700, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(1)));
-        assertEquals(700, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(2)));
-        assertEquals(50, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(3)));
-        assertEquals(1500, (int)processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(4)));
+        assertEquals(650, processParams.getCapacityByDate().get(A_FIXED_DATE.minusHours(1)));
+        assertEquals(550, processParams.getCapacityByDate().get(A_FIXED_DATE));
+        assertEquals(700, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(1)));
+        assertEquals(700, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(2)));
+        assertEquals(50, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(3)));
+        assertEquals(1500, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(4)));
 
         final List<EntityOutput> pickingCapacity = mockThroughputs().stream()
                 .filter(e -> e.getProcessName() == PICKING).collect(toList());
@@ -85,7 +85,7 @@ public class PackingBacklogProjectionUseCaseTest {
         // WHEN
         final BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> packingBacklogProjection.execute(input));
+                () -> packingBacklogProjection.execute(null, input));
 
         // THEN
         assertEquals("No current backlog for Packing", exception.getMessage());

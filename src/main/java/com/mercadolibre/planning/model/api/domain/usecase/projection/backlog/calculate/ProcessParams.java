@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
+package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ public class ProcessParams {
     private ProcessName processName;
     private long currentBacklog;
     private Map<ZonedDateTime, Long> planningUnitsByDate;
-    private Map<ZonedDateTime, Integer> capacityByDate;
+    private Map<ZonedDateTime, Long> capacityByDate;
     private Map<ZonedDateTime, Long> previousBacklogsByDate;
 
 }

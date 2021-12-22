@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
+package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -13,6 +13,8 @@ import java.util.List;
 @Value
 @Builder
 public class BacklogProjectionInput {
+
+    private String logisticCenterId;
 
     private List<EntityOutput> throughputs;
 

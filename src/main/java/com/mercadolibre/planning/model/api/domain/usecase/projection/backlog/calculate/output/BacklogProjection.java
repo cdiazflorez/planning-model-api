@@ -11,7 +11,7 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor
-public class BacklogProjectionOutput {
+public class BacklogProjection {
 
     private ProcessName processName;
     private List<BacklogProjectionOutputValue> values;

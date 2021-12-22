@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
+package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.toMap;
 
 @Service
 @AllArgsConstructor
-public class PickingBacklogProjectionUseCase implements BacklogProjectionUseCase {
+public class PickingBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
 
     private final GetCapacityPerHourUseCase getCapacityUseCase;
 
@@ -29,13 +29,13 @@ public class PickingBacklogProjectionUseCase implements BacklogProjectionUseCase
     }
 
     @Override
-    public ProcessParams execute(final BacklogProjectionInput input) {
+    public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
         final List<CapacityOutput> previousProcessCapacity = getCapacityUseCase.execute(
                 CapacityInput.fromEntityOutputs(input.getThroughputs()));
 
-        final Map<ZonedDateTime, Integer> pickingCapacity = input.getThroughputs().stream()
+        final Map<ZonedDateTime, Long> pickingCapacity = input.getThroughputs().stream()
                 .filter(e -> e.getProcessName() == PICKING)
-                .collect(toMap(EntityOutput::getDate, e -> (int) e.getValue()));
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
 
         final long currentBacklog = input.getCurrentBacklogs().stream()
                 .filter(cb -> PICKING == cb.getProcessName())

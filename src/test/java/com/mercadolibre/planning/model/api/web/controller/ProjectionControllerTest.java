@@ -4,9 +4,11 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetOutboundBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCptProjectionUseCase;
@@ -17,6 +19,7 @@ import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -52,17 +55,12 @@ class ProjectionControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    @MockBean
-    private CalculateBacklogProjectionUseCase calculateBacklogProjection;
 
     @MockBean
     private GetDeliveryPromiseProjectionUseCase delPromiseProjection;
 
     @MockBean
-    private GetThroughputUseCase getThroughputUseCase;
-
-    @MockBean
-    private GetPlanningDistributionUseCase getPlanningUseCase;
+    private BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
     @MockBean
     private GetCptProjectionUseCase getCptProjectionUseCase;
@@ -116,9 +114,6 @@ class ProjectionControllerTest {
         );
 
         // THEN
-        verifyNoInteractions(getPlanningUseCase);
-        verifyNoInteractions(getThroughputUseCase);
-        verifyNoInteractions(calculateBacklogProjection);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
@@ -176,15 +171,18 @@ class ProjectionControllerTest {
     @Test
     public void testGetBacklogProjection() throws Exception {
         // GIVEN
-        when(calculateBacklogProjection.execute(any(BacklogProjectionInput.class)))
+        GetOutboundBacklogProjectionUseCase useCase = Mockito.mock(GetOutboundBacklogProjectionUseCase.class);
+        when(backlogProjectionUseCaseFactory.getUseCase(Workflow.FBM_WMS_OUTBOUND)).thenReturn(useCase);
+
+        when(useCase.execute(any(BacklogProjectionInput.class)))
                 .thenReturn(List.of(
-                        BacklogProjectionOutput.builder()
+                        BacklogProjection.builder()
                                 .processName(WAVING)
                                 .values(emptyList()).build(),
-                        BacklogProjectionOutput.builder()
+                        BacklogProjection.builder()
                                 .processName(PICKING)
                                 .values(emptyList()).build(),
-                        BacklogProjectionOutput.builder()
+                        BacklogProjection.builder()
                                 .processName(PACKING)
                                 .values(emptyList()).build()
                 ));

@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,6 +72,17 @@ public class GetThroughputUseCaseTest {
                         .build()))
                 .thenReturn(mockHeadcountEntityOutput());
 
+        when(getHeadcountEntityUseCase.execute(
+                GetHeadcountInput.builder()
+                        .warehouseId(input.getWarehouseId()).entityType(THROUGHPUT)
+                        .workflow(input.getWorkflow())
+                        .source(FORECAST)
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .processName(input.getProcessName())
+                        .build()))
+                .thenReturn(new ArrayList<>());
+        
         when(getProductivityEntityUseCase.execute(any()))
                 .thenReturn(mockProductivityEntityOutput());
 

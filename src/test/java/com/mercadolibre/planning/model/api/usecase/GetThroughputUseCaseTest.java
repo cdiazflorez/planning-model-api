@@ -16,14 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.*;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
@@ -70,6 +70,17 @@ public class GetThroughputUseCaseTest {
                         .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
                         .build()))
                 .thenReturn(mockHeadcountEntityOutput());
+
+        when(getHeadcountEntityUseCase.execute(
+                GetHeadcountInput.builder()
+                        .warehouseId(input.getWarehouseId()).entityType(THROUGHPUT)
+                        .workflow(input.getWorkflow())
+                        .source(FORECAST)
+                        .dateFrom(input.getDateFrom())
+                        .dateTo(input.getDateTo())
+                        .processName(List.of(RECEIVING))
+                        .build()))
+                .thenReturn(new ArrayList<>());
 
         when(getProductivityEntityUseCase.execute(any()))
                 .thenReturn(mockProductivityEntityOutput());

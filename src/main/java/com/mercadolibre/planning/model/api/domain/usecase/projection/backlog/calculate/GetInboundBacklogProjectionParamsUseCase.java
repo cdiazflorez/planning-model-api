@@ -38,9 +38,8 @@ public class GetInboundBacklogProjectionParamsUseCase implements GetBacklogProje
                 .build();
     }
 
-    private Map<ZonedDateTime, Long> filterCapacityByProcess(
-            final List<EntityOutput> throughput,
-            final ProcessName processName) {
+    private Map<ZonedDateTime, Long> filterCapacityByProcess(final List<EntityOutput> throughput,
+                                                             final ProcessName processName) {
 
         return throughput.stream()
                 .filter(e -> e.getProcessName() == processName)

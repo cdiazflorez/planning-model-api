@@ -1,14 +1,21 @@
-package com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse;
+package com.mercadolibre.planning.model.api.domain.usecase.sla;
 
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.entity.sla.Canalization;
+import com.mercadolibre.planning.model.api.domain.entity.sla.CarrierServiceId;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoverageResult;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.ProcessingTimeByDate;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
+import com.mercadolibre.planning.model.api.util.DateUtils;
+import com.mercadolibre.planning.model.api.util.GetSlaByWarehouseUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,8 +41,8 @@ import java.util.stream.Stream;
 @Service
 @AllArgsConstructor
 @SuppressWarnings({"PMD.CloseResource", "PMD.ExcessiveImports"})
-public class GetCptByWarehouseUseCase
-        implements UseCase<GetCptByWarehouseInput, List<GetCptByWarehouseOutput>> {
+public class GetSlaByWarehouseOutboundService
+        implements GetSlaByWarehouseService {
 
     private static final int MINUTES_IN_HOUR = 60;
 
@@ -47,28 +53,19 @@ public class GetCptByWarehouseUseCase
     private RouteCoverageClientGateway routeCoverageClientGateway;
 
     @Override
-    public List<GetCptByWarehouseOutput> execute(final GetCptByWarehouseInput input) {
+    public List<GetSlaByWarehouseOutput> execute(final GetSlaByWarehouseInput input) {
 
-        final List<ProcessingTimeByDate> routes = getCptByWarehouse(input);
+        final List<ProcessingTimeByDate> routes = generateSlaByWarehouse(input);
 
-        final List<GetCptByWarehouseOutput> cptRoute = getCptByRouteEts(input, routes);
-
-        final HashSet<ZonedDateTime> cptRouteDates = cptRoute.stream()
-                .map(GetCptByWarehouseOutput::getDate)
-                .collect(Collectors.toCollection(HashSet::new));
-
-        final List<GetCptByWarehouseOutput> cptBacklog = getCptByZonedDateTimes(input).stream()
-                .filter(backlog -> !cptRouteDates.contains(backlog.getDate()))
-                .collect(Collectors.toList());
-
-        cptRoute.addAll(cptBacklog);
-
-        return cptRoute.stream()
-                .sorted(Comparator.comparing(GetCptByWarehouseOutput::getDate))
-                .collect(Collectors.toList());
+        final List<GetSlaByWarehouseOutput> slasRoute = getSlaByRouteEts(input, routes);
+        //TODO: if addBacklogInSlaInOrder will not be used in inbound,
+        // move code to this method and delete util
+        return GetSlaByWarehouseUtils
+                .addBacklogInSlaInOrder(generateSlaByBacklog(input), slasRoute);
     }
 
-    private List<ProcessingTimeByDate> getCptByWarehouse(final GetCptByWarehouseInput input) {
+
+    private List<ProcessingTimeByDate> generateSlaByWarehouse(final GetSlaByWarehouseInput input) {
         try {
             return getRouteEtd(input);
         } catch (ClientException | NoEtdsFoundException e) {
@@ -77,14 +74,16 @@ public class GetCptByWarehouseUseCase
         }
     }
 
-    private List<GetCptByWarehouseOutput> getCptByZonedDateTimes(
-            final GetCptByWarehouseInput input) {
+    private List<GetSlaByWarehouseOutput> generateSlaByBacklog(
+            final GetSlaByWarehouseInput input) {
 
         final ProcessingTime ptDefault = new ProcessingTime(240, MetricUnit.MINUTES);
 
-        return input.getCptDefault().stream()
+        return input.getDafaultSlas() == null
+                ? Collections.emptyList()
+                : input.getDafaultSlas().stream()
                 .sorted()
-                .map(item -> GetCptByWarehouseOutput.builder()
+                .map(item -> GetSlaByWarehouseOutput.builder()
                         .date(item)
                         .processingTime(ptDefault)
                         .logisticCenterId(input.getLogisticCenterId())
@@ -92,7 +91,7 @@ public class GetCptByWarehouseUseCase
                 .collect(Collectors.toList());
     }
 
-    private List<ProcessingTimeByDate> getRouteEtd(final GetCptByWarehouseInput input) {
+    private List<ProcessingTimeByDate> getRouteEtd(final GetSlaByWarehouseInput input) {
         final List<RouteEtsDto> routesAux = routeEtsGateway.postRoutEts(
                 RouteEtsRequest.builder()
                         .fromFilter(List.of(input.getLogisticCenterId()))
@@ -193,15 +192,8 @@ public class GetCptByWarehouseUseCase
                 processingTime);
     }
 
-    private boolean isBetweenInclusive(final ZonedDateTime date,
-                                       final ZonedDateTime from,
-                                       final ZonedDateTime to) {
-
-        return date.equals(from) || date.equals(to) || date.isAfter(from) && date.isBefore(to);
-    }
-
-    private List<GetCptByWarehouseOutput> getCptByRouteEts(
-            final GetCptByWarehouseInput input, final List<ProcessingTimeByDate> routes) {
+    private List<GetSlaByWarehouseOutput> getSlaByRouteEts(
+            final GetSlaByWarehouseInput input, final List<ProcessingTimeByDate> routes) {
 
         final ZonedDateTime cptFromTimeZoneWarehouse =
                 getDateWithTimeZone(input.getCptFrom(), input.getTimeZone());
@@ -209,19 +201,19 @@ public class GetCptByWarehouseUseCase
         return routes.stream()
                 .map(route -> generateCptByWarehouseOutput(route, cptFromTimeZoneWarehouse))
                 .filter(cpt ->
-                        isBetweenInclusive(cpt.getDate(), input.getCptFrom(), input.getCptTo())
+                        DateUtils.isBetweenInclusive(cpt.getDate(), input.getCptFrom(), input.getCptTo())
                 )
-                .sorted(Comparator.comparing(GetCptByWarehouseOutput::getDate))
+                .sorted(Comparator.comparing(GetSlaByWarehouseOutput::getDate))
                 .collect(Collectors.toList());
     }
 
-    private GetCptByWarehouseOutput generateCptByWarehouseOutput(
+    private GetSlaByWarehouseOutput generateCptByWarehouseOutput(
             final ProcessingTimeByDate route, final ZonedDateTime dateFromTimeZoneWarehouse) {
 
         final ZonedDateTime date = generateDate(route, dateFromTimeZoneWarehouse)
                 .withZoneSameInstant(ZoneId.of("UTC"));
 
-        return GetCptByWarehouseOutput.builder()
+        return GetSlaByWarehouseOutput.builder()
                 .date(date)
                 .processingTime(
                         new ProcessingTime(route.getProcessingTime(), MetricUnit.MINUTES)

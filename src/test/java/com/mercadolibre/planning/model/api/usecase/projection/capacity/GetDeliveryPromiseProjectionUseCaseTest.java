@@ -6,10 +6,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -17,10 +16,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,7 +50,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @ExtendWith(MockitoExtension.class)
 public class GetDeliveryPromiseProjectionUseCaseTest {
 
@@ -75,7 +75,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     private GetCycleTimeUseCase getCycleTimeUseCase;
 
     @Mock
-    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @ParameterizedTest
     @MethodSource("mockParameterizedConfiguration")
@@ -85,7 +85,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                             final List<Backlog> backlogs,
                             final List<ZonedDateTime> cptDates) {
         //GIVEN
-        final List<GetCptByWarehouseOutput> cptByWarehouse = mockCptByWarehouse();
+        final List<GetSlaByWarehouseOutput> cptByWarehouse = mockCptByWarehouse();
 
         final GetDeliveryPromiseProjectionInput input = GetDeliveryPromiseProjectionInput.builder()
                 .warehouseId(warehouseId)
@@ -113,7 +113,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                         forecastIds
                 )).thenReturn(mockProcessingDist());
 
-        when(calculatedProjectionUseCase.execute(CptProjectionInput.builder()
+        when(calculatedProjectionUseCase.execute(SlaProjectionInput.builder()
                 .workflow(input.getWorkflow())
                 .logisticCenterId(input.getWarehouseId())
                 .capacity(mockCapacityByHour())
@@ -122,7 +122,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateTo(input.getDateTo())
                 .planningUnits(emptyList())
                 .projectionType(DEFERRAL)
-                .cptByWarehouse(cptByWarehouse)
+                .slaByWarehouse(cptByWarehouse)
                 .currentDate(getCurrentUtcDate())
                 .build())
         ).thenReturn(output.stream().map(item ->
@@ -134,9 +134,9 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
         when(getCycleTimeUseCase.execute(new GetCycleTimeInput(warehouseId, cptDates)))
                 .thenReturn(mockCycleTimeByCpt());
 
-        when(getCptByWarehouseUseCase.execute(new
-                GetCptByWarehouseInput(warehouseId, NOW, NOW.plusHours(6),
-                cptDates,null))).thenReturn(cptByWarehouse);
+        when(getSlaByWarehouseOutboundService.execute(new
+                GetSlaByWarehouseInput(warehouseId, NOW, NOW.plusHours(6),
+                cptDates, null))).thenReturn(cptByWarehouse);
 
         //WHEN
         final List<DeliveryPromiseProjectionOutput> response =
@@ -209,19 +209,19 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
         return ctByCpt;
     }
 
-    private List<GetCptByWarehouseOutput> mockCptByWarehouse() {
+    private List<GetSlaByWarehouseOutput> mockCptByWarehouse() {
 
-        final List<GetCptByWarehouseOutput> getCptByWarehouseOutputs = new ArrayList<>();
+        final List<GetSlaByWarehouseOutput> getSlaByWarehouseOutputs = new ArrayList<>();
 
-        getCptByWarehouseOutputs.add(GetCptByWarehouseOutput.builder()
+        getSlaByWarehouseOutputs.add(GetSlaByWarehouseOutput.builder()
                 .date(CPT_1)
                 .processingTime(new ProcessingTime(360L, MINUTES)).build());
 
-        getCptByWarehouseOutputs.add(GetCptByWarehouseOutput.builder()
+        getSlaByWarehouseOutputs.add(GetSlaByWarehouseOutput.builder()
                 .date(CPT_2)
                 .processingTime(new ProcessingTime(360L, MINUTES)).build());
 
-        return getCptByWarehouseOutputs;
+        return getSlaByWarehouseOutputs;
     }
 
     public static Stream<Arguments> mockParameterizedConfiguration() {

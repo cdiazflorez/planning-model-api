@@ -1,18 +1,18 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = SimulationController.class)
+@SuppressWarnings("PMD.LongVariable")
 public class SimulationControllerTest {
 
     private static final String URL = "/planning/model/workflows/{workflow}/simulations";
@@ -64,7 +65,7 @@ public class SimulationControllerTest {
     private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @MockBean
-    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @Test
     public void testSaveSimulation() throws Exception {
@@ -72,7 +73,7 @@ public class SimulationControllerTest {
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, projectedEndDate, 100)));
 
@@ -82,8 +83,8 @@ public class SimulationControllerTest {
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCptByWarehouseUseCase.execute(
-                new GetCptByWarehouseInput("ARBA01", null, null, emptyList(),
+        when(getSlaByWarehouseOutboundService.execute(
+                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
                         "America/Argentina/Buenos_Aires")))
                 .thenReturn(emptyList());
 
@@ -115,7 +116,7 @@ public class SimulationControllerTest {
         final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, simulatedEndDate, 100)))
                 .thenReturn(List.of(
@@ -127,8 +128,8 @@ public class SimulationControllerTest {
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCptByWarehouseUseCase.execute(
-                new GetCptByWarehouseInput("ARBA01", null, null, emptyList(),
+        when(getSlaByWarehouseOutboundService.execute(
+                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
                         "America/Argentina/Buenos_Aires")))
                 .thenReturn(emptyList());
 

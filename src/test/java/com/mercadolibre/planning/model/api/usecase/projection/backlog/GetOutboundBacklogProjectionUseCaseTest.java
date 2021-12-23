@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase.projection.backlog;
 
-
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;

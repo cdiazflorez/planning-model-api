@@ -2,16 +2,16 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.Canalization;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.CarrierServiceId;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
+import com.mercadolibre.planning.model.api.domain.entity.sla.Canalization;
+import com.mercadolibre.planning.model.api.domain.entity.sla.CarrierServiceId;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoverageResult;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 import org.junit.jupiter.api.Test;
@@ -29,18 +29,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LongVariable")
 @ExtendWith(MockitoExtension.class)
-public class GetCptByWarehouseUseCaseTest {
+public class GetSlaByWarehouseOutboundServiceTest {
     private static final String TIME_ZONE = "America/Argentina/Buenos_Aires";
 
     private static final ZonedDateTime DAY =
             ZonedDateTime.parse(
                     "2021-11-02T00:00:00.000000-00:00" + "[UTC]"); // /LUNES 2021-11-01 A LAS 21
 
-    private static final ZonedDateTime NOW =  ZonedDateTime.now();
+    private static final ZonedDateTime NOW = ZonedDateTime.now();
 
     @InjectMocks
-    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @Mock
     private RouteEtsGateway routeEtsGateway;
@@ -50,7 +51,7 @@ public class GetCptByWarehouseUseCaseTest {
 
 
     @Test
-    public void obtainCptbyZonedDate() {
+    public void obtainSlaByZonedDate() {
         // GIVEN
         final ClientException exception = mock(ClientException.class);
         when(exception.getMessage()).thenReturn("exception");
@@ -59,15 +60,15 @@ public class GetCptByWarehouseUseCaseTest {
                 RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
                 .thenThrow(exception);
 
-        final GetCptByWarehouseInput input =
-                new GetCptByWarehouseInput("ARBA01", DAY, DAY.plusDays(1),
+        final GetSlaByWarehouseInput input =
+                new GetSlaByWarehouseInput("ARBA01", DAY, DAY.plusDays(1),
                         List.of(DAY, DAY), TIME_ZONE);
 
         // WHEN
-        final List<GetCptByWarehouseOutput> actual = getCptByWarehouseUseCase.execute(input);
+        final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
 
         // THEN
-        final List<GetCptByWarehouseOutput> expected = mockCptOutputByZonedDate();
+        final List<GetSlaByWarehouseOutput> expected = mockCptOutputByZonedDate();
 
         for (int i = 0; i < expected.size(); i++) {
             assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
@@ -87,14 +88,14 @@ public class GetCptByWarehouseUseCaseTest {
 
         final List<ZonedDateTime> backlog = List.of(NOW, DAY);
 
-        final GetCptByWarehouseInput input =
-                new GetCptByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), backlog, TIME_ZONE);
+        final GetSlaByWarehouseInput input =
+                new GetSlaByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), backlog, TIME_ZONE);
 
         // WHEN
-        final List<GetCptByWarehouseOutput> actual = getCptByWarehouseUseCase.execute(input);
+        final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
 
         // THEN
-        final List<GetCptByWarehouseOutput> expected = mockCptOutput();
+        final List<GetSlaByWarehouseOutput> expected = mockCptOutput();
 
         assertEquals(expected.size(), actual.size());
 
@@ -104,43 +105,43 @@ public class GetCptByWarehouseUseCaseTest {
         }
     }
 
-    private List<GetCptByWarehouseOutput> mockCptOutput() {
-        final GetCptByWarehouseOutput getCptByWarehouseOutput =
-                GetCptByWarehouseOutput.builder()
+    private List<GetSlaByWarehouseOutput> mockCptOutput() {
+        final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+                GetSlaByWarehouseOutput.builder()
                         .logisticCenterId("ARBA01")
                         .date(DAY)
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        final GetCptByWarehouseOutput getCptByWarehouseOutput2 =
-                GetCptByWarehouseOutput.builder()
+        final GetSlaByWarehouseOutput getSlaByWarehouseOutput2 =
+                GetSlaByWarehouseOutput.builder()
                         .logisticCenterId("ARBA01")
                         .date(DAY.plusHours(1))
                         .processingTime(new ProcessingTime(120, MetricUnit.MINUTES))
                         .build();
 
-        final GetCptByWarehouseOutput getCptByWarehouseOutput3 =
-                GetCptByWarehouseOutput.builder()
+        final GetSlaByWarehouseOutput getSlaByWarehouseOutput3 =
+                GetSlaByWarehouseOutput.builder()
                         .logisticCenterId("ARBA01")
                         .date(DAY.plusHours(11))
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        final GetCptByWarehouseOutput getCptByWarehouseOutput4 =
-                GetCptByWarehouseOutput.builder()
+        final GetSlaByWarehouseOutput getSlaByWarehouseOutput4 =
+                GetSlaByWarehouseOutput.builder()
                         .logisticCenterId("ARBA01")
                         .date(NOW)
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        return List.of(getCptByWarehouseOutput, getCptByWarehouseOutput2,
-                getCptByWarehouseOutput3, getCptByWarehouseOutput4);
+        return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
+                getSlaByWarehouseOutput3, getSlaByWarehouseOutput4);
     }
 
-    private List<GetCptByWarehouseOutput> mockCptOutputByZonedDate() {
+    private List<GetSlaByWarehouseOutput> mockCptOutputByZonedDate() {
 
-        final GetCptByWarehouseOutput getCptByWarehouseOutput =
-                GetCptByWarehouseOutput.builder()
+        final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+                GetSlaByWarehouseOutput.builder()
                         .serviceId(null)
                         .canalizationId(null)
                         .logisticCenterId("ARBA01")
@@ -148,7 +149,7 @@ public class GetCptByWarehouseUseCaseTest {
                         .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
                         .build();
 
-        return List.of(getCptByWarehouseOutput);
+        return List.of(getSlaByWarehouseOutput);
     }
 
     private List<RouteEtsDto> mockResponse() {

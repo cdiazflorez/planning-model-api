@@ -2,11 +2,11 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 
@@ -52,13 +52,13 @@ public class SimulationRequest {
 
     private boolean applyDeviation;
 
-    public CptProjectionInput toProjectionInput(
+    public SlaProjectionInput toProjectionInput(
             final Map<ZonedDateTime, Integer> capacity,
             final List<GetPlanningDistributionOutput> units,
             final Workflow workflow,
-            final List<GetCptByWarehouseOutput> cptByWarehouse) {
+            final List<GetSlaByWarehouseOutput> cptByWarehouse) {
 
-        return CptProjectionInput.builder()
+        return SlaProjectionInput.builder()
                 .workflow(workflow)
                 .logisticCenterId(warehouseId)
                 .dateFrom(dateFrom)
@@ -68,7 +68,7 @@ public class SimulationRequest {
                 .backlog(backlog.stream()
                         .map(QuantityByDate::toBacklog)
                         .collect(toList()))
-                .cptByWarehouse(cptByWarehouse)
+                .slaByWarehouse(cptByWarehouse)
                 .currentDate(getCurrentUtcDate())
                 .build();
     }

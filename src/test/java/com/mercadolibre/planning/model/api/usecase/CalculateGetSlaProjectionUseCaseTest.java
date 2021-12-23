@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +43,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
-public class CalculateGetCptProjectionUseCaseTest {
+public class CalculateGetSlaProjectionUseCaseTest {
 
     private static final ZonedDateTime DATE_10 = parse("2020-01-01T10:00:00Z");
     private static final ZonedDateTime DATE_IN_11 = parse("2020-01-01T11:00:00Z");
@@ -83,7 +83,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .total(200)
                 .build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
@@ -91,8 +91,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .logisticCenterId(WAREHOUSE_ID)
                 .backlog(backlogs)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -118,7 +118,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .total(100)
                 .build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
@@ -126,8 +126,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -154,7 +154,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .total(100)
                 .build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
@@ -162,8 +162,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -192,7 +192,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .total(400)
                 .build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
@@ -200,8 +200,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(dateOut).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(dateOut).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -237,7 +237,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
                 builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
@@ -246,9 +246,9 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_13).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_13).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -272,7 +272,7 @@ public class CalculateGetCptProjectionUseCaseTest {
     @Test
     @DisplayName("GetCptByWarehouseOutput without items shouldn't be returned")
     public void testEmptyCpt() {
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
@@ -280,7 +280,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .planningUnits(emptyList())
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(emptyList())
+                .slaByWarehouse(emptyList())
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -294,7 +294,7 @@ public class CalculateGetCptProjectionUseCaseTest {
     @Test
     @DisplayName("Recalculate de projection if has new items")
     public void testRecalculateProjectionDate() {
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(List.of(
@@ -316,8 +316,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_16).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_16).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -347,7 +347,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                 builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
                 builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
@@ -356,10 +356,10 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_13).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_13).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -416,7 +416,7 @@ public class CalculateGetCptProjectionUseCaseTest {
                         .build()
         );
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
                 .planningUnits(planningUnits)
@@ -425,10 +425,10 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(CPT)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_13).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_13).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -455,7 +455,7 @@ public class CalculateGetCptProjectionUseCaseTest {
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
         final ZonedDateTime date13 = DATE_10.plusHours(3);
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(date13)
                 .planningUnits(emptyList())
@@ -463,8 +463,8 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(DEFERRAL)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 
@@ -487,7 +487,7 @@ public class CalculateGetCptProjectionUseCaseTest {
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
         final ZonedDateTime date13 = DATE_10.plusHours(3);
 
-        final CptProjectionInput input = CptProjectionInput.builder()
+        final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(date13)
                 .planningUnits(List.of(
@@ -498,10 +498,10 @@ public class CalculateGetCptProjectionUseCaseTest {
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
                 .projectionType(DEFERRAL)
-                .cptByWarehouse(List.of(
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
-                        GetCptByWarehouseOutput.builder().date(DATE_OUT_13).build()))
+                .slaByWarehouse(List.of(
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
+                        GetSlaByWarehouseOutput.builder().date(DATE_OUT_13).build()))
                 .currentDate(getCurrentUtcDate())
                 .build();
 

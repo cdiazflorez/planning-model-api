@@ -2,11 +2,10 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -14,6 +13,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toMap;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/simulations")
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 public class SimulationController {
 
     private final ActivateSimulationUseCase activateSimulationUseCase;
@@ -57,7 +57,7 @@ public class SimulationController {
 
     private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
-    private final GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -141,10 +141,10 @@ public class SimulationController {
         return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));
     }
 
-    private List<GetCptByWarehouseOutput> getCptByWarehouse(final SimulationRequest request) {
+    private List<GetSlaByWarehouseOutput> getCptByWarehouse(final SimulationRequest request) {
 
-        return getCptByWarehouseUseCase
-                .execute(new GetCptByWarehouseInput(request.getWarehouseId(),
+        return getSlaByWarehouseOutboundService
+                .execute(new GetSlaByWarehouseInput(request.getWarehouseId(),
                         request.getDateFrom(),
                         request.getDateTo(),
                         request.getBacklog().stream().map(QuantityByDate::getDate).distinct()

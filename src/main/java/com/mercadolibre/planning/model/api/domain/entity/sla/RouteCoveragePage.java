@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse;
+package com.mercadolibre.planning.model.api.domain.entity.sla;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

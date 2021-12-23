@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Test;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.*;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.CHECK_IN;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_AWAY;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.STAGE_IN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GetInboundBacklogProjectionParamsUseCastTest {

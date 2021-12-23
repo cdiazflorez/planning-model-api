@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.gateway;
 
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
+import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoverageResult;
 
 import java.util.List;
 

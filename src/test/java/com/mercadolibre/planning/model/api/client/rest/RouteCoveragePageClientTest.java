@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.client.rest;
 
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.Canalization;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.CarrierServiceId;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.RouteCoverageResult;
+import com.mercadolibre.planning.model.api.domain.entity.sla.Canalization;
+import com.mercadolibre.planning.model.api.domain.entity.sla.CarrierServiceId;
+import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoverageResult;
 import com.mercadolibre.restclient.MockResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

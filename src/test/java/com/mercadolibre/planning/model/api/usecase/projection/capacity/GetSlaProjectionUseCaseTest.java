@@ -1,10 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase.projection.capacity;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -12,10 +11,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,15 +39,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("PMD.LongVariable")
 @ExtendWith(MockitoExtension.class)
-class GetCptProjectionUseCaseTest {
+class GetSlaProjectionUseCaseTest {
 
     private static final ZonedDateTime DATE_FROM = parse("2020-01-01T12:00:00Z");
     private static final ZonedDateTime DATE_TO = parse("2020-01-10T12:00:00Z");
     private static final String TIMEZONE = "America/Argentina/Buenos_Aires";
 
     @InjectMocks
-    private GetCptProjectionUseCase getCptProjectionUseCase;
+    private GetSlaProjectionUseCase getSlaProjectionUseCase;
 
     @Mock
     private GetThroughputUseCase getThroughputUseCase;
@@ -65,7 +66,7 @@ class GetCptProjectionUseCaseTest {
     private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
 
     @Mock
-    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @Test
     public void testGetCptProjection() {
@@ -73,7 +74,7 @@ class GetCptProjectionUseCaseTest {
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
 
-        when(calculateCptProjection.execute(any(CptProjectionInput.class)))
+        when(calculateCptProjection.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(etd, projectedTime, 100)));
 
@@ -83,12 +84,12 @@ class GetCptProjectionUseCaseTest {
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCptByWarehouseUseCase.execute(new GetCptByWarehouseInput(
-                        WAREHOUSE_ID, DATE_FROM, DATE_TO, emptyList(), TIMEZONE)))
+        when(getSlaByWarehouseOutboundService.execute(new GetSlaByWarehouseInput(
+                WAREHOUSE_ID, DATE_FROM, DATE_TO, emptyList(), TIMEZONE)))
                 .thenReturn(emptyList());
 
         // WHEN
-        final List<CptProjectionOutput> result = getCptProjectionUseCase.execute(getInput());
+        final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInput());
 
         // THEN
         verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
@@ -104,8 +105,8 @@ class GetCptProjectionUseCaseTest {
         assertEquals(100, first.getRemainingQuantity());
     }
 
-    private GetCptProjectionInput getInput() {
-        return new GetCptProjectionInput(
+    private GetSlaProjectionInput getInput() {
+        return new GetSlaProjectionInput(
                 FBM_WMS_OUTBOUND,
                 WAREHOUSE_ID,
                 CPT,

@@ -6,10 +6,9 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -17,9 +16,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.exception.InvalidForecastException;
 import com.mercadolibre.planning.model.api.util.TestLogisticCenterMapper;
 import lombok.AllArgsConstructor;
@@ -47,7 +47,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @Component
 @AllArgsConstructor
 public class GetDeliveryPromiseProjectionUseCase {
@@ -60,14 +60,14 @@ public class GetDeliveryPromiseProjectionUseCase {
 
     private final GetCycleTimeUseCase getCycleTimeUseCase;
 
-    private final GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     public List<DeliveryPromiseProjectionOutput> execute(
             final GetDeliveryPromiseProjectionInput input) {
 
-        final List<GetCptByWarehouseOutput> allCptByWarehouse =
-                getCptByWarehouseUseCase.execute(
-                        new GetCptByWarehouseInput(
+        final List<GetSlaByWarehouseOutput> allCptByWarehouse =
+                getSlaByWarehouseOutboundService.execute(
+                        new GetSlaByWarehouseInput(
                                 TestLogisticCenterMapper
                                         .toRealLogisticCenter(input.getWarehouseId()),
                                 input.getDateFrom(),
@@ -75,8 +75,8 @@ public class GetDeliveryPromiseProjectionUseCase {
                                 getCptDefaultFromBacklog(input.getBacklog()),
                                 input.getTimeZone()));
 
-        final CptProjectionInput projectionInput =
-                CptProjectionInput.builder()
+        final SlaProjectionInput projectionInput =
+                SlaProjectionInput.builder()
                         .workflow(input.getWorkflow())
                         .logisticCenterId(input.getWarehouseId())
                         .capacity(getMaxCapacity(input))
@@ -85,7 +85,7 @@ public class GetDeliveryPromiseProjectionUseCase {
                         .dateTo(input.getDateTo())
                         .planningUnits(emptyList())
                         .projectionType(DEFERRAL)
-                        .cptByWarehouse(allCptByWarehouse)
+                        .slaByWarehouse(allCptByWarehouse)
                         .currentDate(getCurrentUtcDate())
                         .build();
 
@@ -163,7 +163,7 @@ public class GetDeliveryPromiseProjectionUseCase {
 
     private List<DeliveryPromiseProjectionOutput> calculatedDeferralCpt(
             final List<CptCalculationOutput> allCptProjectionCalculated,
-            final List<GetCptByWarehouseOutput> allCptByWarehouse,
+            final List<GetSlaByWarehouseOutput> allCptByWarehouse,
             final Map<ZonedDateTime, Configuration> cycleTimeByCpt) {
 
         final ZonedDateTime currentDate = getCurrentUtcDate();
@@ -173,7 +173,7 @@ public class GetDeliveryPromiseProjectionUseCase {
                         .collect(
                                 toMap(
                                         item -> item.getDate().withFixedOffsetZone(),
-                                        GetCptByWarehouseOutput::getProcessingTime));
+                                        GetSlaByWarehouseOutput::getProcessingTime));
 
         boolean isDeferredByCap5 = false;
 

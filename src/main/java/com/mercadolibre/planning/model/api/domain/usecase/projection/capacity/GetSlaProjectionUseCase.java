@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -45,7 +45,7 @@ public class GetSlaProjectionUseCase {
 
     private final GetPlanningDistributionUseCase getPlanningUseCase;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetCapacityPerHourService getCapacityPerHourService;
 
     private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
@@ -67,8 +67,8 @@ public class GetSlaProjectionUseCase {
                 .workflow(workflow)
                 .build());
 
-        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(throughput))
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(throughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,

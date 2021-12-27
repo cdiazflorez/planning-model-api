@@ -5,7 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -55,7 +55,7 @@ public class SimulationController {
 
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetCapacityPerHourService getCapacityPerHourService;
 
     private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
@@ -70,8 +70,8 @@ public class SimulationController {
         final List<EntityOutput> throughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(throughput))
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(throughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -105,8 +105,8 @@ public class SimulationController {
         final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> simulatedCapacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(simulatedThroughput))
+        final Map<ZonedDateTime, Integer> simulatedCapacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(simulatedThroughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -123,8 +123,8 @@ public class SimulationController {
         final List<EntityOutput> actualThroughput = getThroughputUseCase
                 .execute(request.toForecastedThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> actualCapacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(actualThroughput))
+        final Map<ZonedDateTime, Integer> actualCapacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(actualThroughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,

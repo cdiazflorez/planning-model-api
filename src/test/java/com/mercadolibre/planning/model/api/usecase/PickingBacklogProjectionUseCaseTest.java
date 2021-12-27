@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.usecase;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.A_FIXED_DATE;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.assertCapacityByDate;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.getMinCapacity;
@@ -47,7 +48,7 @@ public class PickingBacklogProjectionUseCaseTest {
     private PickingBacklogProjectionUseCase pickingBacklogProjection;
 
     @Mock
-    private GetCapacityPerHourUseCase getCapacityUseCase;
+    private GetCapacityPerHourService getCapacityUseCase;
 
     @Test
     public void createPickingProcessParams() {
@@ -59,7 +60,8 @@ public class PickingBacklogProjectionUseCaseTest {
                         new CurrentBacklog(PACKING, 1110)),
                 A_FIXED_DATE.plusHours(4));
 
-        when(getCapacityUseCase.execute(CapacityInput.fromEntityOutputs(input.getThroughputs())))
+        final List<CapacityInput> capacities = CapacityInput.fromEntityOutputs(input.getThroughputs());
+        when(getCapacityUseCase.execute(FBM_WMS_OUTBOUND, capacities))
                 .thenReturn(getMinCapacity().stream()
                         .map(entityOutput -> new CapacityOutput(
                                 entityOutput.getDate(), null, entityOutput.getValue()))

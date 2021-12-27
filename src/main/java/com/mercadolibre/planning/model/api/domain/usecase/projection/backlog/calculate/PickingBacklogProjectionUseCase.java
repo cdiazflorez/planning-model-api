@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ca
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 
@@ -15,13 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static java.util.stream.Collectors.toMap;
 
 @Service
 @AllArgsConstructor
 public class PickingBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
 
-    private final GetCapacityPerHourUseCase getCapacityUseCase;
+    private final GetCapacityPerHourService getCapacityUseCase;
 
     @Override
     public boolean supportsProcessName(final ProcessName processName) {
@@ -31,6 +32,7 @@ public class PickingBacklogProjectionUseCase implements GetBacklogProjectionPara
     @Override
     public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
         final List<CapacityOutput> previousProcessCapacity = getCapacityUseCase.execute(
+                FBM_WMS_OUTBOUND,
                 CapacityInput.fromEntityOutputs(input.getThroughputs()));
 
         final Map<ZonedDateTime, Long> pickingCapacity = input.getThroughputs().stream()

@@ -2,7 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -25,12 +25,14 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.time.ZonedDateTime.now;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -62,7 +64,7 @@ public class SimulationControllerTest {
     private ActivateSimulationUseCase activateSimulationUseCase;
 
     @MockBean
-    private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private GetCapacityPerHourService getCapacityPerHourService;
 
     @MockBean
     private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
@@ -77,7 +79,7 @@ public class SimulationControllerTest {
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, projectedEndDate, 100)));
 
-        when(getCapacityPerHourUseCase.execute(any(List.class)))
+        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR, 100)
@@ -122,7 +124,7 @@ public class SimulationControllerTest {
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, projectedEndDate, 150)));
 
-        when(getCapacityPerHourUseCase.execute(any(List.class)))
+        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR, 100)

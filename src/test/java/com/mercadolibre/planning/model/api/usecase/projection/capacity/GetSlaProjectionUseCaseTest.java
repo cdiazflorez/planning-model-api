@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.usecase.projection.capacity;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -35,6 +35,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -63,7 +64,7 @@ class GetSlaProjectionUseCaseTest {
     private CalculateBacklogProjectionUseCase calculateBacklogProjection;
 
     @Mock
-    private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private GetCapacityPerHourService getCapacityPerHourService;
 
     @Mock
     private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
@@ -78,7 +79,7 @@ class GetSlaProjectionUseCaseTest {
                 .thenReturn(List.of(
                         new CptCalculationOutput(etd, projectedTime, 100)));
 
-        when(getCapacityPerHourUseCase.execute(any(List.class)))
+        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR, 100)

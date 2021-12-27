@@ -9,7 +9,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPe
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
@@ -53,7 +53,7 @@ public class SimulationController {
 
     private final GetThroughputUseCase getThroughputUseCase;
 
-    private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private final PlanningDistributionService planningDistributionService;
 
     private final GetCapacityPerHourService getCapacityPerHourService;
 
@@ -79,7 +79,7 @@ public class SimulationController {
                 ));
 
         final List<GetPlanningDistributionOutput> planningDistributions =
-                getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
+                planningDistributionService.getPlanningDistribution(request.toPlanningInput(workflow));
 
         final List<CptCalculationOutput> cptProjectionOutputs = calculateCptProjectionUseCase
                 .execute(request.toProjectionInput(
@@ -100,7 +100,7 @@ public class SimulationController {
             @Valid @RequestBody final SimulationRequest request) {
 
         final List<GetPlanningDistributionOutput> planningDistributions =
-                getPlanningDistributionUseCase.execute(request.toPlanningInput(workflow));
+                planningDistributionService.getPlanningDistribution(request.toPlanningInput(workflow));
 
         final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));

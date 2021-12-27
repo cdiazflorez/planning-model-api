@@ -14,6 +14,8 @@ public interface CurrentForecastDeviationRepository
         extends CrudRepository<CurrentForecastDeviation, Long> {
     List<CurrentForecastDeviation> findByLogisticCenterId(final String logisticCenterId);
 
+    List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrue(final String logisticCenterId);
+
     Optional<CurrentForecastDeviation>
             findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
                     final String logisticCenterId,

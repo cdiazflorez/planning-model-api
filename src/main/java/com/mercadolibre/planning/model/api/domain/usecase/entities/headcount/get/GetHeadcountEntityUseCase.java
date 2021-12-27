@@ -104,13 +104,12 @@ public class GetHeadcountEntityUseCase
 
     private List<ProcessingDistributionView> findProcessingDistributionBy(
             final GetHeadcountInput input) {
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .build()
-        );
+        final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                input.getDateFrom(),
+                input.getDateTo()
+        ));
 
         return processingDistRepository
                 .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -151,18 +150,16 @@ public class GetHeadcountEntityUseCase
         input.getSimulations().forEach(simulation ->
                 simulation.getEntities().stream()
                         .filter(entity -> entity.getType() == HEADCOUNT)
-                        .forEach(entity -> {
-                            entity.getValues().forEach(quantityByDate ->
-                                    simulatedEntities.add(EntityOutput.builder()
-                                            .workflow(input.getWorkflow())
-                                            .date(quantityByDate.getDate().withFixedOffsetZone())
-                                            .metricUnit(MetricUnit.WORKERS)
-                                            .processName(simulation.getProcessName())
-                                            .source(SIMULATION)
-                                            .value(quantityByDate.getQuantity())
-                                            .type(ProcessingType.ACTIVE_WORKERS)
-                                            .build()));
-                        }));
+                        .forEach(entity -> entity.getValues().forEach(quantityByDate ->
+                                simulatedEntities.add(EntityOutput.builder()
+                                        .workflow(input.getWorkflow())
+                                        .date(quantityByDate.getDate().withFixedOffsetZone())
+                                        .metricUnit(MetricUnit.WORKERS)
+                                        .processName(simulation.getProcessName())
+                                        .source(SIMULATION)
+                                        .value(quantityByDate.getQuantity())
+                                        .type(ProcessingType.ACTIVE_WORKERS)
+                                        .build()))));
 
         return simulatedEntities;
     }

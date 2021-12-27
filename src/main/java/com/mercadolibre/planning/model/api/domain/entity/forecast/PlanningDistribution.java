@@ -24,6 +24,11 @@ import javax.persistence.OneToMany;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+/**
+ * The name is misleading. This is not a distribution but an element of a discrete distribution.
+ * Instances of this class know the number of units that are predicted to be sold during the one-hour interval starting
+ * at {@link #dateIn}, and the time at which all of them must have been shipped.
+ */
 @Entity
 @Builder
 @AllArgsConstructor
@@ -41,6 +46,9 @@ public class PlanningDistribution {
 
     private long quantity;
 
+    /**
+     * TODO remove this field.
+     */
     @Enumerated(EnumType.STRING)
     private MetricUnit quantityMetricUnit;
 

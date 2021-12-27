@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
@@ -27,9 +26,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.sav
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
-import com.mercadolibre.planning.model.api.usecase.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
@@ -60,7 +60,11 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCE
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.*;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
@@ -254,38 +258,38 @@ public final class TestUtils {
                 .build();
     }
 
-    public static List<PlanningDistributionView> planningDistributions() {
+    public static List<PlanningDistributionElemView> planningDistributions() {
         return List.of(
                 new PlanningDistributionViewImpl(
                         2,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         1000,
-                        UNITS),
+                        UNITS.name()),
                 new PlanningDistributionViewImpl(
                         2,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         300,
-                        UNITS),
+                        UNITS.name()),
                 new PlanningDistributionViewImpl(
                         1,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(2).toInstant()),
                         1200,
-                        UNITS),
+                        UNITS.name()),
                 new PlanningDistributionViewImpl(
                         1,
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         Date.from(A_DATE_UTC.plusDays(2).toInstant()),
                         1250,
-                        UNITS),
+                        UNITS.name()),
                 new PlanningDistributionViewImpl(
                         1,
                         Date.from(A_DATE_UTC.toInstant()),
                         Date.from(A_DATE_UTC.plusDays(1).toInstant()),
                         500,
-                        UNITS)
+                        UNITS.name())
         );
     }
 
@@ -371,14 +375,14 @@ public final class TestUtils {
     }
 
     public static GetSuggestedWavesInput mockGetSuggestedWavesInput() {
-        final ZonedDateTime now = getCurrentUtcDate();
+        final ZonedDateTime now = getCurrentUtcDate().withFixedOffsetZone();
 
         return GetSuggestedWavesInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
-                .dateFrom(now.withFixedOffsetZone())
+                .dateFrom(now)
                 .backlog(500)
-                .dateTo(now.truncatedTo(HOURS).plusHours(2).withFixedOffsetZone())
+                .dateTo(now.truncatedTo(HOURS).plusHours(2))
                 .applyDeviation(true)
                 .build();
     }
@@ -752,14 +756,12 @@ public final class TestUtils {
 
     public static String getResourceAsString(final String resourceName) throws IOException {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        final InputStream resource = classLoader.getResourceAsStream(resourceName);
 
-        try {
+        try (InputStream resource = classLoader.getResourceAsStream(resourceName)) {
+            assert resource != null;
             return IOUtils.toString(resource, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(e);
-        } finally {
-            resource.close();
         }
     }
 

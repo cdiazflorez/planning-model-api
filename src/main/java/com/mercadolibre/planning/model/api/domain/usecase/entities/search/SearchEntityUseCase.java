@@ -42,14 +42,12 @@ public class SearchEntityUseCase implements EntityUseCase<GetEntityInput, List<E
             throw new UnsupportedEntityTypeException(targetEntityType.name());
         }
 
-        final List<Long> forecastIds =
-                getForecastUseCase.execute(
-                        GetForecastInput.builder()
-                                .workflow(input.getWorkflow())
-                                .warehouseId(input.getWarehouseId())
-                                .dateFrom(input.getDateFrom())
-                                .dateTo(input.getDateTo())
-                                .build());
+        final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                input.getDateFrom(),
+                input.getDateTo()
+        ));
 
         final List<ProcessingDistributionView> performedProcessing =
                 processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(

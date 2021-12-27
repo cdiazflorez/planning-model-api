@@ -6,7 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
@@ -25,7 +25,7 @@ public class GetOutboundBacklogProjectionUseCase implements GetBacklogProjection
 
     private final GetThroughputUseCase getThroughputUseCase;
 
-    private final GetPlanningDistributionUseCase getPlanningUseCase;
+    private final PlanningDistributionService planningDistributionService;
 
     @Override
     public List<BacklogProjection> execute(final BacklogProjectionInput input) {
@@ -40,7 +40,7 @@ public class GetOutboundBacklogProjectionUseCase implements GetBacklogProjection
                 .workflow(getWorkflow())
                 .build());
 
-        final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
+        final List<GetPlanningDistributionOutput> planningUnits = planningDistributionService.getPlanningDistribution(
                 GetPlanningDistributionInput.builder()
                         .workflow(getWorkflow())
                         .warehouseId(input.getLogisticCenterId())

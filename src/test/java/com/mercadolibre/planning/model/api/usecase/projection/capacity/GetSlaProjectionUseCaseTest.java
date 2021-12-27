@@ -7,7 +7,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPe
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
@@ -55,7 +55,7 @@ class GetSlaProjectionUseCaseTest {
     private GetThroughputUseCase getThroughputUseCase;
 
     @Mock
-    private GetPlanningDistributionUseCase getPlanningUseCase;
+    private PlanningDistributionService planningService;
 
     @Mock
     private CalculateCptProjectionUseCase calculateCptProjection;
@@ -93,7 +93,7 @@ class GetSlaProjectionUseCaseTest {
         final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInput());
 
         // THEN
-        verify(getPlanningUseCase).execute(any(GetPlanningDistributionInput.class));
+        verify(planningService).getPlanningDistribution(any(GetPlanningDistributionInput.class));
         verify(getThroughputUseCase).execute(any(GetEntityInput.class));
         verifyNoInteractions(calculateBacklogProjection);
 

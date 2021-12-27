@@ -1,14 +1,11 @@
 package com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.SuggestedWavePlanningDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
@@ -16,6 +13,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,29 +34,27 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class GetSuggestedWavesUseCase
-        implements UseCase<GetSuggestedWavesInput, List<SuggestedWavesOutput>> {
+public class GetSuggestedWavesUseCase {
 
     private final SearchEntityUseCase searchEntityUseCase;
     private final GetForecastMetadataUseCase getForecastMetadataUseCase;
     private final GetForecastUseCase getForecastUseCase;
-    private final PlanningDistributionRepository planningDistRepository;
+    private final PlanningDistributionService planningDistributionService;
     private final ProcessingDistributionRepository processingDistRepository;
 
     private static final long HOUR_IN_MINUTES = 60L;
 
     @Trace
-    @Override
     public List<SuggestedWavesOutput> execute(final GetSuggestedWavesInput input) {
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                        .workflow(input.getWorkflow())
-                        .warehouseId(input.getWarehouseId())
-                        .dateFrom(input.getDateFrom())
-                        .dateTo(input.getDateTo())
-                        .build());
+        final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                input.getDateFrom(),
+                input.getDateTo()
+        ));
 
         final long initialBacklog = input.getBacklog();
-        final long sales = getBoundedSales(input, forecastIds);
+        final long sales = getSalesInRange(input, forecastIds);
         final double remainingProcessing = (double) getRemainingProcessing(input) / HOUR_IN_MINUTES;
         final long capex = getCapex(input, forecastIds);
         final long suggestedWavingUnits =
@@ -135,33 +132,56 @@ public class GetSuggestedWavesUseCase
                 .orElse(0L);
     }
 
-    private long getBoundedSales(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
+    private long getSalesInRange(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
+        assert input.getDateTo().getMinute() == 0;
+
         final ZonedDateTime dateFrom = input.getDateFrom();
 
-        final SuggestedWavePlanningDistributionView currentHourSales = planningDistRepository
-                .findByWarehouseIdWorkflowDateInRange(
-                        input.getWarehouseId(),
-                        dateFrom.truncatedTo(HOURS),
-                        dateFrom.truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                        forecastIds,
-                        input.isApplyDeviation());
-
-        long totalSales = currentHourSales == null ? 0
-                : currentHourSalesPercentage(currentHourSales.getQuantity(), dateFrom);
+        final var currentHourSales = getSalesInWholeHoursRange(
+                input.getWarehouseId(),
+                forecastIds,
+                input.getDateFrom().truncatedTo(HOURS),
+                input.getDateFrom().truncatedTo(HOURS).plusHours(1).minusMinutes(1),
+                input.isApplyDeviation()
+        );
+        long totalSales = currentHourSalesPercentage(currentHourSales, dateFrom);
 
         if (dateFrom.truncatedTo(HOURS).plusHours(1).isBefore(input.getDateTo())) {
-            final SuggestedWavePlanningDistributionView nextHourSales = planningDistRepository
-                    .findByWarehouseIdWorkflowDateInRange(
-                            input.getWarehouseId(),
-                            dateFrom.truncatedTo(HOURS).plusHours(1),
-                            input.getDateTo().minusMinutes(1),
-                            forecastIds,
-                            input.isApplyDeviation());
-
-            totalSales += nextHourSales == null ? 0 : nextHourSales.getQuantity();
+            final var nextHourSales = getSalesInWholeHoursRange(
+                    input.getWarehouseId(),
+                    forecastIds,
+                    dateFrom.truncatedTo(HOURS).plusHours(1),
+                    input.getDateTo().minusMinutes(1),
+                    input.isApplyDeviation()
+            );
+            totalSales += nextHourSales;
         }
 
         return totalSales;
+    }
+
+    private long getSalesInWholeHoursRange(
+            final String warehouseId,
+            final List<Long> forecastIds,
+            final ZonedDateTime dateFrom,
+            final ZonedDateTime dateTo,
+            final boolean isDeviationApplied
+    ) {
+        assert dateFrom.getMinute() == 0 && dateTo.getMinute() == 59;
+
+        var planningDistribution = planningDistributionService.getPlanningDistribution(
+                null,
+                null,
+                dateFrom,
+                dateTo,
+                forecastIds
+        );
+        if (isDeviationApplied) {
+            planningDistribution = planningDistributionService.applyDeviation(warehouseId, planningDistribution);
+        }
+        return planningDistribution.stream()
+                .mapToLong(PlanningDistributionElemView::getQuantity)
+                .sum();
     }
 
     private long currentHourSalesPercentage(final long currentHourSales,

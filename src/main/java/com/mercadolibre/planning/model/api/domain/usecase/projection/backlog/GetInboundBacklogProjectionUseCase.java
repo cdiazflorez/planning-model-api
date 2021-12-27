@@ -17,7 +17,6 @@ import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
-import static java.util.Collections.singletonList;
 
 @Component
 @AllArgsConstructor

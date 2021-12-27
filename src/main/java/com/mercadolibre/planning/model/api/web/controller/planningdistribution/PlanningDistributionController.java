@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.newrelic.api.agent.Trace;
@@ -27,7 +27,7 @@ import java.util.List;
 @RequestMapping("/planning/model/workflows/{workflow}/planning_distributions")
 public class PlanningDistributionController {
 
-    private final GetPlanningDistributionUseCase getPlanningDistUseCase;
+    private final PlanningDistributionService planningDistributionService;
 
     @GetMapping
     @Trace(dispatcher = true)
@@ -36,7 +36,7 @@ public class PlanningDistributionController {
             @Valid final GetPlanningDistributionRequest request) {
 
         final GetPlanningDistributionInput input = request.toGetPlanningDistInput(workflow);
-        return ResponseEntity.status(HttpStatus.OK).body(getPlanningDistUseCase.execute(input));
+        return ResponseEntity.status(HttpStatus.OK).body(planningDistributionService.getPlanningDistribution(input));
     }
 
     @InitBinder

@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -10,8 +11,9 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-public interface ForecastRepository extends CrudRepository<Forecast, Long> {
+public interface ForecastRepository extends GetForecastUseCase.Repository, CrudRepository<Forecast, Long> {
 
+    @Override
     @Query(value = "SELECT MAX(fm.id) as id FROM "
             + "     (SELECT id, "
             + "     workflow, "

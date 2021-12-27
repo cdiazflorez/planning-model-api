@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.planningdistribution.PlanningDistributionController;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +39,7 @@ public class PlanningDistributionControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private PlanningDistributionService planningDistributionService;
 
     @DisplayName("Get planning distribution works ok")
     @ParameterizedTest
@@ -47,7 +47,7 @@ public class PlanningDistributionControllerTest {
     public void testGetPlanningDistributionOk(final MultiValueMap<String, String> params)
             throws Exception {
         // GIVEN
-        when(getPlanningDistributionUseCase.execute(any(GetPlanningDistributionInput.class)))
+        when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
                 .thenReturn(mockGetPlanningDistOutput());
 
         // WHEN
@@ -68,7 +68,7 @@ public class PlanningDistributionControllerTest {
     public void testGetPlanningDistributionForecastNotFound(
             final MultiValueMap<String, String> params) throws Exception {
         // GIVEN
-        when(getPlanningDistributionUseCase.execute(any(GetPlanningDistributionInput.class)))
+        when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
                 .thenThrow(ForecastNotFoundException.class);
 
         // WHEN

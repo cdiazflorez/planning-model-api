@@ -50,6 +50,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+// TODO this test fails sporadically depending on the clock.
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @ExtendWith(MockitoExtension.class)
 public class GetDeliveryPromiseProjectionUseCaseTest {
@@ -123,6 +124,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .planningUnits(emptyList())
                 .projectionType(DEFERRAL)
                 .slaByWarehouse(cptByWarehouse)
+                // TODO handle the time correctly: sometimes this test fails because the current date changes.
                 .currentDate(getCurrentUtcDate())
                 .build())
         ).thenReturn(output.stream().map(item ->

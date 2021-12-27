@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -39,8 +38,11 @@ public class GetForecastUseCaseTest {
     @Mock
     private ForecastRepository forecastRepository;
 
-    @InjectMocks
     private GetForecastUseCase getForecastUseCase;
+
+    public void setup() {
+        getForecastUseCase = new GetForecastUseCase(forecastRepository, new GetForecastUseCase.RequestScopedMemory());
+    }
 
     @ParameterizedTest
     @MethodSource("datesAndWeeks")
@@ -48,6 +50,8 @@ public class GetForecastUseCaseTest {
     public void testGetForecastEverydayOK(final ZonedDateTime dateFrom,
                                           final ZonedDateTime dateTo,
                                           final Set<String> weeks) {
+        setup();
+
         // GIVEN
         final GetForecastInput input = GetForecastInput.builder()
                 .workflow(FBM_WMS_OUTBOUND)
@@ -116,6 +120,7 @@ public class GetForecastUseCaseTest {
     @Test
     @DisplayName("When no forecast is present an exception must be thrown")
     public void testThrowExceptionWhenForecastNotFound() {
+        setup();
         // GIVEN
         final GetForecastInput input = GetForecastInput.builder()
                 .workflow(FBM_WMS_OUTBOUND)

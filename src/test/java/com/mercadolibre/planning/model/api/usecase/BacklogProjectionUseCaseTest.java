@@ -3,12 +3,12 @@ package com.mercadolibre.planning.model.api.usecase;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.WavingBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionStrategy;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutputValue;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
@@ -81,7 +81,7 @@ public class BacklogProjectionUseCaseTest {
         assertEquals(3, results.size());
 
         assertBacklogOutputs(List.of(50L, 0L, 0L, 0L, 1400L), WAVING, results.get(0));
-        assertBacklogOutputs(List.of(2788L, 2038L, 1438L, 838L, 838L), PICKING,  results.get(1));
+        assertBacklogOutputs(List.of(2788L, 2038L, 1438L, 838L, 838L), PICKING, results.get(1));
         assertBacklogOutputs(List.of(1160L, 1410L, 1310L, 1210L, 1160L), PACKING, results.get(2));
     }
 

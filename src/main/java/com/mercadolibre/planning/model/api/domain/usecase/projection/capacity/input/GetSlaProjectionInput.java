@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
-public class GetCptProjectionInput {
+public class GetSlaProjectionInput {
     private Workflow workflow;
 
     private String warehouseId;

@@ -1,18 +1,18 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,14 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.time.ZonedDateTime.now;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -41,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = SimulationController.class)
+@SuppressWarnings("PMD.LongVariable")
 public class SimulationControllerTest {
 
     private static final String URL = "/planning/model/workflows/{workflow}/simulations";
@@ -61,10 +64,10 @@ public class SimulationControllerTest {
     private ActivateSimulationUseCase activateSimulationUseCase;
 
     @MockBean
-    private GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private GetCapacityPerHourService getCapacityPerHourService;
 
     @MockBean
-    private GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @Test
     public void testSaveSimulation() throws Exception {
@@ -72,18 +75,18 @@ public class SimulationControllerTest {
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, projectedEndDate, 100)));
 
-        when(getCapacityPerHourUseCase.execute(any(List.class)))
+        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCptByWarehouseUseCase.execute(
-                new GetCptByWarehouseInput("ARBA01", null, null, emptyList(),
+        when(getSlaByWarehouseOutboundService.execute(
+                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
                         "America/Argentina/Buenos_Aires")))
                 .thenReturn(emptyList());
 
@@ -115,20 +118,20 @@ public class SimulationControllerTest {
         final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(CptProjectionInput.class)))
+        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, simulatedEndDate, 100)))
                 .thenReturn(List.of(
                         new CptCalculationOutput(dateOut, projectedEndDate, 150)));
 
-        when(getCapacityPerHourUseCase.execute(any(List.class)))
+        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
                         new CapacityOutput(now().withFixedOffsetZone(),
                                 UNITS_PER_HOUR, 100)
                 ));
 
-        when(getCptByWarehouseUseCase.execute(
-                new GetCptByWarehouseInput("ARBA01", null, null, emptyList(),
+        when(getSlaByWarehouseOutboundService.execute(
+                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
                         "America/Argentina/Buenos_Aires")))
                 .thenReturn(emptyList());
 

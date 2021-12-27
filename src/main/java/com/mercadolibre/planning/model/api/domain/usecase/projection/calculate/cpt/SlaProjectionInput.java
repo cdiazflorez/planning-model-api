@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Value
 @Builder
-public class CptProjectionInput {
+public class SlaProjectionInput {
 
     private Workflow workflow;
 
@@ -31,7 +31,7 @@ public class CptProjectionInput {
 
     private ProjectionType projectionType;
 
-    private List<GetCptByWarehouseOutput> cptByWarehouse;
+    private List<GetSlaByWarehouseOutput> slaByWarehouse;
 
     private ZonedDateTime currentDate;
 }

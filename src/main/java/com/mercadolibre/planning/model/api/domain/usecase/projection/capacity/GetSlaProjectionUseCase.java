@@ -1,11 +1,10 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -15,9 +14,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseInboundService;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,8 +36,8 @@ import static java.util.stream.Collectors.toMap;
 
 @Component
 @AllArgsConstructor
-@SuppressWarnings("PMD.ExcessiveImports")
-public class GetCptProjectionUseCase {
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
+public class GetSlaProjectionUseCase {
 
     private final CalculateCptProjectionUseCase calculateCptProjection;
 
@@ -44,11 +45,13 @@ public class GetCptProjectionUseCase {
 
     private final GetPlanningDistributionUseCase getPlanningUseCase;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetCapacityPerHourService getCapacityPerHourService;
 
-    private final GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
-    public List<CptProjectionOutput> execute(final GetCptProjectionInput request) {
+    private final GetSlaByWarehouseInboundService getSlaByWarehouseInboundService;
+
+    public List<CptProjectionOutput> execute(final GetSlaProjectionInput request) {
         final Workflow workflow = request.getWorkflow();
         final String warehouseId = request.getWarehouseId();
         final ZonedDateTime dateFrom = request.getDateFrom();
@@ -64,8 +67,8 @@ public class GetCptProjectionUseCase {
                 .workflow(workflow)
                 .build());
 
-        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(throughput))
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(throughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -81,12 +84,11 @@ public class GetCptProjectionUseCase {
                         .applyDeviation(request.isApplyDeviation())
                         .build());
 
-        final List<GetCptByWarehouseOutput> cptByWarehouse = getCptByWarehouseUseCase
-                .execute(new GetCptByWarehouseInput(warehouseId, dateFrom, dateTo,
-                        getCptDefaultFromBacklog(request.getBacklog()), timeZone));
+        final List<GetSlaByWarehouseOutput> slaByWarehouse = slaByWarehouseAndWorkflow(workflow,
+                warehouseId, dateFrom, dateTo, request.getBacklog(), timeZone);
 
         final List<CptCalculationOutput> cptProjectionOutputs =
-                calculateCptProjection.execute(CptProjectionInput.builder()
+                calculateCptProjection.execute(SlaProjectionInput.builder()
                         .workflow(workflow)
                         .logisticCenterId(warehouseId)
                         .dateFrom(dateFrom)
@@ -95,7 +97,7 @@ public class GetCptProjectionUseCase {
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
                         .projectionType(CPT)
-                        .cptByWarehouse(cptByWarehouse)
+                        .slaByWarehouse(slaByWarehouse)
                         .currentDate(getCurrentUtcDate())
                         .build());
 
@@ -117,5 +119,25 @@ public class GetCptProjectionUseCase {
         return backlogs == null
                 ? emptyList()
                 : backlogs.stream().map(QuantityByDate::getDate).distinct().collect(toList());
+    }
+
+    private List<GetSlaByWarehouseOutput> slaByWarehouseAndWorkflow(
+            final Workflow workflow,
+            final String warehouseId,
+            final ZonedDateTime dateFrom,
+            final ZonedDateTime dateTo,
+            final List<QuantityByDate> backlog,
+            final String timeZone) {
+
+        final GetSlaByWarehouseInput getSlaByWarehouseInput =
+                new GetSlaByWarehouseInput(warehouseId, dateFrom, dateTo,
+                        getCptDefaultFromBacklog(backlog), timeZone);
+
+        if (workflow == Workflow.FBM_WMS_OUTBOUND) {
+            return getSlaByWarehouseOutboundService.execute(getSlaByWarehouseInput);
+        } else if (workflow == Workflow.FBM_WMS_INBOUND) {
+            return getSlaByWarehouseInboundService.execute(getSlaByWarehouseInput);
+        }
+        return emptyList();
     }
 }

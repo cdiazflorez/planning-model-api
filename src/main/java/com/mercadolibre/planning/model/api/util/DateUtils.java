@@ -1,6 +1,9 @@
 package com.mercadolibre.planning.model.api.util;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.HashSet;
@@ -35,6 +38,13 @@ public final class DateUtils {
                 .limit(HOURS.between(dateFrom.minusDays(1), dateTo.plusDays(1)))
                 .forEach(dateTime -> weeksToConsider.add(toWeekYear(dateTime)));
         return weeksToConsider;
+    }
+
+    public static boolean isBetweenInclusive(final ChronoZonedDateTime<LocalDate> date,
+                                       final ChronoZonedDateTime<LocalDate> from,
+                                       final ChronoZonedDateTime<LocalDate> to) {
+
+        return date.equals(from) || date.equals(to) || date.isAfter(from) && date.isBefore(to);
     }
 
     private static String toWeekYear(final ZonedDateTime dateTime) {

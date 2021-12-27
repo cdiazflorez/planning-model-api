@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
@@ -11,10 +11,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
@@ -63,12 +63,12 @@ class ProjectionControllerTest {
     private BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
     @MockBean
-    private GetCptProjectionUseCase getCptProjectionUseCase;
+    private GetSlaProjectionUseCase getSlaProjectionUseCase;
 
     @Test
     public void testGetCptProjectionForecastNotFound() throws Exception {
         // GIVEN
-        when(getCptProjectionUseCase.execute(any(GetCptProjectionInput.class)))
+        when(getSlaProjectionUseCase.execute(any(GetSlaProjectionInput.class)))
                 .thenThrow(ForecastNotFoundException.class);
 
         // WHEN
@@ -89,8 +89,8 @@ class ProjectionControllerTest {
         final ZonedDateTime etd = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
 
-        when(getCptProjectionUseCase.execute(
-                new GetCptProjectionInput(
+        when(getSlaProjectionUseCase.execute(
+                new GetSlaProjectionInput(
                         Workflow.FBM_WMS_OUTBOUND,
                         WAREHOUSE_ID,
                         ProjectionType.CPT,

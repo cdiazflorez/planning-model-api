@@ -57,7 +57,7 @@ public class GetThroughputUseCase
 
         // Esto es temporal hasta que agreguen la columna de Reps Sistemicos de Receiving al forecast
         if (input.getProcessName().contains(ProcessName.RECEIVING)) {
-             allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
+            allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
         }
 
         final List<EntityOutput> headcounts = headcountEntityUseCase.execute(

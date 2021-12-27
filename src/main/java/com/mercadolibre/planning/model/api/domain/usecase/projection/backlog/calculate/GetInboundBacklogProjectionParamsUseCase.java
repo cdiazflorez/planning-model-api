@@ -33,7 +33,8 @@ public class GetInboundBacklogProjectionParamsUseCase implements GetBacklogProje
         return ProcessParams.builder()
                 .processName(processName)
                 .currentBacklog(currentBacklog)
-                .planningUnitsByDate(filterCapacityByProcess(input.getThroughputs(), processName.getPreviousProcesses()))
+                .planningUnitsByDate(filterCapacityByProcess(input.getThroughputs(),
+                        processName.getPreviousProcesses()))
                 .capacityByDate(filterCapacityByProcess(input.getThroughputs(), processName))
                 .build();
     }

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse;
+package com.mercadolibre.planning.model.api.domain.entity.sla;
 
 import lombok.Value;
 
@@ -6,7 +6,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
-public class GetCptByWarehouseInput {
+public class GetSlaByWarehouseInput {
 
     private String logisticCenterId;
 
@@ -14,7 +14,7 @@ public class GetCptByWarehouseInput {
 
     private ZonedDateTime cptTo;
 
-    private List<ZonedDateTime> cptDefault;
+    private List<ZonedDateTime> dafaultSlas;
 
     private String timeZone;
 }

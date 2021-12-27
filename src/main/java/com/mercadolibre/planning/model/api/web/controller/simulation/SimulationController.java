@@ -2,11 +2,10 @@ package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
+import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.cptbywarehouse.GetCptByWarehouseUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -14,6 +13,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toMap;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/simulations")
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 public class SimulationController {
 
     private final ActivateSimulationUseCase activateSimulationUseCase;
@@ -55,9 +55,9 @@ public class SimulationController {
 
     private final GetPlanningDistributionUseCase getPlanningDistributionUseCase;
 
-    private final GetCapacityPerHourUseCase getCapacityPerHourUseCase;
+    private final GetCapacityPerHourService getCapacityPerHourService;
 
-    private final GetCptByWarehouseUseCase getCptByWarehouseUseCase;
+    private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @PostMapping("/save")
     @Trace(dispatcher = true)
@@ -70,8 +70,8 @@ public class SimulationController {
         final List<EntityOutput> throughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(throughput))
+        final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(throughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -105,8 +105,8 @@ public class SimulationController {
         final List<EntityOutput> simulatedThroughput = getThroughputUseCase
                 .execute(request.toThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> simulatedCapacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(simulatedThroughput))
+        final Map<ZonedDateTime, Integer> simulatedCapacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(simulatedThroughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -123,8 +123,8 @@ public class SimulationController {
         final List<EntityOutput> actualThroughput = getThroughputUseCase
                 .execute(request.toForecastedThroughputEntityInput(workflow));
 
-        final Map<ZonedDateTime, Integer> actualCapacity = getCapacityPerHourUseCase
-                .execute(fromEntityOutputs(actualThroughput))
+        final Map<ZonedDateTime, Integer> actualCapacity = getCapacityPerHourService
+                .execute(workflow, fromEntityOutputs(actualThroughput))
                 .stream()
                 .collect(toMap(
                         CapacityOutput::getDate,
@@ -141,10 +141,10 @@ public class SimulationController {
         return ResponseEntity.ok(fromProjectionOutputs(projectSimulation, projection));
     }
 
-    private List<GetCptByWarehouseOutput> getCptByWarehouse(final SimulationRequest request) {
+    private List<GetSlaByWarehouseOutput> getCptByWarehouse(final SimulationRequest request) {
 
-        return getCptByWarehouseUseCase
-                .execute(new GetCptByWarehouseInput(request.getWarehouseId(),
+        return getSlaByWarehouseOutboundService
+                .execute(new GetSlaByWarehouseInput(request.getWarehouseId(),
                         request.getDateFrom(),
                         request.getDateTo(),
                         request.getBacklog().stream().map(QuantityByDate::getDate).distinct()

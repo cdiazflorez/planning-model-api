@@ -8,10 +8,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetCptProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionRequest;
@@ -46,7 +46,7 @@ public class ProjectionController {
 
     private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
 
-    private final GetCptProjectionUseCase getCptProjectionUseCase;
+    private final GetSlaProjectionUseCase getSlaProjectionUseCase;
 
     private final BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
@@ -56,18 +56,18 @@ public class ProjectionController {
             @PathVariable final Workflow workflow,
             @Valid @RequestBody final CptProjectionRequest request) {
 
-        return ResponseEntity.ok(getCptProjectionUseCase.execute(
-            new GetCptProjectionInput(
-                    workflow,
-                    request.getWarehouseId(),
-                    request.getType(),
-                    request.getProcessName(),
-                    request.getDateFrom(),
-                    request.getDateTo(),
-                    request.getBacklog(),
-                    request.getTimeZone(),
-                    request.isApplyDeviation())
-            ));
+        return ResponseEntity.ok(getSlaProjectionUseCase.execute(
+                new GetSlaProjectionInput(
+                        workflow,
+                        request.getWarehouseId(),
+                        request.getType(),
+                        request.getProcessName(),
+                        request.getDateFrom(),
+                        request.getDateTo(),
+                        request.getBacklog(),
+                        request.getTimeZone(),
+                        request.isApplyDeviation())
+        ));
     }
 
     @PostMapping("/cpts/delivery_promise")

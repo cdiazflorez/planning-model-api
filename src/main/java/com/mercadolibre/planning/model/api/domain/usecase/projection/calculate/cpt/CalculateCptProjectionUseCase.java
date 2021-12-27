@@ -31,7 +31,7 @@ public class CalculateCptProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
-    public List<CptCalculationOutput> execute(final CptProjectionInput input) {
+    public List<CptCalculationOutput> execute(final SlaProjectionInput input) {
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
                 getUnitsByDateOutAndDate(input);
 
@@ -44,7 +44,7 @@ public class CalculateCptProjectionUseCase {
     // TODO: Refactor of nested if statements
 
     private List<CptCalculationOutput> project(
-            final CptProjectionInput input,
+            final SlaProjectionInput input,
             final Map<ZonedDateTime, Integer> capacityByDate,
             final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate) {
 
@@ -52,7 +52,7 @@ public class CalculateCptProjectionUseCase {
         final Map<ZonedDateTime, Integer> originalCapacityByDate = new HashMap<>(capacityByDate);
         final Map<ZonedDateTime, Integer> projectionEndMinutes = new HashMap<>();
 
-        input.getCptByWarehouse().forEach(item -> {
+        input.getSlaByWarehouse().forEach(item -> {
 
             final Map<ZonedDateTime, Integer> unitsByDate =
                     unitsByDateOutAndDate.get(item.getDate().withFixedOffsetZone());
@@ -119,7 +119,7 @@ public class CalculateCptProjectionUseCase {
     }
 
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(
-            final CptProjectionInput input) {
+            final SlaProjectionInput input) {
 
         final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> planningUnitsByDateInByDateOut =
                 getPlanning(input.getPlanningUnits());

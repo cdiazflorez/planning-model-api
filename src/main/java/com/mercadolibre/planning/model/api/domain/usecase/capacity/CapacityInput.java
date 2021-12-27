@@ -17,7 +17,6 @@ import static java.util.stream.Collectors.toList;
 @Value
 @Builder
 public class CapacityInput {
-    private Workflow workflow;
     private ZonedDateTime date;
     private ProcessName processName;
     private ProcessingType type;
@@ -29,7 +28,6 @@ public class CapacityInput {
         return entityOutputs.stream()
                 .map(entityOutput ->
                         CapacityInput.builder()
-                                .workflow(entityOutput.getWorkflow())
                                 .date(entityOutput.getDate())
                                 .processName(entityOutput.getProcessName())
                                 .type(entityOutput.getType())

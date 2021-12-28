@@ -201,7 +201,7 @@ public class CalculateCptProjectionUseCase {
     private void adaptMinutesFirstCapacity(final Map<ZonedDateTime, Integer> capacity,
                                            final ZonedDateTime currentDate) {
 
-        final int currentDateCapacity = capacity.get(ignoreMinutes(currentDate));
+        final int currentDateCapacity = capacity.getOrDefault(ignoreMinutes(currentDate), 0);
         capacity.remove(ignoreMinutes(currentDate));
 
         final int remainingMinutes = HOUR_IN_MINUTES - currentDate.getMinute();

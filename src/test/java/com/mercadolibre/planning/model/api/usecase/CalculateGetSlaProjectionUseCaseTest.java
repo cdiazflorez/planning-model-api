@@ -87,7 +87,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
                 .planningUnits(planningUnits)
-                .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
+                .capacity(mockCapacity(DATE_OUT_12, List.of(-1, 100, 200)))
                 .logisticCenterId(WAREHOUSE_ID)
                 .backlog(backlogs)
                 .projectionType(CPT)
@@ -523,7 +523,9 @@ public class CalculateGetSlaProjectionUseCaseTest {
         final Map<ZonedDateTime, Integer> capacity = new TreeMap<>();
 
         for (int i = 0; i <= HOURS.between(DATE_10, dateTo); i++) {
-            capacity.put(DATE_10.plusHours(i), values.get(i));
+            if (values.get(i) >= 0) {
+                capacity.put(DATE_10.plusHours(i), values.get(i));
+            }
         }
         return capacity;
     }

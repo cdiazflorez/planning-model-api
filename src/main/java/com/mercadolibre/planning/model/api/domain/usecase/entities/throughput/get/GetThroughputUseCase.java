@@ -31,7 +31,6 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
-
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -70,7 +69,7 @@ public class GetThroughputUseCase
         return allThroughputs;
     }
 
-    private GetHeadcountInput createReceivingTph(GetEntityInput input) {
+    private GetHeadcountInput createReceivingTph(final GetEntityInput input) {
         return GetHeadcountInput.builder()
                 .warehouseId(input.getWarehouseId())
                 .workflow(input.getWorkflow())
@@ -101,42 +100,42 @@ public class GetThroughputUseCase
 
         final List<EntityOutput> throughput = new ArrayList<>();
 
-        headcountsMap.forEach((processName, headcountsByDateTime) -> {
-            headcountsByDateTime.forEach((dateTime, headcountBySource) -> {
+        headcountsMap.forEach((processName, headcountsByDateTime) -> headcountsByDateTime.forEach(
+                (dateTime, headcountBySource) -> {
 
-                final Map<Source, EntityOutput> productivityBySource =
-                        productivityMap.get(processName).get(dateTime);
+                    final Map<Source, EntityOutput> productivityBySource =
+                            productivityMap.get(processName).get(dateTime);
 
-                if (!CollectionUtils.isEmpty(productivityBySource)) {
-                    final long tph;
-                    final EntityOutput headcount = headcountBySource.get(FORECAST);
-                    final EntityOutput currentProductivity = productivityBySource
-                            .getOrDefault(SIMULATION, productivityBySource.get(FORECAST));
+                    if (!CollectionUtils.isEmpty(productivityBySource)) {
+                        final long tph;
+                        final EntityOutput headcount = headcountBySource.get(FORECAST);
+                        final EntityOutput currentProductivity = productivityBySource
+                                .getOrDefault(SIMULATION, productivityBySource.get(FORECAST));
 
-                    final EntityOutput simulatedHeadcount = headcountBySource.get(SIMULATION);
-                    if (simulatedHeadcount == null) {
-                        tph = headcount.getValue() * currentProductivity.getValue();
-                    } else {
-                        final EntityOutput currentPolyvalentProductivity =
-                                polyvalentProductivityMap.get(processName).get(dateTime);
+                        final EntityOutput simulatedHeadcount = headcountBySource.get(SIMULATION);
+                        if (simulatedHeadcount == null) {
+                            tph = headcount.getValue() * currentProductivity.getValue();
+                        } else {
+                            final EntityOutput currentPolyvalentProductivity =
+                                    polyvalentProductivityMap.get(processName).get(dateTime);
 
-                        tph = calculateTphValue(
-                                headcount == null ? 0 : headcount.getValue(),
-                                simulatedHeadcount.getValue(),
-                                currentProductivity.getValue(),
-                                currentPolyvalentProductivity == null ? 0 : currentPolyvalentProductivity.getValue());
+                            tph = calculateTphValue(
+                                    headcount == null ? 0 : headcount.getValue(),
+                                    simulatedHeadcount.getValue(),
+                                    currentProductivity.getValue(),
+                                    currentPolyvalentProductivity == null ? 0 : currentPolyvalentProductivity.getValue()
+                            );
+                        }
+                        throughput.add(EntityOutput.builder()
+                                .workflow(workflow)
+                                .date(dateTime)
+                                .source(currentProductivity.getSource())
+                                .processName(processName)
+                                .metricUnit(UNITS_PER_HOUR)
+                                .value(tph)
+                                .build());
                     }
-                    throughput.add(EntityOutput.builder()
-                            .workflow(workflow)
-                            .date(dateTime)
-                            .source(currentProductivity.getSource())
-                            .processName(processName)
-                            .metricUnit(UNITS_PER_HOUR)
-                            .value(tph)
-                            .build());
-                }
-            });
-        });
+                }));
         return throughput;
     }
 

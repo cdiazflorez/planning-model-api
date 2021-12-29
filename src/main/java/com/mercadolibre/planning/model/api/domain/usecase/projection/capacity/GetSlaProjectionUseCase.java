@@ -10,7 +10,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
@@ -43,7 +43,7 @@ public class GetSlaProjectionUseCase {
 
     private final GetThroughputUseCase getThroughputUseCase;
 
-    private final GetPlanningDistributionUseCase getPlanningUseCase;
+    private final PlanningDistributionService planningDistributionService;
 
     private final GetCapacityPerHourService getCapacityPerHourService;
 
@@ -75,7 +75,7 @@ public class GetSlaProjectionUseCase {
                         capacityOutput -> (int) capacityOutput.getValue()
                 ));
 
-        final List<GetPlanningDistributionOutput> planningUnits = getPlanningUseCase.execute(
+        final List<GetPlanningDistributionOutput> planningUnits = planningDistributionService.getPlanningDistribution(
                 GetPlanningDistributionInput.builder()
                         .workflow(workflow)
                         .warehouseId(request.getWarehouseId())

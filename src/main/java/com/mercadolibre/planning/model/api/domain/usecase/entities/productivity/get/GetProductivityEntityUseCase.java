@@ -111,12 +111,12 @@ public class GetProductivityEntityUseCase
     }
 
     private List<HeadcountProductivityView> findProductivityBy(final GetProductivityInput input) {
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .build());
+        final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                input.getDateFrom(),
+                input.getDateTo()
+        ));
 
         return productivityRepository.findBy(
                 input.getProcessNamesAsString(),
@@ -135,18 +135,16 @@ public class GetProductivityEntityUseCase
         input.getSimulations().forEach(simulation ->
                 simulation.getEntities().stream()
                         .filter(entity -> entity.getType() == PRODUCTIVITY)
-                        .forEach(entity -> {
-                            entity.getValues().forEach(quantityByDate ->
-                                    simulatedEntities.add(ProductivityOutput.builder()
-                                            .workflow(input.getWorkflow())
-                                            .date(quantityByDate.getDate().withFixedOffsetZone())
-                                            .metricUnit(MetricUnit.UNITS_PER_HOUR)
-                                            .processName(simulation.getProcessName())
-                                            .source(SIMULATION)
-                                            .value(quantityByDate.getQuantity())
-                                            .abilityLevel(1)
-                                            .build()));
-                        }));
+                        .forEach(entity -> entity.getValues().forEach(quantityByDate ->
+                                simulatedEntities.add(ProductivityOutput.builder()
+                                        .workflow(input.getWorkflow())
+                                        .date(quantityByDate.getDate().withFixedOffsetZone())
+                                        .metricUnit(MetricUnit.UNITS_PER_HOUR)
+                                        .processName(simulation.getProcessName())
+                                        .source(SIMULATION)
+                                        .value(quantityByDate.getQuantity())
+                                        .abilityLevel(1)
+                                        .build()))));
         return simulatedEntities;
     }
 }

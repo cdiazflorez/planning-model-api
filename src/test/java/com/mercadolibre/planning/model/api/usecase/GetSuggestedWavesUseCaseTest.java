@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -12,6 +11,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionViewImpl;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.SuggestedWavesOutput;
@@ -41,13 +43,15 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GetSuggestedWavesUseCaseTest {
 
     @Mock
-    private PlanningDistributionRepository planningDistRepository;
+    private PlanningDistributionService planningDistributionService;
 
     @Mock
     private ProcessingDistributionRepository processingDistRepository;
@@ -74,6 +78,9 @@ public class GetSuggestedWavesUseCaseTest {
         final long nextHourSales = 200L;
         final long remainingProcessing = 308L;
         final long capex = 1000L;
+        final List<PlanningDistributionElemView> planningDistribution = List.of(
+                new PlanningDistributionViewImpl(1, null, null, firstHourSales, null)
+        );
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
                 .workflow(input.getWorkflow())
@@ -83,13 +90,17 @@ public class GetSuggestedWavesUseCaseTest {
                 .build())
         ).thenReturn(forecastIds);
 
-        when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
-                input.getWarehouseId(),
+        when(planningDistributionService.getPlanningDistribution(
+                null,
+                null,
                 input.getDateFrom().truncatedTo(HOURS),
                 input.getDateFrom().truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                mockForecastIds(),
-                input.isApplyDeviation())
-        ).thenReturn(new SuggestedWavePlanningDistributionViewImpl(firstHourSales));
+                mockForecastIds()
+            )
+        ).thenReturn(planningDistribution);
+
+        when(planningDistributionService.applyDeviation(anyString(), any()))
+                .thenAnswer(answer -> answer.getArgument(1));
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
@@ -99,13 +110,14 @@ public class GetSuggestedWavesUseCaseTest {
                 forecastIds)
         ).thenReturn(mockCapexResponse(input, capex));
 
-        when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
-                input.getWarehouseId(),
-                input.getDateFrom().truncatedTo(HOURS).plusHours(1),
-                input.getDateTo().minusMinutes(1),
-                mockForecastIds(),
-                input.isApplyDeviation())
-        ).thenReturn(new SuggestedWavePlanningDistributionViewImpl(nextHourSales));
+        when(planningDistributionService.getPlanningDistribution(
+                        null,
+                        null,
+                        input.getDateFrom().truncatedTo(HOURS).plusHours(1),
+                        input.getDateTo().minusMinutes(1),
+                        mockForecastIds()
+                )
+        ).thenReturn(List.of(new PlanningDistributionViewImpl(1, null, null, nextHourSales, null)));
 
         when(searchEntityUseCase.execute(
                 GetEntityInput.builder()
@@ -195,13 +207,14 @@ public class GetSuggestedWavesUseCaseTest {
                 .build())
         ).thenReturn(mockForecastIds());
 
-        when(planningDistRepository.findByWarehouseIdWorkflowDateInRange(
-                input.getWarehouseId(),
-                input.getDateFrom().truncatedTo(HOURS),
-                input.getDateFrom().truncatedTo(HOURS).plusHours(1).minusMinutes(1),
-                forecastIds,
-                input.isApplyDeviation())
-        ).thenReturn(null);
+        when(planningDistributionService.getPlanningDistribution(
+                        null,
+                        null,
+                        input.getDateFrom().truncatedTo(HOURS),
+                        input.getDateFrom().truncatedTo(HOURS).plusHours(1).minusMinutes(1),
+                        forecastIds
+                )
+        ).thenReturn(List.of());
 
         when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
@@ -234,5 +247,4 @@ public class GetSuggestedWavesUseCaseTest {
         // THEN
         assertEquals(List.of(), output);
     }
-
 }

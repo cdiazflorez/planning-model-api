@@ -35,12 +35,12 @@ public class MetadataController {
     public ResponseEntity<List<ForecastMetadataView>> getLastHistoricForecast(
             @PathVariable final Workflow workflow,
             @Valid final GetForecastMetadataRequest request) {
-        final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(workflow)
-                .warehouseId(request.getWarehouseId())
-                .dateFrom(request.getDateFrom())
-                .dateTo(request.getDateTo())
-                .build());
+        final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
+                request.getWarehouseId(),
+                workflow,
+                request.getDateFrom(),
+                request.getDateTo()
+        ));
 
         return ResponseEntity
                 .status(HttpStatus.OK)

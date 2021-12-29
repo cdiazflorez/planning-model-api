@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Canalization {
     private String id;
     private List<CarrierServiceId> carrierServices;

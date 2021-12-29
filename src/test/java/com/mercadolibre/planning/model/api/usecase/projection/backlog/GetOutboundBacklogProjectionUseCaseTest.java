@@ -5,7 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetOutboundBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
@@ -39,7 +39,7 @@ public class GetOutboundBacklogProjectionUseCaseTest {
     private GetThroughputUseCase getThroughputUseCase;
 
     @Mock
-    private GetPlanningDistributionUseCase getPlanningUseCase;
+    private PlanningDistributionService planningDistributionService;
 
     @Test
     public void testExecute() {
@@ -63,7 +63,7 @@ public class GetOutboundBacklogProjectionUseCaseTest {
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .build())).thenReturn(emptyList());
 
-        when(getPlanningUseCase.execute(GetPlanningDistributionInput.builder()
+        when(planningDistributionService.getPlanningDistribution(GetPlanningDistributionInput.builder()
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .warehouseId(input.getLogisticCenterId())
                 .dateInTo(input.getDateTo().plusDays(1))

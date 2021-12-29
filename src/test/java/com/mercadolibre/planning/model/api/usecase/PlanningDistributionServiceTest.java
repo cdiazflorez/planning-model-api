@@ -1,13 +1,15 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class GetPlanningDistributionUseCaseTest {
+public class PlanningDistributionServiceTest {
 
     @Mock
     private PlanningDistributionRepository planningDistRepository;
@@ -45,8 +47,11 @@ public class GetPlanningDistributionUseCaseTest {
     @Mock
     private GetForecastUseCase getForecastUseCase;
 
+    @Mock
+    private CurrentForecastDeviationRepository currentForecastDeviationRepository;
+
     @InjectMocks
-    private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private PlanningDistributionService planningDistributionService;
 
     @Test
     @DisplayName("Get planning distribution from forecast without date in to")
@@ -62,17 +67,17 @@ public class GetPlanningDistributionUseCaseTest {
                 .build())
         ).thenReturn(mockForecastIds());
 
-        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
-                input.getWarehouseId(),
+        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
-                mockForecastIds(),
-                false)
+                null,
+                null,
+                mockForecastIds())
         ).thenReturn(planningDistributions());
 
         // WHEN
-        final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase
-                .execute(input);
+        final List<GetPlanningDistributionOutput> output = planningDistributionService
+                .getPlanningDistribution(input);
 
         // THEN
         final GetPlanningDistributionOutput output1 = output.get(0);
@@ -103,18 +108,17 @@ public class GetPlanningDistributionUseCaseTest {
                 .build())
         ).thenReturn(mockForecastIds());
 
-        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRangeAndDateInLessThan(
-                WAREHOUSE_ID,
+        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
+                null,
                 dateInTo,
-                mockForecastIds(),
-                false)
+                mockForecastIds())
         ).thenReturn(planningDistributions());
 
         // WHEN
-        final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase
-                .execute(input);
+        final List<GetPlanningDistributionOutput> output = planningDistributionService
+                .getPlanningDistribution(input);
 
         // THEN
         final GetPlanningDistributionOutput output1 = output.get(0);
@@ -153,18 +157,16 @@ public class GetPlanningDistributionUseCaseTest {
         ).thenReturn(mockForecastIds());
 
         when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
-                WAREHOUSE_ID,
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
                 dateInFrom,
                 A_DATE_UTC,
-                mockForecastIds(),
-                false)
+                mockForecastIds())
         ).thenReturn(planningDistributions());
 
         // WHEN
-        final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase
-                .execute(input);
+        final List<GetPlanningDistributionOutput> output = planningDistributionService
+                .getPlanningDistribution(input);
 
         // THEN
         final GetPlanningDistributionOutput output1 = output.get(0);
@@ -179,6 +181,7 @@ public class GetPlanningDistributionUseCaseTest {
         assertEquals(1200, output3.getTotal());
         assertEquals(UNITS, output3.getMetricUnit());
     }
+
 
     @Test
     @DisplayName("Get planning distribution applying current planning distribution")
@@ -204,17 +207,17 @@ public class GetPlanningDistributionUseCaseTest {
                 .build())
         ).thenReturn(mockForecastIds());
 
-        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutInRange(
-                input.getWarehouseId(),
+        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(3),
-                mockForecastIds(),
-                false)
+                null,
+                null,
+                mockForecastIds())
         ).thenReturn(planningDistributions());
 
         // WHEN
-        final List<GetPlanningDistributionOutput> output = getPlanningDistributionUseCase
-                .execute(input);
+        final List<GetPlanningDistributionOutput> output = planningDistributionService
+                .getPlanningDistribution(input);
 
         // THEN
         final GetPlanningDistributionOutput output1 = output.get(0);
@@ -239,6 +242,82 @@ public class GetPlanningDistributionUseCaseTest {
                 .allMatch(GetPlanningDistributionOutput::isDeferred)
         );
     }
+
+    @Test
+    @DisplayName("Get planning distribution applying both: current planning distribution and forecast deviation")
+    public void testGetPlanningDistributionApplyingCurrentPlanningDistributionAndForecastDeviation() {
+        // GIVEN
+        final GetPlanningDistributionInput input = GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateOutFrom(A_DATE_UTC)
+                .dateOutTo(A_DATE_UTC.plusDays(3))
+                .applyDeviation(true)
+                .build();
+
+
+        final List<CurrentPlanningDistribution> distributions = currentPlanningDistributions();
+
+        when(currentPlanningDistRepository
+                .findByWorkflowAndLogisticCenterIdAndDateOutBetweenAndIsActiveTrue(
+                        FBM_WMS_OUTBOUND,
+                        WAREHOUSE_ID,
+                        A_DATE_UTC,
+                        A_DATE_UTC.plusDays(3)
+                )).thenReturn(distributions);
+
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateOutFrom())
+                .dateTo(input.getDateOutTo())
+                .build())
+        ).thenReturn(mockForecastIds());
+
+        when(planningDistRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
+                A_DATE_UTC,
+                A_DATE_UTC.plusDays(3),
+                null,
+                null,
+                mockForecastIds())
+        ).thenReturn(planningDistributions());
+
+        when(currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrue(input.getWarehouseId()))
+                .thenReturn(
+                        List.of(new CurrentForecastDeviation(
+                                1, input.getWarehouseId(), A_DATE_UTC, A_DATE_UTC, 1.0, true, 123L,
+                                FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC
+                        ))
+            );
+
+        // WHEN
+        final List<GetPlanningDistributionOutput> output = planningDistributionService
+                .getPlanningDistribution(input);
+
+        // THEN
+        final GetPlanningDistributionOutput output1 = output.get(0);
+        assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut().toInstant());
+        assertEquals(2000, output1.getTotal());
+        assertFalse(output1.isDeferred());
+
+        final List<GetPlanningDistributionOutput> recordsForSecondDay =
+                output.stream()
+                        .filter(item -> item.getDateOut()
+                                .toInstant()
+                                .equals(A_DATE_UTC.plusDays(2).toInstant()))
+                        .collect(Collectors.toUnmodifiableList());
+
+        final Long outputTotalForSecondDay = recordsForSecondDay.stream()
+                .map(GetPlanningDistributionOutput::getTotal)
+                .reduce(0L, Long::sum);
+
+        assertEquals(2, recordsForSecondDay.size());
+        assertEquals(Long.valueOf(4900), outputTotalForSecondDay);
+        assertTrue(recordsForSecondDay.stream()
+                .allMatch(GetPlanningDistributionOutput::isDeferred)
+        );
+    }
+
 
     @Test
     @DisplayName("Get planning distribution duplicate key")
@@ -266,7 +345,7 @@ public class GetPlanningDistributionUseCaseTest {
                     )).thenReturn(currentPlanningDistributions);
 
             // WHEN
-            getPlanningDistributionUseCase.execute(input);
+            planningDistributionService.getPlanningDistribution(input);
 
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("Duplicate key"));

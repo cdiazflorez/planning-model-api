@@ -6,7 +6,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPe
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
@@ -55,7 +55,7 @@ public class SimulationControllerTest {
     private GetThroughputUseCase getForecastedThroughputUseCase;
 
     @MockBean
-    private GetPlanningDistributionUseCase getPlanningDistributionUseCase;
+    private PlanningDistributionService planningDistributionService;
 
     @MockBean
     private CalculateCptProjectionUseCase calculateCptProjectionUseCase;
@@ -99,7 +99,7 @@ public class SimulationControllerTest {
 
         // THEN
         verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
-        verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
+        verify(planningDistributionService).getPlanningDistribution(any(GetPlanningDistributionInput.class));
         verify(activateSimulationUseCase).execute(any(SimulationInput.class));
 
         result.andExpect(status().isOk())
@@ -144,7 +144,7 @@ public class SimulationControllerTest {
 
         // THEN
         //verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
-        verify(getPlanningDistributionUseCase).execute(any(GetPlanningDistributionInput.class));
+        verify(planningDistributionService).getPlanningDistribution(any(GetPlanningDistributionInput.class));
         verify(getForecastedThroughputUseCase, times(2)).execute(any(GetEntityInput.class));
         verifyZeroInteractions(activateSimulationUseCase);
 

@@ -105,13 +105,12 @@ public class GetDeliveryPromiseProjectionUseCase {
     }
 
     private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {
-        return getForecastUseCase.execute(
-                GetForecastInput.builder()
-                        .workflow(input.getWorkflow())
-                        .warehouseId(input.getWarehouseId())
-                        .dateFrom(input.getDateFrom())
-                        .dateTo(input.getDateTo())
-                        .build());
+        return getForecastUseCase.execute(new GetForecastInput(
+                input.getWarehouseId(),
+                input.getWorkflow(),
+                input.getDateFrom(),
+                input.getDateTo()
+        ));
     }
 
     private Map<ZonedDateTime, Integer> getMaxCapacity(

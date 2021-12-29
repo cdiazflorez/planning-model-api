@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.WeekFields;

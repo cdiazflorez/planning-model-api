@@ -3,7 +3,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import lombok.Builder;
 import lombok.Value;
 
@@ -28,8 +27,6 @@ public class SlaProjectionInput {
     private ZonedDateTime dateTo;
 
     private List<Backlog> backlog;
-
-    private ProjectionType projectionType;
 
     private List<GetSlaByWarehouseOutput> slaByWarehouse;
 

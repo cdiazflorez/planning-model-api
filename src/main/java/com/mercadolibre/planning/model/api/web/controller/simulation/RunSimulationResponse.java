@@ -1,19 +1,18 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.Collections.emptyList;
 
-@AllArgsConstructor
-@Data
+@Value
 public class RunSimulationResponse {
 
     private ZonedDateTime date;
@@ -24,31 +23,42 @@ public class RunSimulationResponse {
 
     private int remainingQuantity;
 
+    // TODO: remove this field if isn't needed for compatibility
     private ProcessingTime processingTime;
 
+    // TODO: remove this field if isn't needed for compatibility
     private boolean isDeferred;
 
     public static List<RunSimulationResponse> fromProjectionOutputs(
-            final List<CptCalculationOutput> simulationOutputs,
-            final List<CptCalculationOutput> actualOutputs) {
+            final List<CptProjectionOutput> simulationOutputs,
+            final List<CptProjectionOutput> actualOutputs) {
 
-        final List<RunSimulationResponse> runSimulationResponses = new ArrayList<>();
-
-        final Map<ZonedDateTime, List<CptCalculationOutput>> actualOutputsByDate = actualOutputs
+        final Map<ZonedDateTime, CptProjectionOutput> actualOutputsByDate = actualOutputs
                 .stream()
-                .collect(groupingBy(CptCalculationOutput::getDate));
+                .collect(Collectors.toMap(
+                        CptProjectionOutput::getDate,
+                        Function.identity(),
+                        (p1, p2) -> p2
+                ));
 
         if (simulationOutputs.size() == actualOutputs.size()) {
-            simulationOutputs.forEach(s -> {
-                runSimulationResponses.add(new RunSimulationResponse(
-                        s.getDate(),
-                        actualOutputsByDate.get(s.getDate()).get(0).getProjectedEndDate(),
-                        s.getProjectedEndDate(),
-                        s.getRemainingQuantity(),
-                        null, false));
-            });
-        }
+            return simulationOutputs.stream()
+                    .map(s -> {
+                        final ZonedDateTime simulatedEndDate = actualOutputsByDate.get(s.getDate())
+                                .getProjectedEndDate();
 
-        return runSimulationResponses;
+                        return new RunSimulationResponse(
+                                s.getDate(),
+                                simulatedEndDate,
+                                s.getProjectedEndDate(),
+                                s.getRemainingQuantity(),
+                                null,
+                                false
+                        );
+                    })
+                    .collect(Collectors.toList());
+        } else {
+            return emptyList();
+        }
     }
 }

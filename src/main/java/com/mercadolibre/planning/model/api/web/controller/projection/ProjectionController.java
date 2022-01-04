@@ -34,10 +34,11 @@ import javax.validation.Valid;
 
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/projections")
@@ -66,7 +67,10 @@ public class ProjectionController {
                         request.getDateTo(),
                         request.getBacklog(),
                         request.getTimeZone(),
-                        request.isApplyDeviation())
+                        SIMULATION,
+                        emptyList(),
+                        request.isApplyDeviation()
+                )
         ));
     }
 

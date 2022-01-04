@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
@@ -68,7 +67,7 @@ public class GetInboundBacklogProjectionUseCaseTest {
                 .throughputs(emptyList())
                 .currentBacklogs(input.getCurrentBacklogs())
                 .processNames(input.getProcessNames())
-                .planningUnits(Collections.emptyList())
+                .planningUnits(emptyList())
                 .build())).thenReturn(backlogProjection);
 
         //WHEN

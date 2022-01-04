@@ -4,6 +4,8 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Value
 public class GetSlaProjectionInput {
+
     private Workflow workflow;
 
     private String warehouseId;
@@ -26,6 +29,10 @@ public class GetSlaProjectionInput {
     private List<QuantityByDate> backlog;
 
     private String timeZone;
+
+    private Source source;
+
+    private List<Simulation> simulations;
 
     private boolean applyDeviation;
 }

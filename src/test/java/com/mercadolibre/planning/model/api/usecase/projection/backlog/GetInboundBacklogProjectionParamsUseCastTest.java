@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.GetInboundBacklogProjectionParamsUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -15,6 +16,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressFBWarnings("WI_MANUALLY_ALLOCATING_AN_AUTOWIRED_BEAN")
 public class GetInboundBacklogProjectionParamsUseCastTest {
 
     private static final ZonedDateTime NOW = ZonedDateTime.now();
@@ -24,13 +26,13 @@ public class GetInboundBacklogProjectionParamsUseCastTest {
     @Test
     public void testExecute() {
         //GIVEN
-        BacklogProjectionInput input = BacklogProjectionInput.builder()
+        final BacklogProjectionInput input = BacklogProjectionInput.builder()
                 .throughputs(mockThroughput())
                 .currentBacklogs(mockBacklogs())
                 .build();
 
         //WHEN
-        ProcessParams params = useCase.execute(CHECK_IN, input);
+        final ProcessParams params = useCase.execute(CHECK_IN, input);
 
         //THEN
         assertEquals(CHECK_IN, params.getProcessName());

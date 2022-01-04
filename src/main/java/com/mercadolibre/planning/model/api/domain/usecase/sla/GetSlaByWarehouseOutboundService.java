@@ -192,11 +192,10 @@ public class GetSlaByWarehouseOutboundService
                 processingTime);
     }
 
-    private List<GetSlaByWarehouseOutput> getSlaByRouteEts(
-            final GetSlaByWarehouseInput input, final List<ProcessingTimeByDate> routes) {
+    private List<GetSlaByWarehouseOutput> getSlaByRouteEts(final GetSlaByWarehouseInput input,
+                                                           final List<ProcessingTimeByDate> routes) {
 
-        final ZonedDateTime cptFromTimeZoneWarehouse =
-                getDateWithTimeZone(input.getCptFrom(), input.getTimeZone());
+        final ZonedDateTime cptFromTimeZoneWarehouse = getDateWithTimeZone(input.getCptFrom(), input.getTimeZone());
 
         return routes.stream()
                 .map(route -> generateCptByWarehouseOutput(route, cptFromTimeZoneWarehouse))
@@ -221,8 +220,7 @@ public class GetSlaByWarehouseOutboundService
                 .build();
     }
 
-    private ZonedDateTime generateDate(
-            final ProcessingTimeByDate route, final ZonedDateTime dateFrom) {
+    private ZonedDateTime generateDate(final ProcessingTimeByDate route, final ZonedDateTime dateFrom) {
 
         final ZonedDateTime date =
                 dateFrom

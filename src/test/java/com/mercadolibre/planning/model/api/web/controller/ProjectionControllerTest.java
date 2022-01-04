@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetOutboundBacklogProjectionUseCase;
@@ -30,8 +29,10 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUT
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SuppressWarnings("PMD.LongVariable")
 @WebMvcTest(controllers = ProjectionController.class)
 class ProjectionControllerTest {
 
@@ -87,7 +89,7 @@ class ProjectionControllerTest {
 
         when(getSlaProjectionUseCase.execute(
                 new GetSlaProjectionInput(
-                        Workflow.FBM_WMS_OUTBOUND,
+                        FBM_WMS_OUTBOUND,
                         WAREHOUSE_ID,
                         ProjectionType.CPT,
                         List.of(PICKING, PACKING),
@@ -95,6 +97,8 @@ class ProjectionControllerTest {
                         parse("2020-01-10T12:00:00Z[UTC]"),
                         null,
                         "America/Argentina/Buenos_Aires",
+                        SIMULATION,
+                        emptyList(),
                         false
                 )))
                 .thenReturn(
@@ -129,7 +133,7 @@ class ProjectionControllerTest {
 
         when(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput.builder()
                 .warehouseId(WAREHOUSE_ID)
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
+                .workflow(FBM_WMS_OUTBOUND)
                 .dateFrom(parse("2020-01-01T12:00:00Z[UTC]"))
                 .dateTo(parse("2020-01-10T12:00:00Z[UTC]"))
                 .timeZone("America/Argentina/Buenos_Aires")
@@ -167,8 +171,8 @@ class ProjectionControllerTest {
     @Test
     public void testGetBacklogProjection() throws Exception {
         // GIVEN
-        GetOutboundBacklogProjectionUseCase useCase = Mockito.mock(GetOutboundBacklogProjectionUseCase.class);
-        when(backlogProjectionUseCaseFactory.getUseCase(Workflow.FBM_WMS_OUTBOUND)).thenReturn(useCase);
+        final GetOutboundBacklogProjectionUseCase useCase = Mockito.mock(GetOutboundBacklogProjectionUseCase.class);
+        when(backlogProjectionUseCaseFactory.getUseCase(FBM_WMS_OUTBOUND)).thenReturn(useCase);
 
         when(useCase.execute(any(BacklogProjectionInput.class)))
                 .thenReturn(List.of(

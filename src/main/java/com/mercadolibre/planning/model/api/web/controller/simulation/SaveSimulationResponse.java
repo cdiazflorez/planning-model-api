@@ -1,14 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Value;
 
 import java.time.ZonedDateTime;
 
-@AllArgsConstructor
-@Data
+@Value
 public class SaveSimulationResponse {
 
     private ZonedDateTime date;
@@ -21,12 +18,4 @@ public class SaveSimulationResponse {
 
     private boolean isDeferred;
 
-    public static SaveSimulationResponse fromProjectionOutput(final CptCalculationOutput output) {
-
-        return new SaveSimulationResponse(
-                output.getDate(),
-                output.getProjectedEndDate(),
-                output.getRemainingQuantity(),
-                null, false);
-    }
 }

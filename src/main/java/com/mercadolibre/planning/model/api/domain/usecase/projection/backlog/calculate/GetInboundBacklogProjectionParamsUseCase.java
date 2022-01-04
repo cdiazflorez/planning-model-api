@@ -27,7 +27,7 @@ public class GetInboundBacklogProjectionParamsUseCase implements GetBacklogProje
         final long currentBacklog = input.getCurrentBacklogs().stream()
                 .filter(cb -> processName == cb.getProcessName())
                 .findFirst()
-                .orElse(new CurrentBacklog(processName, 0))
+                .orElseGet(() -> new CurrentBacklog(processName, 0))
                 .getQuantity();
 
         return ProcessParams.builder()

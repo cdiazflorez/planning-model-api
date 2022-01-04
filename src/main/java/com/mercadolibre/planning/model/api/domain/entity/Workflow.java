@@ -36,10 +36,7 @@ public enum Workflow {
     }
 
     private static long calculateInboundCapacity(final Map<ProcessName, Long> capacities) {
-        return min(
-                capacities.getOrDefault(CHECK_IN, 0L),
-                capacities.getOrDefault(PUT_AWAY, 0L)
-        );
+        return capacities.getOrDefault(PUT_AWAY, 0L);
     }
 
     private static long calculateOutboundCapacity(final Map<ProcessName, Long> capacities) {

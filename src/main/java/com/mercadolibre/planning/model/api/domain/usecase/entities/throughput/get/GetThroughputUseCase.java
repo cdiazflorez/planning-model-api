@@ -127,6 +127,7 @@ public class GetThroughputUseCase
                                     .orElse(0L);
 
                             tph = calculateTphValue(
+                                    workflow,
                                     headcount == null ? 0 : headcount.getValue(),
                                     simulatedHeadcount.getValue(),
                                     currentProductivity.getValue(),
@@ -146,14 +147,15 @@ public class GetThroughputUseCase
         return throughput;
     }
 
-    private Long calculateTphValue(final long forecastHeadcountValue,
+    private Long calculateTphValue(final Workflow workflow,
+                                   final long forecastHeadcountValue,
                                    final long simulatedHeadcountValue,
                                    final long productivityValue,
                                    final long multiFunctionalPdtValue) {
 
         final long valueDifference = simulatedHeadcountValue - forecastHeadcountValue;
 
-        if (valueDifference > 0) {
+        if (valueDifference > 0 && workflow == Workflow.FBM_WMS_OUTBOUND) {
             return valueDifference * multiFunctionalPdtValue
                     + forecastHeadcountValue * productivityValue;
         } else {

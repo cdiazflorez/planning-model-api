@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -78,7 +77,7 @@ public class GetOutboundBacklogProjectionUseCaseTest {
                 .throughputs(emptyList())
                 .currentBacklogs(input.getCurrentBacklogs())
                 .processNames(input.getProcessNames())
-                .planningUnits(Collections.emptyList())
+                .planningUnits(emptyList())
                 .build())).thenReturn(backlogProjection);
 
         //WHEN

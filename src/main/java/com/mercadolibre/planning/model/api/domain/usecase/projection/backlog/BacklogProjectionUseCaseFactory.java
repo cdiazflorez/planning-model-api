@@ -4,9 +4,10 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class BacklogProjectionUseCaseFactory {
@@ -15,8 +16,11 @@ public class BacklogProjectionUseCaseFactory {
 
     @Autowired
     public BacklogProjectionUseCaseFactory(final Set<GetBacklogProjectionUseCase> useCases) {
-        backlogProjections = new HashMap<>();
-        useCases.forEach(useCase -> backlogProjections.put(useCase.getWorkflow(), useCase));
+        backlogProjections = useCases.stream()
+                .collect(Collectors.toMap(
+                        GetBacklogProjectionUseCase::getWorkflow,
+                        Function.identity())
+                );
     }
 
     public GetBacklogProjectionUseCase getUseCase(final Workflow workflow) {

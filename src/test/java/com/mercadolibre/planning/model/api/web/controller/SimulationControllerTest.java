@@ -1,18 +1,10 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,18 +16,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static java.time.ZonedDateTime.now;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -52,22 +38,10 @@ public class SimulationControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private GetThroughputUseCase getForecastedThroughputUseCase;
-
-    @MockBean
-    private PlanningDistributionService planningDistributionService;
-
-    @MockBean
-    private CalculateCptProjectionUseCase calculateCptProjectionUseCase;
+    private GetSlaProjectionUseCase getSlaProjectionUseCase;
 
     @MockBean
     private ActivateSimulationUseCase activateSimulationUseCase;
-
-    @MockBean
-    private GetCapacityPerHourService getCapacityPerHourService;
-
-    @MockBean
-    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
     @Test
     public void testSaveSimulation() throws Exception {
@@ -75,20 +49,9 @@ public class SimulationControllerTest {
         final ZonedDateTime dateOut = parse("2020-01-01T10:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T11:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
+        when(getSlaProjectionUseCase.execute(any(GetSlaProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptCalculationOutput(dateOut, projectedEndDate, 100)));
-
-        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
-                .thenReturn(List.of(
-                        new CapacityOutput(now().withFixedOffsetZone(),
-                                UNITS_PER_HOUR, 100)
-                ));
-
-        when(getSlaByWarehouseOutboundService.execute(
-                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
-                        "America/Argentina/Buenos_Aires")))
-                .thenReturn(emptyList());
+                        new CptProjectionOutput(dateOut, projectedEndDate, 100)));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -98,8 +61,6 @@ public class SimulationControllerTest {
         );
 
         // THEN
-        verify(getForecastedThroughputUseCase).execute(any(GetEntityInput.class));
-        verify(planningDistributionService).getPlanningDistribution(any(GetPlanningDistributionInput.class));
         verify(activateSimulationUseCase).execute(any(SimulationInput.class));
 
         result.andExpect(status().isOk())
@@ -118,22 +79,11 @@ public class SimulationControllerTest {
         final ZonedDateTime simulatedEndDate = parse("2020-01-01T11:00:00Z");
         final ZonedDateTime projectedEndDate = parse("2020-01-01T13:00:00Z");
 
-        when(calculateCptProjectionUseCase.execute(any(SlaProjectionInput.class)))
+        when(getSlaProjectionUseCase.execute(any(GetSlaProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptCalculationOutput(dateOut, simulatedEndDate, 100)))
+                        new CptProjectionOutput(dateOut, simulatedEndDate, 100)))
                 .thenReturn(List.of(
-                        new CptCalculationOutput(dateOut, projectedEndDate, 150)));
-
-        when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
-                .thenReturn(List.of(
-                        new CapacityOutput(now().withFixedOffsetZone(),
-                                UNITS_PER_HOUR, 100)
-                ));
-
-        when(getSlaByWarehouseOutboundService.execute(
-                new GetSlaByWarehouseInput("ARBA01", null, null, emptyList(),
-                        "America/Argentina/Buenos_Aires")))
-                .thenReturn(emptyList());
+                        new CptProjectionOutput(dateOut, projectedEndDate, 150)));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -143,10 +93,7 @@ public class SimulationControllerTest {
         );
 
         // THEN
-        //verify(getSimulationThroughputUseCase).execute(any(GetEntityInput.class));
-        verify(planningDistributionService).getPlanningDistribution(any(GetPlanningDistributionInput.class));
-        verify(getForecastedThroughputUseCase, times(2)).execute(any(GetEntityInput.class));
-        verifyZeroInteractions(activateSimulationUseCase);
+        verifyNoInteractions(activateSimulationUseCase);
 
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")

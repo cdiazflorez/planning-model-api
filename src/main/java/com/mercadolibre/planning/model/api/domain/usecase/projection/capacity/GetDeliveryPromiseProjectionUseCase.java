@@ -38,7 +38,6 @@ import java.util.TreeMap;
 import java.util.stream.LongStream;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
@@ -84,7 +83,6 @@ public class GetDeliveryPromiseProjectionUseCase {
                         .dateFrom(input.getDateFrom())
                         .dateTo(input.getDateTo())
                         .planningUnits(emptyList())
-                        .projectionType(DEFERRAL)
                         .slaByWarehouse(allCptByWarehouse)
                         .currentDate(getCurrentUtcDate())
                         .build();

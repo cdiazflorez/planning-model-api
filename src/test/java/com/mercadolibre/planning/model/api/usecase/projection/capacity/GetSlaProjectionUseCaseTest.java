@@ -116,8 +116,9 @@ class GetSlaProjectionUseCaseTest {
                 DATE_TO,
                 null,
                 TIMEZONE,
+                null,
+                null,
                 false
         );
-
     }
 }

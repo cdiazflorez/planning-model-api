@@ -43,7 +43,6 @@ import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
@@ -122,7 +121,6 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
                 .planningUnits(emptyList())
-                .projectionType(DEFERRAL)
                 .slaByWarehouse(cptByWarehouse)
                 // TODO handle the time correctly: sometimes this test fails because the current date changes.
                 .currentDate(getCurrentUtcDate())

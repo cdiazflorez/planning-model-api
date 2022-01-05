@@ -29,7 +29,6 @@ import java.util.Map;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -61,10 +60,12 @@ public class GetSlaProjectionUseCase {
         final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
                 .builder()
                 .warehouseId(warehouseId)
+                .workflow(workflow)
                 .dateFrom(dateFrom)
                 .dateTo(dateTo)
                 .processName(request.getProcessName())
-                .workflow(workflow)
+                .simulations(request.getSimulations())
+                .source(request.getSource())
                 .build());
 
         final Map<ZonedDateTime, Integer> capacity = getCapacityPerHourService
@@ -77,8 +78,8 @@ public class GetSlaProjectionUseCase {
 
         final List<GetPlanningDistributionOutput> planningUnits = planningDistributionService.getPlanningDistribution(
                 GetPlanningDistributionInput.builder()
-                        .workflow(workflow)
                         .warehouseId(request.getWarehouseId())
+                        .workflow(workflow)
                         .dateOutFrom(request.getDateFrom())
                         .dateOutTo(request.getDateTo())
                         .applyDeviation(request.isApplyDeviation())
@@ -96,7 +97,6 @@ public class GetSlaProjectionUseCase {
                         .capacity(capacity)
                         .backlog(getBacklog(request.getBacklog()))
                         .planningUnits(planningUnits)
-                        .projectionType(CPT)
                         .slaByWarehouse(slaByWarehouse)
                         .currentDate(getCurrentUtcDate())
                         .build());

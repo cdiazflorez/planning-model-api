@@ -29,8 +29,6 @@ import java.util.stream.Stream;
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.DEFERRAL;
 import static java.time.ZonedDateTime.parse;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.emptyList;
@@ -90,7 +88,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_12, List.of(-1, 100, 200)))
                 .logisticCenterId(WAREHOUSE_ID)
                 .backlog(backlogs)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
@@ -125,7 +122,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
@@ -161,7 +157,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
@@ -199,7 +194,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(dateOut, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(dateOut).build()))
                 .currentDate(getCurrentUtcDate())
@@ -245,7 +239,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_13).build()))
@@ -279,7 +272,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                         List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
                 .planningUnits(emptyList())
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(emptyList())
                 .currentDate(getCurrentUtcDate())
                 .build();
@@ -315,7 +307,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_16).build()))
                 .currentDate(getCurrentUtcDate())
@@ -355,7 +346,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
@@ -424,7 +414,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(CPT)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),
@@ -462,7 +451,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(date13, List.of(50, 50, 25, 40)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(DEFERRAL)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build()))
                 .currentDate(getCurrentUtcDate())
@@ -497,7 +485,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .capacity(mockCapacity(date13, List.of(50, 50, 25, 40)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
-                .projectionType(DEFERRAL)
                 .slaByWarehouse(List.of(
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12).build(),
                         GetSlaByWarehouseOutput.builder().date(DATE_OUT_12_30).build(),

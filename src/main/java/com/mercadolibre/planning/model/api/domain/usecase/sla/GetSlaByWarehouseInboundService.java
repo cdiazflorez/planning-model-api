@@ -17,7 +17,7 @@ public class GetSlaByWarehouseInboundService implements GetSlaByWarehouseService
                 ? Collections.emptyList()
                 : input.getDafaultSlas()
                 .stream()
-                .filter(date -> !input.getCptTo().isBefore(date))
+                .filter(date -> date.isBefore(input.getCptTo()) || date.equals(input.getCptTo()))
                 .distinct()
                 .sorted()
                 .map(sla ->

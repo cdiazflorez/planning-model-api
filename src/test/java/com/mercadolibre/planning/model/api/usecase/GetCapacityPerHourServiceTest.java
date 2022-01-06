@@ -19,7 +19,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.CHECK_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -140,22 +139,10 @@ public class GetCapacityPerHourServiceTest {
                         FBM_WMS_INBOUND,
                         List.of(
                                 CapacityInput.builder()
-                                        .processName(CHECK_IN)
-                                        .date(A_DATE_UTC)
-                                        .metricUnit(UNITS_PER_HOUR)
-                                        .value(32)
-                                        .build(),
-                                CapacityInput.builder()
                                         .processName(PUT_AWAY)
                                         .date(A_DATE_UTC)
                                         .metricUnit(UNITS_PER_HOUR)
                                         .value(46)
-                                        .build(),
-                                CapacityInput.builder()
-                                        .processName(CHECK_IN)
-                                        .date(A_DATE_UTC.plusHours(1))
-                                        .metricUnit(UNITS_PER_HOUR)
-                                        .value(34)
                                         .build(),
                                 CapacityInput.builder()
                                         .processName(PUT_AWAY)
@@ -163,7 +150,7 @@ public class GetCapacityPerHourServiceTest {
                                         .metricUnit(UNITS_PER_HOUR)
                                         .value(35)
                                         .build()
-                        ), List.of(32, 34))
+                        ), List.of(46, 35))
         );
     }
 }

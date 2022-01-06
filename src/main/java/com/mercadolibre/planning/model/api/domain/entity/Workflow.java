@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.CHECK_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -36,10 +35,7 @@ public enum Workflow {
     }
 
     private static long calculateInboundCapacity(final Map<ProcessName, Long> capacities) {
-        return min(
-                capacities.getOrDefault(CHECK_IN, 0L),
-                capacities.getOrDefault(PUT_AWAY, 0L)
-        );
+        return capacities.getOrDefault(PUT_AWAY, 0L);
     }
 
     private static long calculateOutboundCapacity(final Map<ProcessName, Long> capacities) {

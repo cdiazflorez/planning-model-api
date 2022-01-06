@@ -7,7 +7,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.CHECK_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -22,18 +21,7 @@ public class WorkflowTest {
     private static Stream<Arguments> inbound() {
         return Stream.of(
                 arguments(Map.of(), 0L),
-                arguments(Map.of(PUT_AWAY, 10L), 0L),
-                arguments(Map.of(CHECK_IN, 10L), 0L),
-                arguments(
-                        Map.of(
-                                CHECK_IN, 11L,
-                                PUT_AWAY, 10L),
-                        10L),
-                arguments(
-                        Map.of(
-                                CHECK_IN, 10L,
-                                PUT_AWAY, 11L),
-                        10L)
+                arguments(Map.of(PUT_AWAY, 10L), 10L)
         );
     }
 

@@ -22,8 +22,7 @@ public class GetSlaByWarehouseInboundServiceTest {
     private static final ZonedDateTime DAY = ZonedDateTime.now();
     private static final ZonedDateTime SLA_FROM = DAY;
     private static final ZonedDateTime SLA_TO = SLA_FROM.plusDays(1);
-    private static final List<ZonedDateTime> BACKLOG = List.of(DAY.plusDays(1),
-            DAY);
+    private static final List<ZonedDateTime> BACKLOG = List.of(DAY, DAY.plusDays(1), DAY.plusDays(2));
 
     @InjectMocks
     private GetSlaByWarehouseInboundService getSlaByWarehouseInboundService;
@@ -36,9 +35,17 @@ public class GetSlaByWarehouseInboundServiceTest {
         assertEquals(expectedSlaByBacklog(), result);
     }
 
+    @Test
+    public void defaultBacklog() {
+        final List<GetSlaByWarehouseOutput> result = getSlaByWarehouseInboundService.execute(
+                new GetSlaByWarehouseInput(WAREHOUSE, SLA_FROM, SLA_TO, null, TIME_ZONE)
+        );
+
+        assertEquals(0, result.size());
+    }
+
     private GetSlaByWarehouseInput generateInputByBacklog() {
-        return new GetSlaByWarehouseInput(WAREHOUSE,
-                SLA_FROM, SLA_TO, BACKLOG, TIME_ZONE);
+        return new GetSlaByWarehouseInput(WAREHOUSE, SLA_FROM, SLA_TO, BACKLOG, TIME_ZONE);
     }
 
     private List<GetSlaByWarehouseOutput> expectedSlaByBacklog() {

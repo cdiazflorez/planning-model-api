@@ -21,6 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -116,14 +117,21 @@ public class GetThroughputUseCase
                         if (simulatedHeadcount == null) {
                             tph = headcount.getValue() * currentProductivity.getValue();
                         } else {
-                            final EntityOutput currentPolyvalentProductivity =
-                                    polyvalentProductivityMap.get(processName).get(dateTime);
+                            final long currentPolyvalentProductivity = Optional.ofNullable(
+                                            polyvalentProductivityMap.get(processName)
+                                    )
+                                    .flatMap(polivalentProductivity ->
+                                            Optional.ofNullable(polivalentProductivity.get(dateTime))
+                                    )
+                                    .map(EntityOutput::getValue)
+                                    .orElse(0L);
 
                             tph = calculateTphValue(
+                                    workflow,
                                     headcount == null ? 0 : headcount.getValue(),
                                     simulatedHeadcount.getValue(),
                                     currentProductivity.getValue(),
-                                    currentPolyvalentProductivity == null ? 0 : currentPolyvalentProductivity.getValue()
+                                    currentPolyvalentProductivity
                             );
                         }
                         throughput.add(EntityOutput.builder()
@@ -139,14 +147,15 @@ public class GetThroughputUseCase
         return throughput;
     }
 
-    private Long calculateTphValue(final long forecastHeadcountValue,
+    private Long calculateTphValue(final Workflow workflow,
+                                   final long forecastHeadcountValue,
                                    final long simulatedHeadcountValue,
                                    final long productivityValue,
                                    final long multiFunctionalPdtValue) {
 
         final long valueDifference = simulatedHeadcountValue - forecastHeadcountValue;
 
-        if (valueDifference > 0) {
+        if (valueDifference > 0 && workflow == Workflow.FBM_WMS_OUTBOUND) {
             return valueDifference * multiFunctionalPdtValue
                     + forecastHeadcountValue * productivityValue;
         } else {

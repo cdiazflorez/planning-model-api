@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static java.time.ZonedDateTime.parse;
@@ -75,16 +74,12 @@ public class CalculateGetSlaProjectionUseCaseTest {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
 
-        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
-                .dateOut(DATE_OUT_12)
-                .dateIn(DATE_IN_11)
-                .total(200)
-                .build());
+        final List<PlannedUnits> plannedUnits = singletonList(new PlannedUnits(DATE_IN_11, DATE_OUT_12, 200));
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_12, List.of(-1, 100, 200)))
                 .logisticCenterId(WAREHOUSE_ID)
                 .backlog(backlogs)
@@ -109,16 +104,12 @@ public class CalculateGetSlaProjectionUseCaseTest {
     public void testProjectedEndDateBeforeDateOut() {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
-        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
-                .dateOut(DATE_OUT_12)
-                .dateIn(DATE_IN_11)
-                .total(100)
-                .build());
+        final List<PlannedUnits> plannedUnits = singletonList(new PlannedUnits(DATE_IN_11, DATE_OUT_12, 100));
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
@@ -144,16 +135,12 @@ public class CalculateGetSlaProjectionUseCaseTest {
     public void testProjectedEndDateAfterDateTo() {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 1000));
-        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
-                .dateOut(DATE_OUT_12)
-                .dateIn(DATE_IN_11)
-                .total(100)
-                .build());
+        final List<PlannedUnits> plannedUnits = singletonList(new PlannedUnits(DATE_IN_11, DATE_OUT_12, 100));
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_12, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
@@ -181,16 +168,12 @@ public class CalculateGetSlaProjectionUseCaseTest {
                                                  final int remainingQuantity) {
         // GIVEN
         final List<Backlog> backlogs = singletonList(new Backlog(dateOut, 100));
-        final List<GetPlanningDistributionOutput> planningUnits = singletonList(builder()
-                .dateOut(dateOut)
-                .dateIn(DATE_10)
-                .total(400)
-                .build());
+        final List<PlannedUnits> plannedUnits = singletonList(new PlannedUnits(DATE_10, dateOut, 400));
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_TO_14)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(dateOut, List.of(100, 200, 200)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
@@ -227,14 +210,15 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 new Backlog(DATE_OUT_13, 150)
         );
 
-        final List<GetPlanningDistributionOutput> planningUnits = List.of(
-                builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
-                builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
+        final List<PlannedUnits> plannedUnits = List.of(
+                new PlannedUnits(DATE_IN_11, DATE_OUT_12, 100),
+                new PlannedUnits(DATE_IN_11, DATE_OUT_13, 350)
+        );
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
@@ -270,7 +254,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .dateTo(DATE_OUT_16)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 100, 100, 100, 100, 100, 100, 100)))
-                .planningUnits(emptyList())
+                .plannedUnits(emptyList())
                 .logisticCenterId(WAREHOUSE_ID)
                 .slaByWarehouse(emptyList())
                 .currentDate(getCurrentUtcDate())
@@ -286,24 +270,20 @@ public class CalculateGetSlaProjectionUseCaseTest {
     @Test
     @DisplayName("Recalculate de projection if has new items")
     public void testRecalculateProjectionDate() {
+        final List<PlannedUnits> plannedUnits = List.of(
+                new PlannedUnits(DATE_IN_11.minusHours(1), DATE_OUT_16, 100),
+                new PlannedUnits(DATE_IN_11, DATE_OUT_16, 100),
+                new PlannedUnits(DATE_IN_11.plusHours(1), DATE_OUT_16, 50),
+                new PlannedUnits(DATE_IN_11.plusHours(2), DATE_OUT_16, 50),
+                new PlannedUnits(DATE_IN_11.plusHours(3), DATE_OUT_16, 50),
+                new PlannedUnits(DATE_IN_11.plusHours(4), DATE_OUT_16, 50),
+                new PlannedUnits(DATE_IN_11.plusHours(5), DATE_OUT_16, 50)
+        );
+
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
-                .planningUnits(List.of(
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.minusHours(1))
-                                .total(100).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11)
-                                .total(100).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(1))
-                                .total(50).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(2))
-                                .total(50).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(3))
-                                .total(50).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(4))
-                                .total(50).build(),
-                        builder().dateOut(DATE_OUT_16).dateIn(DATE_IN_11.plusHours(5))
-                                .total(50).build()))
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 20, 20, 20, 20, 20, 20, 20)))
                 .logisticCenterId(WAREHOUSE_ID)
@@ -334,14 +314,15 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 new Backlog(DATE_OUT_13, 200)
         );
 
-        final List<GetPlanningDistributionOutput> planningUnits = List.of(
-                builder().dateOut(DATE_OUT_12).dateIn(DATE_IN_11).total(100).build(),
-                builder().dateOut(DATE_OUT_13).dateIn(DATE_IN_11).total(350).build());
+        final List<PlannedUnits> plannedUnits = List.of(
+                new PlannedUnits(DATE_IN_11, DATE_OUT_12, 100),
+                new PlannedUnits(DATE_IN_11, DATE_OUT_13, 350)
+        );
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
@@ -385,31 +366,16 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 new Backlog(DATE_OUT_13, 200)
         );
 
-        final List<GetPlanningDistributionOutput> planningUnits = List.of(
-                builder()
-                        .dateOut(DATE_OUT_12)
-                        .dateIn(DATE_IN_11)
-                        .total(100)
-                        .isDeferred(false)
-                        .build(),
-                builder()
-                        .dateOut(DATE_OUT_13)
-                        .dateIn(DATE_IN_11)
-                        .total(350)
-                        .isDeferred(true)
-                        .build(),
-                builder()
-                        .dateOut(DATE_OUT_13)
-                        .dateIn(DATE_IN_11.plusHours(1))
-                        .isDeferred(true)
-                        .total(350)
-                        .build()
+        final List<PlannedUnits> plannedUnits = List.of(
+                new PlannedUnits(DATE_IN_11, DATE_OUT_12, 100),
+                new PlannedUnits(DATE_IN_11, DATE_OUT_13, 350),
+                new PlannedUnits(DATE_IN_11, DATE_OUT_13, 350)
         );
 
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(DATE_OUT_16)
-                .planningUnits(planningUnits)
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(DATE_OUT_16.plusHours(2),
                         List.of(200, 200, 200, 100, 100, 100, 100, 100, 100)))
                 .backlog(backlogs)
@@ -447,7 +413,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(date13)
-                .planningUnits(emptyList())
+                .plannedUnits(emptyList())
                 .capacity(mockCapacity(date13, List.of(50, 50, 25, 40)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)
@@ -475,13 +441,16 @@ public class CalculateGetSlaProjectionUseCaseTest {
         final List<Backlog> backlogs = singletonList(new Backlog(DATE_OUT_12, 100));
         final ZonedDateTime date13 = DATE_10.plusHours(3);
 
+        final List<PlannedUnits> plannedUnits = List.of(
+                new PlannedUnits(DATE_OUT_12, DATE_OUT_12, 0),
+                new PlannedUnits(DATE_OUT_12_30, DATE_OUT_12_30, 0),
+                new PlannedUnits(DATE_OUT_13, DATE_OUT_13, 0)
+        );
+
         final SlaProjectionInput input = SlaProjectionInput.builder()
                 .dateFrom(DATE_10)
                 .dateTo(date13)
-                .planningUnits(List.of(
-                        builder().dateIn(DATE_OUT_12).dateOut(DATE_OUT_12).total(0).build(),
-                        builder().dateIn(DATE_OUT_12_30).dateOut(DATE_OUT_12_30).total(0).build(),
-                        builder().dateIn(DATE_OUT_13).dateOut(DATE_OUT_13).total(0).build()))
+                .plannedUnits(plannedUnits)
                 .capacity(mockCapacity(date13, List.of(50, 50, 25, 40)))
                 .backlog(backlogs)
                 .logisticCenterId(WAREHOUSE_ID)

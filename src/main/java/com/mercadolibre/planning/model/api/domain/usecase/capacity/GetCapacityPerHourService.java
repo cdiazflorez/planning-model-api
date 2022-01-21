@@ -42,7 +42,7 @@ public class GetCapacityPerHourService {
 
     private Integer getCapacityValue(final Workflow workflow, final List<CapacityInput> capacityInputs) {
         final Map<ProcessName, Long> capacityByProcess = capacityInputs.stream()
-                .collect(Collectors.groupingBy(
+                .collect(groupingBy(
                         CapacityInput::getProcessName,
                         Collectors.mapping(
                                 CapacityInput::getValue,

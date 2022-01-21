@@ -74,12 +74,12 @@ public class WorkflowTest {
         final var service = new WorkflowService<Integer, Integer>() {
 
             @Override
-            public Integer executeInbound(Integer params) {
+            public Integer executeInbound(final Integer params) {
                 return params + 1;
             }
 
             @Override
-            public Integer executeOutbound(Integer params) {
+            public Integer executeOutbound(final Integer params) {
                 return params - 1;
             }
         };

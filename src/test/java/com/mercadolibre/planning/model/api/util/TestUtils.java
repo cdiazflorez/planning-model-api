@@ -754,6 +754,7 @@ public final class TestUtils {
         );
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "known false positve")
     public static String getResourceAsString(final String resourceName) throws IOException {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 

@@ -6,15 +6,15 @@ import java.util.Date;
 
 @Value
 public class PlanningDistributionViewImpl implements PlanningDistributionElemView {
-    long forecastId;
+    private long forecastId;
 
-    Date dateIn;
+    private Date dateIn;
 
-    Date dateOut;
+    private Date dateOut;
 
-    long quantity;
+    private long quantity;
 
-    String quantityMetricUnit;
+    private String quantityMetricUnit;
 
     public static PlanningDistributionElemView fromWithQuantity(
             final PlanningDistributionElemView original,

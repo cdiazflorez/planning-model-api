@@ -52,39 +52,39 @@ class GetForecastUseCaseTest {
 
     @Getter
     @RequiredArgsConstructor
-    private static class Fiv implements ForecastIdView {
-        final Long id;
+    private static class ForecastId implements ForecastIdView {
+        private final Long id;
     }
 
     @TestConfiguration
     public static class TestConfig {
-        static final String WAREHOUSE_ID = "H";
-        static final ZonedDateTime DATE_FROM = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        static final ZonedDateTime DATE_TO = ZonedDateTime.of(2021, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC);
+        private static final String WAREHOUSE_ID = "H";
+        private static final ZonedDateTime DATE_FROM = ZonedDateTime.of(2021, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        private static final ZonedDateTime DATE_TO = ZonedDateTime.of(2021, 1, 2, 10, 0, 0, 0, ZoneOffset.UTC);
+
+        private List<Long> previousRequestForecastsIds;
 
         @Bean
         @Primary
         public GetForecastUseCase.Repository getRepository() {
             return (warehouseId, workflow, weeks) -> List.of(
-                    new Fiv((long)Workflow.valueOf(workflow).ordinal()),
-                    new Fiv(2L)
+                    new ForecastId((long)Workflow.valueOf(workflow).ordinal()),
+                    new ForecastId(2L)
             );
         }
-
-        private List<Long> previousRequestForecastsIds;
 
         @Bean
         public RouterFunction<ServerResponse> getForecasts(final GetForecastUseCase getForecastUseCase) {
             return route().GET("/", req -> {
                 // Verify that two calls to the `execute` method with same parameters from the same request scope
                 // returns exactly the same object.
-                var forecastsIds1 = getForecastUseCase.execute(new GetForecastInput(
+                final var forecastsIds1 = getForecastUseCase.execute(new GetForecastInput(
                         WAREHOUSE_ID,
                         Workflow.FBM_WMS_OUTBOUND,
                         DATE_FROM,
                         DATE_TO
                 ));
-                var forecastsIds2 = getForecastUseCase.execute(new GetForecastInput(
+                final var forecastsIds2 = getForecastUseCase.execute(new GetForecastInput(
                         WAREHOUSE_ID,
                         Workflow.FBM_WMS_OUTBOUND,
                         DATE_FROM,
@@ -94,7 +94,7 @@ class GetForecastUseCaseTest {
 
                 // Verify that two calls to the `execute` method with different parameters from the same request
                 // scope returns different results.
-                var forecastsIds3 = getForecastUseCase.execute(new GetForecastInput(
+                final var forecastsIds3 = getForecastUseCase.execute(new GetForecastInput(
                         WAREHOUSE_ID,
                         Workflow.FBM_WMS_INBOUND,
                         DATE_FROM,

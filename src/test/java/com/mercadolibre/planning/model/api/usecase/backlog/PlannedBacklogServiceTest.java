@@ -57,7 +57,7 @@ public class PlannedBacklogServiceTest {
     }
 
     @Test
-    public void getInboundExpectedBacklog() {
+    public void testGetInboundExpectedBacklog() {
         // GIVEN
         when(backlogApiGateway.getCurrentBacklog(
                 WAREHOUSE_ID,
@@ -99,7 +99,7 @@ public class PlannedBacklogServiceTest {
     }
 
     @Test
-    public void getOutboundExpectedBacklog() {
+    public void testGetOutboundExpectedBacklog() {
         // GIVEN
         when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
                 .thenReturn(of(

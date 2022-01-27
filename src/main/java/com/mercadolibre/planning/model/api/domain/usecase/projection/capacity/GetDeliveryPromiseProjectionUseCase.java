@@ -82,7 +82,7 @@ public class GetDeliveryPromiseProjectionUseCase {
                         .backlog(input.getBacklog())
                         .dateFrom(input.getDateFrom())
                         .dateTo(input.getDateTo())
-                        .planningUnits(emptyList())
+                        .plannedUnits(emptyList())
                         .slaByWarehouse(allCptByWarehouse)
                         .currentDate(getCurrentUtcDate())
                         .build();

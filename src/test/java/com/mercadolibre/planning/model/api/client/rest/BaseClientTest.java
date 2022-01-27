@@ -30,9 +30,14 @@ public class BaseClientTest {
                 new RestClientConfig.RouteCoverageClientProperties();
         routeCoverageClientProperties.setBaseUrl(BASE_URL_ROUTE);
 
+        final RestClientConfig.BacklogApiClientProperties backlogApiClientProperties =
+                new RestClientConfig.BacklogApiClientProperties();
+        backlogApiClientProperties.setBaseUrl(BASE_URL_ROUTE);
+
         return new RestClientConfig(
                 routeEtsClientProperties,
-                routeCoverageClientProperties
+                routeCoverageClientProperties,
+                backlogApiClientProperties
         ).restClient();
     }
 

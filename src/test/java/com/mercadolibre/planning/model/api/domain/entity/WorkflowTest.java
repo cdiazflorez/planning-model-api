@@ -46,17 +46,49 @@ public class WorkflowTest {
         );
     }
 
+    private static Stream<Arguments> execute() {
+        return Stream.of(
+                arguments(FBM_WMS_INBOUND, 10, 11),
+                arguments(FBM_WMS_OUTBOUND, 10, 9)
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("inbound")
-    void testInboundCapacity(final Map<ProcessName, Long> capacities, final Long expected) {
+    public void testInboundCapacity(final Map<ProcessName, Long> capacities, final Long expected) {
         final var result = FBM_WMS_INBOUND.getCapacityCalculator().apply(capacities);
         assertEquals(expected, result);
     }
 
     @ParameterizedTest
     @MethodSource("outbound")
-    void testOutboundCapacity(final Map<ProcessName, Long> capacities, final Long expected) {
+    public void testOutboundCapacity(final Map<ProcessName, Long> capacities, final Long expected) {
         final var result = FBM_WMS_OUTBOUND.getCapacityCalculator().apply(capacities);
         assertEquals(expected, result);
     }
+
+    @ParameterizedTest
+    @MethodSource("execute")
+    public void testExecute(final Workflow workflow, final int param, final int expected) {
+        // GIVEN
+        final var service = new WorkflowService<Integer, Integer>() {
+
+            @Override
+            public Integer executeInbound(Integer params) {
+                return params + 1;
+            }
+
+            @Override
+            public Integer executeOutbound(Integer params) {
+                return params - 1;
+            }
+        };
+
+        // WHEN
+        final int actual = workflow.execute(service, param);
+
+        // THEN
+        assertEquals(expected, actual);
+    }
+
 }

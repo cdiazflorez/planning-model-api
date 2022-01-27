@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -121,8 +121,8 @@ public class CalculateCptProjectionUseCase {
     private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(
             final SlaProjectionInput input) {
 
-        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> planningUnitsByDateInByDateOut =
-                getPlanning(input.getPlanningUnits());
+        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> expectedUnitsByDateInByDateOut =
+                getExpectedUnits(input.getPlannedUnits());
 
         final Map<ZonedDateTime, Integer> currentUnitsBacklogByDateOut = input.getBacklog() == null
                 ? emptyMap()
@@ -131,12 +131,11 @@ public class CalculateCptProjectionUseCase {
                 Backlog::getQuantity, Integer::sum));
 
         final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
-        final TreeSet<ZonedDateTime> datesOut =
-                new TreeSet(planningUnitsByDateInByDateOut.keySet());
+
+        final TreeSet<ZonedDateTime> datesOut = new TreeSet(expectedUnitsByDateInByDateOut.keySet());
         datesOut.addAll(currentUnitsBacklogByDateOut.keySet());
 
-        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
-                new TreeMap<>();
+        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate = new TreeMap<>();
 
         datesOut.forEach(dateOut -> {
             final Map<ZonedDateTime, Integer> unitsByDate = new TreeMap<>();
@@ -145,17 +144,17 @@ public class CalculateCptProjectionUseCase {
             unitsByDate.put(input.getCurrentDate(),
                     calculateExactBacklog(
                             backlogQty,
-                            planningUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap())
+                            expectedUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap())
                                     .getOrDefault(dateFrom, 0),
                             input.getCurrentDate().getMinute()));
 
             iterate(dateFrom.plusHours(1), date -> date.plusHours(1))
                     .limit(HOURS.between(dateFrom, input.getDateTo()))
                     .forEach(dateTime -> {
-                        final Integer planningQty = planningUnitsByDateInByDateOut
+                        final Integer expectedQty = expectedUnitsByDateInByDateOut
                                 .getOrDefault(dateOut, emptyMap()).getOrDefault(dateTime, 0);
 
-                        unitsByDate.put(dateTime, planningQty);
+                        unitsByDate.put(dateTime, expectedQty);
                     });
 
             unitsByDateOutAndDate.put(dateOut, unitsByDate);
@@ -164,16 +163,16 @@ public class CalculateCptProjectionUseCase {
         return unitsByDateOutAndDate;
     }
 
-    private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getPlanning(
-            final List<GetPlanningDistributionOutput> planningUnits) {
+    private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getExpectedUnits(final List<PlannedUnits> plannedUnits) {
 
-        return planningUnits.stream()
+        return plannedUnits.stream()
                 .collect(groupingBy(
-                        GetPlanningDistributionOutput::getDateOut,
+                        PlannedUnits::getDateOut,
                         toMap(
                                 o -> ignoreMinutes(o.getDateIn().plusHours(1)),
                                 o -> (int) o.getTotal(),
-                                Integer::sum)));
+                                Integer::sum))
+                );
         // Se agrega una hora para compensar que las ventas se graban con 0 minutos.
     }
 
@@ -192,10 +191,10 @@ public class CalculateCptProjectionUseCase {
     }
 
     private int calculateExactBacklog(final int backlogQty,
-                                      final int planningQty,
+                                      final int expectedQty,
                                       final int nowMinutes) {
         final int remainingMinutes = HOUR_IN_MINUTES - nowMinutes;
-        return backlogQty + (remainingMinutes * planningQty / HOUR_IN_MINUTES);
+        return backlogQty + (remainingMinutes * expectedQty / HOUR_IN_MINUTES);
     }
 
     private void adaptMinutesFirstCapacity(final Map<ZonedDateTime, Integer> capacity,

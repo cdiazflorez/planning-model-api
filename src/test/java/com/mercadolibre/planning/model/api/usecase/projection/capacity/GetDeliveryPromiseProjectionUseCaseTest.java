@@ -120,7 +120,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 .backlog(input.getBacklog())
                 .dateFrom(input.getDateFrom())
                 .dateTo(input.getDateTo())
-                .planningUnits(emptyList())
+                .plannedUnits(emptyList())
                 .slaByWarehouse(cptByWarehouse)
                 // TODO handle the time correctly: sometimes this test fails because the current date changes.
                 .currentDate(getCurrentUtcDate())

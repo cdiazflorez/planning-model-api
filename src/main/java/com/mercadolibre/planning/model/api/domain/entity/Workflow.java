@@ -17,21 +17,26 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_
 import static java.lang.Math.min;
 import static java.util.stream.Collectors.toMap;
 
-@Getter
 @AllArgsConstructor
 public enum Workflow {
-    FBM_WMS_INBOUND(Workflow::calculateInboundCapacity),
-    FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity);
+    FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound),
+    FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity, Workflow::executeOutbound);
 
     private static final Map<String, Workflow> LOOKUP = Arrays.stream(values()).collect(
             toMap(Workflow::toString, Function.identity())
     );
 
+    @Getter
     private final Function<Map<ProcessName, Long>, Long> capacityCalculator;
 
-    @JsonCreator
-    public static Optional<Workflow> of(final String value) {
-        return Optional.ofNullable(LOOKUP.get(value.toUpperCase().replace('-', '_')));
+    private final WorkflowExecutor executor;
+
+    private static <T, V> V executeInbound(final WorkflowService<T, V> service, final T params) {
+        return service.executeInbound(params);
+    }
+
+    private static <T, V> V executeOutbound(final WorkflowService<T, V> service, final T params) {
+        return service.executeOutbound(params);
     }
 
     private static long calculateInboundCapacity(final Map<ProcessName, Long> capacities) {
@@ -46,8 +51,21 @@ public enum Workflow {
         );
     }
 
+    @JsonCreator
+    public static Optional<Workflow> of(final String value) {
+        return Optional.ofNullable(LOOKUP.get(value.toUpperCase().replace('-', '_')));
+    }
+
     @JsonValue
     public String toJson() {
         return toString().toLowerCase().replace('_', '-');
+    }
+
+    public <T, V> V execute(final WorkflowService<T, V> service, final T params) {
+        return this.executor.execute(service, params);
+    }
+
+    public interface WorkflowExecutor {
+        <T, V> V execute(WorkflowService<T, V> service, T params);
     }
 }

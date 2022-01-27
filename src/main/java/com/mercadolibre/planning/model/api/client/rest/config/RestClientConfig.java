@@ -16,12 +16,15 @@ import java.io.IOException;
 
 @Configuration
 @AllArgsConstructor
-@EnableConfigurationProperties({RestClientConfig.RouteEtsClientProperties.class,
-        RestClientConfig.RouteCoverageClientProperties.class})
-
+@EnableConfigurationProperties({
+        RestClientConfig.RouteEtsClientProperties.class,
+        RestClientConfig.RouteCoverageClientProperties.class,
+        RestClientConfig.BacklogApiClientProperties.class
+})
 public class RestClientConfig {
     private RouteEtsClientProperties routeEtsClientProperties;
     private RouteCoverageClientProperties routeCoverageClientProperties;
+    private BacklogApiClientProperties backlogApiClientProperties;
 
     @Bean
     public MeliRestClient restClient() throws IOException {
@@ -29,7 +32,8 @@ public class RestClientConfig {
                 .builder()
                 .withPool(
                         restPool(RestPool.ROUTE_ETS.name(), routeEtsClientProperties),
-                        restPool(RestPool.ROUTE_COVERAGE.name(), routeCoverageClientProperties)
+                        restPool(RestPool.ROUTE_COVERAGE.name(), routeCoverageClientProperties),
+                        restPool(RestPool.BACKLOG_API.name(), backlogApiClientProperties)
                 )
                 .build();
     }
@@ -70,6 +74,10 @@ public class RestClientConfig {
 
     @ConfigurationProperties("restclient.pool.route-coverage")
     public static class RouteCoverageClientProperties extends RestClientProperties {
+    }
+
+    @ConfigurationProperties("restclient.pool.backlog")
+    public static class BacklogApiClientProperties extends RestClientProperties {
     }
 }
 

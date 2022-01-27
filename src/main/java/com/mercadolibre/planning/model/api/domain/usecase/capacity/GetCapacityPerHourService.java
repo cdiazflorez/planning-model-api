@@ -36,8 +36,7 @@ public class GetCapacityPerHourService {
                         output.add(
                                 new CapacityOutput(entityDate, UNITS_PER_HOUR,
                                         getCapacityValue(workflow, capacityInputs))
-                        )
-                );
+                        ));
         return output;
     }
 

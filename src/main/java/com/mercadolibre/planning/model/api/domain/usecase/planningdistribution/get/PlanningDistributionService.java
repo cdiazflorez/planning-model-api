@@ -7,7 +7,6 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanning
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,7 +34,6 @@ import static java.util.stream.Collectors.toMap;
 @Service
 @AllArgsConstructor
 @SuppressWarnings("PMD.LongVariable")
-@SuppressFBWarnings("MUI_CONTAINSKEY_BEFORE_GET")
 public class PlanningDistributionService {
 
     private final CurrentPlanningDistributionRepository currentPlanningDistRepository;

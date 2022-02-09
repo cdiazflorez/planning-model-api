@@ -4,7 +4,6 @@ import com.fury.api.FuryUtils;
 import com.fury.api.exceptions.FuryDecryptException;
 import com.fury.api.exceptions.FuryNotFoundAPPException;
 import com.fury.api.exceptions.FuryUpdateException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -17,10 +16,6 @@ import javax.sql.DataSource;
 @ConfigurationProperties(prefix = "spring.datasource")
 @Configuration
 @Data
-@SuppressFBWarnings(
-        value = "USFW_UNSYNCHRONIZED_SINGLETON_FIELD_WRITES",
-        justification = "Spring handles this assignation"
-)
 public class DataSourceConfig {
 
     private String url;

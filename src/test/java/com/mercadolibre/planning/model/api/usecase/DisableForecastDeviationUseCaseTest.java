@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class DisableForecastDeviationUseCaseTest {
 
+    private static Integer deviationDisable = 2;
+
     @InjectMocks
     private DisableForecastDeviationUseCase useCase;
 
@@ -35,24 +37,22 @@ public class DisableForecastDeviationUseCaseTest {
     @Test
     public void testDisableForecastDeviationOk() {
         // GIVEN
-
         final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
 
+        // WHEN
         when(deviationRepository.findByLogisticCenterId(WAREHOUSE_ID))
                 .thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
 
-        final List<CurrentForecastDeviation> toSave =
-                mockCurrentForecastDeviation(false, now());
-        when(deviationRepository.saveAll(any(List.class))).thenReturn(toSave);
+        final List<CurrentForecastDeviation> toSave = mockCurrentForecastDeviation(false, now());
+        when(deviationRepository.saveAll(any(List.class)))
+                .thenReturn(toSave);
 
-        // WHEN
         final int output = useCase.execute(input);
 
         // THEN
-
         verify(deviationRepository).findByLogisticCenterId(WAREHOUSE_ID);
         verify(deviationRepository).saveAll(any(List.class));
-        assertEquals(2, output);
+        assertEquals(deviationDisable, output);
     }
 
     private List<CurrentForecastDeviation> mockCurrentForecastDeviation(final boolean active,
@@ -76,6 +76,6 @@ public class DisableForecastDeviationUseCaseTest {
                         .lastUpdated(date)
                         .dateCreated(date.truncatedTo(HOURS).minusMinutes(5))
                         .build()
-            );
+        );
     }
 }

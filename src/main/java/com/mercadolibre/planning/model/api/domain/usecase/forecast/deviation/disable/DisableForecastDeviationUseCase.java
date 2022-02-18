@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-
 import java.util.List;
 
 import static java.time.ZonedDateTime.now;
@@ -16,6 +15,7 @@ import static java.time.ZonedDateTime.now;
 @AllArgsConstructor
 public class DisableForecastDeviationUseCase
         implements UseCase<DisableForecastDeviationInput, Integer> {
+
     private final CurrentForecastDeviationRepository deviationRepository;
 
     @Override
@@ -35,6 +35,5 @@ public class DisableForecastDeviationUseCase
 
         return warehouseDeviations.size();
     }
-
 
 }

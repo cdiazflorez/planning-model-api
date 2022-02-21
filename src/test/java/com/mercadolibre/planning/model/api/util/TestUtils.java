@@ -42,7 +42,6 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Proce
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -91,7 +90,6 @@ import static org.mockito.Mockito.when;
         "PMD.GodClass",
         "PMD.ExcessivePublicCount"
 })
-@SuppressFBWarnings("OCP_OVERLY_CONCRETE_PARAMETER")
 public final class TestUtils {
 
     public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,

@@ -18,6 +18,9 @@ public class SaveForecastDeviationUseCase
     @Override
     @Transactional
     public DeviationResponse execute(final SaveForecastDeviationInput input) {
+
+        deviationRepository.disableDeviation(input.getWarehouseId(), input.getWorkflow());
+
         deviationRepository.save(input.toCurrentForecastDeviation());
         return new DeviationResponse(200);
     }

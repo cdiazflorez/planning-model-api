@@ -39,9 +39,9 @@ public class SaveForecastDeviationUseCaseTest {
                 .id(1L)
                 .build();
 
+        // WHEN
         when(deviationRepository.save(any(CurrentForecastDeviation.class))).thenReturn(saved);
 
-        // WHEN
         final DeviationResponse output = useCase.execute(input);
 
         // THEN

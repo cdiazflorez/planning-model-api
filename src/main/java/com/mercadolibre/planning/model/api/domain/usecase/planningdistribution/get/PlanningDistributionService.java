@@ -7,14 +7,15 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanning
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,9 +31,9 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-@SuppressFBWarnings("MUI_CONTAINSKEY_BEFORE_GET")
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
+@SuppressWarnings("PMD.LongVariable")
 public class PlanningDistributionService {
 
     private final CurrentPlanningDistributionRepository currentPlanningDistRepository;
@@ -140,7 +141,9 @@ public class PlanningDistributionService {
                 .reduce((a, b) -> a.getLastUpdated().isAfter(b.getLastUpdated()) ? a : b);
     }
 
-    private static boolean dateIsBetween(final ZonedDateTime lower, final Date probe, final ZonedDateTime higher) {
+    private static boolean dateIsBetween(final ChronoZonedDateTime<LocalDate> lower,
+                                         final Date probe,
+                                         final ChronoZonedDateTime<LocalDate> higher) {
         final var probeEpochSeconds = probe.toInstant();
         return !probeEpochSeconds.isBefore(lower.toInstant()) && !higher.toInstant().isBefore(probeEpochSeconds);
     }

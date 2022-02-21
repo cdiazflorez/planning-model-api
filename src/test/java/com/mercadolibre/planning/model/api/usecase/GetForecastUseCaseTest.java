@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Forecas
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,12 +36,14 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GetForecastUseCaseTest {
+
     @Mock
     private ForecastRepository forecastRepository;
 
     private GetForecastUseCase getForecastUseCase;
 
-    public void setup() {
+    @BeforeEach
+    public void setUp() {
         getForecastUseCase = new GetForecastUseCase(forecastRepository, new GetForecastUseCase.RequestScopedMemory());
     }
 
@@ -50,7 +53,6 @@ public class GetForecastUseCaseTest {
     public void testGetForecastEverydayOK(final ZonedDateTime dateFrom,
                                           final ZonedDateTime dateTo,
                                           final Set<String> weeks) {
-        setup();
 
         // GIVEN
         final GetForecastInput input = GetForecastInput.builder()
@@ -120,7 +122,6 @@ public class GetForecastUseCaseTest {
     @Test
     @DisplayName("When no forecast is present an exception must be thrown")
     public void testThrowExceptionWhenForecastNotFound() {
-        setup();
         // GIVEN
         final GetForecastInput input = GetForecastInput.builder()
                 .workflow(FBM_WMS_OUTBOUND)

@@ -70,7 +70,7 @@ public class SimulationController {
                         projection.getDate(),
                         projection.getProjectedEndDate(),
                         projection.getRemainingQuantity(),
-                        null,
+                        projection.getProcessingTime(),
                         false))
                 .collect(toList())
         );

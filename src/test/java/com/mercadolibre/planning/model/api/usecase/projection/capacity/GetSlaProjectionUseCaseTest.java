@@ -7,6 +7,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklog
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -20,6 +22,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseInboundService;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -78,6 +81,9 @@ class GetSlaProjectionUseCaseTest {
     @Mock
     private GetSlaByWarehouseInboundService getSlaByWarehouseInboundService;
 
+    @Mock
+    private GetCycleTimeService getCycleTimeService;
+
     @Test
     public void testGetCptProjection() {
         // GIVEN
@@ -97,6 +103,9 @@ class GetSlaProjectionUseCaseTest {
         when(getSlaByWarehouseOutboundService.execute(new GetSlaByWarehouseInput(
                 WAREHOUSE_ID, DATE_FROM, DATE_TO, emptyList(), TIMEZONE)))
                 .thenReturn(emptyList());
+
+        when(getCycleTimeService.execute(new GetCycleTimeInput(WAREHOUSE_ID, List.of(etd))))
+            .thenReturn(Map.of(etd, 45L));
 
         // WHEN
         final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInput());
@@ -120,6 +129,7 @@ class GetSlaProjectionUseCaseTest {
         assertEquals(etd, first.getDate());
         assertEquals(projectedTime, first.getProjectedEndDate());
         assertEquals(100, first.getRemainingQuantity());
+        assertEquals(45L, first.getProcessingTime().getValue());
     }
 
     @Test
@@ -169,6 +179,7 @@ class GetSlaProjectionUseCaseTest {
         assertEquals(100, first.getRemainingQuantity());
 
         verifyNoInteractions(getSlaByWarehouseOutboundService);
+        verifyNoInteractions(getCycleTimeService);
     }
 
     private GetSlaProjectionInput getInput() {

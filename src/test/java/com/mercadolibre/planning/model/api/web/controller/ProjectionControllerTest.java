@@ -103,7 +103,7 @@ class ProjectionControllerTest {
                 )))
                 .thenReturn(
                         List.of(new CptProjectionOutput(
-                                etd, projectedTime, 100
+                                etd, projectedTime, 100, new ProcessingTime(45L, MINUTES)
                         )));
 
         // WHEN
@@ -114,14 +114,17 @@ class ProjectionControllerTest {
         );
 
         // THEN
-
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].date")
                         .value(etd.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].projected_end_date")
                         .value(projectedTime.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
-                        .value(100));
+                        .value(100))
+                .andExpect(jsonPath("$[0].processing_time.value")
+                        .value(45L))
+                .andExpect(jsonPath("$[0].processing_time.unit_metric")
+                        .value("minutes"));
     }
 
     @Test

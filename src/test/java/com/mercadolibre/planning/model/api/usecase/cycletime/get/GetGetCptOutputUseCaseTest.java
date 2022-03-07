@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.usecase.cycletime.get;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class GetGetCptOutputUseCaseTest {
 
     @InjectMocks
-    private GetCycleTimeUseCase useCase;
+    private GetCycleTimeService useCase;
 
     @Mock
     private GetConfigurationsUseCase getConfigurationsUseCase;
@@ -49,13 +49,10 @@ public class GetGetCptOutputUseCaseTest {
         final GetCycleTimeInput input = new GetCycleTimeInput(WAREHOUSE_ID, List.of(A_DATE_UTC));
 
         // WHEN
-        final Map<ZonedDateTime, Configuration> ctByDateOut = useCase.execute(input);
+        final Map<ZonedDateTime, Long> ctByDateOut = useCase.execute(input);
 
         // THEN
-        assertEquals(WAREHOUSE_ID, ctByDateOut.get(A_DATE_UTC).getLogisticCenterId());
-        assertEquals(MINUTES, ctByDateOut.get(A_DATE_UTC).getMetricUnit());
-        assertEquals(100, ctByDateOut.get(A_DATE_UTC).getValue());
-        assertEquals("cycle_time_17_00", ctByDateOut.get(A_DATE_UTC).getKey());
+        assertEquals(100, ctByDateOut.get(A_DATE_UTC));
     }
 
     @Test
@@ -80,13 +77,10 @@ public class GetGetCptOutputUseCaseTest {
         final GetCycleTimeInput input = new GetCycleTimeInput(WAREHOUSE_ID, List.of(A_DATE_UTC));
 
         // WHEN
-        final Map<ZonedDateTime, Configuration> ctByDateOut = useCase.execute(input);
+        final Map<ZonedDateTime, Long> ctByDateOut = useCase.execute(input);
 
         // THEN
-        assertEquals(WAREHOUSE_ID, ctByDateOut.get(A_DATE_UTC).getLogisticCenterId());
-        assertEquals(MINUTES, ctByDateOut.get(A_DATE_UTC).getMetricUnit());
-        assertEquals(240, ctByDateOut.get(A_DATE_UTC).getValue());
-        assertEquals("cycle_time", ctByDateOut.get(A_DATE_UTC).getKey());
+        assertEquals(240, ctByDateOut.get(A_DATE_UTC));
     }
 
     @Test

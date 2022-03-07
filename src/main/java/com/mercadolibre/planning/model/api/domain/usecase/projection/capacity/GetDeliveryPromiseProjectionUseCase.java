@@ -5,12 +5,11 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
@@ -57,7 +56,7 @@ public class GetDeliveryPromiseProjectionUseCase {
 
     private final GetForecastUseCase getForecastUseCase;
 
-    private final GetCycleTimeUseCase getCycleTimeUseCase;
+    private final GetCycleTimeService getCycleTimeService;
 
     private final GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
@@ -90,8 +89,8 @@ public class GetDeliveryPromiseProjectionUseCase {
         final List<CptCalculationOutput> allCptProjectionCalculated =
                 projectionUseCase.execute(projectionInput);
 
-        final Map<ZonedDateTime, Configuration> cycleTimeByCpt =
-                getCycleTimeUseCase.execute(
+        final Map<ZonedDateTime, Long> cycleTimeByCpt =
+                getCycleTimeService.execute(
                         new GetCycleTimeInput(
                                 input.getWarehouseId(),
                                 allCptProjectionCalculated.stream()
@@ -161,7 +160,7 @@ public class GetDeliveryPromiseProjectionUseCase {
     private List<DeliveryPromiseProjectionOutput> calculatedDeferralCpt(
             final List<CptCalculationOutput> allCptProjectionCalculated,
             final List<GetSlaByWarehouseOutput> allCptByWarehouse,
-            final Map<ZonedDateTime, Configuration> cycleTimeByCpt) {
+            final Map<ZonedDateTime, Long> cycleTimeByCpt) {
 
         final ZonedDateTime currentDate = getCurrentUtcDate();
 
@@ -179,7 +178,7 @@ public class GetDeliveryPromiseProjectionUseCase {
         allCptProjectionCalculated.sort(comparing(CptCalculationOutput::getDate, reverseOrder()));
 
         for (final CptCalculationOutput cptCalculated : allCptProjectionCalculated) {
-            final long cycleTime = cycleTimeByCpt.get(cptCalculated.getDate()).getValue();
+            final long cycleTime = cycleTimeByCpt.get(cptCalculated.getDate());
             final long processingTime = processingTimeByCpt.get(cptCalculated.getDate()).getValue();
 
             final ZonedDateTime cutOff = cptCalculated.getDate().minusMinutes(cycleTime);

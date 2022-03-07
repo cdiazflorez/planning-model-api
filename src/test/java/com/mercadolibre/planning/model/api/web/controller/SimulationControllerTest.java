@@ -51,7 +51,7 @@ public class SimulationControllerTest {
 
         when(getSlaProjectionUseCase.execute(any(GetSlaProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, projectedEndDate, 100)));
+                        new CptProjectionOutput(dateOut, projectedEndDate, 100, null)));
 
         // WHEN
         final ResultActions result = mvc.perform(
@@ -81,9 +81,9 @@ public class SimulationControllerTest {
 
         when(getSlaProjectionUseCase.execute(any(GetSlaProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, simulatedEndDate, 100)))
+                        new CptProjectionOutput(dateOut, simulatedEndDate, 100, null)))
                 .thenReturn(List.of(
-                        new CptProjectionOutput(dateOut, projectedEndDate, 150)));
+                        new CptProjectionOutput(dateOut, projectedEndDate, 150, null)));
 
         // WHEN
         final ResultActions result = mvc.perform(

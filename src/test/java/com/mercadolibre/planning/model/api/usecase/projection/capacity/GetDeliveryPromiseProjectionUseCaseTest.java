@@ -5,12 +5,11 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
-import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
@@ -33,7 +32,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +70,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     private GetForecastUseCase getForecastUseCase;
 
     @Mock
-    private GetCycleTimeUseCase getCycleTimeUseCase;
+    private GetCycleTimeService getCycleTimeService;
 
     @Mock
     private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
@@ -131,7 +129,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                                 item.getRemainingQuantity()))
                 .collect(Collectors.toList()));
 
-        when(getCycleTimeUseCase.execute(new GetCycleTimeInput(warehouseId, cptDates)))
+        when(getCycleTimeService.execute(new GetCycleTimeInput(warehouseId, cptDates)))
                 .thenReturn(mockCycleTimeByCpt());
 
         when(getSlaByWarehouseOutboundService.execute(new
@@ -196,17 +194,11 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
 
     }
 
-    private Map<ZonedDateTime, Configuration> mockCycleTimeByCpt() {
-
-        final Map<ZonedDateTime, Configuration> ctByCpt = new HashMap<>();
-
-        ctByCpt.put(CPT_1, Configuration.builder()
-                .value(360L).metricUnit(MINUTES).key("processing_time").build());
-
-        ctByCpt.put(CPT_2, Configuration.builder()
-                .value(360L).metricUnit(MINUTES).key("processing_time").build());
-
-        return ctByCpt;
+    private Map<ZonedDateTime, Long> mockCycleTimeByCpt() {
+        return Map.of(
+            CPT_1, 360L,
+            CPT_2, 360L
+        );
     }
 
     private List<GetSlaByWarehouseOutput> mockCptByWarehouse() {

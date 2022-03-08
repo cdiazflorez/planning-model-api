@@ -23,7 +23,6 @@ public class RunSimulationResponse {
 
     private int remainingQuantity;
 
-    // TODO: remove this field if isn't needed for compatibility
     private ProcessingTime processingTime;
 
     // TODO: remove this field if isn't needed for compatibility
@@ -52,7 +51,7 @@ public class RunSimulationResponse {
                                 simulatedEndDate,
                                 s.getProjectedEndDate(),
                                 s.getRemainingQuantity(),
-                                null,
+                                s.getProcessingTime(),
                                 false
                         );
                     })

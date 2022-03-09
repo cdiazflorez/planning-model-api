@@ -44,4 +44,19 @@ public interface ProcessingDistributionRepository
             @Param("workflow") String workflow,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo);
+
+    @Query(value = "SELECT m.value as logisticCenterId, f.date_created AS loadDate, "
+            + "p.date AS maxCapacityDate, p.quantity AS maxCapacityValue "
+            + "FROM processing_distribution p "
+            + "JOIN forecast f ON f.id = p.forecast_id "
+            + "JOIN forecast_metadata m ON m.forecast_id = p.forecast_id "
+            + "WHERE p.type = 'MAX_CAPACITY' "
+            + "AND p.date BETWEEN :date_from AND :date_to "
+            + "AND m.key = 'warehouse_id' "
+            + "AND m.value = :warehouse_id "
+            + "ORDER BY f.date_created, p.date", nativeQuery = true)
+    List<MaxCapacityView> findMaxCapacitiesByWarehouseAndDateInRange(
+            @Param("warehouse_id") String warehouseId,
+            @Param("date_from") ZonedDateTime dateFrom,
+            @Param("date_to") ZonedDateTime dateTo);
 }

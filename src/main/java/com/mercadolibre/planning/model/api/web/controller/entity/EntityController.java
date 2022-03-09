@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityByWarehouseEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
@@ -67,6 +68,7 @@ public class EntityController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final SearchEntityUseCase searchEntityUseCase;
     private final GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
+    private final GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
 
     @GetMapping("/headcount")
     @Trace(dispatcher = true)
@@ -174,6 +176,22 @@ public class EntityController {
                         + "filename=MaxCapacityFile.csv")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
+    }
+
+    @GetMapping(value = "/tph_max_capacity", produces = "text/csv")
+    public ResponseEntity<?> getTphMaxCapacity(
+        @RequestParam final String warehouse,
+        @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
+        @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
+
+        final String csvFile = ConvertUtils.toCsvFile(
+            getMaxCapacityByWarehouseEntityUseCase.execute(warehouse, dateFrom, dateTo));
+
+        return ResponseEntity.ok()
+            .header("Content-Disposition", "attachment; "
+                + "filename=TphMaxCapacityFile.csv")
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
     }
 
     @InitBinder

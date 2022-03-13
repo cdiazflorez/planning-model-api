@@ -25,8 +25,10 @@ import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -129,6 +131,9 @@ public class GetThroughputUseCase
                                                final Map<ZonedDateTime, Map<Source, EntityOutput>> productivity,
                                                final Map<ZonedDateTime, EntityOutput> polyvalentProductivity) {
 
+    if (Objects.isNull(headcount)) {
+      return Collections.emptyList();
+    }
 
     return headcount.keySet()
         .stream()

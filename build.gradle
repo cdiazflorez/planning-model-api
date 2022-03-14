@@ -20,6 +20,11 @@ repositories {
 		maven { url "http://maven.artifacts.furycloud.io/repository/all" }
 	}
 
+dependencyManagement {
+    imports {
+        mavenBom 'com.fasterxml.jackson:jackson-bom:2.13.2'
+    }
+}
 dependencies {
     implementation 'com.fury:furyutils:0.0.2'
     implementation 'com.mercadolibre.fbm.wms.outbound:commons:0.1.6'
@@ -30,6 +35,8 @@ dependencies {
     implementation 'com.newrelic.agent.java:newrelic-api:6.4.2'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    implementation 'com.mercadolibre.json_jackson:json-jackson:0.1.1'
 
     testImplementation "com.mercadolibre.restclient:meli-restclient-core:0.3.52:tests"
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

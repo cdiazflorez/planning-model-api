@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,6 +67,80 @@ public class CreateForecastUseCaseTest {
 
     @InjectMocks
     private CreateForecastUseCase createForecastUseCase;
+
+    @Test
+    public void emptyTrajectories() {
+        // GIVEN
+        final Forecast forecast = new Forecast();
+        forecast.setWorkflow(FBM_WMS_OUTBOUND);
+        forecast.setUserId(1234);
+
+        final Forecast savedForecast = new Forecast();
+        savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+        savedForecast.setId(1L);
+        savedForecast.setUserId(1234);
+
+        final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
+
+        when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);
+
+        final CreateForecastInput input = CreateForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .headcountDistributions(List.of())
+                .headcountProductivities(List.of())
+                .planningDistributions(List.of())
+                .processingDistributions(List.of())
+                .polyvalentProductivities(List.of())
+                .backlogLimits(List.of())
+                .metadata(mockMetadatas())
+                .userId(CALLER_ID)
+                .build();
+
+        // WHEN
+        final CreateForecastOutput output = createForecastUseCase.execute(input);
+
+        // THEN
+        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+
+        assertEquals(1L, output.getId());
+    }
+
+    @Test
+    public void nullTrajectories() {
+        // GIVEN
+        final Forecast forecast = new Forecast();
+        forecast.setWorkflow(FBM_WMS_OUTBOUND);
+        forecast.setUserId(1234);
+
+        final Forecast savedForecast = new Forecast();
+        savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+        savedForecast.setId(1L);
+        savedForecast.setUserId(1234);
+
+        final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
+
+        when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);
+
+        final CreateForecastInput input = CreateForecastInput.builder()
+                .workflow(FBM_WMS_OUTBOUND)
+                .headcountDistributions(null)
+                .headcountProductivities(null)
+                .planningDistributions(null)
+                .processingDistributions(null)
+                .polyvalentProductivities(null)
+                .backlogLimits(null)
+                .metadata(mockMetadatas())
+                .userId(CALLER_ID)
+                .build();
+
+        // WHEN
+        final CreateForecastOutput output = createForecastUseCase.execute(input);
+
+        // THEN
+        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+
+        assertEquals(1L, output.getId());
+    }
 
     @Test
     @DisplayName("A forecast is created successfully")

@@ -25,7 +25,6 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 
 @Service
@@ -152,5 +151,9 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
                         .flatMap(List::stream).distinct().collect(toList());
 
         processingDistributionGateway.create(backlogList, forecast.getId());
+    }
+
+    private static <T> boolean isEmpty(List<T> collection) {
+        return collection == null || collection.isEmpty();
     }
 }

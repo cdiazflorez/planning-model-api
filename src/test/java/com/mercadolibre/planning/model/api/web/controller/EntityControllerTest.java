@@ -273,7 +273,7 @@ public class EntityControllerTest {
         verify(getMaxCapacityByWarehouseEntityUseCase).execute(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusHours(72));
         result.andExpect(status().isOk())
             .andExpect(content()
-                .string(getResourceAsString("get_max_capacity_response.csv").trim()));
+                .string(getResourceAsString("get_tph_response.json").trim()));
     }
 
     @DisplayName("Get Max_capacities entity works ok")

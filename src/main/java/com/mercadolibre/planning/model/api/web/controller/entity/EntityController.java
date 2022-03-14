@@ -29,6 +29,8 @@ import com.mercadolibre.planning.model.api.web.controller.entity.request.Product
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.request.EntitySearchRequest;
 import com.newrelic.api.agent.Trace;
+import java.time.Clock;
+import java.time.ZoneId;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.core.io.InputStreamResource;
@@ -171,6 +173,7 @@ public class EntityController {
         final String csvFile = ConvertUtils.toCsvFile(
                 getMaxCapacityEntityUseCase.execute(workflow, dateFrom, dateTo));
 
+
         return ResponseEntity.ok()
                 .header("Content-Disposition", "attachment; "
                         + "filename=MaxCapacityFile.csv")
@@ -178,20 +181,15 @@ public class EntityController {
                 .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
     }
 
-    @GetMapping(value = "/tph_max_capacity", produces = "text/csv")
+    @GetMapping(value = "/tph_max_capacity")
     public ResponseEntity<?> getTphMaxCapacity(
         @RequestParam final String warehouse,
         @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
         @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
 
-        final String csvFile = ConvertUtils.toCsvFile(
-            getMaxCapacityByWarehouseEntityUseCase.execute(warehouse, dateFrom, dateTo));
 
         return ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; "
-                + "filename=TphMaxCapacityFile.csv")
-            .contentType(MediaType.parseMediaType("text/csv"))
-            .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
+            .body(getMaxCapacityByWarehouseEntityUseCase.execute(warehouse, dateFrom, dateTo));
     }
 
     @InitBinder

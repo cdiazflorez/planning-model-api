@@ -19,41 +19,40 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+/**
+ * @since FWCO-26.
+ *     <p>Tests for {@link GetMaxCapacityByWarehouseEntityUseCase}.
+ */
 @ExtendWith(MockitoExtension.class)
 public class GetMaxCapacityByWarehouseViewEntityUseCaseTest {
+  /** Mock of {@link ProcessingDistributionRepository}. */
+  @Mock private ProcessingDistributionRepository processingDistRepository;
+  /** Instance of {@link GetMaxCapacityByWarehouseEntityUseCase}. */
+  @InjectMocks
+  private GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
 
-    @Mock
-    private ProcessingDistributionRepository processingDistRepository;
+  @Test
+  @DisplayName("Get tph max capacity ok")
+  public void testGetProductivityOk() {
 
-    @InjectMocks
-    private GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
+    // GIVEN
+    final List<MaxCapacityOutput> mockMaxCapacities = getMockOutputCapacities();
+    final List<MaxCapacityView> mockMaxCapacitiesEntity = getMockEntityCapacities();
 
-    @Test
-    @DisplayName("Get tph max capacity ok")
-    public void testGetProductivityOk() {
+    when(processingDistRepository.findMaxCapacitiesByDateInRange(
+            WAREHOUSE_ID, null, A_DATE_UTC, A_DATE_UTC.plusDays(72)))
+        .thenReturn(mockMaxCapacitiesEntity);
 
-        // GIVEN
-        final List<MaxCapacityOutput> mockMaxCapacities = getMockOutputCapacities();
-        final List<MaxCapacityView> mockMaxCapacitiesEntity = getMockEntityCapacities();
+    // WHEN
+    final List<MaxCapacityOutput> output =
+        getMaxCapacityByWarehouseEntityUseCase.execute(
+            WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusDays(72));
 
-        when(processingDistRepository.findMaxCapacitiesByWarehouseAndDateInRange(
-                WAREHOUSE_ID,
-                A_DATE_UTC,
-                A_DATE_UTC.plusDays(72))
-        ).thenReturn(mockMaxCapacitiesEntity);
-
-        // WHEN
-        final List<MaxCapacityOutput> output = getMaxCapacityByWarehouseEntityUseCase.execute(
-                WAREHOUSE_ID,
-                A_DATE_UTC,
-                A_DATE_UTC.plusDays(72));
-
-        // THEN
-        assertThat(output).isNotEmpty();
-        assertEquals(3, output.size());
-        assertEquals(output.get(0).maxCapacityValue, mockMaxCapacities.get(0).maxCapacityValue);
-        assertEquals(output.get(1).maxCapacityValue, mockMaxCapacities.get(1).maxCapacityValue);
-        assertEquals(output.get(2).maxCapacityValue, mockMaxCapacities.get(2).maxCapacityValue);
-    }
+    // THEN
+    assertThat(output).isNotEmpty();
+    assertEquals(3, output.size());
+    assertEquals(output.get(0).maxCapacityValue, mockMaxCapacities.get(0).maxCapacityValue);
+    assertEquals(output.get(1).maxCapacityValue, mockMaxCapacities.get(1).maxCapacityValue);
+    assertEquals(output.get(2).maxCapacityValue, mockMaxCapacities.get(2).maxCapacityValue);
+  }
 }

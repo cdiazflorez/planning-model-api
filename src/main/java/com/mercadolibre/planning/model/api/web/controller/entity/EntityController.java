@@ -29,8 +29,6 @@ import com.mercadolibre.planning.model.api.web.controller.entity.request.Product
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.request.EntitySearchRequest;
 import com.newrelic.api.agent.Trace;
-import java.time.Clock;
-import java.time.ZoneId;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.core.io.InputStreamResource;
@@ -70,6 +68,7 @@ public class EntityController {
     private final GetThroughputUseCase getThroughputUseCase;
     private final SearchEntityUseCase searchEntityUseCase;
     private final GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
+
     private final GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
 
     @GetMapping("/headcount")
@@ -181,7 +180,7 @@ public class EntityController {
                 .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
     }
 
-    @GetMapping(value = "/tph_max_capacity")
+    @GetMapping("/tph_max_capacity")
     public ResponseEntity<?> getTphMaxCapacity(
         @RequestParam final String warehouse,
         @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,

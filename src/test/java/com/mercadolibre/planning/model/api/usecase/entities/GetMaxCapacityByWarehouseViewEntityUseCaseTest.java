@@ -21,12 +21,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * @since FWCO-26.
- *     <p>Tests for {@link GetMaxCapacityByWarehouseEntityUseCase}.
+ *
+ *  <p>Tests for {@link GetMaxCapacityByWarehouseEntityUseCase}.
  */
 @ExtendWith(MockitoExtension.class)
 public class GetMaxCapacityByWarehouseViewEntityUseCaseTest {
   /** Mock of {@link ProcessingDistributionRepository}. */
   @Mock private ProcessingDistributionRepository processingDistRepository;
+
   /** Instance of {@link GetMaxCapacityByWarehouseEntityUseCase}. */
   @InjectMocks
   private GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;

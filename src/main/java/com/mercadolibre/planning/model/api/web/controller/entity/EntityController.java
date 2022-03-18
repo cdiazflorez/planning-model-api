@@ -180,7 +180,7 @@ public class EntityController {
                 .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
     }
 
-    @GetMapping("/tph_max_capacity")
+    @GetMapping("/tph")
     public ResponseEntity<?> getTphMaxCapacity(
         @RequestParam final String warehouse,
         @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,

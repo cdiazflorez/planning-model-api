@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitie
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityByWarehouseEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
@@ -45,6 +46,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -78,6 +80,9 @@ public class EntityControllerTest {
 
     @MockBean
     private GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
+
+    @MockBean
+    private GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
 
     @DisplayName("Get headcount entity works ok")
     @Test
@@ -242,6 +247,33 @@ public class EntityControllerTest {
         result.andExpect(status().isOk())
                 .andExpect(content()
                         .json(getResourceAsString("get_performed_processing_response.json")));
+    }
+
+    @DisplayName("Get TPH by warehouse entity works ok")
+    @Test
+    public void testGetMaxCapacityByWarehouseEntityOk() throws Exception {
+        // GIVEN
+        when(getMaxCapacityByWarehouseEntityUseCase.execute(
+            WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusHours(72)))
+            .thenReturn(getMockOutputCapacities());
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+            get(URL, "fbm-wms-outbound", "tph")
+                .param("warehouse", WAREHOUSE_ID)
+                .param("date_from", A_DATE_UTC.toString())
+                .param("date_to", A_DATE_UTC.plusHours(72).toString())
+        );
+
+        // THEN
+        verifyNoInteractions(searchEntityUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verifyNoInteractions(getProductivityEntityUseCase);
+        verifyNoInteractions(getHeadcountEntityUseCase);
+        verify(getMaxCapacityByWarehouseEntityUseCase).execute(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusHours(72));
+        result.andExpect(status().isOk())
+            .andExpect(content()
+                .string(getResourceAsString("get_tph_response.json").trim()));
     }
 
     @DisplayName("Get Max_capacities entity works ok")

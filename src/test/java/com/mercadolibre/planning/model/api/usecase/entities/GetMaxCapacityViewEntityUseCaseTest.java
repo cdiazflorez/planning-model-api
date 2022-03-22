@@ -38,7 +38,7 @@ public class GetMaxCapacityViewEntityUseCaseTest {
         final List<MaxCapacityOutput> mockMaxCapacities = getMockOutputCapacities();
         final List<MaxCapacityView> mockMaxCapacitiesEntity = getMockEntityCapacities();
 
-        when(processingDistRepository.findMaxCapacitiesByDateInRange(
+        when(processingDistRepository.findMaxCapacitiesByDateInRange(null,
                 FBM_WMS_OUTBOUND.name(),
                 A_DATE_UTC,
                 A_DATE_UTC.plusDays(1))

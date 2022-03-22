@@ -44,7 +44,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -97,7 +97,7 @@ class GetHeadcountEntityUseCaseTest {
         final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
         // THEN
-        verifyZeroInteractions(currentRepository);
+        verifyNoInteractions(currentRepository);
         final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.toInstant(), output1.getDate().toInstant());
         assertEquals(PICKING, output1.getProcessName());

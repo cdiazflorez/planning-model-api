@@ -394,7 +394,7 @@ public final class TestUtils {
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC.plusDays(1))
                 .source(source)
-                .processName(List.of(PICKING, PACKING, RECEIVING))
+                .processName(List.of(WAVING, PICKING, PACKING, RECEIVING))
                 .simulations(simulations)
                 .build();
     }

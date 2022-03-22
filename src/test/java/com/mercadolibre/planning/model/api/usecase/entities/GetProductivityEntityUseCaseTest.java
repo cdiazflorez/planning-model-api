@@ -40,7 +40,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,7 +86,7 @@ public class GetProductivityEntityUseCaseTest {
 
         // THEN
         assertEquals(4, output.size());
-        verifyZeroInteractions(currentProductivityRepository);
+        verifyNoInteractions(currentProductivityRepository);
         outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
         outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
         outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);

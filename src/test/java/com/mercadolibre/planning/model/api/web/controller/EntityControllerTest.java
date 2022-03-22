@@ -259,7 +259,7 @@ public class EntityControllerTest {
 
         // WHEN
         final ResultActions result = mvc.perform(
-            get(URL, "fbm-wms-outbound", "tph_max_capacity")
+            get(URL, "fbm-wms-outbound", "tph")
                 .param("warehouse", WAREHOUSE_ID)
                 .param("date_from", A_DATE_UTC.toString())
                 .param("date_to", A_DATE_UTC.plusHours(72).toString())

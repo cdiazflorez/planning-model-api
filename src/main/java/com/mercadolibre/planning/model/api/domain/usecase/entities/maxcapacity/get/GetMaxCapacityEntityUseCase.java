@@ -23,7 +23,7 @@ public class GetMaxCapacityEntityUseCase {
                                            final ZonedDateTime dateTo) {
 
         final List<MaxCapacityView> maxCapacities = processingDistRepository
-                .findMaxCapacitiesByDateInRange(workflow.name(), dateFrom, dateTo);
+                .findMaxCapacitiesByDateInRange(null, workflow.name(), dateFrom, dateTo);
 
         return maxCapacities.stream()
                 .map(item -> new MaxCapacityOutput(

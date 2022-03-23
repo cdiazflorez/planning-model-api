@@ -203,6 +203,11 @@ public class CreateForecastUseCaseTest {
                 .workflow(FBM_WMS_OUTBOUND)
                 .metadata(mockMetadatas())
                 .userId(CALLER_ID)
+                .headcountDistributions(List.of())
+                .processingDistributions(List.of())
+                .planningDistributions(List.of())
+                .headcountProductivities(List.of())
+                .backlogLimits(List.of())
                 .build();
 
         // WHEN

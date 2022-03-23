@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class RouteCoveragePage {
     private List<RouteCoverageResult> results;
     private String scrollId;

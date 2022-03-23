@@ -59,7 +59,6 @@ public class BaseClientTest {
         return ((JsonJackson) JsonUtils.INSTANCE.getEngine())
                 .getMapper()
                 .registerModule(new ParameterNamesModule())
-                .registerModule(new Jdk8Module())
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }

@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 @AllArgsConstructor
-public class CreateForecastUseCase implements UseCase<CreateForecastInput, CreateForecastOutput> {
+public class CreateForecastUseCase {
 
     private final ForecastGateway forecastGateway;
 
@@ -42,7 +42,6 @@ public class CreateForecastUseCase implements UseCase<CreateForecastInput, Creat
     private final PlanningDistributionGateway planningDistributionGateway;
 
     @Trace
-    @Override
     @Transactional
     public CreateForecastOutput execute(final CreateForecastInput input) {
 

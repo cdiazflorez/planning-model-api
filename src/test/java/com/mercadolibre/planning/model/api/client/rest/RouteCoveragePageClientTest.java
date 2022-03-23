@@ -37,7 +37,7 @@ public class RouteCoveragePageClientTest extends BaseClientTest {
             public long getNanoTime() {
                 return nanoTime;
             }
-        }, () -> Runnable::run);
+        }, Runnable::run);
 
 
         MockResponse.builder()

@@ -31,3 +31,5 @@ dist/
 nbdist/
 .nb-gradle/
 
+### fury tools
+/code_quality_service

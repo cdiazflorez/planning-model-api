@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.client.rest;
 
+import static org.springframework.http.HttpStatus.OK;
+
 import com.mercadolibre.fbm.wms.outbound.commons.rest.HttpClient;
 import com.mercadolibre.fbm.wms.outbound.commons.rest.HttpRequest;
 import com.mercadolibre.json.type.TypeReference;
@@ -8,12 +10,9 @@ import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoveragePage;
 import com.mercadolibre.planning.model.api.domain.entity.sla.RouteCoverageResult;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.restclient.MeliRestClient;
+import com.mercadolibre.restclient.http.Header;
+import com.mercadolibre.routing.RoutingHelper;
 import com.newrelic.api.agent.Trace;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,8 +22,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
-
-import static org.springframework.http.HttpStatus.OK;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -48,10 +51,10 @@ public class RouteCoverageClient extends HttpClient implements RouteCoverageClie
 
     public RouteCoverageClient(final MeliRestClient client,
                                final NanoTimeService nanoTimeService,
-                               final RefreshExecutorProvider refreshExecutorProvider) {
+                               @Qualifier("meliContextAwareExecutorService") final Executor meliContextAwareExecutorService) {
         super(client, RestPool.ROUTE_COVERAGE.name());
         this.nanoTimeService = nanoTimeService;
-        this.refreshExecutor = refreshExecutorProvider.getExecutor();
+        this.refreshExecutor = meliContextAwareExecutorService;
     }
 
     @RequiredArgsConstructor
@@ -60,32 +63,37 @@ public class RouteCoverageClient extends HttpClient implements RouteCoverageClie
         public final long expirationNano;
     }
 
+    /**
+     * Si el get no se ejecuta por varias horas, estariamos devolviendo una respuesta antigua a causa del cache.
+     * Se asume que esto no ocurre porque el flowmonitor reliza llamadas periódicamente a intervalos menores al tiempo del {@link #MAX_AGE}.
+     */
     @Trace
     @Override
-    /**Si el get no se ejecuta por varias horas, estariamos devolviendo una respuesta antigua a causa del cache
-     * se asume que esto no ocurre a causa de que flowmonitor reliza llamadas reiterativas que son menores al tiempo
-     * del  {@link #MAX_AGE}**/
     public List<RouteCoverageResult> get(final String warehouse) {
         final long currentNano = nanoTimeService.getNanoTime();
 
         final var hit = cache.get(warehouse);
         if (hit == null) {
+            log.info("Cache miss: MeliContext=[{}]", getMeliContext());
             final var value = load(warehouse);
             cache.put(warehouse, new Record(value, currentNano + MAX_AGE));
             return value;
         } else {
             if (currentNano >= hit.expirationNano) {
+                log.info("Cache hit but needs refresh: MeliContext=[{}]", getMeliContext());
                 refresh(warehouse);
+            } else {
+                log.info("Cache hit and keep: MeliContext=[{}]", getMeliContext());
             }
             return hit.value;
         }
     }
 
     private void refresh(final String warehouse) {
-        final var attrs = RequestContextHolder.getRequestAttributes();
+        final var meliContextParent = getMeliContext();
         CompletableFuture.runAsync(
                 () -> {
-                    RequestContextHolder.setRequestAttributes(attrs);
+                    log.info("Cache refreshing -- MeliContext: child=[{}], parent=[{}]", getMeliContext(), meliContextParent);
                     final var value = load(warehouse);
                     cache.put(warehouse, new Record(value, System.nanoTime() + MAX_AGE));
                 },
@@ -139,8 +147,14 @@ public class RouteCoverageClient extends HttpClient implements RouteCoverageClie
         );
     }
 
-    public interface RefreshExecutorProvider {
-        Executor getExecutor();
+    /** Gets the headers that compose the meli context as a string for debugging purposes only.*/
+    private static String getMeliContext() {
+        try {
+            return StreamSupport.stream(RoutingHelper.getCurrentMeliContext().getHeaders().spliterator(), false)
+                    .map(Header::toString)
+                    .collect(Collectors.joining());
+        } catch (IllegalStateException ise) {
+            return null;
+        }
     }
-
 }

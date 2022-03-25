@@ -2,10 +2,9 @@ plugins {
     id 'java'
     id 'application'
     id 'distribution'
-    id 'org.springframework.boot' version '2.3.0.RELEASE'
     id 'jacoco'
-    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
-    id "io.freefair.lombok" version "3.7.5"
+    id 'org.springframework.boot' version '2.6.4'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
 group = 'com.mercadolibre'
@@ -16,43 +15,61 @@ targetCompatibility = 11
 
 mainClassName = 'com.mercadolibre.planning.model.api.PlanningModelApplication'
 
-repositories {
-		maven { url "http://maven.artifacts.furycloud.io/repository/all" }
-	}
-
-dependencyManagement {
-    imports {
-        mavenBom 'com.fasterxml.jackson:jackson-bom:2.13.2'
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
+
+repositories {
+		maven { url "https://maven.artifacts.furycloud.io/repository/all" }
+	}
+
+//dependencyManagement {
+//    imports {
+//        mavenBom 'com.fasterxml.jackson:jackson-bom:2.13.2'
+//    }
+//}
 dependencies {
-    implementation 'com.fury:furyutils:0.0.2'
+    // managed by meLi BOM
+    implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.2')
+    implementation 'com.fury:furyutils'
+    implementation "com.mercadolibre.restclient:meli-restclient-default"
+    implementation 'com.newrelic.agent.java:newrelic-api'
+    implementation "com.mercadolibre:routing"
+    implementation "com.mercadolibre:threading"
+
+    // Meli unmanaged
     implementation 'com.mercadolibre.fbm.wms.outbound:commons:1.2.0'
-    implementation "com.mercadolibre.restclient:meli-restclient-default:0.5.3"
-    implementation "com.mercadolibre:threading:0.2.1"
-    implementation "com.mercadolibre:routing:2.4.1"
+
+    // managed by spring BOM
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'com.newrelic.agent.java:newrelic-api:6.4.2'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
-
-    implementation 'com.mercadolibre.json_jackson:json-jackson:0.1.1'
-
-    testImplementation "com.mercadolibre.restclient:meli-restclient-core:0.5.3:tests"
+    implementation 'com.github.ben-manes.caffeine:caffeine'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    compileOnly 'org.springframework:spring-context-support'
+
+    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'com.h2database:h2'
+
+    // Testing
+    testImplementation 'com.mercadolibre.restclient:meli-restclient-core:0.5.4:tests' // TODO omitir versión
     testImplementation 'org.assertj:assertj-core:3.11.1'
-    testImplementation 'org.mockito:mockito-inline:3.12.4'
-    testImplementation 'org.mockito:mockito-core:3.12.4'
-    testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
+    testImplementation 'org.mockito:mockito-inline'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    compile group: 'com.google.guava', name: 'guava', version: '30.1-jre'
-    compile group: 'org.springframework', name: 'spring-context-support', version: '4.1.7.RELEASE'
-
-    runtime 'com.h2database:h2'
-    runtime "mysql:mysql-connector-java:8.0.21"
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 bootJar {

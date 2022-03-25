@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.client.rest.config.CacheConfig.CPT_CACHE_NAME;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;

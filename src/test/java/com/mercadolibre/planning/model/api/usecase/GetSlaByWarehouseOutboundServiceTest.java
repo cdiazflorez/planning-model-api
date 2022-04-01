@@ -49,11 +49,11 @@ public class GetSlaByWarehouseOutboundServiceTest {
     @Mock
     private RouteCoverageClientGateway routeCoverageClientGateway;
 
-
     @Test
     public void obtainSlaByZonedDate() {
         // GIVEN
         final ClientException exception = mock(ClientException.class);
+        when(exception.getSuppressed()).thenReturn(new Throwable[0]); // to avoid bug on logging library
         when(exception.getMessage()).thenReturn("exception");
 
         when(routeEtsGateway.postRoutEts(

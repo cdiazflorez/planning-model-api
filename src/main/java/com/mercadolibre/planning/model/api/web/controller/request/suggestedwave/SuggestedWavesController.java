@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.web.controller.suggestedwave;
+package com.mercadolibre.planning.model.api.web.controller.request.suggestedwave;
 
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;

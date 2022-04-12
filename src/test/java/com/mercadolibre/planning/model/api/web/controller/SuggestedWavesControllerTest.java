@@ -4,7 +4,7 @@ import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.SuggestedWavesOutput;
-import com.mercadolibre.planning.model.api.web.controller.suggestedwave.SuggestedWavesController;
+import com.mercadolibre.planning.model.api.web.controller.request.suggestedwave.SuggestedWavesController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

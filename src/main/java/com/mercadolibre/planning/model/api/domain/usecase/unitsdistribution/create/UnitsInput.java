@@ -16,7 +16,7 @@ public class UnitsInput {
 
     String area;
 
-    long quantity;
+    Double quantity;
 
     String quantityMetricUnit;
 }

@@ -24,7 +24,7 @@ public class Units {
     private String area;
 
     @NotBlank
-    private long quantity;
+    private Double quantity;
 
     @NotBlank
     private String quantityMetricUnit;

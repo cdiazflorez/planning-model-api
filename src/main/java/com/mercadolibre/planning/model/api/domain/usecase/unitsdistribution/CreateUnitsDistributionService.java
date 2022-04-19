@@ -7,11 +7,17 @@ import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.crea
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsInput;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class CreateUnitsDistributionService {
@@ -20,20 +26,34 @@ public class CreateUnitsDistributionService {
 
     public List<UnitsDistribution> save(UnitsDistributionInput unitsDistributionInput){
 
-        List<UnitsDistribution> unitsDistributionList = new ArrayList<>();
-        for(UnitsInput u : unitsDistributionInput.getUnitsDistribution()){
-            UnitsDistribution unitsDistribution = unitsDistributionRepository.getByDate(u.getDate());
-            if(unitsDistribution == null || unitsDistribution.getDate() == null){
-                unitsDistributionList.add(UnitsDistribution.builder().date(u.getDate())
+        ZonedDateTime start = unitsDistributionInput.getUnitsDistribution()
+                .stream()
+                .min(Comparator.comparing(UnitsInput::getDate))
+                .orElseThrow()
+                .getDate();
+        ZonedDateTime end = unitsDistributionInput.getUnitsDistribution()
+                .stream()
+                .max(Comparator.comparing(UnitsInput::getDate))
+                .orElseThrow().getDate();
+
+
+        Set<ZonedDateTime> zonedDateTimes = unitsDistributionRepository.findByDateBetweenaAndLogisticCenterId(start,end,unitsDistributionInput.getUnitsDistribution().get(0).getLogisticCenterId())
+                .stream()
+                .map(UnitsDistribution::getDate)
+                .collect(Collectors.toSet());
+
+
+        List<UnitsDistribution> unitsDistributionList =  unitsDistributionInput.getUnitsDistribution()
+                .stream()
+                .filter(unitsInput -> !zonedDateTimes.contains(unitsInput.getDate()))
+                .map( u -> UnitsDistribution.builder().date(u.getDate())
                         .processName(u.getProcessName())
                         .logisticCenterId(u.getLogisticCenterId())
                         .area(u.getArea())
                         .quantity(u.getQuantity())
                         .quantityMetricUnit(MetricUnit.of(u.getQuantityMetricUnit()).get())
-                        .build());
+                        .build()).collect(Collectors.toList());
 
-            }
-        }
 
         if(!unitsDistributionList.isEmpty()){
             return unitsDistributionRepository.saveAll(unitsDistributionList);

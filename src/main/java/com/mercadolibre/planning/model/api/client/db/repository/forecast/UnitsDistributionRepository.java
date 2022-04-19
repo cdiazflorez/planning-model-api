@@ -4,8 +4,9 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.UnitsDistribut
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public interface UnitsDistributionRepository extends JpaRepository<UnitsDistribution, Long> {
 
-    UnitsDistribution getByDate(ZonedDateTime zonedDateTime);
+    List<UnitsDistribution> findByDateBetweenaAndLogisticCenterId(ZonedDateTime zonedDateTimeStar,ZonedDateTime zonedDateTimeEnd,String logisticCenterId);
 }

@@ -33,7 +33,7 @@ public class UnitsDistribution {
     private String area;
 
     @Column
-    private long quantity;
+    private Double quantity;
 
     @Enumerated(EnumType.STRING)
     @Column

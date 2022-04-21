@@ -3,7 +3,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.UnitsDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.UnitsDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsInput;
 
 import lombok.AllArgsConstructor;
@@ -24,26 +23,26 @@ public class CreateUnitsDistributionService {
 
     private final UnitsDistributionRepository unitsDistributionRepository;
 
-    public List<UnitsDistribution> save(UnitsDistributionInput unitsDistributionInput){
+    public List<UnitsDistribution> save(List<UnitsInput> unitsInputs){
 
-        ZonedDateTime start = unitsDistributionInput.getUnitsDistribution()
+        ZonedDateTime start = unitsInputs
                 .stream()
                 .min(Comparator.comparing(UnitsInput::getDate))
                 .orElseThrow()
                 .getDate();
-        ZonedDateTime end = unitsDistributionInput.getUnitsDistribution()
+        ZonedDateTime end = unitsInputs
                 .stream()
                 .max(Comparator.comparing(UnitsInput::getDate))
                 .orElseThrow().getDate();
 
 
-        Set<ZonedDateTime> zonedDateTimes = unitsDistributionRepository.findByDateBetweenaAndLogisticCenterId(start,end,unitsDistributionInput.getUnitsDistribution().get(0).getLogisticCenterId())
+        Set<ZonedDateTime> zonedDateTimes = unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(start,end,unitsInputs.get(0).getLogisticCenterId())
                 .stream()
                 .map(UnitsDistribution::getDate)
                 .collect(Collectors.toSet());
 
 
-        List<UnitsDistribution> unitsDistributionList =  unitsDistributionInput.getUnitsDistribution()
+        List<UnitsDistribution> unitsDistributionList =  unitsInputs
                 .stream()
                 .filter(unitsInput -> !zonedDateTimes.contains(unitsInput.getDate()))
                 .map( u -> UnitsDistribution.builder().date(u.getDate())

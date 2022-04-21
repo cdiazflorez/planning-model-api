@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface UnitsDistributionRepository extends JpaRepository<UnitsDistribution, Long> {
 
-    List<UnitsDistribution> findByDateBetweenaAndLogisticCenterId(ZonedDateTime zonedDateTimeStar,ZonedDateTime zonedDateTimeEnd,String logisticCenterId);
+    List<UnitsDistribution> findByDateBetweenAndLogisticCenterId(ZonedDateTime zonedDateTimeStar,ZonedDateTime zonedDateTimeEnd,String logisticCenterId);
 }

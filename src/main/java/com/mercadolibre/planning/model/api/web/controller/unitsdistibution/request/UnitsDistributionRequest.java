@@ -1,12 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller.unitsdistibution.request;
 
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsDistributionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsInput;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZonedDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,20 +12,20 @@ import java.util.List;
 public class UnitsDistributionRequest {
 
     @NotBlank
-    private List<Units> unitsDistribution;
+    private String logisticCenterId;
 
-    public UnitsDistributionInput toUnitsDistributionInput(){
-        List<UnitsInput> unitsInputs = new ArrayList<>();
-        unitsDistribution.forEach(units -> {
-            unitsInputs.add(UnitsInput.builder().date(units.getDate())
-                    .processName(units.getProcessName())
-                    .area(units.getArea())
-                    .logisticCenterId(units.getLogisticCenterId())
-                    .quantity(units.getQuantity())
-                    .quantityMetricUnit(units.getQuantityMetricUnit())
-                    .build());
-        });
+    @NotBlank
+    private ZonedDateTime date;
 
-        return  new UnitsDistributionInput(unitsInputs);
-    }
+    @NotBlank
+    private String processName;
+
+    @NotBlank
+    private String area;
+
+    @NotBlank
+    private Double quantity;
+
+    @NotBlank
+    private String quantityMetricUnit;
 }

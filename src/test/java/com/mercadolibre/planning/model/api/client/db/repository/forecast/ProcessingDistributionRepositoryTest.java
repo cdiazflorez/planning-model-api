@@ -1,70 +1,97 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import org.junit.jupiter.api.DisplayName;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Optional;
-
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockProcessingDist;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@DataJpaTest
+@DataJpaTest(properties = {
+    "spring.jpa.properties.hibernate.jdbc.time_zone=UTC"
+})
+@Sql({"/sql/load-processing-distributions.sql"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ProcessingDistributionRepositoryTest {
 
-    @Autowired
-    private ProcessingDistributionRepository repository;
+  @Autowired
+  private ProcessingDistributionRepository repository;
 
-    @Autowired
-    private TestEntityManager entityManager;
+  @Test
+  public void findEntitiesByWarehouseIdWorkflowTypeProcessNameAndDateInRange_whenOnlyOneForecastIsPresent() {
+    // WHEN
+    final List<ProcessingDistributionView> result =
+        repository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+            Set.of("PERFORMED_PROCESSING"),
+            List.of("PICKING"),
+            A_DATE_UTC,
+            A_DATE_UTC.plusHours(3),
+            List.of(1L)
+        );
 
-    @Test
-    @DisplayName("Looking for a processing distribution that exists, returns it")
-    public void testFindProcessingDistributionById() {
-        // GIVEN
-        final Forecast forecast = mockSimpleForecast();
-        entityManager.persistAndFlush(forecast);
-        entityManager.persistAndFlush(mockProcessingDist(forecast));
+    // THEN
+    assertNotNull(result);
 
-        // WHEN
-        final Optional<ProcessingDistribution> optProcessingDistribution =
-                repository.findById(1L);
+    assertEquals(3, result.size());
+    final var first = result.get(0);
+    assertEquals(PICKING, first.getProcessName());
+    assertEquals(A_DATE_UTC.toInstant(), first.getDate().toInstant());
+    assertEquals(10, first.getQuantity());
+    assertEquals(MetricUnit.UNITS, first.getQuantityMetricUnit());
 
-        // THEN
-        assertTrue(optProcessingDistribution.isPresent());
+    final var second = result.get(1);
+    assertEquals(PICKING, second.getProcessName());
+    assertEquals(A_DATE_UTC.plusHours(1).toInstant(), second.getDate().toInstant());
+    assertEquals(20, second.getQuantity());
+    assertEquals(MetricUnit.UNITS, second.getQuantityMetricUnit());
 
-        final ProcessingDistribution foundProcessingDistribution =
-                optProcessingDistribution.get();
+    final var third = result.get(2);
+    assertEquals(PICKING, third.getProcessName());
+    assertEquals(A_DATE_UTC.plusHours(2).toInstant(), third.getDate().toInstant());
+    assertEquals(30, third.getQuantity());
+    assertEquals(MetricUnit.UNITS, third.getQuantityMetricUnit());
+  }
 
-        assertEquals(1L, foundProcessingDistribution.getId());
-        assertEquals(A_DATE_UTC, foundProcessingDistribution.getDate());
-        assertEquals(1000, foundProcessingDistribution.getQuantity());
-        assertEquals("UNITS", foundProcessingDistribution.getQuantityMetricUnit().name());
-        assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
-        assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
+  @Test
+  public void findEntitiesByWarehouseIdWorkflowTypeProcessNameAndDateInRange_whenMultipleForecastsArePresent() {
+    // WHEN
+    final List<ProcessingDistributionView> result =
+        repository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+            Set.of("PERFORMED_PROCESSING"),
+            List.of("PICKING"),
+            A_DATE_UTC,
+            A_DATE_UTC.plusHours(3),
+            List.of(2L, 3L)
+        );
 
-        final Forecast foundForecast = foundProcessingDistribution.getForecast();
-        assertEquals(1L, foundForecast.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
-    }
+    // THEN
+    assertNotNull(result);
 
-    @Test
-    @DisplayName("Looking for a processing distribution that doesn't exist, returns nothing")
-    public void testProcessingDistributionDoesntExist() {
-        // WHEN
-        final Optional<ProcessingDistribution> optProcessingDist = repository.findById(1L);
+    assertEquals(3, result.size());
+    final var first = result.get(0);
+    assertEquals(PICKING, first.getProcessName());
+    assertEquals(A_DATE_UTC.toInstant(), first.getDate().toInstant());
+    assertEquals(1, first.getQuantity());
+    assertEquals(MetricUnit.UNITS, first.getQuantityMetricUnit());
 
-        // THEN
-        assertFalse(optProcessingDist.isPresent());
-    }
+    final var second = result.get(1);
+    assertEquals(PICKING, second.getProcessName());
+    assertEquals(A_DATE_UTC.plusHours(1).toInstant(), second.getDate().toInstant());
+    assertEquals(20, second.getQuantity());
+    assertEquals(MetricUnit.UNITS, second.getQuantityMetricUnit());
+
+    final var third = result.get(2);
+    assertEquals(PICKING, third.getProcessName());
+    assertEquals(A_DATE_UTC.plusHours(2).toInstant(), third.getDate().toInstant());
+    assertEquals(30, third.getQuantity());
+    assertEquals(MetricUnit.UNITS, third.getQuantityMetricUnit());
+  }
+
 }

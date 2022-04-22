@@ -1,12 +1,13 @@
-package com.mercadolibre.planning.model.api.web.controller.unitsdistibution.response;
+package com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution;
 
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import java.time.ZonedDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Value;
 
+@AllArgsConstructor
 @Value
-public class GetUnitsDistributionResponse {
+public class UnitsInput {
 
   String logisticCenterId;
 
@@ -18,5 +19,5 @@ public class GetUnitsDistributionResponse {
 
   Double quantity;
 
-  MetricUnit quantityMetricUnit;
+  String quantityMetricUnit;
 }

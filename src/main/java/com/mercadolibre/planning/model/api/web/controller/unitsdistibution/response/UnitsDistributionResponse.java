@@ -4,6 +4,8 @@ import lombok.Value;
 
 @Value
 public class UnitsDistributionResponse {
-    String response;
-    int quantitySave;
+
+  String response;
+
+  int quantitySave;
 }

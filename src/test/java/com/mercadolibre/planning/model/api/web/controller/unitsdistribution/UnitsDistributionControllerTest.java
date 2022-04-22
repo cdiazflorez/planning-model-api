@@ -1,12 +1,21 @@
 package com.mercadolibre.planning.model.api.web.controller.unitsdistribution;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.UnitsDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.CreateUnitsDistributionService;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.GetUnitsDistributionService;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.create.UnitsInput;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.metrics.UnitsDistribution;
+import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.UnitsDistributionService;
 import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.UnitsDistributionController;
-import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.request.UnitsDistributionRequest;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -14,89 +23,67 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.io.IOException;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
-import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(controllers = UnitsDistributionController.class)
 public class UnitsDistributionControllerTest {
 
-    private static final String URL = "/planning/model/units_distribution";
-    private static final String AREA = "MZ-01";
-    private static final String PROCESS = "PICKING";
-    private static final String METRIC = "PERCENTAGE";
-    private static final String WH = "ARBA01";
-    private static final Double QUANTITY = 0.2;
-    private static final ZonedDateTime DATE = ZonedDateTime.of(2022,4,3,10,15,30,0, ZoneOffset.UTC);
-    private static final ZonedDateTime DATE2 = ZonedDateTime.of(2022,4,3,11,15,30,0, ZoneOffset.UTC);
-    @Autowired
-    private MockMvc mvc;
+  private static final String URL = "/planning/model/units_distribution";
 
-    @MockBean
-    private  CreateUnitsDistributionService createUnitsDistributionService;
+  private static final String AREA = "MZ-01";
 
-    @MockBean
-    private  GetUnitsDistributionService getUnitsDistributionService;
+  private static final String WH = "ARBA01";
 
-    @Test
-    public void saveTest() throws Exception {
+  private static final Double QUANTITY = 0.2;
 
-        //GIVEN
+  private static final ZonedDateTime DATE = ZonedDateTime.of(2022, 4, 3, 10, 15, 30, 0, ZoneOffset.UTC);
 
-        when(createUnitsDistributionService.save(any())).thenReturn(mockUnitsDistributions());
+  private static final ZonedDateTime DATE2 = ZonedDateTime.of(2022, 4, 3, 11, 15, 30, 0, ZoneOffset.UTC);
 
-        //WHEN
-        final ResultActions result = mvc.perform(
-                post(URL + "/save")
-                        .contentType(APPLICATION_JSON)
-                        .content(getResourceAsString("post_units_distribution_request.json"))
-        );
+  @Autowired
+  private MockMvc mvc;
 
-        // THEN
-        result.andExpect(status().isOk());
-    }
+  @MockBean
+  private UnitsDistributionService unitsDistributionService;
 
-    @Test
-    public void getTest() throws Exception {
+  @Test
+  public void saveTest() throws Exception {
 
-        //GIVEN
-        when(getUnitsDistributionService.get(any())).thenReturn(mockUnitsDistributions());
+    //GIVEN
 
-        // WHEN
-        final ResultActions result = mvc.perform(
-                get(URL + "/data")
-                        .contentType(APPLICATION_JSON)
-                        .param("warehouse_id", "ARBA01")
-                        .param("date_from", DATE.toString())
-                        .param("date_to", DATE2.toString())
+    when(unitsDistributionService.save(any())).thenReturn(mockUnitsDistributions());
 
-        );
+    //WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + "/save")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("post_units_distribution_request.json"))
+    );
 
-        // THEN
-        result.andExpect(status().isOk());
-    }
+    // THEN
+    result.andExpect(status().isOk());
+  }
 
-    private List<UnitsDistribution> mockUnitsDistributions(){
-        return List.of(UnitsDistribution.builder().area(AREA)
-                .processName(PROCESS)
-                .date(DATE2)
-                .quantity(QUANTITY)
-                .logisticCenterId(WH)
-                .quantityMetricUnit(MetricUnit.PERCENTAGE)
-                .build());
-    }
+  @Test
+  public void getTest() throws Exception {
+
+    //GIVEN
+    when(unitsDistributionService.get(any())).thenReturn(mockUnitsDistributions());
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(URL + "/data")
+            .contentType(APPLICATION_JSON)
+            .param("warehouse_id", "ARBA01")
+            .param("date_from", DATE.toString())
+            .param("date_to", DATE2.toString())
+
+    );
+
+    // THEN
+    result.andExpect(status().isOk());
+  }
+
+  private List<UnitsDistribution> mockUnitsDistributions() {
+    return List.of(new UnitsDistribution(null, WH, DATE2, ProcessName.PICKING, AREA, QUANTITY, MetricUnit.PERCENTAGE));
+  }
 
 }

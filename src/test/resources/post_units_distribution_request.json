@@ -1,18 +1,18 @@
 [
-    {
-        "logistic_center_id":"ARBA01",
-        "date": "2022-04-03T10:15:30Z",
-        "process_name": "PICKING",
-        "area": "MZ-01",
-        "quantity" : 0.2,
-        "quantity_metric_unit" : "PERCENTAGE"
-    },
-    {
-        "logistic_center_id":"ARBA01",
-        "date": "2022-04-03T11:15:30Z",
-        "process_name": "PICKING",
-        "area": "MZ-01",
-        "quantity" : 0.2,
-        "quantity_metric_unit" : "PERCENTAGE"
-    }
+  {
+    "logistic_center_id": "ARBA01",
+    "date": "2022-04-03T10:15:30Z",
+    "process_name": "PICKING",
+    "area": "MZ-01",
+    "quantity": 0.2,
+    "quantity_metric_unit": "PERCENTAGE"
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "date": "2022-04-03T11:15:30Z",
+    "process_name": "PICKING",
+    "area": "MZ-01",
+    "quantity": 0.2,
+    "quantity_metric_unit": "PERCENTAGE"
+  }
 ]

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.entity.metrics;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.ZonedDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -42,4 +43,7 @@ public class UnitsDistribution {
   @Enumerated(EnumType.STRING)
   @Column
   private MetricUnit quantityMetricUnit;
+
+  @Enumerated(EnumType.STRING)
+  private Workflow workflow;
 }

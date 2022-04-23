@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.client.db.repository.metrics.UnitsDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.metrics.UnitsDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.GetUnitsInput;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.UnitsDistributionService;
@@ -43,15 +44,15 @@ public class UnitsDistributionServiceTest {
     ZonedDateTime dateFrom = ZonedDateTime.now();
     ZonedDateTime dateTo = dateFrom.plusHours(3);
 
-    List<UnitsInput> unitsInputList = List.of(new UnitsInput(WH, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC),
-        new UnitsInput(WH, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC));
+    List<UnitsInput> unitsInputList = List.of(new UnitsInput(WH, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC,Workflow.FBM_WMS_OUTBOUND),
+        new UnitsInput(WH, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC, Workflow.FBM_WMS_OUTBOUND));
 
-    List<UnitsInput> unitsInputList2 = List.of(new UnitsInput(WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC),
-        new UnitsInput(WHA, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC));
+    List<UnitsInput> unitsInputList2 = List.of(new UnitsInput(WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC,Workflow.FBM_WMS_OUTBOUND),
+        new UnitsInput(WHA, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC,Workflow.FBM_WMS_OUTBOUND));
 
     List<UnitsDistribution> unitsDistributionList =
-        List.of(new UnitsDistribution(null, WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, MetricUnit.PERCENTAGE),
-            new UnitsDistribution(null, WHA, dateTo, ProcessName.PICKING, AREA, 0.7, MetricUnit.PERCENTAGE));
+        List.of(new UnitsDistribution(null, WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, MetricUnit.PERCENTAGE,Workflow.FBM_WMS_OUTBOUND),
+            new UnitsDistribution(null, WHA, dateTo, ProcessName.PICKING, AREA, 0.7, MetricUnit.PERCENTAGE,Workflow.FBM_WMS_OUTBOUND));
 
     when(unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(dateFrom, dateTo, WH)).thenReturn(new ArrayList<>());
     when(unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(dateFrom, dateTo, WHA)).thenReturn(unitsDistributionList);

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.metrics.UnitsDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.UnitsDistributionService;
 import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.UnitsDistributionController;
@@ -26,7 +27,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @WebMvcTest(controllers = UnitsDistributionController.class)
 public class UnitsDistributionControllerTest {
 
-  private static final String URL = "/planning/model/units_distribution";
+  private static final String URL = "/planning/model/workflows/FBM_WMS_OUTBOUND/units_distribution";
 
   private static final String AREA = "MZ-01";
 
@@ -53,7 +54,7 @@ public class UnitsDistributionControllerTest {
 
     //WHEN
     final ResultActions result = mvc.perform(
-        post(URL + "/save")
+        post(URL )
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_units_distribution_request.json"))
     );
@@ -70,7 +71,7 @@ public class UnitsDistributionControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        get(URL + "/data")
+        get(URL )
             .contentType(APPLICATION_JSON)
             .param("warehouse_id", "ARBA01")
             .param("date_from", DATE.toString())
@@ -83,7 +84,7 @@ public class UnitsDistributionControllerTest {
   }
 
   private List<UnitsDistribution> mockUnitsDistributions() {
-    return List.of(new UnitsDistribution(null, WH, DATE2, ProcessName.PICKING, AREA, QUANTITY, MetricUnit.PERCENTAGE));
+    return List.of(new UnitsDistribution(null, WH, DATE2, ProcessName.PICKING, AREA, QUANTITY, MetricUnit.PERCENTAGE, Workflow.FBM_WMS_OUTBOUND));
   }
 
 }

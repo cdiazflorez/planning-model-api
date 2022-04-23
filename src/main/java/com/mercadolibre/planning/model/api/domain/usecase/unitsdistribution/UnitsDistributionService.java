@@ -48,7 +48,7 @@ public class UnitsDistributionService {
         .stream()
         .filter(unitsInput -> !alreadyStoredDistributions.contains(unitsInput.getDate()))
         .map(u -> new UnitsDistribution(null, u.getLogisticCenterId(), u.getDate(), u.getProcessName(), u.getArea(), u.getQuantity(),
-            MetricUnit.of(u.getQuantityMetricUnit()).get()))
+            MetricUnit.of(u.getQuantityMetricUnit()).get(), u.getWorkflow()))
         .collect(Collectors.toList());
 
 

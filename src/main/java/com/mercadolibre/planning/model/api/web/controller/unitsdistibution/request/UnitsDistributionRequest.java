@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Class that receives the parameters of units-distribution
+ */
 @AllArgsConstructor
 @Getter
 @Setter

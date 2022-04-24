@@ -17,6 +17,7 @@ import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.Units
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -24,6 +25,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+/**
+ * Test for UnitsDistributionController
+ */
+@Slf4j
 @WebMvcTest(controllers = UnitsDistributionController.class)
 public class UnitsDistributionControllerTest {
 
@@ -46,45 +51,59 @@ public class UnitsDistributionControllerTest {
   private UnitsDistributionService unitsDistributionService;
 
   @Test
-  public void saveTest() throws Exception {
+  public void saveTest() {
 
     //GIVEN
 
     when(unitsDistributionService.save(any())).thenReturn(mockUnitsDistributions());
 
     //WHEN
-    final ResultActions result = mvc.perform(
-        post(URL )
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_units_distribution_request.json"))
-    );
+    final ResultActions result;
+    try {
+      result = mvc.perform(
+          post(URL)
+              .contentType(APPLICATION_JSON)
+              .content(getResourceAsString("post_units_distribution_request.json"))
+      );
 
-    // THEN
-    result.andExpect(status().isOk());
+      // THEN
+      result.andExpect(status().isOk());
+
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
+
+
   }
 
   @Test
-  public void getTest() throws Exception {
+  public void obtainTest() {
 
     //GIVEN
     when(unitsDistributionService.get(any())).thenReturn(mockUnitsDistributions());
 
     // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL )
-            .contentType(APPLICATION_JSON)
-            .param("warehouse_id", "ARBA01")
-            .param("date_from", DATE.toString())
-            .param("date_to", DATE2.toString())
+    final ResultActions result;
+    try {
+      result = mvc.perform(
+          get(URL)
+              .contentType(APPLICATION_JSON)
+              .param("warehouse_id", WH)
+              .param("date_from", DATE.toString())
+              .param("date_to", DATE2.toString())
 
-    );
+      );
+      // THEN
+      result.andExpect(status().isOk());
 
-    // THEN
-    result.andExpect(status().isOk());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private List<UnitsDistribution> mockUnitsDistributions() {
-    return List.of(new UnitsDistribution(null, WH, DATE2, ProcessName.PICKING, AREA, QUANTITY, MetricUnit.PERCENTAGE, Workflow.FBM_WMS_OUTBOUND));
+    return List.of(
+        new UnitsDistribution(null, WH, DATE2, ProcessName.PICKING, AREA, QUANTITY, MetricUnit.PERCENTAGE, Workflow.FBM_WMS_OUTBOUND));
   }
 
 }

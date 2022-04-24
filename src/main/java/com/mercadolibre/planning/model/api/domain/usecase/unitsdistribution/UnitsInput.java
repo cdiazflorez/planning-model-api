@@ -6,6 +6,9 @@ import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
+/**
+ * Class that contains the parameters of units-distribution
+ */
 @AllArgsConstructor
 @Value
 public class UnitsInput {

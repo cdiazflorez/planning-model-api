@@ -2,7 +2,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution;
 
 import com.mercadolibre.planning.model.api.client.db.repository.metrics.UnitsDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.metrics.UnitsDistribution;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -14,6 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service to handle units-distribution
+ */
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -21,6 +23,12 @@ public class UnitsDistributionService {
 
   private final UnitsDistributionRepository unitsDistributionRepository;
 
+  /**
+   * Check for the existence c and persist those that are not saved
+   *
+   * @param unitsInputs List of unitsInput
+   * @return List of units-distribution
+   */
   public List<UnitsDistribution> save(List<UnitsInput> unitsInputs) {
 
 
@@ -59,6 +67,12 @@ public class UnitsDistributionService {
     return Collections.emptyList();
   }
 
+  /**
+   * Obtains a list of units-distribution according to the parameters received
+   *
+   * @param getUnitsInput Contains warehouse ID, start date and end of search~
+   * @return List of units-distribution
+   */
   public List<UnitsDistribution> get(GetUnitsInput getUnitsInput) {
     return unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(getUnitsInput.getDateFrom(), getUnitsInput.getDateTo(),
         getUnitsInput.getWareHouseId());

@@ -5,6 +5,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import java.time.ZonedDateTime;
 import lombok.Value;
 
+/**
+ * class that returns the units-distribution parameters
+ */
 @Value
 public class GetUnitsDistributionResponse {
 

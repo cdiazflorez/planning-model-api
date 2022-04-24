@@ -20,6 +20,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Tests for UnitsDistributionService
+ */
 @ExtendWith(MockitoExtension.class)
 public class UnitsDistributionServiceTest {
 
@@ -44,15 +47,18 @@ public class UnitsDistributionServiceTest {
     ZonedDateTime dateFrom = ZonedDateTime.now();
     ZonedDateTime dateTo = dateFrom.plusHours(3);
 
-    List<UnitsInput> unitsInputList = List.of(new UnitsInput(WH, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC,Workflow.FBM_WMS_OUTBOUND),
-        new UnitsInput(WH, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC, Workflow.FBM_WMS_OUTBOUND));
+    List<UnitsInput> unitsInputList =
+        List.of(new UnitsInput(WH, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC, Workflow.FBM_WMS_OUTBOUND),
+            new UnitsInput(WH, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC, Workflow.FBM_WMS_OUTBOUND));
 
-    List<UnitsInput> unitsInputList2 = List.of(new UnitsInput(WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC,Workflow.FBM_WMS_OUTBOUND),
-        new UnitsInput(WHA, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC,Workflow.FBM_WMS_OUTBOUND));
+    List<UnitsInput> unitsInputList2 =
+        List.of(new UnitsInput(WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, METRIC, Workflow.FBM_WMS_OUTBOUND),
+            new UnitsInput(WHA, dateTo, ProcessName.PICKING, AREA, 0.7, METRIC, Workflow.FBM_WMS_OUTBOUND));
 
     List<UnitsDistribution> unitsDistributionList =
-        List.of(new UnitsDistribution(null, WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, MetricUnit.PERCENTAGE,Workflow.FBM_WMS_OUTBOUND),
-            new UnitsDistribution(null, WHA, dateTo, ProcessName.PICKING, AREA, 0.7, MetricUnit.PERCENTAGE,Workflow.FBM_WMS_OUTBOUND));
+        List.of(
+            new UnitsDistribution(null, WHA, dateFrom, ProcessName.PICKING, AREA, 0.3, MetricUnit.PERCENTAGE, Workflow.FBM_WMS_OUTBOUND),
+            new UnitsDistribution(null, WHA, dateTo, ProcessName.PICKING, AREA, 0.7, MetricUnit.PERCENTAGE, Workflow.FBM_WMS_OUTBOUND));
 
     when(unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(dateFrom, dateTo, WH)).thenReturn(new ArrayList<>());
     when(unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(dateFrom, dateTo, WHA)).thenReturn(unitsDistributionList);

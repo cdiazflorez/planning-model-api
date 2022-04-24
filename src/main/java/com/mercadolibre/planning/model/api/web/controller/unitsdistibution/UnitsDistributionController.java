@@ -4,9 +4,9 @@ import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.metrics.UnitsDistribution;
+import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.GetUnitsInput;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.UnitsDistributionService;
 import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.UnitsInput;
-import com.mercadolibre.planning.model.api.domain.usecase.unitsdistribution.GetUnitsInput;
 import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.request.UnitsDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.response.GetUnitsDistributionResponse;
 import com.mercadolibre.planning.model.api.web.controller.unitsdistibution.response.UnitsDistributionResponse;
@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller to save and query units-distribution
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/units_distribution")
@@ -32,7 +35,7 @@ public class UnitsDistributionController {
 
   private final UnitsDistributionService unitsDistributionService;
 
-  @PostMapping()
+  @PostMapping
   public ResponseEntity<UnitsDistributionResponse> save(@RequestBody List<UnitsDistributionRequest> unitsDistributionRequests,
                                                         @PathVariable final Workflow workflow) {
 
@@ -51,7 +54,7 @@ public class UnitsDistributionController {
             unitsDistributionRequest.getQuantityMetricUnit(), workflow)).collect(Collectors.toList());
   }
 
-  @GetMapping()
+  @GetMapping
   public ResponseEntity<List<GetUnitsDistributionResponse>> get(
       @PathVariable final Workflow workflow,
       @RequestParam @NonNull String warehouseId,

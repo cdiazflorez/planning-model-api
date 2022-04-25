@@ -20,19 +20,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * Tests for UnitsDistributionService
- */
+/** Tests for UnitsDistributionService. */
 @ExtendWith(MockitoExtension.class)
 public class UnitsDistributionServiceTest {
 
-  private final static String AREA = "MZ-0";
+  private static final String AREA = "MZ-0";
 
-  private final static String METRIC = "PERCENTAGE";
+  private static final String METRIC = "PERCENTAGE";
 
-  private final static String WH = "COCU01";
+  private static final String WH = "COCU01";
 
-  private final static String WHA = "ARBA01";
+  private static final String WHA = "ARBA01";
 
   @Mock
   private UnitsDistributionRepository unitsDistributionRepository;
@@ -73,7 +71,7 @@ public class UnitsDistributionServiceTest {
   }
 
   @Test
-  public void getTest() {
+  public void obtainTest() {
 
     //GIVEN
     ZonedDateTime dateFrom = ZonedDateTime.now();

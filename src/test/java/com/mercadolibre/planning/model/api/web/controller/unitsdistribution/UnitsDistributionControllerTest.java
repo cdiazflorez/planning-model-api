@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Test for UnitsDistributionController
+ * Test for UnitsDistributionController.
  */
 @Slf4j
 @WebMvcTest(controllers = UnitsDistributionController.class)
@@ -97,7 +97,7 @@ public class UnitsDistributionControllerTest {
       result.andExpect(status().isOk());
 
     } catch (Exception e) {
-      e.printStackTrace();
+      log.error(e.getMessage(), e);
     }
   }
 

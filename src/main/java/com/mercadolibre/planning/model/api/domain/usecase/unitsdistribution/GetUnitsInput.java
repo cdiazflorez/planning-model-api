@@ -4,9 +4,7 @@ import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
-/**
- * Class containing the parameters for the units search request
- */
+/** Class containing the parameters for the units search request. */
 @Value
 @AllArgsConstructor
 public class GetUnitsInput {

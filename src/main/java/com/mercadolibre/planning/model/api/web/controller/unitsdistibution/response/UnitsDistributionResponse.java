@@ -2,10 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller.unitsdistibution.resp
 
 import lombok.Value;
 
-/**
- * Class that returns the number of units-distribution
- * saved
- */
+/** Class that returns the number of units-distribution saved. */
 @Value
 public class UnitsDistributionResponse {
 

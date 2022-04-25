@@ -13,9 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-/**
- * Service to handle units-distribution
- */
+/** Service to handle units-distribution. */
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -24,10 +22,10 @@ public class UnitsDistributionService {
   private final UnitsDistributionRepository unitsDistributionRepository;
 
   /**
-   * Check for the existence c and persist those that are not saved
+   * Check for the existence c and persist those that are not saved.
    *
-   * @param unitsInputs List of unitsInput
-   * @return List of units-distribution
+   * @param unitsInputs List of unitsInput.
+   * @return List of units-distribution.
    */
   public List<UnitsDistribution> save(List<UnitsInput> unitsInputs) {
 

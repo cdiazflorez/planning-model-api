@@ -15,9 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Entity that contains the projected backlogs
- */
+/** Entity that contains the projected backlogs. */
 @Data
 @Entity
 @NoArgsConstructor
@@ -34,6 +32,7 @@ public class UnitsDistribution {
   @Column
   private ZonedDateTime date;
 
+  @Enumerated(EnumType.STRING)
   @Column
   private ProcessName processName;
 

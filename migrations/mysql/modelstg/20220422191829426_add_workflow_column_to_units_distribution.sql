@@ -1,0 +1,1 @@
+ALTER TABLE units_distribution ADD workflow varchar(45) NOT NULL

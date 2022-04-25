@@ -66,10 +66,10 @@ public class UnitsDistributionService {
   }
 
   /**
-   * Obtains a list of units-distribution according to the parameters received
+   * Obtains a list of units-distribution according to the parameters received.
    *
-   * @param getUnitsInput Contains warehouse ID, start date and end of search~
-   * @return List of units-distribution
+   * @param getUnitsInput Contains warehouse ID, start date and end of search.
+   * @return List of units-distribution.
    */
   public List<UnitsDistribution> get(GetUnitsInput getUnitsInput) {
     return unitsDistributionRepository.findByDateBetweenAndLogisticCenterId(getUnitsInput.getDateFrom(), getUnitsInput.getDateTo(),

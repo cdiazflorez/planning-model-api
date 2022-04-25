@@ -36,7 +36,7 @@ public class UnitsDistributionServiceTest {
   private UnitsDistributionRepository unitsDistributionRepository;
 
   @InjectMocks
-  UnitsDistributionService unitsDistributionService;
+  private UnitsDistributionService unitsDistributionService;
 
   @Test
   public void saveTest() {

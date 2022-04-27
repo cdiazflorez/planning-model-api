@@ -15,13 +15,22 @@ import java.util.Set;
 public interface ProcessingDistributionRepository
         extends CrudRepository<ProcessingDistribution, Long> {
 
-    @Query(value = "SELECT p.date, process_name as processName, quantity,"
-            + " quantity_metric_unit as quantityMetricUnit, type "
+    @Query(value = "WITH distributions AS ( "
+            + "SELECT p.date, process_name, quantity,"
+            + " quantity_metric_unit, type, forecast_id "
             + "FROM processing_distribution p "
             + "WHERE p.process_name IN (:process_name) "
             + "AND p.date BETWEEN :date_from AND :date_to "
             + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "
-            + "AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
+            + "AND p.forecast_id in (:forecast_ids)"
+            + ") " +
+            "SELECT date, process_name as processName, quantity, quantity_metric_unit as quantityMetricUnit, type " +
+            "FROM distributions d " +
+            "WHERE NOT EXISTS (" +
+            " SELECT 1 " +
+            " FROM distributions d2" +
+            " WHERE d.date = d2.date AND d.type = d2.type AND d.process_name = d2.process_name AND d.forecast_id < d2.forecast_id " +
+            ")", nativeQuery = true)
     List<ProcessingDistributionView> findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
             @Param("type") Set<String> type,
             @Param("process_name") List<String> processNames,

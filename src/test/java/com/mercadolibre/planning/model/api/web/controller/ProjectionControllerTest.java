@@ -1,30 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetOutboundBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
-import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
-import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -43,6 +18,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetOutboundBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
+import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
+import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 @SuppressWarnings("PMD.LongVariable")
 @WebMvcTest(controllers = ProjectionController.class)
@@ -150,13 +149,13 @@ class ProjectionControllerTest {
                         null,
                         new ProcessingTime(240L, MINUTES),
                         payBefore,
-                        false)));
+                        false, 0)));
 
         // WHEN
         final ResultActions result = mvc.perform(
                 post(URL + "/cpts/delivery_promise", "fbm-wms-outbound")
                         .contentType(APPLICATION_JSON)
-                        .content(getResourceAsString("get_cpt_projection_request.json"))
+                        .content(getResourceAsString("get_deferral_projection_request.json"))
         );
 
         // THEN
@@ -168,7 +167,9 @@ class ProjectionControllerTest {
                 .andExpect(jsonPath("$[0].pay_before")
                         .value(payBefore.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
-                        .value(100));
+                        .value(100))
+                .andExpect(jsonPath("$[0].units_to_defer")
+                        .value(0));
     }
 
     @Test

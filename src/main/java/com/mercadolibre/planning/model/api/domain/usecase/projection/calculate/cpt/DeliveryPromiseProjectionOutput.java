@@ -8,17 +8,19 @@ import java.time.ZonedDateTime;
 @Value
 public class DeliveryPromiseProjectionOutput {
 
-    private ZonedDateTime date;
+    ZonedDateTime date;
 
-    private ZonedDateTime projectedEndDate;
+    ZonedDateTime projectedEndDate;
 
-    private int remainingQuantity;
+    int remainingQuantity;
 
-    private ZonedDateTime etdCutoff;
+    ZonedDateTime etdCutoff;
 
-    private ProcessingTime processingTime;
+    ProcessingTime processingTime;
 
-    private ZonedDateTime payBefore;
+    ZonedDateTime payBefore;
 
-    private boolean isDeferred;
+    boolean isDeferred;
+
+    int unitsToDefer;
 }

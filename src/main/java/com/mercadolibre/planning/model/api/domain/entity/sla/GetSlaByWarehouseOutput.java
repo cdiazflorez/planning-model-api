@@ -9,13 +9,13 @@ import java.time.ZonedDateTime;
 @Builder
 public class GetSlaByWarehouseOutput {
 
-    private String serviceId;
+    String serviceId;
 
-    private String canalizationId;
+    String canalizationId;
 
-    private String logisticCenterId;
+    String logisticCenterId;
 
-    private ZonedDateTime date;
+    ZonedDateTime date;
 
-    private ProcessingTime processingTime;
+    ProcessingTime processingTime;
 }

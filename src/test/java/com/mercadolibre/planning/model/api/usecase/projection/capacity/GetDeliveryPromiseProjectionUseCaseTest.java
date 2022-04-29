@@ -1,19 +1,31 @@
 package com.mercadolibre.planning.model.api.usecase.projection.capacity;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.COMMAND_CENTER_DEFERRAL;
+import static java.time.ZoneOffset.UTC;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklogService;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationDetailOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
@@ -21,6 +33,15 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.Ge
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -29,32 +50,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static java.time.ZoneOffset.UTC;
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-
 // TODO this test fails sporadically depending on the clock.
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @ExtendWith(MockitoExtension.class)
 public class GetDeliveryPromiseProjectionUseCaseTest {
 
     private static final String WAREHOUSE_ID = "ARBA01";
+
     private static final ZonedDateTime NOW = ZonedDateTime.now(UTC);
+
     private static final ZonedDateTime CPT_1 = NOW.plusHours(1);
+
     private static final ZonedDateTime CPT_2 = NOW.plusHours(2);
 
     @InjectMocks
@@ -75,181 +81,209 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     @Mock
     private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
+    @Mock
+    private PlannedBacklogService plannedBacklogService;
+
     @ParameterizedTest
-    @MethodSource("mockParameterizedConfiguration")
-    public void testExecute(final String assertionsGroup,
-                            final String warehouseId,
-                            final List<DeliveryPromiseProjectionOutput> output,
-                            final List<Backlog> backlogs,
-                            final List<ZonedDateTime> cptDates) {
+    @MethodSource("argOfTestProjectionDeliveryPromise")
+    public void testProjectionDeliveryPromise(final String assertionsGroup,
+                                              final Workflow workflow,
+                                              final String logisticCenterId,
+                                              final ZonedDateTime dateFrom,
+                                              final ZonedDateTime dateTo,
+                                              final ProjectionType type,
+                                              final List<GetSlaByWarehouseOutput> cptByWarehouse,
+                                              final List<Long> forecastIds,
+                                              final List<Backlog> backlogs,
+                                              final List<ZonedDateTime> cptDatesFromBacklog,
+                                              final Map<ZonedDateTime, Long> cycleTimeByCpt,
+                                              final List<ProcessingDistributionView> maxCapacitiesPlanned,
+                                              final Map<ZonedDateTime, Integer> maxCapacitiesByHours,
+                                              final List<CptCalculationDetailOutput> cptCalculationDetails,
+                                              final List<DeliveryPromiseProjectionOutput> projectionExpected) {
         //GIVEN
-        final List<GetSlaByWarehouseOutput> cptByWarehouse = mockCptByWarehouse();
+        when(getSlaByWarehouseOutboundService.execute(
+                new GetSlaByWarehouseInput(logisticCenterId, dateFrom, dateTo, cptDatesFromBacklog, null))).thenReturn(cptByWarehouse);
 
-        final GetDeliveryPromiseProjectionInput input = GetDeliveryPromiseProjectionInput.builder()
-                .warehouseId(warehouseId)
-                .workflow(Workflow.FBM_WMS_OUTBOUND)
-                .dateFrom(NOW)
-                .dateTo(NOW.plusHours(6))
-                .backlog(backlogs)
-                .build();
-
-        final List<Long> forecastIds = List.of(1L, 2L);
+        if (type != null) {
+            when(plannedBacklogService.getExpectedBacklog(logisticCenterId, workflow, dateFrom, dateTo, false))
+                    .thenReturn(emptyList());
+        }
 
         when(getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
+                .workflow(workflow)
+                .warehouseId(logisticCenterId)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
                 .build())).thenReturn(forecastIds);
 
-        when(processingDistRepository
-                .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                        Set.of(ProcessingType.MAX_CAPACITY.name()),
-                        List.of(ProcessName.GLOBAL.toJson()),
-                        input.getDateFrom(),
-                        input.getDateTo(),
-                        forecastIds
-                )).thenReturn(mockProcessingDist());
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                Set.of(MAX_CAPACITY.name()),
+                List.of(GLOBAL.toJson()),
+                dateFrom,
+                dateTo,
+                forecastIds)).thenReturn(maxCapacitiesPlanned);
 
         when(calculatedProjectionUseCase.execute(SlaProjectionInput.builder()
-                .workflow(input.getWorkflow())
-                .logisticCenterId(input.getWarehouseId())
-                .capacity(mockCapacityByHour())
-                .backlog(input.getBacklog())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
+                .workflow(workflow)
+                .logisticCenterId(logisticCenterId)
+                .capacity(maxCapacitiesByHours)
+                .backlog(backlogs)
+                .dateFrom(dateFrom)
+                .dateTo(dateTo)
                 .plannedUnits(emptyList())
                 .slaByWarehouse(cptByWarehouse)
                 // TODO handle the time correctly: sometimes this test fails because the current date changes.
                 .currentDate(getCurrentUtcDate())
-                .build())
-        ).thenReturn(output.stream().map(item ->
-                        new CptCalculationOutput(item.getDate(),
-                                item.getProjectedEndDate(),
-                                item.getRemainingQuantity()))
-                .collect(Collectors.toList()));
+                .build()))
+                .thenReturn(projectionExpected.stream().map(item ->
+                                new CptCalculationOutput(item.getDate(),
+                                        item.getProjectedEndDate(),
+                                        item.getRemainingQuantity(), 0, 0, cptCalculationDetails))
+                        .collect(Collectors.toList()));
 
-        when(getCycleTimeService.execute(new GetCycleTimeInput(warehouseId, cptDates)))
-                .thenReturn(mockCycleTimeByCpt());
-
-        when(getSlaByWarehouseOutboundService.execute(new
-                GetSlaByWarehouseInput(warehouseId, NOW, NOW.plusHours(6),
-                cptDates, null))).thenReturn(cptByWarehouse);
+        when(getCycleTimeService.execute(
+                new GetCycleTimeInput(logisticCenterId, projectionExpected.stream().map(DeliveryPromiseProjectionOutput::getDate).collect(
+                        Collectors.toList())))).thenReturn(cycleTimeByCpt);
 
         //WHEN
-        final List<DeliveryPromiseProjectionOutput> response =
-                getDeliveryPromiseUseCase.execute(input);
+        final List<DeliveryPromiseProjectionOutput> projectionResult =
+                getDeliveryPromiseUseCase.execute(GetDeliveryPromiseProjectionInput.builder()
+                        .warehouseId(logisticCenterId)
+                        .workflow(workflow)
+                        .dateFrom(dateFrom)
+                        .dateTo(dateTo)
+                        .backlog(backlogs)
+                        .projectionType(type)
+                        .build());
 
         //THEN
         if ("TestValues".equals(assertionsGroup)) {
-
-            assertEquals(output.size(), response.size());
-            assertEquals(output.get(0).getDate(), response.get(0).getDate());
-            assertEquals(output.get(0).getProjectedEndDate(), response.get(0)
-                    .getProjectedEndDate());
-            assertEquals(output.get(0).getRemainingQuantity(), response.get(0)
-                    .getRemainingQuantity());
-            assertEquals(output.get(0).getEtdCutoff(), response.get(0).getEtdCutoff());
-            assertEquals(output.get(0).isDeferred(), response.get(0).isDeferred());
-            assertEquals(output.get(0).getProcessingTime(), response.get(0)
-                    .getProcessingTime());
+            assertEquals(projectionExpected.size(), projectionResult.size());
+            assertEquals(projectionExpected.get(0).getDate(), projectionResult.get(0).getDate());
+            assertEquals(projectionExpected.get(0).getProjectedEndDate(), projectionResult.get(0).getProjectedEndDate());
+            assertEquals(projectionExpected.get(0).getRemainingQuantity(), projectionResult.get(0).getRemainingQuantity());
+            assertEquals(projectionExpected.get(0).getEtdCutoff(), projectionResult.get(0).getEtdCutoff());
+            assertEquals(projectionExpected.get(0).isDeferred(), projectionResult.get(0).isDeferred());
+            assertEquals(projectionExpected.get(0).getProcessingTime(), projectionResult.get(0).getProcessingTime());
         }
         if ("TestSomeFieldNullPointerException".equals(assertionsGroup)) {
-
-            assertEquals(output.isEmpty(), response.isEmpty());
+            assertEquals(projectionExpected.isEmpty(), projectionResult.isEmpty());
         }
     }
 
-    private List<ProcessingDistributionView> mockProcessingDist() {
-        return List.of(
-                ProcessingDistributionViewImpl.builder()
-                        .date(Date.from(NOW.toLocalDateTime().plusHours(1).toInstant(UTC)))
-                        .quantity(120L)
-                        .build(),
-                ProcessingDistributionViewImpl.builder()
-                        .date(Date.from(NOW.toLocalDateTime().plusHours(2).toInstant(UTC)))
-                        .quantity(100L)
-                        .build(),
-                ProcessingDistributionViewImpl.builder()
-                        .date(Date.from(NOW.toLocalDateTime().plusHours(3).toInstant(UTC)))
-                        .quantity(130L)
-                        .build(),
-                ProcessingDistributionViewImpl.builder()
-                        .date(Date.from(NOW.toLocalDateTime().plusHours(5).toInstant(UTC)))
-                        .quantity(100L)
-                        .build()
-        );
+    public static Stream<Arguments> argOfTestProjectionDeliveryPromise() {
+        return Stream.of(projectionOk(), projectionNpe(), projectionDeferralCommandCenter());
     }
 
-    private Map<ZonedDateTime, Integer> mockCapacityByHour() {
-        final Map<ZonedDateTime, Integer> map = new TreeMap<>();
-        map.put(NOW.truncatedTo(SECONDS), 130);
-        map.put(NOW.plusHours(1).truncatedTo(SECONDS), 120);
-        map.put(NOW.plusHours(2).truncatedTo(SECONDS), 100);
-        map.put(NOW.plusHours(3).truncatedTo(SECONDS), 130);
-        map.put(NOW.plusHours(4).truncatedTo(SECONDS), 130);
-        map.put(NOW.plusHours(5).truncatedTo(SECONDS), 100);
-
-        return map;
-
-    }
-
-    private Map<ZonedDateTime, Long> mockCycleTimeByCpt() {
-        return Map.of(
-            CPT_1, 360L,
-            CPT_2, 360L
-        );
-    }
-
-    private List<GetSlaByWarehouseOutput> mockCptByWarehouse() {
-
-        final List<GetSlaByWarehouseOutput> getSlaByWarehouseOutputs = new ArrayList<>();
-
-        getSlaByWarehouseOutputs.add(GetSlaByWarehouseOutput.builder()
-                .date(CPT_1)
-                .processingTime(new ProcessingTime(360L, MINUTES)).build());
-
-        getSlaByWarehouseOutputs.add(GetSlaByWarehouseOutput.builder()
-                .date(CPT_2)
-                .processingTime(new ProcessingTime(360L, MINUTES)).build());
-
-        return getSlaByWarehouseOutputs;
-    }
-
-    public static Stream<Arguments> mockParameterizedConfiguration() {
-        return Stream.of(
-                Arguments.of(
-                        "TestValues",
-                        WAREHOUSE_ID,
-                        List.of(
-                                new DeliveryPromiseProjectionOutput(
-                                        CPT_1,
-                                        CPT_1.minusHours(2),
-                                        0,
-                                        CPT_1.minusHours(6),
-                                        new ProcessingTime(360L, MINUTES),
-                                        CPT_1.minusHours(7),
-                                        false),
-                                new DeliveryPromiseProjectionOutput(
-                                        CPT_2,
-                                        CPT_2.minusHours(2),
-                                        0,
-                                        CPT_2.minusHours(6),
-                                        new ProcessingTime(360L, MINUTES),
-                                        CPT_1.minusHours(7),
-                                        false)
-                        ),
-                        List.of(
-                                new Backlog(CPT_1, 100),
-                                new Backlog(CPT_2, 200)),
-                        List.of(CPT_1, CPT_2)
+    private static Arguments projectionOk() {
+        return Arguments.of(
+                "TestValues",
+                FBM_WMS_OUTBOUND,
+                WAREHOUSE_ID,
+                NOW,
+                NOW.plusHours(6),
+                null,
+                List.of(GetSlaByWarehouseOutput.builder().date(CPT_1).processingTime(new ProcessingTime(360L, MINUTES)).build(),
+                        GetSlaByWarehouseOutput.builder().date(CPT_2).processingTime(new ProcessingTime(360L, MINUTES)).build()),
+                List.of(1L, 2L),
+                List.of(new Backlog(CPT_1, 100), new Backlog(CPT_2, 200)),
+                List.of(CPT_1, CPT_2),
+                Map.of(CPT_1, 360L, CPT_2, 360L),
+                List.of(ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(1).toInstant(UTC)))
+                                .quantity(120L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(2).toInstant(UTC)))
+                                .quantity(100L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(3).toInstant(UTC)))
+                                .quantity(130L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(5).toInstant(UTC)))
+                                .quantity(100L).build()
                 ),
-                Arguments.of(
-                        "TestSomeFieldNullPointerException",
-                        WAREHOUSE_ID,
-                        emptyList(),
-                        emptyList(),
-                        emptyList()
+                Map.of(NOW.truncatedTo(SECONDS), 130,
+                        NOW.plusHours(1).truncatedTo(SECONDS), 120,
+                        NOW.plusHours(2).truncatedTo(SECONDS), 100,
+                        NOW.plusHours(3).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(4).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(5).truncatedTo(SECONDS), 100),
+                emptyList(),
+                List.of(new DeliveryPromiseProjectionOutput(CPT_1, CPT_1.minusHours(2), 0, CPT_1.minusHours(6),
+                                new ProcessingTime(360L, MINUTES), CPT_1.minusHours(7), false, 0),
+                        new DeliveryPromiseProjectionOutput(CPT_2, CPT_2.minusHours(2), 0, CPT_2.minusHours(6),
+                                new ProcessingTime(360L, MINUTES), CPT_1.minusHours(7), false, 0)
+                )
+        );
+    }
+
+    private static Arguments projectionNpe() {
+        return Arguments.of(
+                "TestSomeFieldNullPointerException",
+                FBM_WMS_OUTBOUND,
+                WAREHOUSE_ID,
+                NOW,
+                NOW.plusHours(6),
+                null,
+                List.of(GetSlaByWarehouseOutput.builder().date(CPT_1).processingTime(new ProcessingTime(360L, MINUTES)).build(),
+                        GetSlaByWarehouseOutput.builder().date(CPT_2).processingTime(new ProcessingTime(360L, MINUTES)).build()),
+                List.of(1L, 2L),
+                emptyList(),
+                emptyList(),
+                Map.of(CPT_1, 360L, CPT_2, 360L),
+                List.of(ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(1).toInstant(UTC)))
+                                .quantity(120L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(2).toInstant(UTC)))
+                                .quantity(100L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(3).toInstant(UTC)))
+                                .quantity(130L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(5).toInstant(UTC)))
+                                .quantity(100L).build()
+                ),
+                Map.of(NOW.truncatedTo(SECONDS), 130,
+                        NOW.plusHours(1).truncatedTo(SECONDS), 120,
+                        NOW.plusHours(2).truncatedTo(SECONDS), 100,
+                        NOW.plusHours(3).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(4).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(5).truncatedTo(SECONDS), 100),
+                emptyList(),
+                emptyList()
+        );
+    }
+
+    private static Arguments projectionDeferralCommandCenter() {
+        return Arguments.of(
+                "TestValues",
+                FBM_WMS_OUTBOUND,
+                WAREHOUSE_ID,
+                NOW,
+                NOW.plusHours(6),
+                COMMAND_CENTER_DEFERRAL,
+                List.of(GetSlaByWarehouseOutput.builder().date(CPT_1).processingTime(new ProcessingTime(15L, MINUTES)).build(),
+                        GetSlaByWarehouseOutput.builder().date(CPT_2).processingTime(new ProcessingTime(15L, MINUTES)).build()),
+                List.of(1L, 2L),
+                List.of(new Backlog(CPT_1, 100), new Backlog(CPT_2, 200)),
+                List.of(CPT_1, CPT_2),
+                Map.of(CPT_1, 15L, CPT_2, 15L),
+                List.of(ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(1).toInstant(UTC)))
+                                .quantity(120L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(2).toInstant(UTC)))
+                                .quantity(100L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(3).toInstant(UTC)))
+                                .quantity(130L).build(),
+                        ProcessingDistributionViewImpl.builder().date(Date.from(NOW.toLocalDateTime().plusHours(5).toInstant(UTC)))
+                                .quantity(100L).build()
+                ),
+                Map.of(NOW.truncatedTo(SECONDS), 130,
+                        NOW.plusHours(1).truncatedTo(SECONDS), 120,
+                        NOW.plusHours(2).truncatedTo(SECONDS), 100,
+                        NOW.plusHours(3).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(4).truncatedTo(SECONDS), 130,
+                        NOW.plusHours(5).truncatedTo(SECONDS), 100),
+                List.of(new CptCalculationDetailOutput(NOW.truncatedTo(ChronoUnit.HOURS), 0, 50000),
+                        new CptCalculationDetailOutput(NOW.plus(1, ChronoUnit.HOURS).truncatedTo(ChronoUnit.HOURS), 0, 50000),
+                        new CptCalculationDetailOutput(NOW.plus(2, ChronoUnit.HOURS).truncatedTo(ChronoUnit.HOURS), 0, 50000)),
+                List.of(new DeliveryPromiseProjectionOutput(CPT_1, null, 0, CPT_1.minusMinutes(15),
+                                new ProcessingTime(15L, MINUTES), CPT_1.minusHours(7), true, 0),
+                        new DeliveryPromiseProjectionOutput(CPT_2, null, 0, CPT_2.minusMinutes(15),
+                                new ProcessingTime(15L, MINUTES), CPT_1.minusHours(7), true, 0)
                 )
         );
     }

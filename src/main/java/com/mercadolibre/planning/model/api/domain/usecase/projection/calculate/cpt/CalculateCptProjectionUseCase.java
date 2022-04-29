@@ -1,18 +1,5 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
-import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -21,6 +8,19 @@ import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.iterate;
+
+import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -32,30 +32,29 @@ public class CalculateCptProjectionUseCase {
     private static final int HOUR_IN_MINUTES = 60;
 
     public List<CptCalculationOutput> execute(final SlaProjectionInput input) {
-        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate =
-                getUnitsByDateOutAndDate(input);
+        final Map<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate = getUnitsByDateOutAndDate(input);
 
         final Map<ZonedDateTime, Integer> capacity = input.getCapacity();
+
         adaptMinutesFirstCapacity(capacity, input.getCurrentDate());
 
         return project(input, capacity, unitsByDateOutAndDate);
     }
-
     // TODO: Refactor of nested if statements
 
-    private List<CptCalculationOutput> project(
-            final SlaProjectionInput input,
-            final Map<ZonedDateTime, Integer> capacityByDate,
-            final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate) {
+    private List<CptCalculationOutput> project(final SlaProjectionInput input,
+                                               final Map<ZonedDateTime, Integer> capacityByDate,
+                                               final Map<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate) {
 
         final List<CptCalculationOutput> cptCalculationOutputs = new ArrayList<>();
         final Map<ZonedDateTime, Integer> originalCapacityByDate = new HashMap<>(capacityByDate);
         final Map<ZonedDateTime, Integer> projectionEndMinutes = new HashMap<>();
 
-        input.getSlaByWarehouse().forEach(item -> {
+        // Iteration by dateOut (cpt)
+        input.getSlaByWarehouse().forEach(sla -> {
 
-            final Map<ZonedDateTime, Integer> unitsByDate =
-                    unitsByDateOutAndDate.get(item.getDate().withFixedOffsetZone());
+            final BacklogDetail unitsByDate = unitsByDateOutAndDate.get(sla.getDate().withFixedOffsetZone());
+            final List<CptCalculationDetailOutput> calculationDetails = new ArrayList<>();
 
             int nextBacklog = 0;
             int remainingQuantity = 0;
@@ -65,10 +64,11 @@ public class CalculateCptProjectionUseCase {
 
             if (cptFound) {
 
-                for (final ZonedDateTime time : unitsByDate.keySet()) {
+                // Iteration by operation hour
+                for (final ZonedDateTime operationHour : unitsByDate.getTotalBacklogByOperationHour().keySet()) {
 
-                    final int capacity = capacityByDate.getOrDefault(time, 0);
-                    final int unitsToProcess = unitsByDate.getOrDefault(time, 0);
+                    final int capacity = capacityByDate.getOrDefault(operationHour, 0);
+                    final int unitsToProcess = unitsByDate.getTotalBacklogByOperationHour().getOrDefault(operationHour, 0);
                     int unitsBeingProcessed = min(nextBacklog + unitsToProcess, capacity);
                     final int currentBacklog = nextBacklog;
 
@@ -79,25 +79,26 @@ public class CalculateCptProjectionUseCase {
                     }
                     // update projectedDate when all units were processed
                     if (nextBacklog == 0 && currentBacklog + unitsToProcess != 0) {
-                        final Integer shift = projectionEndMinutes.getOrDefault(time, 0);
-                        final Integer currentHourCapacity = originalCapacityByDate.get(time);
+                        final Integer shift = projectionEndMinutes.getOrDefault(operationHour, 0);
+                        final Integer currentHourCapacity = originalCapacityByDate.get(operationHour);
 
                         projectedDate = calculateProjectedDate(
-                                time,
+                                operationHour,
                                 currentHourCapacity,
                                 unitsBeingProcessed,
                                 shift);
 
                         if (projectedDate != null && projectedDate.getMinute() != 0) {
-                            projectionEndMinutes.put(time,
-                                    projectedDate.getMinute() - time.getMinute());
+                            projectionEndMinutes.put(operationHour, projectedDate.getMinute() - operationHour.getMinute());
                         }
                     }
 
-                    capacityByDate.put(time, capacity - unitsBeingProcessed);
+                    capacityByDate.put(operationHour, capacity - unitsBeingProcessed);
 
-                    if (item.getDate().truncatedTo(HOURS).isEqual(time)) {
-                        final int minutes = (int) MINUTES.between(time, item.getDate());
+                    calculationDetails.add(new CptCalculationDetailOutput(operationHour, unitsBeingProcessed, currentBacklog));
+
+                    if (sla.getDate().truncatedTo(HOURS).isEqual(operationHour)) {
+                        final int minutes = (int) MINUTES.between(operationHour, sla.getDate());
                         unitsBeingProcessed = minutes * unitsBeingProcessed / HOUR_IN_MINUTES;
                         remainingQuantity = currentBacklog - unitsBeingProcessed;
 
@@ -109,55 +110,59 @@ public class CalculateCptProjectionUseCase {
                 }
             }
 
-            cptCalculationOutputs.add(
-                    new CptCalculationOutput(item.getDate().withFixedOffsetZone(),
-                            projectedDate, remainingQuantity));
-
+            cptCalculationOutputs.add(new CptCalculationOutput(
+                    sla.getDate().withFixedOffsetZone(),
+                    projectedDate,
+                    remainingQuantity,
+                    cptFound ? unitsByDate.getTotalCurrentBacklog() : 0,
+                    cptFound ? unitsByDate.getTotalPlannedBacklog() : 0,
+                    calculationDetails));
         });
 
         return cptCalculationOutputs;
     }
 
-    private Map<ZonedDateTime, Map<ZonedDateTime, Integer>> getUnitsByDateOutAndDate(
+    private SortedMap<ZonedDateTime, BacklogDetail> getUnitsByDateOutAndDate(
             final SlaProjectionInput input) {
 
-        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> expectedUnitsByDateInByDateOut =
-                getExpectedUnits(input.getPlannedUnits());
+        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> expectedUnitsByDateInByDateOut = getExpectedUnits(input.getPlannedUnits());
 
         final Map<ZonedDateTime, Integer> currentUnitsBacklogByDateOut = input.getBacklog() == null
                 ? emptyMap()
                 : input.getBacklog().stream().collect(toMap(
-                        backlog -> backlog.getDate().withFixedOffsetZone(),
+                backlog -> backlog.getDate().withFixedOffsetZone(),
                 Backlog::getQuantity, Integer::sum));
 
-        final ZonedDateTime dateFrom = ignoreMinutes(input.getDateFrom());
+        final ZonedDateTime firstHour = ignoreMinutes(input.getDateFrom());
 
-        final TreeSet<ZonedDateTime> datesOut = new TreeSet(expectedUnitsByDateInByDateOut.keySet());
+        final TreeSet<ZonedDateTime> datesOut = new TreeSet<>(expectedUnitsByDateInByDateOut.keySet());
         datesOut.addAll(currentUnitsBacklogByDateOut.keySet());
 
-        final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> unitsByDateOutAndDate = new TreeMap<>();
+        final SortedMap<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate = new TreeMap<>();
 
         datesOut.forEach(dateOut -> {
             final Map<ZonedDateTime, Integer> unitsByDate = new TreeMap<>();
-            final Integer backlogQty = currentUnitsBacklogByDateOut.getOrDefault(dateOut, 0);
+            final Integer totalCurrentBacklog = currentUnitsBacklogByDateOut.getOrDefault(dateOut, 0);
+            final Map<ZonedDateTime, Integer> expectedUnitsByDateOut = expectedUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap());
 
-            unitsByDate.put(input.getCurrentDate(),
-                    calculateExactBacklog(
-                            backlogQty,
-                            expectedUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap())
-                                    .getOrDefault(dateFrom, 0),
-                            input.getCurrentDate().getMinute()));
+            // Process first hours
+            unitsByDate.put(input.getCurrentDate(), calculateProportionalQuantityToFirstDate(
+                    totalCurrentBacklog,
+                    expectedUnitsByDateOut.getOrDefault(firstHour, 0),
+                    input.getCurrentDate().getMinute()));
 
-            iterate(dateFrom.plusHours(1), date -> date.plusHours(1))
-                    .limit(HOURS.between(dateFrom, input.getDateTo()))
+            // Process next hours (excluded first hour)
+            iterate(firstHour.plusHours(1), date -> date.plusHours(1))
+                    .limit(HOURS.between(firstHour, input.getDateTo()))
                     .forEach(dateTime -> {
-                        final Integer expectedQty = expectedUnitsByDateInByDateOut
-                                .getOrDefault(dateOut, emptyMap()).getOrDefault(dateTime, 0);
+                        final Integer expectedQty =
+                                expectedUnitsByDateOut.getOrDefault(dateTime, 0);
 
                         unitsByDate.put(dateTime, expectedQty);
                     });
 
-            unitsByDateOutAndDate.put(dateOut, unitsByDate);
+            final int totalPlannedBacklog = unitsByDate.values().stream().reduce(0, Integer::sum) - totalCurrentBacklog;
+            unitsByDateOutAndDate.put(dateOut, new BacklogDetail(totalCurrentBacklog, totalPlannedBacklog, unitsByDate));
         });
 
         return unitsByDateOutAndDate;
@@ -190,9 +195,9 @@ public class CalculateCptProjectionUseCase {
         return date.plusMinutes(minutes);
     }
 
-    private int calculateExactBacklog(final int backlogQty,
-                                      final int expectedQty,
-                                      final int nowMinutes) {
+    private int calculateProportionalQuantityToFirstDate(final int backlogQty,
+                                                         final int expectedQty,
+                                                         final int nowMinutes) {
         final int remainingMinutes = HOUR_IN_MINUTES - nowMinutes;
         return backlogQty + (remainingMinutes * expectedQty / HOUR_IN_MINUTES);
     }

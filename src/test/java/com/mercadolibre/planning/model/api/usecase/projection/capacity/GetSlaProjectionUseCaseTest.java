@@ -92,7 +92,7 @@ class GetSlaProjectionUseCaseTest {
 
         when(calculateCptProjection.execute(any(SlaProjectionInput.class)))
                 .thenReturn(List.of(
-                        new CptCalculationOutput(etd, projectedTime, 100)));
+                        new CptCalculationOutput(etd, projectedTime, 100, 0, 0, emptyList())));
 
         when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
                 .thenReturn(List.of(
@@ -164,7 +164,7 @@ class GetSlaProjectionUseCaseTest {
                 ));
 
         when(calculateCptProjection.execute(any(SlaProjectionInput.class)))
-                .thenReturn(List.of(new CptCalculationOutput(etd, projectedTime, 100)));
+                .thenReturn(List.of(new CptCalculationOutput(etd, projectedTime, 100, 0, 0, emptyList())));
 
         // WHEN
         final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInboundInput());

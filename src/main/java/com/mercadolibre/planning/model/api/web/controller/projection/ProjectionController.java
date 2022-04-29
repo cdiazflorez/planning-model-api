@@ -1,5 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.BacklogProjectionUseCaseFactory;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.GetBacklogProjectionUseCase;
@@ -19,6 +23,8 @@ import com.mercadolibre.planning.model.api.web.controller.projection.request.Cpt
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.newrelic.api.agent.Trace;
+import java.util.List;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -29,14 +35,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
-
-import java.util.List;
-
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @RestController
@@ -84,10 +82,12 @@ public class ProjectionController {
                 .builder()
                 .warehouseId(request.getWarehouseId())
                 .workflow(workflow)
+                .projectionType(request.getType())
                 .dateFrom(request.getDateFrom())
                 .dateTo(request.getDateTo())
                 .timeZone(request.getTimeZone())
                 .backlog(getBacklog(request.getBacklog()))
+                .applyDeviation(request.isApplyDeviation())
                 .build())
         );
     }

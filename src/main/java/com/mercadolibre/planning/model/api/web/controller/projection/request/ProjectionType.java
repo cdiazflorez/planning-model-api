@@ -13,7 +13,8 @@ public enum ProjectionType {
 
     BACKLOG,
     CPT,
-    DEFERRAL;
+    DEFERRAL,
+    COMMAND_CENTER_DEFERRAL;
 
     private static final Map<String, ProjectionType> LOOKUP = Arrays.stream(values()).collect(
             toMap(ProjectionType::toString, Function.identity())

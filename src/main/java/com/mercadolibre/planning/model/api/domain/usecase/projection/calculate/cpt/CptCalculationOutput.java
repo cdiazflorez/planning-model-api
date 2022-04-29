@@ -1,15 +1,25 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
+import java.util.List;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
 
+/**
+ * Structure return the result of the projection process.
+ */
 @Value
 public class CptCalculationOutput {
 
-    private ZonedDateTime date;
+    ZonedDateTime date;
 
-    private ZonedDateTime projectedEndDate;
+    ZonedDateTime projectedEndDate;
 
-    private int remainingQuantity;
+    int remainingQuantity;
+
+    int totalCurrentBacklog;
+
+    int totalPlannedBacklog;
+
+    List<CptCalculationDetailOutput> calculationDetails;
 }

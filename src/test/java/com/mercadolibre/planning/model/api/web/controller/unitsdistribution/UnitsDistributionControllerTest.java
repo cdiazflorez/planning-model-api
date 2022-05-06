@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @WebMvcTest(controllers = UnitsDistributionController.class)
 public class UnitsDistributionControllerTest {
 
-  private static final String URL = "/planning/model/workflows/FBM_WMS_OUTBOUND/units_distribution";
+  private static final String URL = "/planning/model/workflows/FBM_WMS_OUTBOUND/entities/units_distribution";
 
   private static final String AREA = "MZ-01";
 

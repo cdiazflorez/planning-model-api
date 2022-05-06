@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 /** Controller to save and query units-distribution. */
 @RestController
 @AllArgsConstructor
-@RequestMapping("/planning/model/workflows/{workflow}/units_distribution")
+@RequestMapping("/planning/model/workflows/{workflow}/entities/units_distribution")
 public class UnitsDistributionController {
 
   private final UnitsDistributionService unitsDistributionService;

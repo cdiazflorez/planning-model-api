@@ -18,10 +18,12 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionByAreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CptProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.web.controller.projection.response.BacklogProjectionByAreaDto;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
 import javax.validation.Valid;
@@ -43,81 +45,103 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class ProjectionController {
 
-    private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
+  private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
 
-    private final GetSlaProjectionUseCase getSlaProjectionUseCase;
+  private final GetSlaProjectionUseCase getSlaProjectionUseCase;
 
-    private final BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
+  private final BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
-    @PostMapping("/cpts")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<CptProjectionOutput>> getCptProjection(
-            @PathVariable final Workflow workflow,
-            @Valid @RequestBody final CptProjectionRequest request) {
+  private final BacklogProjectionAdapter backlogProjectionAdapter;
 
-        return ResponseEntity.ok(getSlaProjectionUseCase.execute(
-                new GetSlaProjectionInput(
-                        workflow,
-                        request.getWarehouseId(),
-                        request.getType(),
-                        request.getProcessName(),
-                        request.getDateFrom(),
-                        request.getDateTo(),
-                        request.getBacklog(),
-                        request.getTimeZone(),
-                        SIMULATION,
-                        emptyList(),
-                        request.isApplyDeviation()
-                )
-        ));
-    }
+  @PostMapping("/cpts")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<CptProjectionOutput>> getCptProjection(
+      @PathVariable final Workflow workflow,
+      @Valid @RequestBody final CptProjectionRequest request) {
 
-    @PostMapping("/cpts/delivery_promise")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getDeliveryPromiseProjection(
-            @PathVariable final Workflow workflow,
-            @Valid @RequestBody final CptProjectionRequest request) {
+    return ResponseEntity.ok(getSlaProjectionUseCase.execute(
+        new GetSlaProjectionInput(
+            workflow,
+            request.getWarehouseId(),
+            request.getType(),
+            request.getProcessName(),
+            request.getDateFrom(),
+            request.getDateTo(),
+            request.getBacklog(),
+            request.getTimeZone(),
+            SIMULATION,
+            emptyList(),
+            request.isApplyDeviation()
+        )
+    ));
+  }
 
-        return ResponseEntity.ok(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput
-                .builder()
-                .warehouseId(request.getWarehouseId())
-                .workflow(workflow)
-                .projectionType(request.getType())
-                .dateFrom(request.getDateFrom())
-                .dateTo(request.getDateTo())
-                .timeZone(request.getTimeZone())
-                .backlog(getBacklog(request.getBacklog()))
-                .applyDeviation(request.isApplyDeviation())
-                .build())
-        );
-    }
+  @PostMapping("/cpts/delivery_promise")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getDeliveryPromiseProjection(
+      @PathVariable final Workflow workflow,
+      @Valid @RequestBody final CptProjectionRequest request) {
 
-    @PostMapping("/backlogs")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<BacklogProjection>> getBacklogProjections(
-            @PathVariable final Workflow workflow,
-            @Valid @RequestBody final BacklogProjectionRequest request) {
+    return ResponseEntity.ok(delPromiseProjection.execute(GetDeliveryPromiseProjectionInput
+        .builder()
+        .warehouseId(request.getWarehouseId())
+        .workflow(workflow)
+        .projectionType(request.getType())
+        .dateFrom(request.getDateFrom())
+        .dateTo(request.getDateTo())
+        .timeZone(request.getTimeZone())
+        .backlog(getBacklog(request.getBacklog()))
+        .applyDeviation(request.isApplyDeviation())
+        .build())
+    );
+  }
 
-        final GetBacklogProjectionUseCase useCase = backlogProjectionUseCaseFactory.getUseCase(workflow);
+  @PostMapping("/backlogs")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<BacklogProjection>> getBacklogProjections(
+      @PathVariable final Workflow workflow,
+      @Valid @RequestBody final BacklogProjectionRequest request) {
 
-        return ResponseEntity.ok(useCase.execute(BacklogProjectionInput.builder()
-                .logisticCenterId(request.getWarehouseId())
-                .dateFrom(request.getDateFrom())
-                .dateTo(request.getDateTo())
-                .currentBacklogs(request.getCurrentBacklog())
-                .processNames(request.getProcessName())
-                .build()));
-    }
+    final GetBacklogProjectionUseCase useCase = backlogProjectionUseCaseFactory.getUseCase(workflow);
 
-    @InitBinder
-    public void initBinder(final PropertyEditorRegistry dataBinder) {
-        dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
-        dataBinder.registerCustomEditor(ProjectionType.class, new ProjectionTypeEditor());
-    }
+    return ResponseEntity.ok(useCase.execute(BacklogProjectionInput.builder()
+        .logisticCenterId(request.getWarehouseId())
+        .dateFrom(request.getDateFrom())
+        .dateTo(request.getDateTo())
+        .currentBacklogs(request.getCurrentBacklog())
+        .processNames(request.getProcessName())
+        .build()));
+  }
 
-    private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {
-        return backlogs == null
-                ? emptyList()
-                : backlogs.stream().map(QuantityByDate::toBacklog).collect(toList());
-    }
+  @PostMapping("/backlogs/grouped/area")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<BacklogProjectionByAreaDto>> getBacklogByAreaProjections(
+      @PathVariable final Workflow workflow,
+      @Valid @RequestBody final BacklogProjectionByAreaRequest request) {
+
+    final var projections = backlogProjectionAdapter.projectionByArea(
+        request.getDateFrom(),
+        request.getDateTo(),
+        workflow,
+        request.getProcessName(),
+        request.getThroughput(),
+        request.getPlanningUnits(),
+        request.getCurrentBacklog(),
+        request.getAreaDistributions()
+    );
+
+    return ResponseEntity.ok(projections);
+  }
+
+  @InitBinder
+  public void initBinder(final PropertyEditorRegistry dataBinder) {
+    dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
+    dataBinder.registerCustomEditor(ProjectionType.class, new ProjectionTypeEditor());
+  }
+
+  private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {
+    return backlogs == null
+        ? emptyList()
+        : backlogs.stream().map(QuantityByDate::toBacklog).collect(toList());
+  }
 }

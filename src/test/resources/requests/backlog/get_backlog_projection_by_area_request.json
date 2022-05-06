@@ -1,0 +1,68 @@
+{
+  "process_name": [
+    "waving",
+    "picking",
+    "packing"
+  ],
+  "date_from": "2020-07-27T09:00:00Z",
+  "date_to": "2020-07-28T08:00:00Z",
+  "throughput": [
+    {
+      "workflow": "fbm-wms-outbound",
+      "date": "2020-07-27T09:00:00Z",
+      "process_name": "waving",
+      "value": 100
+    },
+    {
+      "workflow": "fbm-wms-outbound",
+      "date": "2020-07-27T09:00:00Z",
+      "process_name": "picking",
+      "value": 150
+    }
+  ],
+  "planning_units": [
+    {
+      "date_in": "2020-07-27T09:00:00Z",
+      "date_out": "2020-07-27T18:00:00Z",
+      "metric_unit": "units",
+      "total": 150
+    },
+    {
+      "date_in": "2020-07-27T09:00:00Z",
+      "date_out": "2020-07-27T19:00:00Z",
+      "metric_unit": "units",
+      "total": 130
+    }
+  ],
+  "current_backlog": [
+    {
+      "process_name": "waving",
+      "date_out": "2020-07-27T18:00:00Z",
+      "quantity": 1500
+    },
+    {
+      "process_name": "picking",
+      "date_out": "2020-07-27T18:00:00Z",
+      "quantity": 1000
+    },
+    {
+      "process_name": "packing",
+      "date_out": "2020-07-27T18:00:00Z",
+      "quantity": 500
+    }
+  ],
+  "area_distributions": [
+    {
+      "process_name": "picking",
+      "date": "2020-07-27T09:00:00Z",
+      "area": "RK-H",
+      "percentage": 0.5
+    },
+    {
+      "process_name": "picking",
+      "date": "2020-07-27T09:00:00Z",
+      "area": "RK-L",
+      "percentage": 0.5
+    }
+  ]
+}

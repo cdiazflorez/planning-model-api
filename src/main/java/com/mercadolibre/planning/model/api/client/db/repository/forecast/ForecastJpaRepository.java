@@ -32,13 +32,14 @@ public class ForecastJpaRepository implements ForecastGateway {
     }
 
     @Override
-    public int deleteOlderThan(final Workflow workflow, final ZonedDateTime date) {
+    public int deleteOlderThan(final Workflow workflow, final ZonedDateTime date, final String warehouseId) {
         final String queryStr =
-                "DELETE FROM forecast f WHERE f.last_updated < ?1 AND f.workflow = ?2";
+                "DELETE FROM forecast f JOIN forecast_metadata fm ON f.id = fm.forecast_id WHERE f.last_updated < ?1 AND f.workflow = ?2 AND fm.`key` == 'warehouse_id' AND fm.value = ?3";
 
         return entityManager.createNativeQuery(queryStr)
                 .setParameter(1, date)
                 .setParameter(2, workflow.name())
+                .setParameter(3, warehouseId)
                 .executeUpdate();
     }
 }

@@ -19,12 +19,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -54,9 +49,10 @@ public class ForecastController {
     @PostMapping("/purge/weeks/{weeks}")
     public ResponseEntity<DeleteForecastResponse> deleteOldForecasts(
             @PathVariable final Workflow workflow,
-            @PathVariable final Integer weeks) {
+            @PathVariable final Integer weeks,
+            @RequestParam final String warehouseId) {
 
-        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks);
+        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks, warehouseId);
 
         final Integer updatedRows = deleteForecastUseCase.execute(input);
 

@@ -26,6 +26,6 @@ public class DeleteForecastUseCase implements UseCase<DeleteForecastInput, Integ
         }
 
         final ZonedDateTime limit = ZonedDateTime.now(UTC).minusWeeks(input.getWeeks());
-        return forecastGateway.deleteOlderThan(input.getWorkflow(), limit);
+        return forecastGateway.deleteOlderThan(input.getWorkflow(), limit, input.getWarehouseId());
     }
 }

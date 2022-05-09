@@ -11,7 +11,9 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.*;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest

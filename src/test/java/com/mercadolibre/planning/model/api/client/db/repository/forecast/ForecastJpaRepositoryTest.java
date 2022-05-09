@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -10,7 +11,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
+import static com.mercadolibre.planning.model.api.util.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -27,11 +28,17 @@ public class ForecastJpaRepositoryTest {
         final Forecast firstForecast = mockSimpleForecast();
         entityManager.persist(firstForecast);
 
+        final ForecastMetadata firstForecastMetadata = mockForecastMetadata(firstForecast);
+        entityManager.persist(firstForecastMetadata);
+
         final Forecast secondForecast = mockSimpleForecast();
         entityManager.persist(secondForecast);
 
+        final ForecastMetadata secondForecastMetadata = mockForecastMetadata(secondForecast);
+        entityManager.persist(secondForecastMetadata);
+
         // WHEN
-        repository.deleteOlderThan(FBM_WMS_OUTBOUND, secondForecast.getLastUpdated());
+        repository.deleteOlderThan(FBM_WMS_OUTBOUND, secondForecast.getLastUpdated(), WAREHOUSE_ID);
 
         // THEN
         final List<Forecast> result =

@@ -40,7 +40,7 @@ public class ForecastJpaRepository implements ForecastGateway {
                 "WHERE f.last_updated < ?1",
                 "AND f.workflow = ?2",
                 "AND fm.`key` = 'warehouse_id'",
-                "AND fm.value = ?3;");
+                "AND fm.value = ?3");
 
         return entityManager.createNativeQuery(queryStr)
                 .setParameter(1, date)

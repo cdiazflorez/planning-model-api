@@ -11,9 +11,9 @@ import javax.persistence.EntityManager;
 import java.util.List;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
-import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
@@ -40,7 +40,7 @@ public class ForecastJpaRepositoryTest {
         entityManager.persist(secondForecastMetadata);
 
         // WHEN
-        repository.deleteOlderThan(FBM_WMS_OUTBOUND, secondForecast.getLastUpdated(), WAREHOUSE_ID);
+        repository.deleteOlderThan(FBM_WMS_OUTBOUND, secondForecast.getLastUpdated(), LIMIT);
 
         // THEN
         final List<Forecast> result =

@@ -56,9 +56,9 @@ public class ForecastController {
     public ResponseEntity<DeleteForecastResponse> deleteOldForecasts(
             @PathVariable final Workflow workflow,
             @PathVariable final Integer weeks,
-            @RequestParam final String warehouseId) {
+            @RequestParam final int limit) {
 
-        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks, warehouseId);
+        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks, limit);
 
         final Integer updatedRows = deleteForecastUseCase.execute(input);
 

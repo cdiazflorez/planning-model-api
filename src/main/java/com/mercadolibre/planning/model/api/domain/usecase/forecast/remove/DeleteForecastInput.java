@@ -7,5 +7,5 @@ import lombok.Value;
 public class DeleteForecastInput {
     private Workflow workflow;
     private Integer weeks;
-    private String warehouseId;
+    private int limit;
 }

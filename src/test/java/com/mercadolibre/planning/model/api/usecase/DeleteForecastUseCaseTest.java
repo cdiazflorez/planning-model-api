@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
 
-import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,12 +33,12 @@ public class DeleteForecastUseCaseTest {
     @Test
     public void deleteForecastOk() {
         // GIVEN
-        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, 1, WAREHOUSE_ID);
+        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, 1, LIMIT);
 
         when(forecastGateway.deleteOlderThan(
                 eq(Workflow.FBM_WMS_OUTBOUND),
                 any(ZonedDateTime.class),
-                eq(WAREHOUSE_ID))
+                eq(LIMIT))
         ).thenReturn(5);
 
         // WHEN
@@ -51,7 +51,7 @@ public class DeleteForecastUseCaseTest {
     @Test
     public void deleteForecastErr() {
         // GIVEN
-        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, -1, WAREHOUSE_ID);
+        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, -1, LIMIT);
 
         // WHEN
         final Executable executable = () -> deleteForecastUseCase.execute(input);

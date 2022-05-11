@@ -25,7 +25,7 @@ public class DeleteForecastUseCase implements UseCase<DeleteForecastInput, Integ
             throw new BadRequestException("Week span should not be negative");
         }
 
-        final ZonedDateTime limit = ZonedDateTime.now(UTC).minusWeeks(input.getWeeks());
-        return forecastGateway.deleteOlderThan(input.getWorkflow(), limit, input.getLimit());
+        final ZonedDateTime pointInTime = ZonedDateTime.now(UTC).minusWeeks(input.getWeeks());
+        return forecastGateway.deleteOlderThan(input.getWorkflow(), pointInTime, input.getLimit());
     }
 }

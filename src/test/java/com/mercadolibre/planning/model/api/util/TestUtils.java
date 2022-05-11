@@ -109,7 +109,7 @@ public final class TestUtils {
     public static final String CONFIG_KEY = "expedition_processing_time";
     public static final long USER_ID = 1234L;
     public static final long CALLER_ID = 1234;
-    public static final int LIMIT = 1;
+    public static final Integer LIMIT = 1;
 
     private TestUtils() {
     }

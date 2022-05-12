@@ -1,5 +1,8 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
+
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import org.junit.jupiter.api.Test;
@@ -10,8 +13,6 @@ import javax.persistence.EntityManager;
 
 import java.util.List;
 
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;

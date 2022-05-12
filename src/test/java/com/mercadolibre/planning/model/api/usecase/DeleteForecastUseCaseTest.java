@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
+
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
@@ -19,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-
-import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
 
 @ExtendWith(MockitoExtension.class)
 public class DeleteForecastUseCaseTest {

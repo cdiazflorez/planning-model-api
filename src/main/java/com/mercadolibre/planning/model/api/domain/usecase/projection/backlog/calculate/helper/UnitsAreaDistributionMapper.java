@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.input.BacklogBySla;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.input.QuantityAtArea;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
  */
 public class UnitsAreaDistributionMapper implements BacklogMapper<BacklogBySla, BacklogByArea> {
 
-  private static final String GLOBAL_AREA = "undefined";
+  private static final String GLOBAL_AREA = "NA";
 
   private static final Map<String, Double> NO_AREAS_DISTRIBUTIONS = Map.of(GLOBAL_AREA, 1.0);
 
@@ -55,14 +56,18 @@ public class UnitsAreaDistributionMapper implements BacklogMapper<BacklogBySla, 
             Double::sum
         ));
 
-    final var areas = quantityByArea.containsKey(GLOBAL_AREA)
-        ? List.of(GLOBAL_AREA)
-        : areasByProcess.getOrDefault(process, List.of(GLOBAL_AREA));
+    final var areas = areasByProcess.getOrDefault(process, Collections.emptyList());
+
+    final var isNoAreaPresent = quantityByArea.containsKey(GLOBAL_AREA);
+    final var noAreaQuantity = new QuantityAtArea(GLOBAL_AREA, quantityByArea.getOrDefault(GLOBAL_AREA, 0.0));
+    final Stream<QuantityAtArea> noAreaStream = isNoAreaPresent ? Stream.of(noAreaQuantity) : Stream.empty();
 
     return new BacklogByArea(
-        areas.stream()
-            .map(area -> new QuantityAtArea(area, quantityByArea.getOrDefault(area, 0.0)))
-            .collect(Collectors.toList())
+        Stream.concat(
+            areas.stream()
+                .map(area -> new QuantityAtArea(area, quantityByArea.getOrDefault(area, 0.0))),
+            noAreaStream
+        ).collect(Collectors.toList())
     );
   }
 

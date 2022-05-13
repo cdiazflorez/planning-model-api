@@ -11,5 +11,5 @@ public interface ForecastGateway {
 
     Forecast create(final Forecast forecast, final List<ForecastMetadata> metadatas);
 
-    int deleteOlderThan(Workflow workflow, ZonedDateTime date);
+    int deleteOlderThan(Workflow workflow, ZonedDateTime date, Integer limit);
 }

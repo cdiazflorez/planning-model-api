@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
+
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
@@ -32,11 +34,12 @@ public class DeleteForecastUseCaseTest {
     @Test
     public void deleteForecastOk() {
         // GIVEN
-        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, 1);
+        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, 1, LIMIT);
 
         when(forecastGateway.deleteOlderThan(
                 eq(Workflow.FBM_WMS_OUTBOUND),
-                any(ZonedDateTime.class))
+                any(ZonedDateTime.class),
+                eq(LIMIT))
         ).thenReturn(5);
 
         // WHEN
@@ -49,7 +52,7 @@ public class DeleteForecastUseCaseTest {
     @Test
     public void deleteForecastErr() {
         // GIVEN
-        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, -1);
+        final DeleteForecastInput input = new DeleteForecastInput(Workflow.FBM_WMS_OUTBOUND, -1, LIMIT);
 
         // WHEN
         final Executable executable = () -> deleteForecastUseCase.execute(input);

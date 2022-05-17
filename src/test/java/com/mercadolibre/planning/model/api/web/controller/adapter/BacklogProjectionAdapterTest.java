@@ -38,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class BacklogProjectionAdapterTest {
 
-  private static final String NO_AREA = "undefined";
+  private static final String NO_AREA = "NA";
 
   private static final Instant DATE_FROM = Instant.parse("2020-07-27T09:00:00Z");
 

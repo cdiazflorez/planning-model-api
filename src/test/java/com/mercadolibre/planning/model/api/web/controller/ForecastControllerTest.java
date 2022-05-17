@@ -74,6 +74,7 @@ public class ForecastControllerTest {
         // WHEN
         final ResultActions result = mvc.perform(
                 post(url, "fbm-wms-outbound", 1)
+                        .param("limit", "1")
                         .contentType(APPLICATION_JSON)
         );
 

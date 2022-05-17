@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class BacklogProjectionByAreaTest {
 
-  private static final String NO_AREA = "undefined";
+  private static final String NO_AREA = "NA";
 
   private static final double ALLOWED_DELTA = 0.001;
 
@@ -110,18 +110,25 @@ public class BacklogProjectionByAreaTest {
     final var firstOH = results.get(0);
     final var firstOhProcessed = firstOH.getResultingState().getProcessed().getQuantityByArea();
     final var firstOhCarryOver = firstOH.getResultingState().getCarryOver().getQuantityByArea();
-    assertAreaValues(firstOhProcessed, 15.0, 10.0, 50.0, 25.0);
-    assertAreaValues(firstOhCarryOver, 28.75, 10.0, 99.5, 16.75);
+    assertAreaValues(firstOhProcessed, 15.0, 10.0, 50.0, 25.0, null);
+    assertAreaValues(firstOhCarryOver, 28.75, 10.0, 99.5, 16.75, null);
 
     final var secondOH = results.get(1);
     final var secondOhProcessed = secondOH.getResultingState().getProcessed().getQuantityByArea();
     final var secondOhCarryOver = secondOH.getResultingState().getCarryOver().getQuantityByArea();
-    assertAreaValues(secondOhProcessed, 37.75, 12.25, 131.0, 19.0);
-    assertAreaValues(secondOhCarryOver, 17.0, 4.25, 59.5, 4.25);
+    assertAreaValues(secondOhProcessed, 37.75, 12.25, 131.0, 19.0, 0.0);
+    assertAreaValues(secondOhCarryOver, 17.0, 4.25, 59.5, 4.25, 30.0);
   }
 
-  private void assertAreaValues(final List<QuantityAtArea> quantity, final double bl, final double hv, final double mz1, final double mz2) {
-    assertEquals(4, quantity.size());
+  private void assertAreaValues(final List<QuantityAtArea> quantity,
+                                final double bl,
+                                final double hv,
+                                final double mz1, 
+                                final double mz2,
+                                final Double noArea) {
+
+    final var areasLength = noArea == null ? 4 : 5;
+    assertEquals(areasLength, quantity.size());
 
     assertEquals("BL", quantity.get(0).getArea());
     assertEquals(bl, quantity.get(0).getQuantity(), ALLOWED_DELTA);
@@ -134,6 +141,11 @@ public class BacklogProjectionByAreaTest {
 
     assertEquals("MZ-2", quantity.get(3).getArea());
     assertEquals(mz2, quantity.get(3).getQuantity(), ALLOWED_DELTA);
+
+    if (noArea != null) {
+      assertEquals(NO_AREA, quantity.get(4).getArea());
+      assertEquals(noArea, quantity.get(4).getQuantity(), ALLOWED_DELTA);
+    }
   }
 
   private BacklogMapper<BacklogBySla, BacklogByArea> getBacklogMapper() {
@@ -155,18 +167,11 @@ public class BacklogProjectionByAreaTest {
         "MZ-1", 1.0,
         "MZ-2", 0.0
     );
-    final var slaD = Map.of(
-        "BL", 0.25,
-        "HV", 0.25,
-        "MZ-1", 0.25,
-        "MZ-2", 0.25
-    );
 
     final var distributions = Map.of(
         SLA_A, slaA,
         SLA_B, slaB,
-        SLA_C, slaC,
-        SLA_D, slaD
+        SLA_C, slaC
     );
 
     return new UnitsAreaDistributionMapper(Map.of(PICKING, distributions));
@@ -224,11 +229,13 @@ public class BacklogProjectionByAreaTest {
             new SimpleProcessedBacklog<>(
                 new BacklogBySla(List.of(
                     new QuantityAtDate(SLA_A, 45),
-                    new QuantityAtDate(SLA_B, 155)
+                    new QuantityAtDate(SLA_B, 155),
+                    new QuantityAtDate(SLA_D, 0)
                 )),
                 new BacklogBySla(List.of(
                     new QuantityAtDate(SLA_A, 0),
-                    new QuantityAtDate(SLA_B, 85)
+                    new QuantityAtDate(SLA_B, 85),
+                    new QuantityAtDate(SLA_D, 30)
                 ))
             )
         )

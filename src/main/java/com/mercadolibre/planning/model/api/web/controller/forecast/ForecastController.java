@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -54,9 +55,10 @@ public class ForecastController {
     @PostMapping("/purge/weeks/{weeks}")
     public ResponseEntity<DeleteForecastResponse> deleteOldForecasts(
             @PathVariable final Workflow workflow,
-            @PathVariable final Integer weeks) {
+            @PathVariable final Integer weeks,
+            @RequestParam final Integer limit) {
 
-        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks);
+        final DeleteForecastInput input = new DeleteForecastInput(workflow, weeks, limit);
 
         final Integer updatedRows = deleteForecastUseCase.execute(input);
 

@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.QueueProjectionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
@@ -45,6 +46,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class ProjectionController {
 
+  private static final String COMMAND_CENTER_SLA = "COMMAND_CENTER_SLA";
+
   private final GetDeliveryPromiseProjectionUseCase delPromiseProjection;
 
   private final GetSlaProjectionUseCase getSlaProjectionUseCase;
@@ -53,27 +56,32 @@ public class ProjectionController {
 
   private final BacklogProjectionAdapter backlogProjectionAdapter;
 
+  private final QueueProjectionService queueProjectionService;
+
   @PostMapping("/cpts")
   @Trace(dispatcher = true)
   public ResponseEntity<List<CptProjectionOutput>> getCptProjection(
       @PathVariable final Workflow workflow,
       @Valid @RequestBody final CptProjectionRequest request) {
 
-    return ResponseEntity.ok(getSlaProjectionUseCase.execute(
-        new GetSlaProjectionInput(
-            workflow,
-            request.getWarehouseId(),
-            request.getType(),
-            request.getProcessName(),
-            request.getDateFrom(),
-            request.getDateTo(),
-            request.getBacklog(),
-            request.getTimeZone(),
-            SIMULATION,
-            emptyList(),
-            request.isApplyDeviation()
-        )
-    ));
+      var input = new GetSlaProjectionInput(
+              workflow,
+              request.getWarehouseId(),
+              request.getType(),
+              request.getProcessName(),
+              request.getDateFrom(),
+              request.getDateTo(),
+              request.getBacklog(),
+              request.getTimeZone(),
+              SIMULATION,
+              emptyList(),
+              request.isApplyDeviation()
+      );
+      if (COMMAND_CENTER_SLA.equals(request.getType().name())) {
+          return ResponseEntity.ok(queueProjectionService.calculateCptProjection(input));
+      } else {
+          return ResponseEntity.ok(getSlaProjectionUseCase.execute(input));
+      }
   }
 
   @PostMapping("/cpts/delivery_promise")

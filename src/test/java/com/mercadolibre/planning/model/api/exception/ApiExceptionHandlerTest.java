@@ -82,7 +82,7 @@ public class ApiExceptionHandlerTest {
         final ErrorResponse expectedResponse = new ErrorResponse(
                 BAD_REQUEST,
                 "Value invalid is invalid, instead it should be one of"
-                        + " [BACKLOG, CPT, DEFERRAL, COMMAND_CENTER_DEFERRAL]", "invalid_projection_type");
+                        + " [BACKLOG, CPT, DEFERRAL, COMMAND_CENTER_DEFERRAL, COMMAND_CENTER_SLA]", "invalid_projection_type");
 
         // WHEN
         final ResponseEntity<ErrorResponse> response =

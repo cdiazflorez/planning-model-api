@@ -77,7 +77,7 @@ public class ProjectionController {
               emptyList(),
               request.isApplyDeviation()
       );
-      if (COMMAND_CENTER_SLA.equals(request.getType().name())) {
+      if (request.getType() != null && COMMAND_CENTER_SLA.equals(request.getType().name())) {
           return ResponseEntity.ok(queueProjectionService.calculateCptProjection(input));
       } else {
           return ResponseEntity.ok(getSlaProjectionUseCase.execute(input));

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.SimulationProjectionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
@@ -42,6 +43,9 @@ public class SimulationControllerTest {
 
     @MockBean
     private ActivateSimulationUseCase activateSimulationUseCase;
+
+    @MockBean
+    private SimulationProjectionService simulationProjectionService;
 
     @Test
     public void testSaveSimulation() throws Exception {

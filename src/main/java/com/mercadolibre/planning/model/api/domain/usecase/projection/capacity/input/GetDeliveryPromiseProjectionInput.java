@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.i
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import lombok.Builder;
 import lombok.Value;
 
@@ -28,4 +29,6 @@ public class GetDeliveryPromiseProjectionInput {
     String timeZone;
 
     boolean applyDeviation;
+
+    List<Simulation> simulations;
 }

@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.projection.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,4 +34,6 @@ public class CptProjectionRequest {
     private String timeZone;
 
     private boolean applyDeviation;
+
+    private List<Simulation> simulations;
 }

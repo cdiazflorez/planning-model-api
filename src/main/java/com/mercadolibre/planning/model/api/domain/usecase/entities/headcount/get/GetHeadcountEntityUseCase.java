@@ -127,7 +127,7 @@ public class GetHeadcountEntityUseCase
                 .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
                         input.getWarehouseId(),
                         input.getWorkflow(),
-                        ProcessingType.ACTIVE_WORKERS,
+                        input.getProcessingType() == null? ProcessingType.ACTIVE_WORKERS :input.getProcessingType().iterator().next(),
                         input.getProcessName(),
                         input.getDateFrom(),
                         input.getDateTo());

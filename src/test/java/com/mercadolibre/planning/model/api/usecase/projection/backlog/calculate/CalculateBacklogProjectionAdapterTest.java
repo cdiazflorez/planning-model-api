@@ -126,7 +126,7 @@ public class CalculateBacklogProjectionAdapterTest {
     final var helper = new BacklogBySlaHelper();
 
     // WHEN
-    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.backlogProjectionBySla(
+    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.project(
         DATE_FROM,
         DATE_TO,
         incomingBacklog(),
@@ -183,7 +183,7 @@ public class CalculateBacklogProjectionAdapterTest {
     );
 
     // WHEN
-    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.backlogProjectionBySla(
+    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.project(
         dateFrom,
         DATE_TO,
         incomingBacklog,
@@ -239,7 +239,7 @@ public class CalculateBacklogProjectionAdapterTest {
     );
 
     // WHEN
-    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.backlogProjectionBySla(
+    final List<ProjectionResult<BacklogBySla>> result = CalculateBacklogProjectionService.project(
         dateFrom,
         DATE_TO,
         upstreamBacklog,

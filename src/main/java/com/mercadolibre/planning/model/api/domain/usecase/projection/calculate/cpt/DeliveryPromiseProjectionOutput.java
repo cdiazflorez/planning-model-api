@@ -21,6 +21,4 @@ public class DeliveryPromiseProjectionOutput {
     ZonedDateTime payBefore;
 
     boolean isDeferred;
-
-    int unitsToDefer;
 }

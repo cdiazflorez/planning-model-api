@@ -45,8 +45,6 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 public class GetSlaProjectionUseCase {
 
-  private final CalculateCptProjectionUseCase calculateCptProjection;
-
   private final GetThroughputUseCase getThroughputUseCase;
 
   private final GetCapacityPerHourService getCapacityPerHourService;
@@ -123,7 +121,7 @@ public class GetSlaProjectionUseCase {
         timeZone);
 
     final List<CptCalculationOutput> cptProjectionOutputs =
-        calculateCptProjection.execute(SlaProjectionInput.builder()
+        CalculateCptProjectionUseCase.execute(SlaProjectionInput.builder()
             .workflow(workflow)
             .logisticCenterId(warehouseId)
             .dateFrom(dateFrom)

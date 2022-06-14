@@ -33,11 +33,16 @@ repositories {
 dependencies {
     // managed by meLi BOM
     implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.2')
-    implementation 'com.fury:furyutils'
-    implementation "com.mercadolibre.restclient:meli-restclient-default"
-    implementation 'com.newrelic.agent.java:newrelic-api'
     implementation "com.mercadolibre:routing"
     implementation "com.mercadolibre:threading"
+    implementation "com.mercadolibre.restclient:meli-restclient-default"
+    implementation 'com.newrelic.agent.java:newrelic-api'
+    implementation 'com.fury:furyutils'
+    constraints {
+        implementation('commons-io:commons-io:2.7') {
+            because 'previous versions have a vulnerability CFWPM-57'
+        }
+    }
 
     // Meli unmanaged
     implementation 'com.mercadolibre.fbm.wms.outbound:commons:1.2.0'

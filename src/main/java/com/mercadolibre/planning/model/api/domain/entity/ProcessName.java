@@ -24,6 +24,7 @@ public enum ProcessName {
     WAVING(null, false),
     PICKING(WAVING, true),
     PACKING(PICKING, false),
+    PACKING_REGULAR(PICKING, false),
     BATCH_SORTER(PICKING,false),
     PACKING_WALL(BATCH_SORTER,false),
     EXPEDITION(PACKING, false),

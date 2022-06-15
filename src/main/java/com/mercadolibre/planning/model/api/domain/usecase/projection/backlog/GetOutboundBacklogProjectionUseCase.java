@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog;
 
+import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -10,12 +12,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 
 @Component
 @AllArgsConstructor
@@ -57,6 +56,7 @@ public class GetOutboundBacklogProjectionUseCase implements GetBacklogProjection
                 .currentBacklogs(input.getCurrentBacklogs())
                 .processNames(input.getProcessNames())
                 .planningUnits(planningUnits)
+                .ratioPackingRegular(input.getRatioPackingRegular())
                 .build());
     }
 

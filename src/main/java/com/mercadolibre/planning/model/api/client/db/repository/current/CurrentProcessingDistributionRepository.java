@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -33,7 +34,7 @@ public interface CurrentProcessingDistributionRepository
   findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
       @Param("warehouse_id") String warehouseId,
       @Param("workflow") Workflow workflow,
-      @Param("type") List<ProcessingType> type,
+      @Param("type") Set<ProcessingType> type,
       @Param("process_name") List<ProcessName> processNames,
       @Param("date_from") ZonedDateTime dateFrom,
       @Param("date_to") ZonedDateTime dateTo);

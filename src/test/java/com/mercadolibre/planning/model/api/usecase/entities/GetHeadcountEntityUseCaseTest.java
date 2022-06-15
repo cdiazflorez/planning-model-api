@@ -144,7 +144,7 @@ class GetHeadcountEntityUseCaseTest {
     when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        new ArrayList<>(input.getProcessingType()),
+        input.getProcessingType(),
         List.of(PICKING, PACKING),
         input.getDateFrom(),
         input.getDateTo()
@@ -240,8 +240,8 @@ class GetHeadcountEntityUseCaseTest {
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getProcessingType() == null
-            ? List.of(ProcessingType.ACTIVE_WORKERS)
-            : new ArrayList<>(input.getProcessingType()),
+            ? Set.of(ProcessingType.ACTIVE_WORKERS)
+            : input.getProcessingType(),
         input.getProcessName(),
         input.getDateFrom(),
         input.getDateTo())

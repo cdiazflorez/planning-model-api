@@ -127,8 +127,8 @@ public class GetHeadcountEntityUseCase
             input.getWarehouseId(),
             input.getWorkflow(),
             input.getProcessingType() == null
-                ? List.of(ProcessingType.ACTIVE_WORKERS)
-                : new ArrayList<>(input.getProcessingType()),
+                ? Set.of(ProcessingType.ACTIVE_WORKERS)
+                : input.getProcessingType(),
             input.getProcessName(),
             input.getDateFrom(),
             input.getDateTo());

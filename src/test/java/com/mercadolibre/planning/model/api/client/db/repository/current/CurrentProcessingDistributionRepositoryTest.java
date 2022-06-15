@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ class CurrentProcessingDistributionRepositoryTest {
     final List<CurrentProcessingDistribution> currentProcessingDistList =
         repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
             currentProcessingDist.getLogisticCenterId(),
-            currentProcessingDist.getWorkflow(), List.of(currentProcessingDist.getType()),
+            currentProcessingDist.getWorkflow(), Set.of(currentProcessingDist.getType()),
             List.of(PICKING, PACKING),
             currentProcessingDist.getDate().minusHours(1),
             currentProcessingDist.getDate().plusHours(1));

@@ -8,10 +8,8 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklogService;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CalculateCptProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
@@ -29,14 +27,11 @@ import org.springframework.stereotype.Component;
 public class SimulationProjectionService extends GetProjectionUseCase {
 
   public SimulationProjectionService(
-      CalculateCptProjectionUseCase calculatedProjectionUseCase,
       ProcessingDistributionRepository processingDistRepository,
       GetForecastUseCase getForecastUseCase,
       GetCycleTimeService getCycleTimeService,
-      GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService,
-      PlannedBacklogService plannedBacklogService) {
-    super(calculatedProjectionUseCase, processingDistRepository, getForecastUseCase, getCycleTimeService, getSlaByWarehouseOutboundService,
-        plannedBacklogService);
+      GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService) {
+    super(processingDistRepository, getForecastUseCase, getCycleTimeService, getSlaByWarehouseOutboundService);
   }
 
   @Override

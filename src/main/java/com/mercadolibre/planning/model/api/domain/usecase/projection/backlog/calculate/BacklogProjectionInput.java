@@ -14,17 +14,19 @@ import java.util.List;
 @Builder
 public class BacklogProjectionInput {
 
-    private String logisticCenterId;
+    String logisticCenterId;
 
-    private List<EntityOutput> throughputs;
+    List<EntityOutput> throughputs;
 
-    private List<GetPlanningDistributionOutput> planningUnits;
+    List<GetPlanningDistributionOutput> planningUnits;
 
-    private ZonedDateTime dateFrom;
+    ZonedDateTime dateFrom;
 
-    private ZonedDateTime dateTo;
+    ZonedDateTime dateTo;
 
-    private List<ProcessName> processNames;
+    List<ProcessName> processNames;
 
-    private List<CurrentBacklog> currentBacklogs;
+    List<CurrentBacklog> currentBacklogs;
+
+    Double ratioPackingRegular;
 }

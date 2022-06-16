@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -49,9 +48,6 @@ public class CalculateGetSlaProjectionUseCaseTest {
     private static final ZonedDateTime DATE_OUT_13 = parse("2020-01-01T13:00:00Z");
     private static final ZonedDateTime DATE_TO_14 = parse("2020-01-01T14:00:00Z");
     private static final ZonedDateTime DATE_OUT_16 = parse("2020-01-01T16:00:00Z");
-
-    @InjectMocks
-    private CalculateCptProjectionUseCase calculateCptProjection;
 
     private MockedStatic<DateUtils> mockedDates;
 
@@ -89,7 +85,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -119,7 +115,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -150,7 +146,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -183,7 +179,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -230,7 +226,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(2, projections.size());
@@ -261,7 +257,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertTrue(projections.isEmpty());
@@ -293,7 +289,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -335,7 +331,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(3, projections.size());
@@ -388,7 +384,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(3, projections.size());
@@ -423,7 +419,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(1, projections.size());
@@ -462,7 +458,7 @@ public class CalculateGetSlaProjectionUseCaseTest {
                 .build();
 
         // WHEN
-        final List<CptCalculationOutput> projections = calculateCptProjection.execute(input);
+        final List<CptCalculationOutput> projections = CalculateCptProjectionUseCase.execute(input);
 
         // THEN
         assertEquals(3, projections.size());

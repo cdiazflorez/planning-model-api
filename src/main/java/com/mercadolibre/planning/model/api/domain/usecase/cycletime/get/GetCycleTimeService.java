@@ -1,61 +1,60 @@
 package com.mercadolibre.planning.model.api.domain.usecase.cycletime.get;
 
+import static java.lang.String.format;
+
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.lang.String.format;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
 public class GetCycleTimeService {
 
-    private static final String DEFAULT_CYCLE_TIME_KEY = "cycle_time";
-    private static final String CYCLE_TIME_KEY_PATTERN = "cycle_time_%02d_%02d";
-    private static final String CONFIGURATION_ENTITY = "configuration";
+  private static final String DEFAULT_CYCLE_TIME_KEY = "cycle_time";
 
-    private final GetConfigurationsUseCase getConfigurationsUseCase;
+  private static final String CYCLE_TIME_KEY_PATTERN = "cycle_time_%02d_%02d";
 
-    public Map<ZonedDateTime, Long> execute(final GetCycleTimeInput input) {
+  private static final String CONFIGURATION_ENTITY = "configuration";
 
-        final List<Configuration> configurations = getConfigurationsUseCase
-                .execute(input.getLogisticCenterId());
+  private final GetConfigurationsUseCase getConfigurationsUseCase;
 
-        final Map<ZonedDateTime, Long> ctByDateOut = new HashMap<>();
+  public Map<ZonedDateTime, Long> execute(final GetCycleTimeInput input) {
+    final List<Configuration> configurations = getConfigurationsUseCase.execute(input.getLogisticCenterId());
 
-        input.getCptDates().forEach(cptDate -> {
+    final Map<ZonedDateTime, Long> ctByDateOut = new HashMap<>();
 
-            final String cycleTimeKey = getCycleTimeKey(cptDate);
+    input.getCptDates()
+        .forEach(cptDate -> {
+          final String cycleTimeKey = getCycleTimeKey(cptDate);
 
-            final Long cycleTime = configurations.stream()
-                    .filter(configuration -> cycleTimeKey.equals(configuration.getKey()))
-                    .findFirst()
-                    .map(Configuration::getValue)
-                    .orElseGet(() -> getCycleTimeDefault(configurations));
+          final Long cycleTime = configurations.stream()
+              .filter(configuration -> cycleTimeKey.equals(configuration.getKey()))
+              .findFirst()
+              .map(Configuration::getValue)
+              .orElseGet(() -> getCycleTimeDefault(configurations));
 
-            ctByDateOut.put(cptDate, cycleTime);
+          ctByDateOut.put(cptDate, cycleTime);
         });
 
-        return ctByDateOut;
-    }
+    return ctByDateOut;
+  }
 
-    private String getCycleTimeKey(final ZonedDateTime cptDate) {
-        return format(CYCLE_TIME_KEY_PATTERN, cptDate.getHour(), cptDate.getMinute());
-    }
+  private String getCycleTimeKey(final ZonedDateTime cptDate) {
+    return format(CYCLE_TIME_KEY_PATTERN, cptDate.getHour(), cptDate.getMinute());
+  }
 
-    private Long getCycleTimeDefault(final List<Configuration> configurations) {
-        return configurations.stream()
-                .filter(configuration -> DEFAULT_CYCLE_TIME_KEY.equals(configuration.getKey()))
-                .findFirst()
-                .map(Configuration::getValue)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        CONFIGURATION_ENTITY, DEFAULT_CYCLE_TIME_KEY));
-    }
+  private Long getCycleTimeDefault(final List<Configuration> configurations) {
+    return configurations.stream()
+        .filter(configuration -> DEFAULT_CYCLE_TIME_KEY.equals(configuration.getKey()))
+        .findFirst()
+        .map(Configuration::getValue)
+        .orElseThrow(() -> new EntityNotFoundException(
+            CONFIGURATION_ENTITY, DEFAULT_CYCLE_TIME_KEY));
+  }
 }

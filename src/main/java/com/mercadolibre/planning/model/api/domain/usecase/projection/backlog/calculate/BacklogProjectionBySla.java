@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionService.backlogProjectionBySla;
+import static com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionService.project;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
@@ -38,7 +38,7 @@ public class BacklogProjectionBySla {
     IncomingBacklog<BacklogBySla> upstreamBacklog = plannedBacklog;
     final Map<ProcessName, List<ProjectionResult<BacklogBySla>>> result = new EnumMap<>(ProcessName.class);
     for (ProcessName process : processNames) {
-      final List<ProjectionResult<BacklogBySla>> processResult = backlogProjectionBySla(
+      final List<ProjectionResult<BacklogBySla>> processResult = project(
           dateFrom,
           dateTo,
           upstreamBacklog,

@@ -170,7 +170,8 @@ class ProjectionControllerTest {
             null,
             new ProcessingTime(240L, MINUTES),
             payBefore,
-            false, 0)));
+            false))
+    );
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -188,9 +189,7 @@ class ProjectionControllerTest {
         .andExpect(jsonPath("$[0].pay_before")
             .value(payBefore.format(ISO_OFFSET_DATE_TIME)))
         .andExpect(jsonPath("$[0].remaining_quantity")
-            .value(100))
-        .andExpect(jsonPath("$[0].units_to_defer")
-            .value(0));
+            .value(100));
   }
 
   @Test

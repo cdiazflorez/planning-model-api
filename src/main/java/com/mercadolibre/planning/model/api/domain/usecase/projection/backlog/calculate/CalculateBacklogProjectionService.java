@@ -39,13 +39,23 @@ public final class CalculateBacklogProjectionService {
    * @param <T>             backlog type.
    * @return backlog projection results for each instant.
    */
-  public static <T extends Backlog> List<ProjectionResult<T>> backlogProjectionBySla(final Instant dateFrom, final Instant dateTo,
-                                                                                     final IncomingBacklog<T> incomingBacklog,
-                                                                                     final T initialBacklog, final Throughput throughput,
-                                                                                     final BacklogHelper<T> helper) {
+  public static <T extends Backlog> List<ProjectionResult<T>> project(final Instant dateFrom,
+                                                                      final Instant dateTo,
+                                                                      final IncomingBacklog<T> incomingBacklog,
+                                                                      final T initialBacklog,
+                                                                      final Throughput throughput,
+                                                                      final BacklogHelper<T> helper) {
 
-    final List<ProjectionResult<T>> results = new ArrayList<>();
     final List<Instant> operatingHours = instantRange(dateFrom, dateTo, ChronoUnit.HOURS).collect(Collectors.toList());
+    return project(operatingHours, incomingBacklog, initialBacklog, throughput, helper);
+  }
+
+  private static <T extends Backlog> List<ProjectionResult<T>> project(final List<Instant> operatingHours,
+                                                                       final IncomingBacklog<T> incomingBacklog,
+                                                                       final T initialBacklog,
+                                                                       final Throughput throughput,
+                                                                       final BacklogHelper<T> helper) {
+    final List<ProjectionResult<T>> results = new ArrayList<>();
 
     T carryOver = initialBacklog;
     for (Instant operatingHour : operatingHours) {

@@ -1,8 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.SimulationProjectionService;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
@@ -17,9 +20,14 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -108,5 +116,46 @@ public class SimulationControllerTest {
                         .value(simulatedEndDate.format(ISO_OFFSET_DATE_TIME)))
                 .andExpect(jsonPath("$[0].remaining_quantity")
                         .value(100));
+    }
+
+    @Test
+    public void testSimulationDeliveryPromise() throws Exception {
+        // GIVEN
+        final ZonedDateTime etd = parse("2021-01-01T11:00:00Z");
+        final ZonedDateTime projectedTime = parse("2021-01-02T10:00:00Z");
+        final ZonedDateTime payBefore = parse("2021-01-01T07:00:00Z");
+
+        when(simulationProjectionService.execute(any(GetDeliveryPromiseProjectionInput.class)
+        )).thenReturn(List.of(
+            new DeliveryPromiseProjectionOutput(
+                etd,
+                projectedTime,
+                100,
+                null,
+                new ProcessingTime(240L, MINUTES),
+                payBefore,
+                false))
+        );
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+            post(URL + "/deferral/delivery_promise", "fbm-wms-outbound")
+                .contentType(APPLICATION_JSON)
+                .content(getResourceAsString("get_simulation_deferral_projection_request.json"))
+        );
+
+        // THEN
+        String response = result.andReturn().getResponse().getContentAsString();
+        result.andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].date")
+                .value(etd.format(ISO_OFFSET_DATE_TIME)))
+            .andExpect(jsonPath("$[0].projected_end_date")
+                .value(projectedTime.format(ISO_OFFSET_DATE_TIME)))
+            .andExpect(jsonPath("$[0].pay_before")
+                .value(payBefore.format(ISO_OFFSET_DATE_TIME)))
+            .andExpect(jsonPath("$[0].remaining_quantity")
+                .value(100));
+        assertNotNull(response);
+
     }
 }

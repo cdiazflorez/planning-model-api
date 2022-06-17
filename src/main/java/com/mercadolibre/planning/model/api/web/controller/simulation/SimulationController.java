@@ -125,7 +125,7 @@ public class SimulationController {
 
   @PostMapping("/deferral/delivery_promise")
   @Trace(dispatcher = true)
-  public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getDeliveryPromiseProjection(
+  public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getSimulationDeliveryPromiseProjection(
       @PathVariable final Workflow workflow,
       @Valid @RequestBody final CptProjectionRequest request) {
 

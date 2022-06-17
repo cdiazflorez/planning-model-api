@@ -1,5 +1,12 @@
 package com.mercadolibre.planning.model.api.usecase.projection.capacity;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static java.time.ZoneOffset.UTC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -23,7 +30,6 @@ import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +38,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static java.time.ZoneOffset.UTC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class SimulationProjectionServiceTest {
@@ -71,7 +70,7 @@ public class SimulationProjectionServiceTest {
   private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
 
   @Test
-  public void executeTest(){
+  public void executeTest() {
 
     final ZonedDateTime dateFrom = NOW;
     final ZonedDateTime dateTo = NOW.plusHours(6);
@@ -81,7 +80,7 @@ public class SimulationProjectionServiceTest {
     when(getSlaByWarehouseOutboundService.execute(any(GetSlaByWarehouseInput.class))).thenReturn(mockSlasByWarehouse());
     when(getCycleTimeService.execute(any(GetCycleTimeInput.class))).thenReturn(CYCLE_TIME_BY_CPT);
     when(getForecastUseCase.execute(any(GetForecastInput.class))).thenReturn(FORECAST_IDS);
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(any(),any(),any(),any(), any()))
+    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(any(), any(), any(), any(), any()))
         .thenReturn(mockProcessingDistributions());
 
     List<DeliveryPromiseProjectionOutput> result = simulationProjectionService.execute(GetDeliveryPromiseProjectionInput.builder()
@@ -96,8 +95,8 @@ public class SimulationProjectionServiceTest {
                     new SimulationEntity(
                         EntityType.THROUGHPUT,
                         List.of(
-                            new QuantityByDate(CPT1.truncatedTo(ChronoUnit.SECONDS),4),
-                            new QuantityByDate(CPT2.truncatedTo(ChronoUnit.SECONDS),5)
+                            new QuantityByDate(CPT1.truncatedTo(ChronoUnit.SECONDS), 4),
+                            new QuantityByDate(CPT2.truncatedTo(ChronoUnit.SECONDS), 5)
                         )
                     )
                 )

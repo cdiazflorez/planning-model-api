@@ -17,26 +17,27 @@
       "date": "2022-06-07T13:00:00Z",
       "quantity": 600
     }
-  ],"simulations": [
-  {
-    "process_name": "global",
-    "entities": [
-      {
-        "type": "throughput",
-        "values": [
-          {
-            "date": "2022-06-07T00:00:00Z",
-            "quantity": 32
-          },
-          {
-            "date": "2022-06-07T13:00:00Z",
-            "quantity": 32
-          }
-        ]
-      }
-    ]
-  }
-],
+  ],
+  "simulations": [
+    {
+      "process_name": "global",
+      "entities": [
+        {
+          "type": "throughput",
+          "values": [
+            {
+              "date": "2022-06-07T00:00:00Z",
+              "quantity": 32
+            },
+            {
+              "date": "2022-06-07T13:00:00Z",
+              "quantity": 32
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "apply_deviation": false,
   "time_zone": "America/Buenos_Aires"
 }

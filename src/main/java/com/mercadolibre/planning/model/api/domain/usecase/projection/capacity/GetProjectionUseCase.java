@@ -103,6 +103,6 @@ public abstract class GetProjectionUseCase {
         : backlogs.stream().map(Backlog::getDate).distinct().collect(toList());
   }
 
-  protected abstract Map<ZonedDateTime, Integer> getMaxCapacity(final GetDeliveryPromiseProjectionInput input);
+  protected abstract Map<ZonedDateTime, Integer> getMaxCapacity(GetDeliveryPromiseProjectionInput input);
 
 }

@@ -1,15 +1,14 @@
 package com.mercadolibre.planning.model.api.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import static java.util.stream.Collectors.toMap;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.toMap;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
@@ -24,14 +23,16 @@ public enum ProcessName {
     WAVING(null, false),
     PICKING(WAVING, true),
     PACKING(PICKING, false),
-    PACKING_REGULAR(PICKING, false),
-    BATCH_SORTER(PICKING,false),
-    PACKING_WALL(BATCH_SORTER,false),
+    PACKING_PROCESS(PICKING, false),
+    BATCH_SORTER(PICKING, false),
+    WALL_IN(BATCH_SORTER, false),
+    PACKING_WALL(WALL_IN, false),
+    PACKING_WALL_PROCESS(WALL_IN, false),
     EXPEDITION(PACKING, false),
-    WALL_IN(null, false),
     GLOBAL(null, false);
 
     private final ProcessName previousProcesses;
+
     private final boolean considerPreviousBacklog;
 
     private static final Map<String, ProcessName> LOOKUP = Arrays.stream(values()).collect(

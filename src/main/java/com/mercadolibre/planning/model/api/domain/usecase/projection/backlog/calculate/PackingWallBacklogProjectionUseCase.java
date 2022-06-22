@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_PROCESS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL_PROCESS;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -14,33 +14,33 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class PackingRegularBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
+public class PackingWallBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
 
-    private static final Map<ProcessName, ProcessName> PROCESS_BY_PROCESS = Map.of(PACKING_PROCESS, PACKING);
+    private static final Map<ProcessName, ProcessName> PROCESS_BY_PROCESS = Map.of(PACKING_WALL_PROCESS, PACKING_WALL);
 
     @Override
     public boolean supportsProcessName(final ProcessName processName) {
-        return processName == PACKING_PROCESS;
+        return processName == PACKING_WALL_PROCESS;
     }
 
     @Override
     public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
         final Map<ZonedDateTime, Long> previousProcessCapacity = input.getThroughputs().stream()
-                .filter(e -> PACKING_PROCESS.getPreviousProcesses() == e.getProcessName())
-                .collect(toMap(EntityOutput::getDate, item -> (long) (item.getValue() * input.getRatioPackingRegular()), (v1, v2) -> v2));
+                .filter(e -> e.getProcessName() == PACKING_WALL_PROCESS.getPreviousProcesses())
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
 
         final Map<ZonedDateTime, Long> packingCapacity = input.getThroughputs().stream()
-                .filter(e -> e.getProcessName() == PROCESS_BY_PROCESS.get(PACKING_PROCESS))
+                .filter(e -> e.getProcessName() == PROCESS_BY_PROCESS.get(PACKING_WALL_PROCESS))
                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
 
         final long currentBacklog = input.getCurrentBacklogs().stream()
-                .filter(cb -> PACKING_PROCESS == cb.getProcessName())
+                .filter(cb -> cb.getProcessName() == PACKING_WALL_PROCESS)
                 .findFirst()
-                .orElseThrow(() -> new BadRequestException("No current backlog for Packing"))
+                .orElseThrow(() -> new BadRequestException("No current backlog for Packing-Wall"))
                 .getQuantity();
 
         return ProcessParams.builder()
-                .processName(PACKING_PROCESS)
+                .processName(PACKING_WALL_PROCESS)
                 .currentBacklog(currentBacklog)
                 .planningUnitsByDate(previousProcessCapacity)
                 .capacityByDate(packingCapacity)

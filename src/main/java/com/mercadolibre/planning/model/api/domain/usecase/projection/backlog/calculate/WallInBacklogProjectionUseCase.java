@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_PROCESS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -14,33 +13,31 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class PackingRegularBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
-
-    private static final Map<ProcessName, ProcessName> PROCESS_BY_PROCESS = Map.of(PACKING_PROCESS, PACKING);
+public class WallInBacklogProjectionUseCase implements GetBacklogProjectionParamsUseCase {
 
     @Override
     public boolean supportsProcessName(final ProcessName processName) {
-        return processName == PACKING_PROCESS;
+        return processName == WALL_IN;
     }
 
     @Override
     public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
         final Map<ZonedDateTime, Long> previousProcessCapacity = input.getThroughputs().stream()
-                .filter(e -> PACKING_PROCESS.getPreviousProcesses() == e.getProcessName())
-                .collect(toMap(EntityOutput::getDate, item -> (long) (item.getValue() * input.getRatioPackingRegular()), (v1, v2) -> v2));
+                .filter(e -> e.getProcessName() == WALL_IN.getPreviousProcesses())
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
 
         final Map<ZonedDateTime, Long> packingCapacity = input.getThroughputs().stream()
-                .filter(e -> e.getProcessName() == PROCESS_BY_PROCESS.get(PACKING_PROCESS))
+                .filter(e -> e.getProcessName() == WALL_IN)
                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
 
         final long currentBacklog = input.getCurrentBacklogs().stream()
-                .filter(cb -> PACKING_PROCESS == cb.getProcessName())
+                .filter(cb -> cb.getProcessName() == WALL_IN)
                 .findFirst()
-                .orElseThrow(() -> new BadRequestException("No current backlog for Packing"))
+                .orElseThrow(() -> new BadRequestException("No current backlog for Wall-In"))
                 .getQuantity();
 
         return ProcessParams.builder()
-                .processName(PACKING_PROCESS)
+                .processName(WALL_IN)
                 .currentBacklog(currentBacklog)
                 .planningUnitsByDate(previousProcessCapacity)
                 .capacityByDate(packingCapacity)

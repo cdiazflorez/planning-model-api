@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * Backlog projection service
  *
  * <p>
- *   Encapsulates the core algorithm and interfaces.
+ * Encapsulates the core algorithm and interfaces.
  * </p>
  */
 public final class CalculateBacklogProjectionService {
@@ -47,14 +47,6 @@ public final class CalculateBacklogProjectionService {
                                                                       final BacklogHelper<T> helper) {
 
     final List<Instant> operatingHours = instantRange(dateFrom, dateTo, ChronoUnit.HOURS).collect(Collectors.toList());
-    return project(operatingHours, incomingBacklog, initialBacklog, throughput, helper);
-  }
-
-  private static <T extends Backlog> List<ProjectionResult<T>> project(final List<Instant> operatingHours,
-                                                                       final IncomingBacklog<T> incomingBacklog,
-                                                                       final T initialBacklog,
-                                                                       final Throughput throughput,
-                                                                       final BacklogHelper<T> helper) {
     final List<ProjectionResult<T>> results = new ArrayList<>();
 
     T carryOver = initialBacklog;
@@ -65,6 +57,31 @@ public final class CalculateBacklogProjectionService {
       final ProcessedBacklog<T> afterProcessing = helper.consume(current, throughput.getAvailableQuantityFor(operatingHour));
 
       carryOver = afterProcessing.getCarryOver();
+      results.add(new ProjectionResult<>(operatingHour, afterProcessing));
+    }
+
+    return results;
+  }
+
+  public static <T extends Backlog> List<ProjectionResult<T>> project(final List<Instant> inflectionPoints,
+                                                                      final IncomingBacklog<T> incomingBacklog,
+                                                                      final T initialBacklog,
+                                                                      final Throughput throughput,
+                                                                      final BacklogHelper<T> helper) {
+    final List<ProjectionResult<T>> results = new ArrayList<>();
+
+    T unprocessedBacklog = initialBacklog;
+    for (int i = 0; i < inflectionPoints.size() - 1; i++) {
+      final Instant operatingHour = inflectionPoints.get(i);
+      final Instant nextOperatingHour = inflectionPoints.get(i + 1);
+
+      final T upstream = incomingBacklog.get(operatingHour, nextOperatingHour);
+
+      final T backlogAtCurrentInflectionPoint = helper.merge(unprocessedBacklog, upstream);
+      final int tph = throughput.getAvailableQuantityBetween(operatingHour, nextOperatingHour);
+      final ProcessedBacklog<T> afterProcessing = helper.consume(backlogAtCurrentInflectionPoint, tph);
+
+      unprocessedBacklog = afterProcessing.getCarryOver();
       results.add(new ProjectionResult<>(operatingHour, afterProcessing));
     }
 
@@ -159,6 +176,8 @@ public final class CalculateBacklogProjectionService {
      * @return backlog.
      */
     T get(Instant operatingHour);
+
+    T get(Instant dateFrom, Instant dateTo);
   }
 
   /**
@@ -173,6 +192,8 @@ public final class CalculateBacklogProjectionService {
      * @return available tph.
      */
     int getAvailableQuantityFor(Instant operatingHour);
+
+    int getAvailableQuantityBetween(Instant dateFrom, Instant dateTo);
   }
 
 }

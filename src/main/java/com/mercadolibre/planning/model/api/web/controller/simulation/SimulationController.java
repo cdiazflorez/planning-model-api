@@ -11,8 +11,8 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.SimulationProjectionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
@@ -45,7 +45,7 @@ public class SimulationController {
 
   private final GetSlaProjectionUseCase getSlaProjectionUseCase;
 
-  private final SimulationProjectionService simulationProjectionService;
+  private final GetDeliveryPromiseProjectionUseCase getDeliveryPromiseProjectionUseCase;
 
   @PostMapping("/save")
   @Trace(dispatcher = true)
@@ -129,7 +129,7 @@ public class SimulationController {
       @PathVariable final Workflow workflow,
       @Valid @RequestBody final CptProjectionRequest request) {
 
-    return ResponseEntity.ok(simulationProjectionService.execute(GetDeliveryPromiseProjectionInput
+    return ResponseEntity.ok(getDeliveryPromiseProjectionUseCase.execute(GetDeliveryPromiseProjectionInput
         .builder()
         .warehouseId(request.getWarehouseId())
         .workflow(workflow)

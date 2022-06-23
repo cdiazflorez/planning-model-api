@@ -17,8 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.SimulationProjectionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
@@ -49,7 +50,7 @@ public class SimulationControllerTest {
   private ActivateSimulationUseCase activateSimulationUseCase;
 
   @MockBean
-  private SimulationProjectionService simulationProjectionService;
+  private GetDeliveryPromiseProjectionUseCase getDeliveryPromiseProjectionUseCase;
 
   @Test
   public void testSaveSimulation() throws Exception {
@@ -121,7 +122,7 @@ public class SimulationControllerTest {
     final ZonedDateTime projectedTime = parse("2021-01-02T10:00:00Z");
     final ZonedDateTime payBefore = parse("2021-01-01T07:00:00Z");
 
-    when(simulationProjectionService.execute(any(GetDeliveryPromiseProjectionInput.class)
+    when(getDeliveryPromiseProjectionUseCase.execute(any(GetDeliveryPromiseProjectionInput.class)
     )).thenReturn(List.of(
         new DeliveryPromiseProjectionOutput(
             etd,
@@ -130,7 +131,8 @@ public class SimulationControllerTest {
             null,
             new ProcessingTime(240L, MINUTES),
             payBefore,
-            false))
+            false,
+            DeferralStatus.NOT_DEFERRED))
     );
 
     // WHEN

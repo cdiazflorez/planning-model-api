@@ -18,11 +18,20 @@ public class ThroughputByHour implements Throughput {
 
   @Override
   public int getAvailableQuantityFor(final Instant operatingHour) {
-    final var truncated = operatingHour.truncatedTo(ChronoUnit.HOURS);
-
     final var minutes = operatingHour.atZone(ZoneOffset.UTC).getMinute();
-    final var remainingHourFraction = (MINUTES_IN_HOUR - minutes) / MINUTES_IN_HOUR;
+    return get(operatingHour, (int) MINUTES_IN_HOUR - minutes);
+  }
 
+  @Override
+  public int getAvailableQuantityBetween(final Instant dateFrom, final Instant dateTo) {
+    final var minutes = ChronoUnit.MINUTES.between(dateFrom, dateTo);
+    return get(dateFrom, (int) minutes);
+  }
+
+  private int get(final Instant dateFrom, final int hourFraction) {
+    final var truncated = dateFrom.truncatedTo(ChronoUnit.HOURS);
+
+    final var remainingHourFraction = hourFraction / MINUTES_IN_HOUR;
     return (int) (tphByHour.getOrDefault(truncated, 0) * remainingHourFraction);
   }
 }

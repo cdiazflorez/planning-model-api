@@ -1,8 +1,6 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_PROCESS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.A_FIXED_DATE;
@@ -19,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingRegularBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BatchSorterBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
@@ -36,32 +34,32 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class PackingRegularBacklogProjectionUseCaseTest {
+public class BatchSorterBacklogProjectionUseCaseTest {
 
     @InjectMocks
-    private PackingRegularBacklogProjectionUseCase packingBacklogProjection;
+    private BatchSorterBacklogProjectionUseCase consolidationBacklogProjection;
 
     @Test
     public void createPackingProcessParams() {
         // GIVEN
         final BacklogProjectionInput input = BacklogProjectionInput.builder()
-                .processNames(List.of(WAVING, PICKING, PACKING_PROCESS, PACKING_WALL))
+                .processNames(List.of(WAVING, PICKING, BATCH_SORTER))
                 .throughputs(mockThroughputs())
                 .currentBacklogs(List.of(
                         new CurrentBacklog(WAVING, 0),
                         new CurrentBacklog(PICKING, 3000),
-                        new CurrentBacklog(PACKING_PROCESS, 1110)))
+                        new CurrentBacklog(BATCH_SORTER, 1110)))
                 .dateFrom(A_FIXED_DATE.minusMinutes(15))
                 .dateTo(A_FIXED_DATE.plusHours(4))
                 .planningUnits(mockPlanningDistributionOutputs())
-                .ratioPackingRegular(1.0)
+                .ratioPackingRegular(0.0)
                 .build();
 
         // WHEN
-        final ProcessParams processParams = packingBacklogProjection.execute(null, input);
+        final ProcessParams processParams = consolidationBacklogProjection.execute(null, input);
 
         // THEN
-        assertEquals(PACKING_PROCESS, processParams.getProcessName());
+        assertEquals(BATCH_SORTER, processParams.getProcessName());
         assertEquals(1110, processParams.getCurrentBacklog());
         assertNull(processParams.getPreviousBacklogsByDate());
 
@@ -70,7 +68,6 @@ public class PackingRegularBacklogProjectionUseCaseTest {
         assertEquals(700, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(1)));
         assertEquals(700, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(2)));
         assertEquals(50, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(3)));
-        assertEquals(1500, processParams.getCapacityByDate().get(A_FIXED_DATE.plusHours(4)));
 
         final List<EntityOutput> pickingCapacity = mockThroughputs().stream()
                 .filter(e -> e.getProcessName() == PICKING).collect(toList());
@@ -81,22 +78,22 @@ public class PackingRegularBacklogProjectionUseCaseTest {
     public void noCurrentBacklogThrowException() {
         // GIVEN
         final BacklogProjectionInput input = mockBacklogProjectionInput(
-                List.of(WAVING, PICKING, PACKING_PROCESS), emptyList(), A_FIXED_DATE.plusHours(4));
+                List.of(WAVING, PICKING, BATCH_SORTER), emptyList(), A_FIXED_DATE.plusHours(4));
 
         // WHEN
         final BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> packingBacklogProjection.execute(null, input));
+                () -> consolidationBacklogProjection.execute(null, input));
 
         // THEN
-        assertEquals("No current backlog for Packing", exception.getMessage());
+        assertEquals("No current backlog for Consolidation", exception.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("getSupportedProcesses")
     public void supportsPackingProcess(final ProcessName processName, final boolean isSupported) {
         // WHEN
-        final boolean result = packingBacklogProjection.supportsProcessName(processName);
+        final boolean result = consolidationBacklogProjection.supportsProcessName(processName);
 
         // THEN
         assertEquals(isSupported, result);
@@ -114,25 +111,24 @@ public class PackingRegularBacklogProjectionUseCaseTest {
         return Stream.of(
                 Arguments.of(WAVING, false),
                 Arguments.of(PICKING, false),
-                Arguments.of(PACKING_PROCESS, true)
+                Arguments.of(BATCH_SORTER, true)
         );
     }
 
     private static List<EntityOutput> mockThroughputs() {
         return List.of(
                 mockThroughputEntity(A_FIXED_DATE.minusHours(1), PICKING, 850),
-                mockThroughputEntity(A_FIXED_DATE.minusHours(1), PACKING, 650),
+                mockThroughputEntity(A_FIXED_DATE.minusHours(1), BATCH_SORTER, 650),
                 mockThroughputEntity(A_FIXED_DATE, PICKING, 800),
-                mockThroughputEntity(A_FIXED_DATE, PACKING, 550),
+                mockThroughputEntity(A_FIXED_DATE, BATCH_SORTER, 550),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(1), PICKING, 600),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(1), PACKING, 700),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(1), BATCH_SORTER, 700),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(2), PICKING, 600),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(2), PACKING, 700),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(2), BATCH_SORTER, 700),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(3), PICKING, 0),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(3), PACKING, 50),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(3), BATCH_SORTER, 50),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(4), PICKING, 1000),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING, 910),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING, 590)
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), BATCH_SORTER, 910)
         );
     }
 }

@@ -8,16 +8,6 @@
   "type": "CPT",
   "date_from": "2022-06-06T00:00:00Z",
   "date_to": "2022-06-07T23:00:00Z",
-  "backlog": [
-    {
-      "date": "2022-06-07T00:00:00Z",
-      "quantity": 500
-    },
-    {
-      "date": "2022-06-07T13:00:00Z",
-      "quantity": 600
-    }
-  ],
   "simulations": [
     {
       "process_name": "global",

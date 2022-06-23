@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUT
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static java.time.ZoneOffset.UTC;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Collections.emptyList;
@@ -33,6 +34,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import com.mercadolibre.planning.model.api.util.DateUtils;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -100,7 +104,16 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED),
             new DeliveryPromiseProjectionOutput(CPT_2, CPT_2.minusHours(2), 0, CPT_2.minusHours(6),
                 processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED)
-        )
+        ),
+        List.of(new Simulation(
+            GLOBAL,
+            List.of(new SimulationEntity(
+                THROUGHPUT,
+                List.of(
+                    new QuantityByDate(NOW.truncatedTo(SECONDS),
+                        130))
+            ))
+        ))
     );
   }
 
@@ -109,6 +122,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
         "TestSomeFieldNullPointerException",
         getSlas(),
         List.of(1L, 2L),
+        emptyList(),
         emptyList(),
         emptyList(),
         emptyList(),
@@ -166,7 +180,8 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                                             final List<Backlog> backlogs,
                                             final List<ZonedDateTime> cptDatesFromBacklog,
                                             final List<CptCalculationDetailOutput> cptCalculationDetails,
-                                            final List<DeliveryPromiseProjectionOutput> projectionExpected) {
+                                            final List<DeliveryPromiseProjectionOutput> projectionExpected,
+                                            final List<Simulation> simulations) {
     //GIVEN
     final ZonedDateTime dateFrom = NOW;
     final ZonedDateTime dateTo = NOW.plusHours(6);
@@ -233,6 +248,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
             .dateFrom(dateFrom)
             .dateTo(dateTo)
             .backlog(backlogs)
+            .simulations(simulations)
             .build());
 
     //THEN

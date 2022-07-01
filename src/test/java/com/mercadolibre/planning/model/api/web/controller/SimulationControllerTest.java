@@ -115,45 +115,4 @@ public class SimulationControllerTest {
             .value(100));
   }
 
-  @Test
-  public void testSimulationDeliveryPromise() throws Exception {
-    // GIVEN
-    final ZonedDateTime etd = parse("2021-01-01T11:00:00Z");
-    final ZonedDateTime projectedTime = parse("2021-01-02T10:00:00Z");
-    final ZonedDateTime payBefore = parse("2021-01-01T07:00:00Z");
-
-    when(getDeliveryPromiseProjectionUseCase.execute(any(GetDeliveryPromiseProjectionInput.class)
-    )).thenReturn(List.of(
-        new DeliveryPromiseProjectionOutput(
-            etd,
-            projectedTime,
-            100,
-            null,
-            new ProcessingTime(240L, MINUTES),
-            payBefore,
-            false,
-            DeferralStatus.NOT_DEFERRED))
-    );
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + "/deferral/delivery_promise", "fbm-wms-outbound")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("get_simulation_deferral_projection_request.json"))
-    );
-
-    // THEN
-    String response = result.andReturn().getResponse().getContentAsString();
-    result.andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].date")
-            .value(etd.format(ISO_OFFSET_DATE_TIME)))
-        .andExpect(jsonPath("$[0].projected_end_date")
-            .value(projectedTime.format(ISO_OFFSET_DATE_TIME)))
-        .andExpect(jsonPath("$[0].pay_before")
-            .value(payBefore.format(ISO_OFFSET_DATE_TIME)))
-        .andExpect(jsonPath("$[0].remaining_quantity")
-            .value(100));
-    assertNotNull(response);
-
-  }
 }

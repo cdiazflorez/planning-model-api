@@ -123,37 +123,10 @@ public class SimulationController {
     return ResponseEntity.ok(fromProjectionOutputs(simulatedProjections, actualProjections));
   }
 
-  @PostMapping("/deferral/delivery_promise")
-  @Trace(dispatcher = true)
-  public ResponseEntity<List<DeliveryPromiseProjectionOutput>> getSimulationDeliveryPromiseProjection(
-      @PathVariable final Workflow workflow,
-      @Valid @RequestBody final CptProjectionRequest request) {
-
-    return ResponseEntity.ok(getDeliveryPromiseProjectionUseCase.execute(GetDeliveryPromiseProjectionInput
-        .builder()
-        .warehouseId(request.getWarehouseId())
-        .workflow(workflow)
-        .projectionType(request.getType())
-        .dateFrom(request.getDateFrom())
-        .dateTo(request.getDateTo())
-        .timeZone(request.getTimeZone())
-        .backlog(getBacklog(request.getBacklog()))
-        .applyDeviation(request.isApplyDeviation())
-        .simulations(request.getSimulations())
-        .build())
-    );
-  }
-
   @InitBinder
   public void initBinder(final PropertyEditorRegistry dataBinder) {
     dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
     dataBinder.registerCustomEditor(EntityType.class, new EntityTypeEditor());
     dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
-  }
-
-  private List<Backlog> getBacklog(final List<QuantityByDate> backlogs) {
-    return backlogs == null
-        ? emptyList()
-        : backlogs.stream().map(QuantityByDate::toBacklog).collect(toList());
   }
 }

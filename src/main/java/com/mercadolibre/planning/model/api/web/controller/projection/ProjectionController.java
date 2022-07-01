@@ -108,6 +108,7 @@ public class ProjectionController {
         .timeZone(request.getTimeZone())
         .backlog(getBacklog(request.getBacklog()))
         .applyDeviation(request.isApplyDeviation())
+        .simulations(request.getSimulations())
         .build())
     );
   }

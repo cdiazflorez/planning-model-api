@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedUnits;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionByArea;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.helper.BacklogMapper;
@@ -77,27 +78,11 @@ public class BacklogProjectionAdapter {
   }
 
   private PlannedBacklogBySla getIncomingBacklog(final List<GetPlanningDistributionOutput> planningUnits) {
-    final var distributionsByDate = planningUnits.stream()
-        .collect(groupingBy(
-                distribution -> distribution.getDateIn().toInstant(),
-                toList()
-            )
-        )
-        .entrySet()
-        .stream()
-        .collect(toMap(
-            Map.Entry::getKey,
-            entry -> {
-              final var quantities = entry.getValue()
-                  .stream()
-                  .map(distribution -> new QuantityAtDate(distribution.getDateOut().toInstant(), (int) distribution.getTotal()))
-                  .collect(toList());
+    final var plannedUnits = planningUnits.stream()
+        .map(distribution -> new PlannedUnits(distribution.getDateIn(), distribution.getDateOut(), distribution.getTotal()))
+        .collect(toList());
 
-              return new BacklogBySla(quantities);
-            }
-        ));
-
-    return new PlannedBacklogBySla(distributionsByDate);
+    return PlannedBacklogBySla.fromPlannedUnits(plannedUnits);
   }
 
   private Map<ProcessName, BacklogBySla> getCurrentBacklog(final List<CurrentBacklogBySla> currentBacklogs) {

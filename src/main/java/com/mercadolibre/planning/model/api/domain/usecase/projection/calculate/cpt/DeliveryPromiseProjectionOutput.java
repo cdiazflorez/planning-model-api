@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
 import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
 import lombok.Value;
 
 import java.time.ZonedDateTime;
@@ -21,4 +22,6 @@ public class DeliveryPromiseProjectionOutput {
     ZonedDateTime payBefore;
 
     boolean isDeferred;
+
+    DeferralStatus deferralStatus;
 }

@@ -27,6 +27,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.c
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptCalculationOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.SlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
@@ -96,9 +97,9 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
         emptyList(),
         List.of(
             new DeliveryPromiseProjectionOutput(CPT_1, CPT_1.minusHours(2), 0, CPT_1.minusHours(6),
-                processingTime, CPT_1.minusHours(7), false),
+                processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED),
             new DeliveryPromiseProjectionOutput(CPT_2, CPT_2.minusHours(2), 0, CPT_2.minusHours(6),
-                processingTime, CPT_1.minusHours(7), false)
+                processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED)
         )
     );
   }

@@ -21,7 +21,8 @@ import java.util.Map;
 
 public final class DeliveryPromiseCalculator {
 
-  private DeliveryPromiseCalculator() { }
+  private DeliveryPromiseCalculator() {
+  }
 
   public static List<DeliveryPromiseProjectionOutput> calculate(final ZonedDateTime dateFrom,
                                                                 final ZonedDateTime dateTo,
@@ -55,7 +56,7 @@ public final class DeliveryPromiseCalculator {
                 item -> item.getDate().withFixedOffsetZone(),
                 GetSlaByWarehouseOutput::getProcessingTime));
 
-    boolean isDeferredByCap5 = false;
+    boolean isDeferredByCascade = false;
 
     final List<DeliveryPromiseProjectionOutput> allCptDeferralCalculated = new ArrayList<>();
 
@@ -72,16 +73,21 @@ public final class DeliveryPromiseCalculator {
       final boolean isDeferralByCutOff = !isProjectionOver24h && cptCalculated.getProjectedEndDate().isAfter(cutOff);
       final boolean isTimeForDeferral = currentDate.isBefore(payBefore);
 
-      if (isTimeForDeferral && (isProjectionOver24h || isDeferralByCutOff)) {
-        isDeferredByCap5 = true;
-      }
+      final boolean isDeferredByCap5 = isTimeForDeferral && (isProjectionOver24h || isDeferralByCutOff);
+      isDeferredByCascade = isDeferredByCascade || isDeferredByCap5;
 
-      allCptDeferralCalculated.add(createCpt(
-          cptCalculated,
-          cutOff,
-          cycleTime,
-          payBefore,
-          isDeferredByCap5 && isTimeForDeferral));
+      final boolean isDeferred = isTimeForDeferral && (isDeferredByCap5 || isDeferredByCascade);
+
+      allCptDeferralCalculated.add(
+          createCpt(
+              cptCalculated,
+              cutOff,
+              cycleTime,
+              payBefore,
+              isDeferred,
+              isDeferredByCap5
+          )
+      );
     }
 
     return allCptDeferralCalculated.stream()
@@ -93,7 +99,9 @@ public final class DeliveryPromiseCalculator {
                                                            final ZonedDateTime etdCutoff,
                                                            final long cycleTime,
                                                            final ZonedDateTime payBefore,
-                                                           final boolean isDeferred) {
+                                                           final boolean isDeferred,
+                                                           final boolean isDeferredByCap5) {
+
     return new DeliveryPromiseProjectionOutput(
         calculation.getDate(),
         calculation.getProjectedEndDate(),
@@ -101,6 +109,19 @@ public final class DeliveryPromiseCalculator {
         etdCutoff,
         new ProcessingTime(cycleTime, MetricUnit.MINUTES),
         payBefore,
-        isDeferred);
+        isDeferred,
+        getDeferralReason(isDeferred, isDeferredByCap5));
+  }
+
+  private static DeferralStatus getDeferralReason(final boolean isDeferred,
+                                                  final boolean isDeferredByCap5) {
+
+    if (!isDeferred) {
+      return DeferralStatus.NOT_DEFERRED;
+    } else if (isDeferredByCap5) {
+      return DeferralStatus.DEFERRED_CAP_MAX;
+    } else {
+      return DeferralStatus.DEFERRED_CASCADE;
+    }
   }
 }

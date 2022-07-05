@@ -21,6 +21,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public final class DateUtils {
+  public static final double MINUTES_IN_HOUR = 60.0;
 
   private static final int HOW_THEY_MANAGE_WEEKS_2021 = 1;
 

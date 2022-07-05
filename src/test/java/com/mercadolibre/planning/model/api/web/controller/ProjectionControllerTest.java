@@ -32,10 +32,14 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.QueueProjectionService;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeferralProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeferralProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.output.DeferralProjectionOutput;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.projection.BacklogProjectionAdapter;
 import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
@@ -46,6 +50,7 @@ import com.mercadolibre.planning.model.api.web.controller.projection.response.Ba
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -70,6 +75,9 @@ class ProjectionControllerTest {
 
   @MockBean
   private GetDeliveryPromiseProjectionUseCase delPromiseProjection;
+
+  @MockBean
+  private GetDeferralProjectionUseCase deferralProjectionUseCase;
 
   @MockBean
   private BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
@@ -161,6 +169,8 @@ class ProjectionControllerTest {
         .dateTo(parse("2020-01-10T12:00:00Z[UTC]"))
         .timeZone("America/Argentina/Buenos_Aires")
         .backlog(emptyList())
+        .projectionType(ProjectionType.DEFERRAL)
+        .applyDeviation(true)
         .build()
     )).thenReturn(List.of(
         new DeliveryPromiseProjectionOutput(
@@ -170,7 +180,8 @@ class ProjectionControllerTest {
             null,
             new ProcessingTime(240L, MINUTES),
             payBefore,
-            false))
+            false,
+            DeferralStatus.NOT_DEFERRED))
     );
 
     // WHEN
@@ -190,6 +201,62 @@ class ProjectionControllerTest {
             .value(payBefore.format(ISO_OFFSET_DATE_TIME)))
         .andExpect(jsonPath("$[0].remaining_quantity")
             .value(100));
+  }
+
+  private void mockDeferralProjection(final Instant etd, final Instant projectedTime) {
+    final var results = List.of(
+        new DeferralProjectionOutput(
+            etd,
+            projectedTime,
+            100,
+            DeferralStatus.DEFERRED_CAP_MAX
+        )
+    );
+
+    final var dateFrom = parse("2020-01-01T12:00:00Z[UTC]");
+    final var dateTo = parse("2020-01-10T12:00:00Z[UTC]");
+    when(deferralProjectionUseCase.execute(
+        new GetDeferralProjectionInput(
+            WAREHOUSE_ID,
+            FBM_WMS_OUTBOUND,
+            ProjectionType.DEFERRAL,
+            dateFrom.toInstant(),
+            dateFrom,
+            dateTo,
+            dateFrom,
+            dateTo.plus(72, ChronoUnit.HOURS),
+            emptyList(),
+            "America/Argentina/Buenos_Aires",
+            true
+        )
+    )).thenReturn(results);
+  }
+
+  @Test
+  public void testGetDeferralProjection() throws Exception {
+    // GIVEN
+    final ZonedDateTime etd = parse("2021-01-01T11:00:00Z");
+    final ZonedDateTime projectedTime = parse("2021-01-02T11:30:00Z");
+
+    mockDeferralProjection(etd.toInstant(), projectedTime.toInstant());
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + "/cpts/deferral_time", "fbm-wms-outbound")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("get_deferral_projection_request.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].sla")
+            .value(etd.format(ISO_OFFSET_DATE_TIME)))
+        .andExpect(jsonPath("$[0].deferred_at")
+            .value(projectedTime.format(ISO_OFFSET_DATE_TIME)))
+        .andExpect(jsonPath("$[0].deferred_units")
+            .value(100))
+        .andExpect(jsonPath("$[0].deferral_status")
+            .value("deferred_cap_max"));
   }
 
   @Test

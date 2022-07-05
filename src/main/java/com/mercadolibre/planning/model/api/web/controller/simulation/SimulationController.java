@@ -8,20 +8,15 @@ import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.CptProjectionRequest;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
 import javax.validation.Valid;
@@ -44,8 +39,6 @@ public class SimulationController {
   private final ActivateSimulationUseCase activateSimulationUseCase;
 
   private final GetSlaProjectionUseCase getSlaProjectionUseCase;
-
-  private final GetDeliveryPromiseProjectionUseCase getDeliveryPromiseProjectionUseCase;
 
   @PostMapping("/save")
   @Trace(dispatcher = true)

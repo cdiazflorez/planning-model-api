@@ -1,10 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -14,13 +12,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mercadolibre.planning.model.api.domain.entity.sla.ProcessingTime;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.CptProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetSlaProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
@@ -48,9 +42,6 @@ public class SimulationControllerTest {
 
   @MockBean
   private ActivateSimulationUseCase activateSimulationUseCase;
-
-  @MockBean
-  private GetDeliveryPromiseProjectionUseCase getDeliveryPromiseProjectionUseCase;
 
   @Test
   public void testSaveSimulation() throws Exception {

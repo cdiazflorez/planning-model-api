@@ -18,6 +18,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
+import com.mercadolibre.planning.model.api.exception.BadSimulationRequestException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
@@ -27,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -89,7 +91,7 @@ public class GetDeliveryPromiseProjectionUseCase {
             input.getDateTo(),
             getForecastIds(input));
 
-    Map<ZonedDateTime, Integer> capacity = DeliveryPromiseProjectionUtils.toMaxCapacityByDate(
+    final Map<ZonedDateTime, Integer> capacity = DeliveryPromiseProjectionUtils.toMaxCapacityByDate(
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getDateFrom(),
@@ -98,16 +100,22 @@ public class GetDeliveryPromiseProjectionUseCase {
     );
 
     if (input.getSimulations() != null && !input.getSimulations().isEmpty()) {
-      Map<ZonedDateTime, Integer> simulationDates = input.getSimulations().stream()
+
+      var globalThroughputSimulations = input.getSimulations().stream()
           .filter(simulation -> simulation.getProcessName().equals(GLOBAL))
           .map(Simulation::getEntities)
           .flatMap(Collection::stream)
           .filter(simulationEntity -> simulationEntity.getType().equals(THROUGHPUT))
           .map(SimulationEntity::getValues)
-          .flatMap(Collection::stream)
-          .collect(toMap(quantityByDate -> quantityByDate.getDate().withZoneSameInstant(ZoneOffset.UTC), QuantityByDate::getQuantity));
+          .collect(Collectors.toList());
 
-      capacity.putAll(simulationDates);
+      if(globalThroughputSimulations.size() == 1 ){
+        Map<ZonedDateTime, Integer> simulationDates =globalThroughputSimulations.get(0).stream()
+            .collect(toMap(quantityByDate -> quantityByDate.getDate().withZoneSameInstant(ZoneOffset.UTC), QuantityByDate::getQuantity));
+        capacity.putAll(simulationDates);
+      } else {
+        throw new BadSimulationRequestException(THROUGHPUT.name());
+      }
 
     }
 

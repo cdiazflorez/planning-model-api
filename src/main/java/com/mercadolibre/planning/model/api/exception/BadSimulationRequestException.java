@@ -2,7 +2,7 @@ package com.mercadolibre.planning.model.api.exception;
 
 public class BadSimulationRequestException extends RuntimeException {
 
-  public static final String MESSAGE_PATTERN = "Duplicate SimulationEntity with name %s ";
+  public static final String MESSAGE_PATTERN = "Duplicate SimulationEntity with name %s";
 
   private final String entityName;
 

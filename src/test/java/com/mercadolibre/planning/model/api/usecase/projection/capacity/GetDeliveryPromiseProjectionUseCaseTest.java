@@ -32,6 +32,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.De
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeliveryPromiseProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
+import com.mercadolibre.planning.model.api.exception.BadSimulationRequestException;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
@@ -87,7 +88,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
   private MockedStatic<DateUtils> dateUtils;
 
   public static Stream<Arguments> argOfTestProjectionDeliveryPromise() {
-    return Stream.of(projectionOk(), projectionNpe());
+    return Stream.of(projectionOk(), projectionNpe(), projectionBadSimulationRequest());
   }
 
   private static Arguments projectionOk() {
@@ -113,6 +114,40 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                     new QuantityByDate(NOW.truncatedTo(SECONDS),
                         130))
             ))
+        ))
+    );
+  }
+
+  private static Arguments projectionBadSimulationRequest() {
+    final var processingTime = new ProcessingTime(360L, MINUTES);
+    return Arguments.of(
+        "TestProjectionBadSimulationRequest",
+        getSlas(),
+        List.of(1L, 2L),
+        List.of(new Backlog(CPT_1, 100), new Backlog(CPT_2, 200)),
+        List.of(CPT_1, CPT_2),
+        emptyList(),
+        List.of(
+            new DeliveryPromiseProjectionOutput(CPT_1, CPT_1.minusHours(2), 0, CPT_1.minusHours(6),
+                processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED),
+            new DeliveryPromiseProjectionOutput(CPT_2, CPT_2.minusHours(2), 0, CPT_2.minusHours(6),
+                processingTime, CPT_1.minusHours(7), false, DeferralStatus.NOT_DEFERRED)
+        ),
+        List.of(new Simulation(
+            GLOBAL,
+            List.of(new SimulationEntity(
+                THROUGHPUT,
+                List.of(
+                    new QuantityByDate(NOW.truncatedTo(SECONDS),
+                        130))
+            ),
+                new SimulationEntity(
+                    THROUGHPUT,
+                    List.of(
+                        new QuantityByDate(NOW.truncatedTo(SECONDS),
+                            140))
+                )
+                )
         ))
     );
   }
@@ -241,28 +276,36 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     );
 
     //WHEN
-    final List<DeliveryPromiseProjectionOutput> projectionResult =
-        getDeliveryPromiseUseCase.execute(GetDeliveryPromiseProjectionInput.builder()
-            .warehouseId(logisticCenterId)
-            .workflow(workflow)
-            .dateFrom(dateFrom)
-            .dateTo(dateTo)
-            .backlog(backlogs)
-            .simulations(simulations)
-            .build());
+    try {
+      final List<DeliveryPromiseProjectionOutput> projectionResult =
+          getDeliveryPromiseUseCase.execute(GetDeliveryPromiseProjectionInput.builder()
+              .warehouseId(logisticCenterId)
+              .workflow(workflow)
+              .dateFrom(dateFrom)
+              .dateTo(dateTo)
+              .backlog(backlogs)
+              .simulations(simulations)
+              .build());
 
-    //THEN
-    if ("TestValues".equals(assertionsGroup)) {
-      assertEquals(projectionExpected.size(), projectionResult.size());
-      assertEquals(projectionExpected.get(0).getDate(), projectionResult.get(0).getDate());
-      assertEquals(projectionExpected.get(0).getProjectedEndDate(), projectionResult.get(0).getProjectedEndDate());
-      assertEquals(projectionExpected.get(0).getRemainingQuantity(), projectionResult.get(0).getRemainingQuantity());
-      assertEquals(projectionExpected.get(0).getEtdCutoff(), projectionResult.get(0).getEtdCutoff());
-      assertEquals(projectionExpected.get(0).isDeferred(), projectionResult.get(0).isDeferred());
-      assertEquals(projectionExpected.get(0).getProcessingTime(), projectionResult.get(0).getProcessingTime());
-    }
-    if ("TestSomeFieldNullPointerException".equals(assertionsGroup)) {
-      assertEquals(projectionExpected.isEmpty(), projectionResult.isEmpty());
+      //THEN
+      if ("TestValues".equals(assertionsGroup)) {
+        assertEquals(projectionExpected.size(), projectionResult.size());
+        assertEquals(projectionExpected.get(0).getDate(), projectionResult.get(0).getDate());
+        assertEquals(projectionExpected.get(0).getProjectedEndDate(), projectionResult.get(0).getProjectedEndDate());
+        assertEquals(projectionExpected.get(0).getRemainingQuantity(), projectionResult.get(0).getRemainingQuantity());
+        assertEquals(projectionExpected.get(0).getEtdCutoff(), projectionResult.get(0).getEtdCutoff());
+        assertEquals(projectionExpected.get(0).isDeferred(), projectionResult.get(0).isDeferred());
+        assertEquals(projectionExpected.get(0).getProcessingTime(), projectionResult.get(0).getProcessingTime());
+      }
+      if ("TestSomeFieldNullPointerException".equals(assertionsGroup)) {
+        assertEquals(projectionExpected.isEmpty(), projectionResult.isEmpty());
+      }
+
+    } catch (BadSimulationRequestException e){
+      if("TestProjectionBadSimulationRequest".equals(assertionsGroup)){
+        String msg = "Duplicate SimulationEntity with name THROUGHPUT";
+        assertEquals(msg, e.getMessage());
+      }
     }
   }
 }

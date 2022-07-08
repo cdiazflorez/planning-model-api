@@ -242,7 +242,7 @@ public class GetDeferralProjectionUseCaseTest {
     OPERATING_HOURS.subList(0, 7).forEach(date -> maxCaps.put(date, 0));
     maxCaps.put(OPERATING_HOURS.get(7),100000);
 
-    when(maxCapacityService.execute(
+    when(maxCapacityService.getMaxCapacity(
         new MaxCapacityInput(
             WAREHOUSE_ID,
             input.getWorkflow(),
@@ -325,7 +325,7 @@ public class GetDeferralProjectionUseCaseTest {
     Map<ZonedDateTime, Integer> maxCaps = new TreeMap<>();
     OPERATING_HOURS.forEach(date -> maxCaps.put(date, 750));
 
-    when(maxCapacityService.execute(
+    when(maxCapacityService.getMaxCapacity(
         new MaxCapacityInput(
             WAREHOUSE_ID,
             input.getWorkflow(),

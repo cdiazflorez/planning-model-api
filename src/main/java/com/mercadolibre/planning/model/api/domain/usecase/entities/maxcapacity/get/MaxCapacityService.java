@@ -39,7 +39,7 @@ public class MaxCapacityService {
 
   private final GetForecastUseCase getForecastUseCase;
 
-  public Map<ZonedDateTime, Integer> execute(MaxCapacityInput input){
+  public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input){
 
     final List<ProcessingDistributionView> maxCapacityBD = processingDistRepository
         .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -75,7 +75,7 @@ public class MaxCapacityService {
 
     if (input.getSimulations() != null && !input.getSimulations().isEmpty()) {
 
-      var globalThroughputSimulations = input.getSimulations().stream()
+      final var globalThroughputSimulations = input.getSimulations().stream()
           .filter(simulation -> simulation.getProcessName().equals(GLOBAL))
           .map(Simulation::getEntities)
           .flatMap(Collection::stream)

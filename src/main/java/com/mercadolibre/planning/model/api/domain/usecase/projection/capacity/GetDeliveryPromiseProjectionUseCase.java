@@ -59,7 +59,7 @@ public class GetDeliveryPromiseProjectionUseCase {
 
   private Map<ZonedDateTime, Integer> getMaxCapacity(final GetDeliveryPromiseProjectionInput input) {
 
-    return maxCapacityService.execute(new MaxCapacityInput(
+    return maxCapacityService.getMaxCapacity(new MaxCapacityInput(
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getDateFrom(),

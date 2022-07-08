@@ -174,7 +174,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
     when(getSlaByWarehouseOutboundService.execute(
         new GetSlaByWarehouseInput(logisticCenterId, dateFrom, dateTo, cptDatesFromBacklog, null))).thenReturn(cptByWarehouse);
 
-    when(maxCapacityService.execute(new MaxCapacityInput(
+    when(maxCapacityService.getMaxCapacity(new MaxCapacityInput(
         logisticCenterId,
         workflow,
         dateFrom,

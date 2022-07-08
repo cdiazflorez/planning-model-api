@@ -78,7 +78,7 @@ public class MaxCapacityServiceTest {
     mockMaxCaps();
 
     //WHEN
-    Map<ZonedDateTime, Integer> result = maxCapacityService.execute(mockInputWithoutSimulations());
+    Map<ZonedDateTime, Integer> result = maxCapacityService.getMaxCapacity(mockInputWithoutSimulations());
 
     //THEN
     Assertions.assertNotNull(result);
@@ -93,7 +93,7 @@ public class MaxCapacityServiceTest {
     mockMaxCaps();
 
     //WHEN
-    Map<ZonedDateTime, Integer> result = maxCapacityService.execute(mockInputWithSimulations());
+    Map<ZonedDateTime, Integer> result = maxCapacityService.getMaxCapacity(mockInputWithSimulations());
 
     //THEN
     Assertions.assertNotNull(result);
@@ -109,7 +109,7 @@ public class MaxCapacityServiceTest {
 
     //WHEN
     Exception exception = assertThrows(BadSimulationRequestException.class, () -> {
-      maxCapacityService.execute(mockInputWithBadRequestSimulations());
+      maxCapacityService.getMaxCapacity(mockInputWithBadRequestSimulations());
     });
 
     String expectedMessage = "Duplicate SimulationEntity with name THROUGHPUT";

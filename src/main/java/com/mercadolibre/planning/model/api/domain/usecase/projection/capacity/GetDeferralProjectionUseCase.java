@@ -233,7 +233,7 @@ public class GetDeferralProjectionUseCase {
 
   private Map<ZonedDateTime, Integer> getMaxCapacity(final GetDeferralProjectionInput input) {
 
-    return maxCapacityService.execute(new MaxCapacityInput(
+    return maxCapacityService.getMaxCapacity(new MaxCapacityInput(
         input.getLogisticCenterId(),
         input.getWorkflow(),
         input.getDateFrom(),

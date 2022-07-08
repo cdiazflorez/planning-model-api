@@ -62,6 +62,8 @@ public class GetDeferralProjectionUseCase {
 
   private static final int INTERVAL_WIDTH_MINUTES = 5;
 
+  private static final long DEFERRAL_DAYS_TO_PROJECT = 3;
+
   private final MaxCapacityService maxCapacityService;
 
   private final GetCycleTimeService getCycleTimeService;
@@ -102,18 +104,19 @@ public class GetDeferralProjectionUseCase {
     return result;
   }
 
-  private List<DeliveryPromiseProjectionOutput> getDeferredSlas(final GetDeferralProjectionInput input,
-                                                                final ZonedDateTime currentUtcDate,
+  private List<DeliveryPromiseProjectionOutput> getDeferredSlas(final ZonedDateTime currentUtcDate,
                                                                 final List<Backlog> backlogs,
                                                                 final List<GetSlaByWarehouseOutput> allCptByWarehouse,
                                                                 final Map<ZonedDateTime, Long> cycleTimeByCpt,
                                                                 final Map<ZonedDateTime, Integer> maxCapacity) {
 
     final var modifiableMaxCaps = new HashMap<>(maxCapacity);
+    final var dateFrom = currentUtcDate.truncatedTo(ChronoUnit.HOURS);
+    final var dateTo = dateFrom.plusDays(DEFERRAL_DAYS_TO_PROJECT);
 
     final List<DeliveryPromiseProjectionOutput> projections = DeliveryPromiseCalculator.calculate(
-        input.getDateFrom(),
-        input.getDateTo(),
+        dateFrom,
+        dateTo,
         currentUtcDate,
         backlogs,
         modifiableMaxCaps,
@@ -196,7 +199,6 @@ public class GetDeferralProjectionUseCase {
       final var projectionDate = projectionDates.get(sampleIndex);
 
       final List<DeliveryPromiseProjectionOutput> deferredSlas = getDeferredSlas(
-          input,
           ZonedDateTime.ofInstant(projectionDate, ZoneOffset.UTC),
           backlogs,
           allCptByWarehouse,
@@ -237,7 +239,7 @@ public class GetDeferralProjectionUseCase {
         input.getLogisticCenterId(),
         input.getWorkflow(),
         input.getDateFrom(),
-        input.getDateTo(),
+        input.getSlaTo(),
         Collections.emptyList()));
   }
 

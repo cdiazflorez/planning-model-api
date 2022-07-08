@@ -44,7 +44,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -241,7 +240,7 @@ public class GetDeferralProjectionUseCaseTest {
 
     Map<ZonedDateTime, Integer> maxCaps = new ConcurrentHashMap<>();
     OPERATING_HOURS.subList(0, 7).forEach(date -> maxCaps.put(date, 0));
-    maxCaps.put(OPERATING_HOURS.get(7),100000);
+    maxCaps.put(OPERATING_HOURS.get(7), 100000);
 
     when(maxCapacityService.getMaxCapacity(
         new MaxCapacityInput(
@@ -251,7 +250,7 @@ public class GetDeferralProjectionUseCaseTest {
             input.getSlaTo(),
             Collections.emptyList()
         )
-        )).thenReturn(maxCaps);
+    )).thenReturn(maxCaps);
 
     mockSlas(input.getSlaFrom(), input.getSlaTo());
     mockCycleTimes();
@@ -337,6 +336,7 @@ public class GetDeferralProjectionUseCaseTest {
     )).thenReturn(maxCaps);
 
   }
+
   private void mockSlas(final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {
     final Function<ZonedDateTime, GetSlaByWarehouseOutput> buildSla = sla ->
         GetSlaByWarehouseOutput.builder().date(sla).processingTime(new ProcessingTime(60L, MINUTES)).build();

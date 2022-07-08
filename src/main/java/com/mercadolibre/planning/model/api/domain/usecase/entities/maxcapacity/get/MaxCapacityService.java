@@ -34,6 +34,8 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class MaxCapacityService {
 
+  private static final int MAXIMUM_NUMBER_OF_LIST_ELEMENTS = 1;
+
   private final ProcessingDistributionRepository processingDistRepository;
 
   private final GetForecastUseCase getForecastUseCase;
@@ -82,7 +84,7 @@ public class MaxCapacityService {
           .map(SimulationEntity::getValues)
           .collect(Collectors.toList());
 
-      if (globalThroughputSimulations.size() == 1) {
+      if (globalThroughputSimulations.size() == MAXIMUM_NUMBER_OF_LIST_ELEMENTS) {
         Map<Instant, Integer> simulationDates = globalThroughputSimulations.get(0).stream()
             .collect(toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity));
         capacityByDate.putAll(simulationDates);

@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class MaxCapacityServiceTest {
 
-  private static final List<Long> FORECASTS_IDS = List.of(1L, 2L);
+  private static final List<Long> FORECASTS_IDS = of(1L, 2L);
 
   private static final String WAREHOUSE_ID = "ARBA01";
 

@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.M
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.util.Collections.emptyList;
 import static java.util.List.of;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,11 +19,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.exception.BadSimulationRequestException;
 import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class MaxCapacityServiceTest {
   private GetForecastUseCase getForecastUseCase;
 
   @Test
-  public void maxCapacityWithoutSimulations(){
+  public void maxCapacityWithoutSimulations() {
     //GIVEN
     mockGetForecastsIds();
     mockMaxCaps();
@@ -87,7 +88,7 @@ public class MaxCapacityServiceTest {
   }
 
   @Test
-  public void maxCapacityWithSimulations(){
+  public void maxCapacityWithSimulations() {
     //GIVEN
     mockGetForecastsIds();
     mockMaxCaps();
@@ -102,7 +103,7 @@ public class MaxCapacityServiceTest {
   }
 
   @Test
-  public void maxCapacityWithBadRequestSimulations(){
+  public void maxCapacityWithBadRequestSimulations() {
     //GIVEN
     mockGetForecastsIds();
     mockMaxCaps();
@@ -112,7 +113,7 @@ public class MaxCapacityServiceTest {
       maxCapacityService.getMaxCapacity(mockInputWithBadRequestSimulations());
     });
 
-    String expectedMessage = "Duplicate SimulationEntity with name THROUGHPUT";
+    String expectedMessage = "Duplicate SimulationEntity with name MAX_CAPACITY";
     String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));
@@ -147,34 +148,34 @@ public class MaxCapacityServiceTest {
     ).thenReturn(FORECASTS_IDS);
   }
 
-  private MaxCapacityInput mockInputWithoutSimulations(){
-    return new  MaxCapacityInput(WAREHOUSE_ID,FBM_WMS_OUTBOUND,FROM,TO, Collections.emptyList());
+  private MaxCapacityInput mockInputWithoutSimulations() {
+    return new MaxCapacityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, FROM, TO, emptyList());
   }
 
-  private MaxCapacityInput mockInputWithSimulations(){
-    return new  MaxCapacityInput(WAREHOUSE_ID,FBM_WMS_OUTBOUND,FROM,TO, List.of(new Simulation(
+  private MaxCapacityInput mockInputWithSimulations() {
+    return new MaxCapacityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, FROM, TO, of(new Simulation(
         GLOBAL,
-        List.of(new SimulationEntity(
-            THROUGHPUT,
-            List.of(
+        of(new SimulationEntity(
+            EntityType.MAX_CAPACITY,
+            of(
                 new QuantityByDate(TRUNCATED_NOW,
                     130))
         ))
     )));
   }
 
-  private MaxCapacityInput mockInputWithBadRequestSimulations(){
-    return new  MaxCapacityInput(WAREHOUSE_ID,FBM_WMS_OUTBOUND,FROM,TO, List.of(new Simulation(
+  private MaxCapacityInput mockInputWithBadRequestSimulations() {
+    return new MaxCapacityInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, FROM, TO, of(new Simulation(
         GLOBAL,
-        List.of(new SimulationEntity(
-            THROUGHPUT,
-            List.of(
-                new QuantityByDate(TRUNCATED_NOW,
-                    130))
-        ),
+        of(new SimulationEntity(
+                THROUGHPUT,
+                of(
+                    new QuantityByDate(TRUNCATED_NOW,
+                        130))
+            ),
             new SimulationEntity(
                 THROUGHPUT,
-                List.of(
+                of(
                     new QuantityByDate(TRUNCATED_NOW,
                         130))
             ))

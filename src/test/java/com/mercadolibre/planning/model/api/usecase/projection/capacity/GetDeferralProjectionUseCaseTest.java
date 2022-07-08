@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -238,7 +239,7 @@ public class GetDeferralProjectionUseCaseTest {
     final List<Backlog> backlogs = getDeferralBacklogs();
     final GetDeferralProjectionInput input = getInput(backlogs);
 
-    Map<ZonedDateTime, Integer> maxCaps = new TreeMap<>();
+    Map<ZonedDateTime, Integer> maxCaps = new ConcurrentHashMap<>();
     OPERATING_HOURS.subList(0, 7).forEach(date -> maxCaps.put(date, 0));
     maxCaps.put(OPERATING_HOURS.get(7),100000);
 
@@ -322,7 +323,7 @@ public class GetDeferralProjectionUseCaseTest {
   }
 
   private void mockMaxCaps(GetDeferralProjectionInput input) {
-    Map<ZonedDateTime, Integer> maxCaps = new TreeMap<>();
+    Map<ZonedDateTime, Integer> maxCaps = new ConcurrentHashMap<>();
     OPERATING_HOURS.forEach(date -> maxCaps.put(date, 750));
 
     when(maxCapacityService.getMaxCapacity(

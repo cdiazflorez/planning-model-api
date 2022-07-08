@@ -2,7 +2,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -39,7 +38,7 @@ public class MaxCapacityService {
 
   private final GetForecastUseCase getForecastUseCase;
 
-  public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input){
+  public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input) {
 
     final List<ProcessingDistributionView> maxCapacityBD = processingDistRepository
         .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
@@ -63,7 +62,7 @@ public class MaxCapacityService {
   }
 
   private Map<ZonedDateTime, Integer> toMaxCapacityByDate(final MaxCapacityInput input,
-                                                         final List<ProcessingDistributionView> capacities) {
+                                                          final List<ProcessingDistributionView> capacities) {
     final Map<Instant, Integer> capacityByDate =
         capacities.stream()
             .collect(
@@ -75,20 +74,20 @@ public class MaxCapacityService {
 
     if (input.getSimulations() != null && !input.getSimulations().isEmpty()) {
 
-      final var globalThroughputSimulations = input.getSimulations().stream()
+      final List<List<QuantityByDate>> globalThroughputSimulations = input.getSimulations().stream()
           .filter(simulation -> simulation.getProcessName().equals(GLOBAL))
           .map(Simulation::getEntities)
           .flatMap(Collection::stream)
-          .filter(simulationEntity -> simulationEntity.getType().equals(THROUGHPUT))
+          .filter(simulationEntity -> simulationEntity.getType().equals(MAX_CAPACITY))
           .map(SimulationEntity::getValues)
           .collect(Collectors.toList());
 
-      if(globalThroughputSimulations.size() == 1 ){
-        Map<Instant, Integer> simulationDates =globalThroughputSimulations.get(0).stream()
+      if (globalThroughputSimulations.size() == 1) {
+        Map<Instant, Integer> simulationDates = globalThroughputSimulations.get(0).stream()
             .collect(toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity));
         capacityByDate.putAll(simulationDates);
       } else {
-        throw new BadSimulationRequestException(THROUGHPUT.name());
+        throw new BadSimulationRequestException(MAX_CAPACITY.name());
       }
 
     }

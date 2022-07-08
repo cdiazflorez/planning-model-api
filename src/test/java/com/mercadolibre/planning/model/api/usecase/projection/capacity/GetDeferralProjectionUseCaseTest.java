@@ -248,7 +248,7 @@ public class GetDeferralProjectionUseCaseTest {
             WAREHOUSE_ID,
             input.getWorkflow(),
             input.getDateFrom(),
-            input.getDateTo(),
+            input.getSlaTo(),
             Collections.emptyList()
         )
         )).thenReturn(maxCaps);
@@ -331,7 +331,7 @@ public class GetDeferralProjectionUseCaseTest {
             WAREHOUSE_ID,
             input.getWorkflow(),
             input.getDateFrom(),
-            input.getDateTo(),
+            input.getSlaTo(),
             Collections.emptyList()
         )
     )).thenReturn(maxCaps);

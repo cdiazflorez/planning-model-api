@@ -1,18 +1,14 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
 import static com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeliveryPromiseProjectionUtils.getSlasToBeProjectedFromBacklogAndKnowSlas;
 import static com.mercadolibre.planning.model.api.util.DateUtils.MINUTES_IN_HOUR;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklogService;
@@ -22,9 +18,9 @@ import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycle
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.helper.BacklogBySlaHelper;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.input.BacklogBySla;
@@ -68,9 +64,7 @@ public class GetDeferralProjectionUseCase {
 
   private static final long DEFERRAL_DAYS_TO_PROJECT = 3;
 
-  private final ProcessingDistributionRepository processingDistRepository;
-
-  private final GetForecastUseCase getForecastUseCase;
+  private final MaxCapacityService maxCapacityService;
 
   private final GetCycleTimeService getCycleTimeService;
 
@@ -239,31 +233,14 @@ public class GetDeferralProjectionUseCase {
         .collect(toList());
   }
 
-  private List<Long> getForecastIds(final GetDeferralProjectionInput input) {
-    return getForecastUseCase.execute(new GetForecastInput(
-        input.getLogisticCenterId(),
-        input.getWorkflow(),
-        input.getDateFrom(),
-        input.getDateTo()
-    ));
-  }
-
   private Map<ZonedDateTime, Integer> getMaxCapacity(final GetDeferralProjectionInput input) {
-    final List<ProcessingDistributionView> processingDistributionView = processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-            Set.of(MAX_CAPACITY.name()),
-            List.of(GLOBAL.toJson()),
-            input.getDateFrom(),
-            input.getDateTo(),
-            getForecastIds(input));
 
-    return DeliveryPromiseProjectionUtils.toMaxCapacityByDate(
+    return maxCapacityService.getMaxCapacity(new MaxCapacityInput(
         input.getLogisticCenterId(),
         input.getWorkflow(),
         input.getDateFrom(),
         input.getSlaTo(),
-        processingDistributionView
-    );
+        Collections.emptyList()));
   }
 
   private PlannedBacklogBySla getIncomingBacklog(final GetDeferralProjectionInput input) {

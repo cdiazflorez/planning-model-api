@@ -3,29 +3,31 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.i
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
-import lombok.Builder;
-import lombok.Value;
-
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
 public class GetDeliveryPromiseProjectionInput {
 
-    String warehouseId;
+  String warehouseId;
 
-    Workflow workflow;
+  Workflow workflow;
 
-    ProjectionType projectionType;
+  ProjectionType projectionType;
 
-    ZonedDateTime dateFrom;
+  ZonedDateTime dateFrom;
 
-    ZonedDateTime dateTo;
+  ZonedDateTime dateTo;
 
-    List<Backlog> backlog;
+  List<Backlog> backlog;
 
-    String timeZone;
+  String timeZone;
 
-    boolean applyDeviation;
+  boolean applyDeviation;
+
+  List<Simulation> simulations;
 }

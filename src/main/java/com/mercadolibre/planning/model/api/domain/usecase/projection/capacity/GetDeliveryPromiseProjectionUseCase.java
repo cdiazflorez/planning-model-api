@@ -1,25 +1,20 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeliveryPromiseProjectionUtils.getSlasToBeProjectedFromBacklogAndKnowSlas;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeInput;
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityService;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.DeliveryPromiseProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,9 +25,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class GetDeliveryPromiseProjectionUseCase {
 
-  private final ProcessingDistributionRepository processingDistRepository;
-
-  private final GetForecastUseCase getForecastUseCase;
+  private final MaxCapacityService maxCapacityService;
 
   private final GetCycleTimeService getCycleTimeService;
 
@@ -64,31 +57,14 @@ public class GetDeliveryPromiseProjectionUseCase {
     );
   }
 
-  private List<Long> getForecastIds(final GetDeliveryPromiseProjectionInput input) {
-    return getForecastUseCase.execute(new GetForecastInput(
-        input.getWarehouseId(),
-        input.getWorkflow(),
-        input.getDateFrom(),
-        input.getDateTo()
-    ));
-  }
-
   private Map<ZonedDateTime, Integer> getMaxCapacity(final GetDeliveryPromiseProjectionInput input) {
-    final List<ProcessingDistributionView> processingDistributionView = processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-            Set.of(MAX_CAPACITY.name()),
-            List.of(GLOBAL.toJson()),
-            input.getDateFrom(),
-            input.getDateTo(),
-            getForecastIds(input));
 
-    return DeliveryPromiseProjectionUtils.toMaxCapacityByDate(
+    return maxCapacityService.getMaxCapacity(new MaxCapacityInput(
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getDateFrom(),
         input.getDateTo(),
-        processingDistributionView
-    );
+        input.getSimulations()));
   }
 
 }

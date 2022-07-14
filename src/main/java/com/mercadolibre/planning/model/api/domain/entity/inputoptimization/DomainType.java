@@ -5,30 +5,36 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainMultiple;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainSingle;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainStrategy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @RequiredArgsConstructor
 public enum DomainType {
-    ABSENCES(Absences[].class),
-    BACKLOG_BOUNDS(BacklogBounds[].class),
-    CONFIGURATION(Configuration.class),
-    CONTRACT_MODALITY_TYPE(ContractModalityType[].class),
-    NON_SYSTEMIC_RATIO(NonSystemicRatio[].class),
-    POLYVALENCE_PARAMETERS(PolyvalenceParameters[].class),
-    PRESENCES(Presences[].class),
-    SHIFT_CONTRACT_MODALITY(ShiftContractModality[].class),
-    SHIFTS_PARAMETERS(ShiftParameters[].class),
-    TRANSFERS(Transfers[].class),
-    WORKER_COSTS(WorkerCosts[].class),
-    WORKERS_PARAMETERS(WorkersParameters[].class);
+    ABSENCES(new DomainMultiple<Absences>(), null),
+    BACKLOG_BOUNDS(new DomainMultiple<BacklogBounds>(), null),
+    CONFIGURATION(new DomainSingle<Configuration>(), null),
+    CONTRACT_MODALITY_TYPE(new DomainMultiple<ContractModalityType>(), null),
+    NON_SYSTEMIC_RATIO(new DomainMultiple<NonSystemicRatio>(), null),
+    POLYVALENCE_PARAMETERS(new DomainMultiple<PolyvalenceParameters>(), null),
+    PRESENCES(new DomainMultiple<Presences>(), null),
+    SHIFT_CONTRACT_MODALITY(new DomainMultiple<ShiftContractModality>(), null),
+    SHIFTS_PARAMETERS(new DomainMultiple<ShiftParameters>(), ShiftParameters.class),
+    TRANSFERS(new DomainMultiple<Transfers>(), null),
+    WORKER_COSTS(new DomainMultiple<WorkerCosts>(), null),
+    WORKERS_PARAMETERS(new DomainMultiple<WorkersParameters>(), null);
 
-    public final Class<?> domainStructure;
+    public final DomainStrategy domainStrategy;
+
+    public final Class<? extends Domain> domainFilters;
 
     private static final Map<String, DomainType> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainType::toString, Function.identity())
@@ -43,8 +49,14 @@ public enum DomainType {
         return toString().toLowerCase();
     }
 
+    public interface Domain {
+        default Map<String, Function<List<String>, Predicate<Domain>>> getDomainPredicate() {
+            return Map.of();
+        }
+    }
+
     @Value
-    public static class Absences {
+    private static class Absences implements Domain {
 
         String dayName;
 
@@ -59,7 +71,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class BacklogBounds {
+    private static class BacklogBounds implements Domain {
 
         String process;
 
@@ -74,7 +86,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class Configuration {
+    private static class Configuration implements Domain {
 
         boolean anticipateBacklog;
 
@@ -93,7 +105,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class ContractModalityType {
+    private static class ContractModalityType implements Domain {
 
         String contractModality;
 
@@ -102,7 +114,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class NonSystemicRatio {
+    private static class NonSystemicRatio implements Domain {
 
         String process;
 
@@ -113,7 +125,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class ShiftRatio {
+    private static class ShiftRatio {
 
         String key;
 
@@ -122,7 +134,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class PolyvalenceParameters {
+    private static class PolyvalenceParameters implements Domain {
 
         String processOrigin;
 
@@ -143,7 +155,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class Presences {
+    private static class Presences implements Domain {
 
         String process;
 
@@ -177,7 +189,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class ShiftContractModality {
+    private static class ShiftContractModality implements Domain {
 
         String process;
 
@@ -188,7 +200,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class ShiftParameters {
+    public static class ShiftParameters implements Domain {
 
         String dayName;
 
@@ -203,7 +215,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class Transfers {
+    private static class Transfers implements Domain {
 
         String shiftNameOrigin;
 
@@ -214,7 +226,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class WorkerCosts {
+    private static class WorkerCosts implements Domain {
 
         String shiftName;
 
@@ -229,7 +241,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class WorkersParameters {
+    private static class WorkersParameters implements Domain {
 
         String process;
 

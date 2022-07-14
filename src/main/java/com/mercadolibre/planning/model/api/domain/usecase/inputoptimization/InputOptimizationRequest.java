@@ -14,11 +14,6 @@ public class InputOptimizationRequest {
 
     List<DomainType> domains;
 
-    List<DomainFilter> domainFilters;
-
-    @Value
-    private static class DomainFilter {
-        Map<DomainType, Map<String, List<String>>> filters;
-    }
+    Map<DomainType, Map<String, List<Object>>> domainFilters;
 
 }

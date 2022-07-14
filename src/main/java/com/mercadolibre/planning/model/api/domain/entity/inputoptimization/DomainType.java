@@ -5,9 +5,9 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainMultiple;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainSingle;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainShiftParameter;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainConfiguration;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainStrategy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -19,22 +19,20 @@ import lombok.Value;
 
 @RequiredArgsConstructor
 public enum DomainType {
-    ABSENCES(new DomainMultiple<Absences>(), null),
-    BACKLOG_BOUNDS(new DomainMultiple<BacklogBounds>(), null),
-    CONFIGURATION(new DomainSingle<Configuration>(), null),
-    CONTRACT_MODALITY_TYPE(new DomainMultiple<ContractModalityType>(), null),
-    NON_SYSTEMIC_RATIO(new DomainMultiple<NonSystemicRatio>(), null),
-    POLYVALENCE_PARAMETERS(new DomainMultiple<PolyvalenceParameters>(), null),
-    PRESENCES(new DomainMultiple<Presences>(), null),
-    SHIFT_CONTRACT_MODALITY(new DomainMultiple<ShiftContractModality>(), null),
-    SHIFTS_PARAMETERS(new DomainMultiple<ShiftParameters>(), ShiftParameters.class),
-    TRANSFERS(new DomainMultiple<Transfers>(), null),
-    WORKER_COSTS(new DomainMultiple<WorkerCosts>(), null),
-    WORKERS_PARAMETERS(new DomainMultiple<WorkersParameters>(), null);
+    ABSENCES(null),
+    BACKLOG_BOUNDS(null),
+    CONFIGURATION(null),
+    CONTRACT_MODALITY_TYPE(null),
+    NON_SYSTEMIC_RATIO(null),
+    POLYVALENCE_PARAMETERS(null),
+    PRESENCES(null),
+    SHIFT_CONTRACT_MODALITY(null),
+    SHIFTS_PARAMETERS(new DomainShiftParameter()),
+    TRANSFERS(null),
+    WORKER_COSTS(null),
+    WORKERS_PARAMETERS(null);
 
     public final DomainStrategy domainStrategy;
-
-    public final Class<? extends Domain> domainFilters;
 
     private static final Map<String, DomainType> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainType::toString, Function.identity())

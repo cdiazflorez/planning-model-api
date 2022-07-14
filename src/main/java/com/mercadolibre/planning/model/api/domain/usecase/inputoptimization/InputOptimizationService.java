@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationView;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainStrategy;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

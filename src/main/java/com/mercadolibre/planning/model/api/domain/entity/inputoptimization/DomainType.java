@@ -5,34 +5,36 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainShiftParameter;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainConfiguration;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainMultiple;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainSingle;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainStrategy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @RequiredArgsConstructor
 public enum DomainType {
-    ABSENCES(null),
-    BACKLOG_BOUNDS(null),
-    CONFIGURATION(null),
-    CONTRACT_MODALITY_TYPE(null),
-    NON_SYSTEMIC_RATIO(null),
-    POLYVALENCE_PARAMETERS(null),
-    PRESENCES(null),
-    SHIFT_CONTRACT_MODALITY(null),
-    SHIFTS_PARAMETERS(new DomainShiftParameter()),
-    TRANSFERS(null),
-    WORKER_COSTS(null),
-    WORKERS_PARAMETERS(null);
+    ABSENCES(new DomainMultiple(), Absences.class),
+    BACKLOG_BOUNDS(new DomainMultiple(), BacklogBounds.class),
+    CONFIGURATION(new DomainSingle(), Configuration.class),
+    CONTRACT_MODALITY_TYPE(new DomainMultiple(), ContractModalityType.class),
+    NON_SYSTEMIC_RATIO(new DomainMultiple(), NonSystemicRatio.class),
+    POLYVALENCE_PARAMETERS(new DomainMultiple(), PolyvalenceParameters.class),
+    PRESENCES(new DomainMultiple(), Presences.class),
+    SHIFT_CONTRACT_MODALITY(new DomainMultiple(), ShiftContractModality.class),
+    SHIFTS_PARAMETERS(new DomainMultiple(), ShiftParameters.class),
+    TRANSFERS(new DomainMultiple(), Transfers.class),
+    WORKER_COSTS(new DomainMultiple(), WorkerCosts.class),
+    WORKERS_PARAMETERS(new DomainMultiple(), WorkersParameters.class);
 
     public final DomainStrategy domainStrategy;
+
+    public final Class<? extends Domain> structure;
 
     private static final Map<String, DomainType> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainType::toString, Function.identity())
@@ -48,8 +50,8 @@ public enum DomainType {
     }
 
     public interface Domain {
-        default Map<String, Function<List<String>, Predicate<Domain>>> getDomainPredicate() {
-            return Map.of();
+        default boolean conditionFilter(Map<String, List<Object>> domainFilterRequests) {
+            return true;
         }
     }
 
@@ -198,7 +200,7 @@ public enum DomainType {
     }
 
     @Value
-    public static class ShiftParameters implements Domain {
+    private static class ShiftParameters implements Domain {
 
         String dayName;
 
@@ -209,6 +211,33 @@ public enum DomainType {
         int start;
 
         int end;
+
+        @Override
+        public boolean conditionFilter(Map<String, List<Object>> domainFilterRequests) {
+
+            final Map<String, Function<List<Object>, Boolean>> SHIFT_PARAMETERS_FILTERS = Map.of(
+                    "include_day_name", (List<Object> objectList) -> {
+                        final List<String> dayNames = objectList.stream()
+                                .map(Object::toString)
+                                .collect(Collectors.toList());
+                        return dayNames.contains(dayName);
+                    },
+                    "include_shift_type", (List<Object> objectList) -> {
+                        final List<String> shiftTypes = objectList.stream()
+                                .map(Object::toString)
+                                .collect(Collectors.toList());
+                        return shiftTypes.contains(shiftType);
+                    }
+            );
+
+            if (domainFilterRequests == null || domainFilterRequests.isEmpty()) {
+                return true;
+            }
+
+            return domainFilterRequests.entrySet().stream()
+                    .map(filterRequest -> SHIFT_PARAMETERS_FILTERS.get(filterRequest.getKey()).apply(filterRequest.getValue()))
+                    .reduce(true, Boolean::logicalAnd);
+        }
 
     }
 

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationView;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.domain.DomainStrategy;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +55,7 @@ public class InputOptimizationService {
                                   final Map<String, List<Object>> domainFilters) {
         try {
             DomainStrategy domainStrategy = domainType.domainStrategy;
-            return domainStrategy.transformJsonValueToObject(objectMapper, jsonValue, domainFilters);
+            return domainStrategy.transformJsonValueToObject(objectMapper, domainType.structure, jsonValue, domainFilters);
         } catch (JsonProcessingException e) {
             log.error(
                     String.format("Invalid Domain '%s' transform. Exceptions: %s", domainType.toJson(), e.getMessage())

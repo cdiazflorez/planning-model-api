@@ -115,6 +115,17 @@ public class SimulationController {
     return ResponseEntity.ok(fromProjectionOutputs(simulatedProjections, actualProjections));
   }
 
+  @PostMapping("/deferral/save")
+  @Trace(dispatcher = true)
+  public ResponseEntity<String> saveSimulations(@PathVariable final Workflow workflow,
+                                                @Valid @RequestBody final SaveSimulationRequest request) {
+
+    activateSimulationUseCase.execute(request.toSimulationInput(workflow));
+
+    return ResponseEntity.ok("");
+  }
+
+
   @InitBinder
   public void initBinder(final PropertyEditorRegistry dataBinder) {
     dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());

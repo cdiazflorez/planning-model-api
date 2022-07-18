@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization;
+package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

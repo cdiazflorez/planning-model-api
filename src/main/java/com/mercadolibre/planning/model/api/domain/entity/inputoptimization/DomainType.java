@@ -1,13 +1,16 @@
 package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
 
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainMultiple;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainSingle;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.DomainStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainMultiple;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainSingle;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainStrategy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -19,18 +22,18 @@ import lombok.Value;
 
 @RequiredArgsConstructor
 public enum DomainType {
-    ABSENCES(new DomainMultiple(), Absences.class),
-    BACKLOG_BOUNDS(new DomainMultiple(), BacklogBounds.class),
+    ABSENCES(new DomainMultiple(), Absence.class),
+    BACKLOG_BOUNDS(new DomainMultiple(), BacklogBound.class),
     CONFIGURATION(new DomainSingle(), Configuration.class),
     CONTRACT_MODALITY_TYPE(new DomainMultiple(), ContractModalityType.class),
     NON_SYSTEMIC_RATIO(new DomainMultiple(), NonSystemicRatio.class),
-    POLYVALENCE_PARAMETERS(new DomainMultiple(), PolyvalenceParameters.class),
-    PRESENCES(new DomainMultiple(), Presences.class),
+    POLYVALENCE_PARAMETERS(new DomainMultiple(), PolyvalenceParameter.class),
+    PRESENCES(new DomainMultiple(), Presence.class),
     SHIFT_CONTRACT_MODALITY(new DomainMultiple(), ShiftContractModality.class),
-    SHIFTS_PARAMETERS(new DomainMultiple(), ShiftParameters.class),
-    TRANSFERS(new DomainMultiple(), Transfers.class),
-    WORKER_COSTS(new DomainMultiple(), WorkerCosts.class),
-    WORKERS_PARAMETERS(new DomainMultiple(), WorkersParameters.class);
+    SHIFTS_PARAMETERS(new DomainMultiple(), ShiftParameter.class),
+    TRANSFERS(new DomainMultiple(), Transfer.class),
+    WORKER_COSTS(new DomainMultiple(), WorkerCost.class),
+    WORKERS_PARAMETERS(new DomainMultiple(), WorkersParameter.class);
 
     public final DomainStrategy domainStrategy;
 
@@ -49,6 +52,32 @@ public enum DomainType {
         return toString().toLowerCase();
     }
 
+    private static List<String> convertObjectListToStringList(final List<Object> objectList) {
+        return objectList.stream().map(Object::toString).collect(Collectors.toList());
+    }
+
+    private static boolean shiftParametersFilter(final ShiftParameter shiftParameter,
+                                                 final Map<String, List<Object>> domainFilterRequests) {
+
+        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> SHIFT_PARAMETERS_FILTERS = Map.of(
+                INCLUDE_DAY_NAME, (List<Object> objectList) -> {
+                    final List<String> dayNames = convertObjectListToStringList(objectList);
+                    return dayNames.contains(shiftParameter.getDayName());
+                },
+                INCLUDE_SHIFT_TYPE, (List<Object> objectList) -> {
+                    final List<String> shiftTypes = convertObjectListToStringList(objectList);
+                    return shiftTypes.contains(shiftParameter.getShiftType());
+                }
+        );
+
+        return domainFilterRequests.entrySet().stream()
+                .map(filterRequest -> {
+                    final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey()).orElseThrow();
+                    return SHIFT_PARAMETERS_FILTERS.get(domainOptionFilter).apply(filterRequest.getValue());
+                })
+                .reduce(true, Boolean::logicalAnd);
+    }
+
     public interface Domain {
         default boolean conditionFilter(Map<String, List<Object>> domainFilterRequests) {
             return true;
@@ -56,7 +85,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class Absences implements Domain {
+    private static class Absence implements Domain {
 
         String dayName;
 
@@ -71,7 +100,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class BacklogBounds implements Domain {
+    private static class BacklogBound implements Domain {
 
         String process;
 
@@ -134,7 +163,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class PolyvalenceParameters implements Domain {
+    private static class PolyvalenceParameter implements Domain {
 
         String processOrigin;
 
@@ -155,7 +184,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class Presences implements Domain {
+    private static class Presence implements Domain {
 
         String process;
 
@@ -200,7 +229,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class ShiftParameters implements Domain {
+    private static class ShiftParameter implements Domain {
 
         String dayName;
 
@@ -214,35 +243,13 @@ public enum DomainType {
 
         @Override
         public boolean conditionFilter(Map<String, List<Object>> domainFilterRequests) {
-
-            final Map<String, Function<List<Object>, Boolean>> SHIFT_PARAMETERS_FILTERS = Map.of(
-                    "include_day_name", (List<Object> objectList) -> {
-                        final List<String> dayNames = objectList.stream()
-                                .map(Object::toString)
-                                .collect(Collectors.toList());
-                        return dayNames.contains(dayName);
-                    },
-                    "include_shift_type", (List<Object> objectList) -> {
-                        final List<String> shiftTypes = objectList.stream()
-                                .map(Object::toString)
-                                .collect(Collectors.toList());
-                        return shiftTypes.contains(shiftType);
-                    }
-            );
-
-            if (domainFilterRequests == null || domainFilterRequests.isEmpty()) {
-                return true;
-            }
-
-            return domainFilterRequests.entrySet().stream()
-                    .map(filterRequest -> SHIFT_PARAMETERS_FILTERS.get(filterRequest.getKey()).apply(filterRequest.getValue()))
-                    .reduce(true, Boolean::logicalAnd);
+            return shiftParametersFilter(this, domainFilterRequests);
         }
 
     }
 
     @Value
-    private static class Transfers implements Domain {
+    private static class Transfer implements Domain {
 
         String shiftNameOrigin;
 
@@ -253,7 +260,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class WorkerCosts implements Domain {
+    private static class WorkerCost implements Domain {
 
         String shiftName;
 
@@ -268,7 +275,7 @@ public enum DomainType {
     }
 
     @Value
-    private static class WorkersParameters implements Domain {
+    private static class WorkersParameter implements Domain {
 
         String process;
 

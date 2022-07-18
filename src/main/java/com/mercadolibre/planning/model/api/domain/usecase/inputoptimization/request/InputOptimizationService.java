@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization;
+package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationView;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationRequest;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainStrategy;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,12 +29,15 @@ public class InputOptimizationService {
     public Map<DomainType, Object> getInputOptimization(final InputOptimizationRequest request) {
 
         if (request.getDomains() == null || request.getDomains().isEmpty()) {
-            return buildMapResponse(inputOptimizationRepository.findAllByWarehouseId(request.getWarehouseId()),
-                                                                                    ofNullable(request.getDomainFilters()));
+            return buildMapResponse(
+                    inputOptimizationRepository.findAllByWarehouseId(request.getWarehouseId()),
+                    ofNullable(request.getDomainFilters())
+            );
         } else {
-            return buildMapResponse(inputOptimizationRepository.findAllByWarehouseIdAndDomainIn(request.getWarehouseId(),
-                                                                                               request.getDomains()),
-                                                                                               ofNullable(request.getDomainFilters()));
+            return buildMapResponse(
+                    inputOptimizationRepository.findAllByWarehouseIdAndDomainIn(request.getWarehouseId(), request.getDomains()),
+                    ofNullable(request.getDomainFilters())
+            );
         }
     }
 

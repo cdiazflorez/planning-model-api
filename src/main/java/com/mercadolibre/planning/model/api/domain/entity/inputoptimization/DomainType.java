@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SUB_PROCESS;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
@@ -11,6 +13,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inpu
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainSingle;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainStrategy;
+import com.mercadolibre.planning.model.api.exception.InvalidDomainFilterException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -72,8 +75,38 @@ public enum DomainType {
 
         return domainFilterRequests.entrySet().stream()
                 .map(filterRequest -> {
-                    final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey()).orElseThrow();
+                    final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
+                            .orElseThrow(() -> new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE));
+                    if (!SHIFT_PARAMETERS_FILTERS.containsKey(domainOptionFilter)) {
+                        throw new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE);
+                    }
                     return SHIFT_PARAMETERS_FILTERS.get(domainOptionFilter).apply(filterRequest.getValue());
+                })
+                .reduce(true, Boolean::logicalAnd);
+    }
+
+    private static boolean nonSystemicRatioFilter(final NonSystemicRatio nonSystemicRatio,
+                                                  final Map<String, List<Object>> domainFilterRequests) {
+
+        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> NON_SYSTEMIC_RATIO_FILTERS = Map.of(
+                INCLUDE_PROCESS, (List<Object> objectList) -> {
+                    final List<String> process = convertObjectListToStringList(objectList);
+                    return process.contains(nonSystemicRatio.getProcess());
+                },
+                INCLUDE_SUB_PROCESS, (List<Object> objectList) -> {
+                    final List<String> subProcess = convertObjectListToStringList(objectList);
+                    return subProcess.contains(nonSystemicRatio.getSubProcess());
+                }
+        );
+
+        return domainFilterRequests.entrySet().stream()
+                .map(filterRequest -> {
+                    final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
+                            .orElseThrow(() -> new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS));
+                    if (!NON_SYSTEMIC_RATIO_FILTERS.containsKey(domainOptionFilter)) {
+                        throw new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS);
+                    }
+                    return NON_SYSTEMIC_RATIO_FILTERS.get(domainOptionFilter).apply(filterRequest.getValue());
                 })
                 .reduce(true, Boolean::logicalAnd);
     }
@@ -151,6 +184,10 @@ public enum DomainType {
 
         List<ShiftRatio> shiftRatios;
 
+        @Override
+        public boolean conditionFilter(Map<String, List<Object>> domainFilterRequests) {
+            return nonSystemicRatioFilter(this, domainFilterRequests);
+        }
     }
 
     @Value

@@ -1,7 +1,11 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.stream.Collectors.toList;
@@ -10,7 +14,6 @@ import static java.util.stream.Collectors.toSet;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -146,22 +149,25 @@ public class GetHeadcountEntityUseCase
       return Collections.emptyList();
     }
 
-    final List<EntityOutput> simulatedEntities = new ArrayList<>();
-
-    input.getSimulations().forEach(simulation ->
-        simulation.getEntities().stream()
-            .filter(entity -> entity.getType() == HEADCOUNT)
-            .forEach(entity -> entity.getValues().forEach(quantityByDate ->
-                simulatedEntities.add(EntityOutput.builder()
-                    .workflow(input.getWorkflow())
-                    .date(quantityByDate.getDate().withFixedOffsetZone())
-                    .metricUnit(MetricUnit.WORKERS)
-                    .processName(simulation.getProcessName())
-                    .source(SIMULATION)
-                    .value(quantityByDate.getQuantity())
-                    .type(ProcessingType.ACTIVE_WORKERS)
-                    .build()))));
-
-    return simulatedEntities;
+    return input.getSimulations()
+        .stream()
+        .flatMap(simulation ->
+            simulation.getEntities().stream()
+                .filter(entity -> entity.getType() == HEADCOUNT || entity.getType() == MAX_CAPACITY)
+                .flatMap(entity -> entity.getValues()
+                    .stream()
+                    .map(quantityByDate -> new EntityOutput(
+                            input.getWorkflow(),
+                            quantityByDate.getDate().withFixedOffsetZone(),
+                            simulation.getProcessName(),
+                            entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
+                            entity.getType() == HEADCOUNT ? WORKERS : UNITS_PER_HOUR,
+                            SIMULATION,
+                            quantityByDate.getQuantity()
+                        )
+                    )
+                )
+        ).collect(toList());
   }
+
 }

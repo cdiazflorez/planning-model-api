@@ -6,8 +6,11 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.exception.BadSimulationRequestException;
@@ -34,11 +37,13 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class MaxCapacityService {
 
-  private static final int MAXIMUM_NUMBER_OF_LIST_ELEMENTS = 1;
+  private static final int EXPECTED_NUMBER_OF_SIMULATIONS = 1;
 
   private final ProcessingDistributionRepository processingDistRepository;
 
   private final GetForecastUseCase getForecastUseCase;
+
+  private final CurrentProcessingDistributionRepository currentPDistributionRepository;
 
   public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input) {
 
@@ -65,6 +70,9 @@ public class MaxCapacityService {
 
   private Map<ZonedDateTime, Integer> toMaxCapacityByDate(final MaxCapacityInput input,
                                                           final List<ProcessingDistributionView> capacities) {
+
+    final Map<Instant, Integer> savedSimulations = getCapacitySavedSimulations(input);
+
     final Map<Instant, Integer> capacityByDate =
         capacities.stream()
             .collect(
@@ -73,6 +81,8 @@ public class MaxCapacityService {
                     o -> (int) o.getQuantity(),
                     (intA, intB) -> intB)
             );
+
+    capacityByDate.putAll(savedSimulations);
 
     if (input.getSimulations() != null && !input.getSimulations().isEmpty()) {
 
@@ -84,7 +94,7 @@ public class MaxCapacityService {
           .map(SimulationEntity::getValues)
           .collect(Collectors.toList());
 
-      if (globalThroughputSimulations.size() == MAXIMUM_NUMBER_OF_LIST_ELEMENTS) {
+      if (globalThroughputSimulations.size() == EXPECTED_NUMBER_OF_SIMULATIONS) {
         Map<Instant, Integer> simulationDates = globalThroughputSimulations.get(0).stream()
             .collect(toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity));
         capacityByDate.putAll(simulationDates);
@@ -117,6 +127,25 @@ public class MaxCapacityService {
     return LongStream.range(0, intervalBetweenDates.toHours())
         .mapToObj(i -> baseDate.plusHours(i).toInstant())
         .collect(toSet());
+  }
+
+  private Map<Instant, Integer> getCapacitySavedSimulations(final MaxCapacityInput input) {
+    final List<CurrentProcessingDistribution> savedSimulations = currentPDistributionRepository
+        .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+            input.getWarehouseId(),
+            input.getWorkflow(),
+            Set.of(ProcessingType.MAX_CAPACITY),
+            List.of(GLOBAL),
+            input.getDateFrom(),
+            input.getDateTo());
+
+    return savedSimulations.stream()
+        .collect(toMap(
+            simulation -> simulation.getDate().toInstant(),
+            simulation -> (int) simulation.getQuantity(),
+            (intA, intB) -> intB
+        ));
+
   }
 
 }

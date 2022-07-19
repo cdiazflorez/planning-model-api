@@ -11,8 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityService;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -72,11 +74,14 @@ public class MaxCapacityServiceTest {
   @Mock
   private GetForecastUseCase getForecastUseCase;
 
+  @Mock
+  private CurrentProcessingDistributionRepository currentPDistributionRepository;
+
   @Test
   public void maxCapacityWithoutSimulations() {
     //GIVEN
     mockGetForecastsIds();
-    mockMaxCaps();
+    mockMaxCaps(false);
 
     //WHEN
     Map<ZonedDateTime, Integer> result = maxCapacityService.getMaxCapacity(mockInputWithoutSimulations());
@@ -84,6 +89,8 @@ public class MaxCapacityServiceTest {
     //THEN
     Assertions.assertNotNull(result);
     Assertions.assertEquals(result.get(TRUNCATED_NOW.plusHours(3)), 800);
+    Assertions.assertEquals(result.get(TRUNCATED_NOW.plusHours(6)), 800);
+    Assertions.assertEquals(result.get(TRUNCATED_NOW.plusHours(7)), 800);
 
   }
 
@@ -91,7 +98,7 @@ public class MaxCapacityServiceTest {
   public void maxCapacityWithSimulations() {
     //GIVEN
     mockGetForecastsIds();
-    mockMaxCaps();
+    mockMaxCaps(true);
 
     //WHEN
     Map<ZonedDateTime, Integer> result = maxCapacityService.getMaxCapacity(mockInputWithSimulations());
@@ -99,6 +106,8 @@ public class MaxCapacityServiceTest {
     //THEN
     Assertions.assertNotNull(result);
     Assertions.assertEquals(result.get(TRUNCATED_NOW), 130);
+    Assertions.assertEquals(result.get(TRUNCATED_NOW.plusHours(6)), 300);
+    Assertions.assertEquals(result.get(TRUNCATED_NOW.plusHours(7)), 300);
 
   }
 
@@ -106,7 +115,7 @@ public class MaxCapacityServiceTest {
   public void maxCapacityWithBadRequestSimulations() {
     //GIVEN
     mockGetForecastsIds();
-    mockMaxCaps();
+    mockMaxCaps(false);
 
     //WHEN
     Exception exception = assertThrows(BadSimulationRequestException.class, () -> {
@@ -120,7 +129,7 @@ public class MaxCapacityServiceTest {
 
   }
 
-  private void mockMaxCaps() {
+  private void mockMaxCaps(boolean savedSimulations) {
     final List<ProcessingDistributionView> caps = OPERATING_HOURS.stream()
         .map(ZonedDateTime::toInstant)
         .map(date -> ProcessingDistributionViewImpl.builder()
@@ -136,6 +145,24 @@ public class MaxCapacityServiceTest {
         TO,
         FORECASTS_IDS)
     ).thenReturn(caps);
+
+    List<CurrentProcessingDistribution> listSavedSimulations = OPERATING_HOURS.subList(5, 7)
+        .stream()
+        .map(date -> CurrentProcessingDistribution.builder()
+            .date(date)
+            .quantity(300)
+            .build())
+        .collect(Collectors.toList());
+
+    when(currentPDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+            WAREHOUSE_ID,
+            FBM_WMS_OUTBOUND,
+            Set.of(MAX_CAPACITY),
+            of(GLOBAL),
+            FROM,
+            TO
+        )
+    ).thenReturn(savedSimulations ? listSavedSimulations : emptyList());
   }
 
   private void mockGetForecastsIds() {

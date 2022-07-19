@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization;
+package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
 import java.util.List;

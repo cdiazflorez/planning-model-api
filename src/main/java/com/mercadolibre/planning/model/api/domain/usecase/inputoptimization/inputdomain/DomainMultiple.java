@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class DomainMultiple implements DomainStrategy{
+public class DomainMultiple implements DomainStrategy {
 
     @Override
     public Object transformJsonValueToObject(final ObjectMapper objectMapper,
@@ -21,7 +21,8 @@ public class DomainMultiple implements DomainStrategy{
                                              final String jsonValue,
                                              final Map<String, List<Object>> domainFilters)
             throws JsonProcessingException {
-        final List<Domain> resultDomains = objectMapper.readValue(jsonValue, objectMapper.getTypeFactory().constructCollectionType(List.class, structure));
+        final List<Domain> resultDomains = objectMapper.readValue(jsonValue,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, structure));
         if (domainFilters == null || domainFilters.isEmpty()) {
             return resultDomains;
         } else {

@@ -38,10 +38,6 @@ public enum DomainType {
     WORKER_COSTS(new DomainMultiple(), WorkerCost.class),
     WORKERS_PARAMETERS(new DomainMultiple(), WorkersParameter.class);
 
-    public final DomainStrategy domainStrategy;
-
-    public final Class<? extends Domain> structure;
-
     private static final Map<String, DomainType> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainType::toString, Function.identity())
     );
@@ -49,6 +45,10 @@ public enum DomainType {
     public static Optional<DomainType> of(final String value) {
         return ofNullable(LOOKUP.get(value.toUpperCase()));
     }
+
+    public final DomainStrategy domainStrategy;
+
+    public final Class<? extends Domain> structure;
 
     @JsonValue
     public String toJson() {
@@ -62,7 +62,7 @@ public enum DomainType {
     private static boolean shiftParametersFilter(final ShiftParameter shiftParameter,
                                                  final Map<String, List<Object>> domainFilterRequests) {
 
-        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> SHIFT_PARAMETERS_FILTERS = Map.of(
+        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> shiftParametersFilters = Map.of(
                 INCLUDE_DAY_NAME, (List<Object> objectList) -> {
                     final List<String> dayNames = convertObjectListToStringList(objectList);
                     return dayNames.contains(shiftParameter.getDayName());
@@ -77,10 +77,10 @@ public enum DomainType {
                 .map(filterRequest -> {
                     final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
                             .orElseThrow(() -> new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE));
-                    if (!SHIFT_PARAMETERS_FILTERS.containsKey(domainOptionFilter)) {
+                    if (!shiftParametersFilters.containsKey(domainOptionFilter)) {
                         throw new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE);
                     }
-                    return SHIFT_PARAMETERS_FILTERS.get(domainOptionFilter).apply(filterRequest.getValue());
+                    return shiftParametersFilters.get(domainOptionFilter).apply(filterRequest.getValue());
                 })
                 .reduce(true, Boolean::logicalAnd);
     }
@@ -88,7 +88,7 @@ public enum DomainType {
     private static boolean nonSystemicRatioFilter(final NonSystemicRatio nonSystemicRatio,
                                                   final Map<String, List<Object>> domainFilterRequests) {
 
-        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> NON_SYSTEMIC_RATIO_FILTERS = Map.of(
+        final Map<DomainOptionFilter, Function<List<Object>, Boolean>> nonSystemicRatioFilters = Map.of(
                 INCLUDE_PROCESS, (List<Object> objectList) -> {
                     final List<String> process = convertObjectListToStringList(objectList);
                     return process.contains(nonSystemicRatio.getProcess());
@@ -103,10 +103,10 @@ public enum DomainType {
                 .map(filterRequest -> {
                     final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
                             .orElseThrow(() -> new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS));
-                    if (!NON_SYSTEMIC_RATIO_FILTERS.containsKey(domainOptionFilter)) {
+                    if (!nonSystemicRatioFilters.containsKey(domainOptionFilter)) {
                         throw new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS);
                     }
-                    return NON_SYSTEMIC_RATIO_FILTERS.get(domainOptionFilter).apply(filterRequest.getValue());
+                    return nonSystemicRatioFilters.get(domainOptionFilter).apply(filterRequest.getValue());
                 })
                 .reduce(true, Boolean::logicalAnd);
     }

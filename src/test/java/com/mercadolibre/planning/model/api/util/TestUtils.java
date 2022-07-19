@@ -14,6 +14,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.MaxCapacityVie
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
@@ -42,6 +43,7 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Proce
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import java.util.LinkedHashMap;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -71,6 +73,18 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.M
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.ABSENCES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.BACKLOG_BOUNDS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONFIGURATION;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPE;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.NON_SYSTEMIC_RATIO;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.POLYVALENCE_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.PRESENCES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFT_CONTRACT_MODALITY;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.TRANSFERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKERS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKER_COSTS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
@@ -1024,4 +1038,22 @@ public final class TestUtils {
     public static List<Long> mockForecastIds() {
         return List.of(1L, 2L);
     }
+
+    public static Map<DomainType, Object> mockInputOptimization() {
+        final Map<DomainType, Object> inputResult = new LinkedHashMap<>();
+        inputResult.put(ABSENCES, List.of());
+        inputResult.put(BACKLOG_BOUNDS, List.of());
+        inputResult.put(CONFIGURATION, null);
+        inputResult.put(CONTRACT_MODALITY_TYPE, List.of());
+        inputResult.put(NON_SYSTEMIC_RATIO, List.of());
+        inputResult.put(POLYVALENCE_PARAMETERS, List.of());
+        inputResult.put(PRESENCES, List.of());
+        inputResult.put(SHIFT_CONTRACT_MODALITY, List.of());
+        inputResult.put(SHIFTS_PARAMETERS, List.of());
+        inputResult.put(TRANSFERS, List.of());
+        inputResult.put(WORKER_COSTS, List.of());
+        inputResult.put(WORKERS_PARAMETERS, List.of());
+        return inputResult;
+    }
+
 }

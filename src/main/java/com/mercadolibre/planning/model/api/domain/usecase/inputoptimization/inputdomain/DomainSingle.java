@@ -6,7 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.Domai
 import java.util.List;
 import java.util.Map;
 
-public class DomainSingle implements DomainStrategy{
+public class DomainSingle implements DomainStrategy {
 
     @Override
     public Object transformJsonValueToObject(final ObjectMapper objectMapper,

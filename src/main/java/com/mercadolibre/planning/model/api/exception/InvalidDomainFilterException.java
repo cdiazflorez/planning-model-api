@@ -6,7 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.Domai
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter;
 import java.util.Arrays;
 
-public class InvalidDomainFilterException extends RuntimeException{
+public class InvalidDomainFilterException extends RuntimeException {
 
     public static final String MESSAGE = "Domain %s only can use %s parameters";
 

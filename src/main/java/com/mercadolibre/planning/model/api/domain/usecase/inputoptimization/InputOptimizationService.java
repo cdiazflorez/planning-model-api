@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request;
+package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationView;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationRequest;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

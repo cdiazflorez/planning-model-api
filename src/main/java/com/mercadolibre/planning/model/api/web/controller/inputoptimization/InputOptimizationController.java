@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller.inputoptimization;
 
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationRequest;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationService;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/inputs")
-public class InputsController {
+public class InputOptimizationController {
 
     private InputOptimizationService inputOptimizationService;
 

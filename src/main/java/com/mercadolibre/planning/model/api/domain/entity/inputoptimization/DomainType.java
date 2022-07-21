@@ -163,7 +163,7 @@ public enum DomainType {
 
         boolean activateHourlyWorkers;
 
-        boolean hourlyWorkersCost;
+        float hourlyWorkersCost;
 
     }
 

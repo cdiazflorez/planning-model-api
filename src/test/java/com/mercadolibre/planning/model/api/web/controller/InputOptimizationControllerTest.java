@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import com.mercadolibre.planning.model.api.web.controller.inputoptimization.InputOptimizationController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

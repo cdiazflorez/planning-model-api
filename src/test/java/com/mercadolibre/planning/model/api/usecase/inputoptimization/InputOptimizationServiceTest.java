@@ -60,7 +60,7 @@ public class InputOptimizationServiceTest {
     }
 
     @Test
-    public void getAllInputsOptimizationTest() throws IOException {
+    public void allInputsOptimizationTest() throws IOException {
         //GIVEN
         final List<InputOptimizationView> inputOptimizationViews = List.of(
                 new InputOptimizationViewImpl(ABSENCES, getResourceAsString("inputoptimization/domain/absences.json")),
@@ -105,7 +105,7 @@ public class InputOptimizationServiceTest {
 
     @ParameterizedTest
     @MethodSource("domainFilterArguments")
-    public void getSomeInputsOptimizationTest(final Map<DomainType, Map<String, List<Object>>> domainFilters) throws IOException {
+    public void someInputsOptimizationTest(final Map<DomainType, Map<String, List<Object>>> domainFilters) throws IOException {
         //GIVEN
         final List<InputOptimizationView> inputOptimizationViews = List.of(
                 new InputOptimizationViewImpl(NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/domain/non_systemic_ratio.json")),

@@ -1,8 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller.inputoptimization;
 
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;

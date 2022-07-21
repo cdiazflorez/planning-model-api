@@ -39,6 +39,10 @@ public enum DomainType {
     WORKER_COSTS(new DomainMultiple(), WorkerCost.class),
     WORKERS_PARAMETERS(new DomainMultiple(), WorkersParameter.class);
 
+    public final DomainStrategy domainStrategy;
+
+    public final Class<? extends Domain> structure;
+
     private static final Map<String, DomainType> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainType::toString, Function.identity())
     );
@@ -46,10 +50,6 @@ public enum DomainType {
     public static Optional<DomainType> of(final String value) {
         return ofNullable(LOOKUP.get(value.toUpperCase(Locale.getDefault())));
     }
-
-    public final DomainStrategy domainStrategy;
-
-    public final Class<? extends Domain> structure;
 
     @JsonValue
     public String toJson() {

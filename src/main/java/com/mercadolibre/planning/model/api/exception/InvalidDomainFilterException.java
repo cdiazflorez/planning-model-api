@@ -14,8 +14,7 @@ public class InvalidDomainFilterException extends RuntimeException {
 
     private final DomainOptionFilter[] domainOptionFilters;
 
-    public InvalidDomainFilterException(final DomainType domainType, final DomainOptionFilter... domainOptionFilters){
-        super();
+    public InvalidDomainFilterException(final DomainType domainType, final DomainOptionFilter... domainOptionFilters) {
         this.domainType = domainType;
         this.domainOptionFilters = domainOptionFilters;
     }

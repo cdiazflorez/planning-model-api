@@ -16,6 +16,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inpu
 import com.mercadolibre.planning.model.api.exception.InvalidDomainFilterException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -43,7 +44,7 @@ public enum DomainType {
     );
 
     public static Optional<DomainType> of(final String value) {
-        return ofNullable(LOOKUP.get(value.toUpperCase()));
+        return ofNullable(LOOKUP.get(value.toUpperCase(Locale.getDefault())));
     }
 
     public final DomainStrategy domainStrategy;
@@ -52,7 +53,7 @@ public enum DomainType {
 
     @JsonValue
     public String toJson() {
-        return toString().toLowerCase();
+        return toString().toLowerCase(Locale.getDefault());
     }
 
     private static List<String> convertObjectListToStringList(final List<Object> objectList) {

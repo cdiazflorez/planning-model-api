@@ -1,0 +1,181 @@
+[{
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 0,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 0,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 0,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "inbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 0,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 0,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 0,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "inbound",
+        "stage_destination": 1,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    },
+    {
+        "process_origin": "outbound",
+        "stage_origin": 0,
+        "process_destination": "outbound",
+        "stage_destination": 1,
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "work_force": 10,
+        "max_workers": 1000
+    }
+]

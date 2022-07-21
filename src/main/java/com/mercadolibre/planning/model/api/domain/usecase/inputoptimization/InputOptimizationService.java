@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class InputOptimizationService {
 
     private ObjectMapper objectMapper;
+
     private InputOptimizationRepository inputOptimizationRepository;
 
     public Map<DomainType, Object> getInputOptimization(final InputOptimizationRequest request) {

@@ -1,0 +1,97 @@
+[{
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "MORNING01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "AFTERNOON01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "NIGHT01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "MORNING01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "AFTERNOON01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "outbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "NIGHT01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "MORNING01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "AFTERNOON01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 0,
+        "shift_name": "NIGHT01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "MORNING01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "AFTERNOON01",
+        "work_force": null,
+        "max_workers": null
+    },
+    {
+        "process": "inbound",
+        "contract_modality": "MELI_Permanent",
+        "stage": 1,
+        "shift_name": "NIGHT01",
+        "work_force": null,
+        "max_workers": null
+    }
+]

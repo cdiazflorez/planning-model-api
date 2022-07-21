@@ -1,0 +1,68 @@
+[{
+        "process": "fbm_wms_inbound",
+        "sub_process": "check_in",
+        "shift_ratios": [{
+                "key": "MORNING01",
+                "value": "1/4"
+            },
+            {
+                "key": "AFTERNOON01",
+                "value": "1/5"
+            },
+            {
+                "key": "NIGHT01",
+                "value": "1/5"
+            }
+        ]
+    }, {
+        "process": "fbm_wms_inbound",
+        "sub_process": "put_away",
+        "shift_ratios": [{
+                "key": "MORNING01",
+                "value": "1/4"
+            },
+            {
+                "key": "AFTERNOON01",
+                "value": "1/5"
+            },
+            {
+                "key": "NIGHT01",
+                "value": "1/5"
+            }
+        ]
+    },
+    {
+        "process": "fbm_wms_outbound",
+        "sub_process": "picking",
+        "shift_ratios": [{
+                "key": "MORNING01",
+                "value": "1/4"
+            },
+            {
+                "key": "AFTERNOON01",
+                "value": "1/5"
+            },
+            {
+                "key": "NIGHT01",
+                "value": "1/5"
+            }
+        ]
+    },
+    {
+        "process": "fbm_wms_outbound",
+        "sub_process": "packing",
+        "shift_ratios": [{
+                "key": "MORNING01",
+                "value": "1/4"
+            },
+            {
+                "key": "AFTERNOON01",
+                "value": "1/5"
+            },
+            {
+                "key": "NIGHT01",
+                "value": "1/5"
+            }
+        ]
+    }
+]

@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -22,12 +23,12 @@ public enum DomainOptionFilter {
     );
 
     public static Optional<DomainOptionFilter> of(final String value) {
-        return ofNullable(LOOKUP.get(value.toUpperCase()));
+        return ofNullable(LOOKUP.get(value.toUpperCase(Locale.getDefault())));
     }
 
     @JsonValue
     public String toJson() {
-        return toString().toLowerCase();
+        return toString().toLowerCase(Locale.getDefault());
     }
 
 }

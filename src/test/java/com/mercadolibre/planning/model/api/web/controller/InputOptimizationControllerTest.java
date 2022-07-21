@@ -39,7 +39,7 @@ public class InputOptimizationControllerTest {
         final ResultActions resultActions = mvc.perform(
                 post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(getResourceAsString("post_input_optimization_request.json"))
+                        .content(getResourceAsString("inputoptimization/request/post_input_optimization_request.json"))
         );
         //THEN
         resultActions.andExpect(status().isOk());

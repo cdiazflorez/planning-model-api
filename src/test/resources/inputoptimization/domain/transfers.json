@@ -1,0 +1,31 @@
+[{
+        "shift_name_origin": "MORNING01",
+        "shift_name_destination": "AFTERNOON01",
+        "cost": 50
+    },
+    {
+        "shift_name_origin": "MORNING01",
+        "shift_name_destination": "NIGHT01",
+        "cost": 50
+    },
+    {
+        "shift_name_origin": "AFTERNOON01",
+        "shift_name_destination": "MORNING01",
+        "cost": 50
+    },
+    {
+        "shift_name_origin": "AFTERNOON01",
+        "shift_name_destination": "NIGHT01",
+        "cost": 50
+    },
+    {
+        "shift_name_origin": "NIGHT01",
+        "shift_name_destination": "AFTERNOON01",
+        "cost": 50
+    },
+    {
+        "shift_name_origin": "NIGHT01",
+        "shift_name_destination": "MORNING01",
+        "cost": 50
+    }
+]

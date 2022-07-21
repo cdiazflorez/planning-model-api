@@ -1,0 +1,15 @@
+[{
+        "process": "outbound",
+        "stage": 1,
+        "stage_name": "packing",
+        "lower_bound": 0,
+        "upper_bound": 100000
+    },
+    {
+        "process": "inbound",
+        "stage": 1,
+        "stage_name": "check_in",
+        "lower_bound": 0,
+        "upper_bound": 100000
+    }
+]

@@ -1,37 +1,35 @@
 package com.mercadolibre.planning.model.api.config;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public enum Scope {
-    DEVELOPMENT,
-    PROD,
-    PROD_SLAVE,
-    TEST,
-    STAGE;
+  DEVELOPMENT("development"),
+  PROD_SLAVE("prod-slave"),
+  PROD("prod"),
+  TEST("test"),
+  STAGE("stage");
 
-    public static Scope fromName(final String scopeName) {
-        if (scopeName == null) {
-            return DEVELOPMENT;
-        }
+  private final String springProfileName;
 
-        return scopeNameToScope(formatName(scopeName)).orElse(DEVELOPMENT);
-    }
+  public static Scope fromName(final String scopeName) {
+    return scopeName == null ? DEVELOPMENT : scopeNameToScope(formatName(scopeName)).orElse(DEVELOPMENT);
+  }
 
-    private static String formatName(final String scopeName) {
-        return scopeName
-                .replace('-', '_')
-                .toUpperCase();
-    }
+  private static String formatName(final String scopeName) {
+    return scopeName
+        .replace('-', '_')
+        .toUpperCase(Locale.getDefault());
+  }
 
-    private static Optional<Scope> scopeNameToScope(final String scopeName) {
-        return Stream.of(values())
-                .filter(scope -> scopeName.startsWith(scope.name()))
-                .findFirst();
-    }
-
-    @Override
-    public String toString() {
-        return name().toLowerCase();
-    }
+  private static Optional<Scope> scopeNameToScope(final String scopeName) {
+    return Stream.of(values())
+        .filter(scope -> scopeName.startsWith(scope.name()))
+        .findFirst();
+  }
 }

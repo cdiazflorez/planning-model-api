@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.get.GetInputOptimization;
 import com.mercadolibre.planning.model.api.web.controller.inputoptimization.InputOptimizationController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ public class InputOptimizationControllerTest {
     @DisplayName("Get input optimization OK")
     public void testInputOptimizationOk() throws Exception {
         //GIVEN
-        when(inputOptimizationService.getInputOptimization(any(InputOptimizationRequest.class))).thenReturn(mockInputOptimization());
+        when(inputOptimizationService.getInputOptimization(any(GetInputOptimization.class))).thenReturn(mockInputOptimization());
         //WHEN
         final ResultActions resultActions = mvc.perform(
                 post(URL)

@@ -23,7 +23,7 @@ public class DomainMultiple implements DomainStrategy {
             throws JsonProcessingException {
         final List<Domain> resultDomains = objectMapper.readValue(jsonValue,
                 objectMapper.getTypeFactory().constructCollectionType(List.class, structure));
-        if (domainFilters == null || domainFilters.isEmpty()) {
+        if (domainFilters.isEmpty()) {
             return resultDomains;
         } else {
             return resultDomains.stream()

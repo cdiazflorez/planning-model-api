@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request;
+package com.mercadolibre.planning.model.api.web.controller.inputoptimization.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
 import java.util.List;
@@ -12,8 +12,6 @@ public class InputOptimizationRequest {
     @NotEmpty
     String warehouseId;
 
-    List<DomainType> domains;
-
-    Map<DomainType, Map<String, List<Object>>> domainFilters;
+    Map<DomainType, Map<String, List<Object>>> domains;
 
 }

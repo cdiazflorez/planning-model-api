@@ -1,19 +1,17 @@
 package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.inputoptimization.InputOptimizationView;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.get.GetInputOptimization;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainStrategy;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.request.InputOptimizationRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Map.Entry;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,32 +25,22 @@ public class InputOptimizationService {
 
     private InputOptimizationRepository inputOptimizationRepository;
 
-    public Map<DomainType, Object> getInputOptimization(final InputOptimizationRequest request) {
+    public Map<DomainType, Object> getInputOptimization(final GetInputOptimization getInputOptimization) {
 
-        if (request.getDomains() == null || request.getDomains().isEmpty()) {
-            return buildMapResponse(
-                    inputOptimizationRepository.findAllByWarehouseId(request.getWarehouseId()),
-                    ofNullable(request.getDomainFilters())
-            );
-        } else {
-            return buildMapResponse(
-                    inputOptimizationRepository.findAllByWarehouseIdAndDomainIn(request.getWarehouseId(), request.getDomains()),
-                    ofNullable(request.getDomainFilters())
-            );
-        }
+        return buildMapResponse(
+                inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()),
+                getInputOptimization.getDomains()
+        );
+
     }
 
-    private Map<DomainType, Object> buildMapResponse(final List<InputOptimizationView> inputOptimizationViews,
-                                                     final Optional<Map<DomainType, Map<String, List<Object>>>> domainFilters) {
-        return inputOptimizationViews.stream()
+    private Map<DomainType, Object> buildMapResponse(final Map<DomainType, String> domains,
+                                                     final Map<DomainType, Map<String, List<Object>>> domainFilters) {
+
+        return domains.entrySet().stream()
                 .collect(toMap(
-                        InputOptimizationView::getDomain,
-                        input -> {
-                            final Map<String, List<Object>> domainFilter = domainFilters.isPresent()
-                                    ? domainFilters.get().getOrDefault(input.getDomain(), Map.of())
-                                    : Map.of();
-                            return getDomainValue(input.getDomain(), input.getJsonValue(), domainFilter);
-                        }
+                        Entry::getKey,
+                        domain -> getDomainValue(domain.getKey(), domain.getValue(), domainFilters.getOrDefault(domain.getKey(), Map.of()))
                 ));
     }
 
@@ -68,6 +56,13 @@ public class InputOptimizationService {
             );
             return emptyList();
         }
+    }
+
+    public interface InputOptimizationRepository {
+
+        Map<DomainType, String> getInputs(String warehouseId,
+                                          Set<DomainType> domains);
+
     }
 
 }

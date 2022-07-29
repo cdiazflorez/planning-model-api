@@ -3,16 +3,16 @@ package com.mercadolibre.planning.model.api.client.db.repository.inputoptimizati
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.InputOptimization;
 import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.InputOptimizationId;
-import java.util.List;
+import java.util.Set;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface InputOptimizationRepository extends CrudRepository<InputOptimization, InputOptimizationId> {
+public interface InputOptimizationJpaRepository extends CrudRepository<InputOptimization, InputOptimizationId> {
 
-    List<InputOptimizationView> findAllByWarehouseIdAndDomainIn(String warehouseId,
-                                                               List<DomainType> domainTypes);
+    Set<InputOptimizationView> findAllByWarehouseIdAndDomainIn(String warehouseId,
+                                                              Set<DomainType> domainTypes);
 
-    List<InputOptimizationView> findAllByWarehouseId(String warehouseId);
+    Set<InputOptimizationView> findAllByWarehouseId(String warehouseId);
 
 }

@@ -131,7 +131,7 @@ public class GetThroughputUseCase
                                                final Map<ZonedDateTime, Map<Source, EntityOutput>> productivity,
                                                final Map<ZonedDateTime, EntityOutput> polyvalentProductivity) {
 
-    if (Objects.isNull(headcount)) {
+    if (Objects.isNull(headcount) || Objects.isNull(productivity)) {
       return Collections.emptyList();
     }
 

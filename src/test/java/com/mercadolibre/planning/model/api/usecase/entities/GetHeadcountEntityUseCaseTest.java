@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase.entities;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -9,6 +11,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
@@ -130,6 +133,11 @@ class GetHeadcountEntityUseCaseTest {
                 PACKING,
                 List.of(new SimulationEntity(
                     HEADCOUNT,
+                    List.of(new QuantityByDate(A_DATE_UTC, 100))))),
+            new Simulation(
+                GLOBAL,
+                List.of(new SimulationEntity(
+                    MAX_CAPACITY,
                     List.of(new QuantityByDate(A_DATE_UTC, 100)))))));
 
     final List<Long> forecastIds = List.of(1L);
@@ -164,7 +172,7 @@ class GetHeadcountEntityUseCaseTest {
     final List<EntityOutput> output = getHeadcountEntityUseCase.execute(input);
 
     // THEN
-    assertEquals(6, output.size());
+    assertEquals(7, output.size());
     final EntityOutput output1 = output.get(0);
     assertEquals(A_DATE_UTC.toInstant(), output1.getDate().toInstant());
     assertEquals(PICKING, output1.getProcessName());
@@ -212,6 +220,12 @@ class GetHeadcountEntityUseCaseTest {
     assertEquals(WORKERS, output6.getMetricUnit());
     assertEquals(SIMULATION, output6.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output6.getWorkflow());
+
+    final EntityOutput output7 = output.get(6);
+    assertEquals(GLOBAL, output7.getProcessName());
+    assertEquals(UNITS_PER_HOUR, output7.getMetricUnit());
+    assertEquals(SIMULATION, output7.getSource());
+    assertEquals(FBM_WMS_OUTBOUND, output7.getWorkflow());
   }
 
   @Test

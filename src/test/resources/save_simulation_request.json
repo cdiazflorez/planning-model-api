@@ -1,0 +1,21 @@
+{
+  "workflow": "fbm-wms-outbound",
+  "warehouse_id": "ARBA01",
+  "simulations": [
+    {
+      "process_name": "global",
+      "entities": [
+        {
+          "type": "max_capacity",
+          "values": [
+            {
+              "date": "2022-07-12T08:00:00Z",
+              "quantity": 9150
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "user_id": 28251
+}

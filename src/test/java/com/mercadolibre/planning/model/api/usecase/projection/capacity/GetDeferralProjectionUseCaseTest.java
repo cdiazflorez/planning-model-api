@@ -2,12 +2,10 @@ package com.mercadolibre.planning.model.api.usecase.projection.capacity;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -18,8 +16,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseInput;
 import com.mercadolibre.planning.model.api.domain.entity.sla.GetSlaByWarehouseOutput;
@@ -31,25 +27,24 @@ import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycle
 import com.mercadolibre.planning.model.api.domain.usecase.cycletime.get.GetCycleTimeService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityService;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt.Backlog;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.GetDeferralProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeferralProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.output.DeferralProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
-import com.mercadolibre.planning.model.api.usecase.ProcessingDistributionViewImpl;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,16 +86,11 @@ public class GetDeferralProjectionUseCaseTest {
       OPERATING_HOURS.get(7)
   );
 
-  private static final List<Long> FORECASTS_IDS = of(1L, 2L);
-
   @InjectMocks
   private GetDeferralProjectionUseCase getDeliveryPromiseUseCase;
 
   @Mock
-  private ProcessingDistributionRepository processingDistRepository;
-
-  @Mock
-  private GetForecastUseCase getForecastUseCase;
+  private MaxCapacityService maxCapacityService;
 
   @Mock
   private GetCycleTimeService getCycleTimeService;
@@ -206,8 +196,7 @@ public class GetDeferralProjectionUseCaseTest {
     mockCycleTimes();
     mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
-    mockGetForecastsIds(input.getDateFrom(), input.getDateTo());
-    mockMaxCaps(input.getDateFrom(), input.getDateTo());
+    mockMaxCaps(input);
 
     //WHEN
     final var projectionResult = getDeliveryPromiseUseCase.execute(input);
@@ -226,8 +215,7 @@ public class GetDeferralProjectionUseCaseTest {
     mockCycleTimes();
     mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
-    mockGetForecastsIds(input.getDateFrom(), input.getDateTo());
-    mockMaxCaps(input.getDateFrom(), input.getDateTo());
+    mockMaxCaps(input);
 
     //WHEN
     final var projectionResult = getDeliveryPromiseUseCase.execute(input);
@@ -250,36 +238,24 @@ public class GetDeferralProjectionUseCaseTest {
     final List<Backlog> backlogs = getDeferralBacklogs();
     final GetDeferralProjectionInput input = getInput(backlogs);
 
-    List<ProcessingDistributionView> maxCaps = Stream.concat(
-            OPERATING_HOURS.subList(0, 7)
-                .stream()
-                .map(date -> ProcessingDistributionViewImpl.builder()
-                    .date(Date.from(date.toInstant()))
-                    .quantity(0L)
-                    .build()
-                ),
-            Stream.of(
-                ProcessingDistributionViewImpl.builder()
-                    .date(Date.from(OPERATING_HOURS.get(7).toInstant()))
-                    .quantity(100_000L)
-                    .build()
-            )
+    Map<ZonedDateTime, Integer> maxCaps = new ConcurrentHashMap<>();
+    OPERATING_HOURS.subList(0, 7).forEach(date -> maxCaps.put(date, 0));
+    maxCaps.put(OPERATING_HOURS.get(7), 100000);
+
+    when(maxCapacityService.getMaxCapacity(
+        new MaxCapacityInput(
+            WAREHOUSE_ID,
+            input.getWorkflow(),
+            input.getDateFrom(),
+            input.getSlaTo(),
+            Collections.emptyList()
         )
-        .collect(Collectors.toList());
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-        Set.of(MAX_CAPACITY.name()),
-        of(GLOBAL.toJson()),
-        input.getDateFrom(),
-        input.getDateTo(),
-        FORECASTS_IDS)
-    ).thenReturn(maxCaps);
+    )).thenReturn(maxCaps);
 
     mockSlas(input.getSlaFrom(), input.getSlaTo());
     mockCycleTimes();
     mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
-    mockGetForecastsIds(input.getDateFrom(), input.getDateTo());
-
 
     //WHEN
     final var projectionResult = getDeliveryPromiseUseCase.execute(input);
@@ -345,32 +321,20 @@ public class GetDeferralProjectionUseCaseTest {
     ).thenReturn(throughput);
   }
 
-  private void mockGetForecastsIds(final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {
-    when(getForecastUseCase.execute(GetForecastInput.builder()
-        .warehouseId(WAREHOUSE_ID)
-        .workflow(FBM_WMS_OUTBOUND)
-        .dateFrom(dateFrom)
-        .dateTo(dateTo)
-        .build())
-    ).thenReturn(FORECASTS_IDS);
-  }
+  private void mockMaxCaps(GetDeferralProjectionInput input) {
+    Map<ZonedDateTime, Integer> maxCaps = new ConcurrentHashMap<>();
+    OPERATING_HOURS.forEach(date -> maxCaps.put(date, 750));
 
-  private void mockMaxCaps(final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {
-    final List<ProcessingDistributionView> caps = OPERATING_HOURS.stream()
-        .map(ZonedDateTime::toInstant)
-        .map(date -> ProcessingDistributionViewImpl.builder()
-            .date(Date.from(date))
-            .quantity(750L)
-            .build()
-        ).collect(Collectors.toList());
+    when(maxCapacityService.getMaxCapacity(
+        new MaxCapacityInput(
+            WAREHOUSE_ID,
+            input.getWorkflow(),
+            input.getDateFrom(),
+            input.getSlaTo(),
+            Collections.emptyList()
+        )
+    )).thenReturn(maxCaps);
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-        Set.of(MAX_CAPACITY.name()),
-        of(GLOBAL.toJson()),
-        dateFrom,
-        dateTo,
-        FORECASTS_IDS)
-    ).thenReturn(caps);
   }
 
   private void mockSlas(final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {

@@ -7,8 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class PlanningModelApplication {
 
-    public static void main(final String[] args) {
-        EnvironmentUtil.setup();
-        SpringApplication.run(PlanningModelApplication.class, args);
-    }
+  private static final String SCOPE_ENV_VARIABLE = "SCOPE";
+
+  public static void main(final String[] args) {
+
+    EnvironmentUtil.setup(System.getenv(SCOPE_ENV_VARIABLE));
+    SpringApplication.run(PlanningModelApplication.class, args);
+  }
 }

@@ -45,10 +45,6 @@ public class SimulationRequest {
         return SimulationInput.builder()
                 .warehouseId(warehouseId)
                 .workflow(workflow)
-                .processName(processName)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .backlog(backlog)
                 .simulations(simulations)
                 .userId(userId)
                 .build();

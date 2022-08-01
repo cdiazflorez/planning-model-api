@@ -29,11 +29,11 @@ public enum DomainType {
     ABSENCES(new DomainMultiple(), Absence.class),
     BACKLOG_BOUNDS(new DomainMultiple(), BacklogBound.class),
     CONFIGURATION(new DomainSingle(), Configuration.class),
-    CONTRACT_MODALITY_TYPE(new DomainMultiple(), ContractModalityType.class),
+    CONTRACT_MODALITY_TYPES(new DomainMultiple(), ContractModalityType.class),
     NON_SYSTEMIC_RATIO(new DomainMultiple(), NonSystemicRatio.class),
     POLYVALENCE_PARAMETERS(new DomainMultiple(), PolyvalenceParameter.class),
     PRESENCES(new DomainMultiple(), Presence.class),
-    SHIFT_CONTRACT_MODALITY(new DomainMultiple(), ShiftContractModality.class),
+    SHIFT_CONTRACT_MODALITIES(new DomainMultiple(), ShiftContractModality.class),
     SHIFTS_PARAMETERS(new DomainMultiple(), ShiftParameter.class),
     TRANSFERS(new DomainMultiple(), Transfer.class),
     WORKER_COSTS(new DomainMultiple(), WorkerCost.class),
@@ -258,8 +258,6 @@ public enum DomainType {
     @Value
     private static class ShiftContractModality implements Domain {
 
-        String process;
-
         String shiftName;
 
         String contractModality;
@@ -292,6 +290,8 @@ public enum DomainType {
         String shiftNameOrigin;
 
         String shiftNameDestination;
+
+        String contractModality;
 
         float cost;
 

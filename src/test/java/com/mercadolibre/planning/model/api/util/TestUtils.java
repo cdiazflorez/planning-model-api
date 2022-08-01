@@ -20,12 +20,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.ABSENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.BACKLOG_BOUNDS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONFIGURATION;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPE;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.NON_SYSTEMIC_RATIO;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.POLYVALENCE_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.PRESENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFT_CONTRACT_MODALITY;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFT_CONTRACT_MODALITIES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.TRANSFERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKERS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKER_COSTS;
@@ -1044,11 +1044,11 @@ public final class TestUtils {
         inputResult.put(ABSENCES, List.of());
         inputResult.put(BACKLOG_BOUNDS, List.of());
         inputResult.put(CONFIGURATION, null);
-        inputResult.put(CONTRACT_MODALITY_TYPE, List.of());
+        inputResult.put(CONTRACT_MODALITY_TYPES, List.of());
         inputResult.put(NON_SYSTEMIC_RATIO, List.of());
         inputResult.put(POLYVALENCE_PARAMETERS, List.of());
         inputResult.put(PRESENCES, List.of());
-        inputResult.put(SHIFT_CONTRACT_MODALITY, List.of());
+        inputResult.put(SHIFT_CONTRACT_MODALITIES, List.of());
         inputResult.put(SHIFTS_PARAMETERS, List.of());
         inputResult.put(TRANSFERS, List.of());
         inputResult.put(WORKER_COSTS, List.of());

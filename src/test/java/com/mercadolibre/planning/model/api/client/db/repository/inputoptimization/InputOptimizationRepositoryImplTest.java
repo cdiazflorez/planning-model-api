@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.client.db.repository.inputoptimizati
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.ABSENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.BACKLOG_BOUNDS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONFIGURATION;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPE;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
@@ -42,7 +42,7 @@ public class InputOptimizationRepositoryImplTest {
                 new InputOptimizationViewImpl(ABSENCES, getResourceAsString("inputoptimization/domain/absences.json")),
                 new InputOptimizationViewImpl(BACKLOG_BOUNDS, getResourceAsString("inputoptimization/domain/backlog_bounds.json")),
                 new InputOptimizationViewImpl(CONFIGURATION, getResourceAsString("inputoptimization/domain/configuration.json")),
-                new InputOptimizationViewImpl(CONTRACT_MODALITY_TYPE, getResourceAsString("inputoptimization/domain/contract_modality_type.json"))
+                new InputOptimizationViewImpl(CONTRACT_MODALITY_TYPES, getResourceAsString("inputoptimization/domain/contract_modality_type.json"))
         );
         when(inputOptimizationJpaRepository.findAllByWarehouseId(WAREHOUSE_ID)).thenReturn(expectedInputOptimizationViews);
         // WHEN
@@ -51,7 +51,7 @@ public class InputOptimizationRepositoryImplTest {
         assertTrue(result.containsKey(ABSENCES));
         assertTrue(result.containsKey(BACKLOG_BOUNDS));
         assertTrue(result.containsKey(CONFIGURATION));
-        assertTrue(result.containsKey(CONTRACT_MODALITY_TYPE));
+        assertTrue(result.containsKey(CONTRACT_MODALITY_TYPES));
         assertFalse(result.containsKey(SHIFTS_PARAMETERS));
     }
 
@@ -69,7 +69,7 @@ public class InputOptimizationRepositoryImplTest {
         assertFalse(result.containsKey(ABSENCES));
         assertFalse(result.containsKey(BACKLOG_BOUNDS));
         assertTrue(result.containsKey(CONFIGURATION));
-        assertFalse(result.containsKey(CONTRACT_MODALITY_TYPE));
+        assertFalse(result.containsKey(CONTRACT_MODALITY_TYPES));
     }
 
 }

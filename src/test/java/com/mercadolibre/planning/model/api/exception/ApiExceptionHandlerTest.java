@@ -1,6 +1,18 @@
 package com.mercadolibre.planning.model.api.exception;
 
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
+import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter;
+import java.util.Arrays;
 import org.assertj.core.util.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,13 +24,6 @@ import org.springframework.validation.BindException;
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.Set;
-
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 public class ApiExceptionHandlerTest {
 
@@ -214,6 +219,28 @@ public class ApiExceptionHandlerTest {
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
         assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    public void handleInvalidDomainFilterException() {
+        //GIVEN
+        final DomainOptionFilter[] domainOptionFilters = {INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE};
+
+        final InvalidDomainFilterException exception = new InvalidDomainFilterException(SHIFTS_PARAMETERS, domainOptionFilters);
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+                BAD_REQUEST,
+                String.format("Domain %s only can use %s parameters", SHIFTS_PARAMETERS, Arrays.toString(domainOptionFilters)),
+                "invalid_domain_filter"
+        );
+
+        //WHEN
+        final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidDomainFilter(exception, request);
+
+        //THEN
+        verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        assertErrorResponse(expectedResponse, response);
+
     }
 
     @Test

@@ -14,7 +14,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputoptimizatio
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKER_COSTS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_GROUP;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SUB_PROCESS;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
@@ -105,8 +105,8 @@ public class InputOptimizationServiceTest {
     public void someInputsOptimizationTest(final Map<DomainType, Map<String, List<Object>>> domainFilters) throws IOException {
         //GIVEN
         final Map<DomainType, String> domainResults = Map.of(
-                NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/domain/non_systemic_ratio.json"),
-                SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/domain/shift_parameters.json")
+                NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/response_with_filters/non_systemic_ratio.json"),
+                SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/response_with_filters/shift_parameters.json")
         );
 
         final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, domainFilters);
@@ -129,7 +129,7 @@ public class InputOptimizationServiceTest {
                 Arguments.of(Map.of(
                         SHIFTS_PARAMETERS, Map.of(
                                 INCLUDE_DAY_NAME.toJson(), List.of("Mon", "Thu"),
-                                INCLUDE_SHIFT_TYPE.toJson(), List.of("AFTERNOON01")
+                                INCLUDE_SHIFT_GROUP.toJson(), List.of("AFTERNOON01")
                         ),
                         NON_SYSTEMIC_RATIO, Map.of(
                                 INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),

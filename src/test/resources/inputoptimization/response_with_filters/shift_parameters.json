@@ -1,0 +1,18 @@
+[
+    {
+        "day_name": "Mon",
+        "shift_name": "AFTERNOON01",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
+        "start": 14,
+        "end": 22
+    },
+    {
+        "day_name": "Thu",
+        "shift_name": "AFTERNOON01",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
+        "start": 14,
+        "end": 22
+    }
+]

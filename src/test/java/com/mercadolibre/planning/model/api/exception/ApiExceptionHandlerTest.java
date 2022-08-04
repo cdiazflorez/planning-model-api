@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.exception;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_GROUP;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -224,7 +224,7 @@ public class ApiExceptionHandlerTest {
     @Test
     public void handleInvalidDomainFilterException() {
         //GIVEN
-        final DomainOptionFilter[] domainOptionFilters = {INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE};
+        final DomainOptionFilter[] domainOptionFilters = {INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP};
 
         final InvalidDomainFilterException exception = new InvalidDomainFilterException(SHIFTS_PARAMETERS, domainOptionFilters);
 

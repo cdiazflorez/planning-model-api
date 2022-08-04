@@ -135,6 +135,17 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
+    @ExceptionHandler(InvalidDomainFilterException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDomainFilter(final InvalidDomainFilterException exception,
+                                                                   final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+                exception.getMessage(), "invalid_domain_filter");
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error("invalid_domain_filter");
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(
             final Exception exception,

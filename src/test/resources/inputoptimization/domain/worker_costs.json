@@ -1,0 +1,22 @@
+[{
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "hiring_cost": 5,
+        "dismissal_cost": 10,
+        "unitary_cost": 1
+    },
+    {
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "hiring_cost": 5,
+        "dismissal_cost": 10,
+        "unitary_cost": 1
+    },
+    {
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "hiring_cost": 5,
+        "dismissal_cost": 10,
+        "unitary_cost": 1
+    }
+]

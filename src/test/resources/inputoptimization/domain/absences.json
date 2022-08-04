@@ -1,0 +1,148 @@
+[{
+        "day_name": "Mon",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Mon",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Mon",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Tue",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Tue",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Tue",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Wed",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Wed",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Wed",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Thu",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Thu",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Thu",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Fri",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Fri",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Fri",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sat",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sat",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sat",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sun",
+        "shift_name": "MORNING01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sun",
+        "shift_name": "AFTERNOON01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    },
+    {
+        "day_name": "Sun",
+        "shift_name": "NIGHT01",
+        "contract_modality": "MELI_Permanent",
+        "unjustified_absent_rate": 0,
+        "justified_absent_rate": 0
+    }
+]

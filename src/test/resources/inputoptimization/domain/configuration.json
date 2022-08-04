@@ -1,0 +1,9 @@
+{
+    "anticipate_backlog": false,
+    "fix_cpts_outbound": true,
+    "fix_slas_inbound": true,
+    "generate_validation_files": false,
+    "active_transfers": false,
+    "activate_hourly_workers": false,
+    "hourly_workers_cost": 100
+}

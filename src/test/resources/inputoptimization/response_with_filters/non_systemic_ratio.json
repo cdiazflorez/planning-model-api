@@ -1,7 +1,7 @@
 [
     {
         "process": "fbm_wms_inbound",
-        "sub_process": "put_away",
+        "stage": "put_away",
         "shift_ratios": [
             {
                 "key": "MORNING01",

@@ -96,7 +96,7 @@ public enum DomainType {
                 },
                 INCLUDE_SUB_PROCESS, (List<Object> objectList) -> {
                     final List<String> subProcess = convertObjectListToStringList(objectList);
-                    return subProcess.contains(nonSystemicRatio.getSubProcess());
+                    return subProcess.contains(nonSystemicRatio.getStage());
                 }
         );
 
@@ -181,7 +181,7 @@ public enum DomainType {
 
         String process;
 
-        String subProcess;
+        String stage;
 
         List<ShiftRatio> shiftRatios;
 

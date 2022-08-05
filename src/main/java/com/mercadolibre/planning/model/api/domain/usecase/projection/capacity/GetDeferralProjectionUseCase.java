@@ -240,7 +240,7 @@ public class GetDeferralProjectionUseCase {
         input.getWorkflow(),
         input.getDateFrom(),
         input.getSlaTo(),
-        Collections.emptyList()));
+        input.getSimulations()));
   }
 
   private PlannedBacklogBySla getIncomingBacklog(final GetDeferralProjectionInput input) {

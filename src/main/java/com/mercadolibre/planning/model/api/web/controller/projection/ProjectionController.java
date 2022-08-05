@@ -139,7 +139,8 @@ public class ProjectionController {
                 slaTo,
                 backlog,
                 request.getTimeZone(),
-                request.isApplyDeviation()
+                request.isApplyDeviation(),
+                request.getSimulations()
             )
         )
     );

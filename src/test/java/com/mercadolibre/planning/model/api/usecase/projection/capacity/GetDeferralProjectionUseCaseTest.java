@@ -166,7 +166,8 @@ public class GetDeferralProjectionUseCaseTest {
         slaTo,
         backlogs,
         null,
-        true
+        true,
+        Collections.emptyList()
     );
   }
 
@@ -248,7 +249,7 @@ public class GetDeferralProjectionUseCaseTest {
             input.getWorkflow(),
             input.getDateFrom(),
             input.getSlaTo(),
-            Collections.emptyList()
+            input.getSimulations()
         )
     )).thenReturn(maxCaps);
 
@@ -331,7 +332,7 @@ public class GetDeferralProjectionUseCaseTest {
             input.getWorkflow(),
             input.getDateFrom(),
             input.getSlaTo(),
-            Collections.emptyList()
+            input.getSimulations()
         )
     )).thenReturn(maxCaps);
 

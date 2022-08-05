@@ -227,7 +227,8 @@ class ProjectionControllerTest {
             dateTo.plus(72, ChronoUnit.HOURS),
             emptyList(),
             "America/Argentina/Buenos_Aires",
-            true
+            true,
+            null
         )
     )).thenReturn(results);
   }

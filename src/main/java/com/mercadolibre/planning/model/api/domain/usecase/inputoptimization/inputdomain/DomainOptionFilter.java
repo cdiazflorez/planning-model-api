@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum DomainOptionFilter {
     INCLUDE_DAY_NAME,
-    INCLUDE_SHIFT_TYPE,
+    INCLUDE_SHIFT_GROUP,
     INCLUDE_PROCESS,
     INCLUDE_SUB_PROCESS;
 

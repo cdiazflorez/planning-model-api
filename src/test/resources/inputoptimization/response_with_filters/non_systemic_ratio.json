@@ -1,0 +1,20 @@
+[
+    {
+        "process": "fbm_wms_inbound",
+        "stage": "put_away",
+        "shift_ratios": [
+            {
+                "key": "MORNING01",
+                "value": "1/4"
+            },
+            {
+                "key": "AFTERNOON01",
+                "value": "1/5"
+            },
+            {
+                "key": "NIGHT01",
+                "value": "1/5"
+            }
+        ]
+    }
+]

@@ -1,147 +1,169 @@
-[{
+[
+    {
         "day_name": "Mon",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Mon",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Mon",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     },
     {
         "day_name": "Tue",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Tue",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Tue",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     },
     {
         "day_name": "Wed",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Wed",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Wed",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     },
     {
         "day_name": "Thu",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Thu",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Thu",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     },
     {
         "day_name": "Fri",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Fri",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Fri",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     },
     {
         "day_name": "Sat",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": 6,
         "end": 14
     },
     {
         "day_name": "Sat",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": -1,
         "end": -1
     },
     {
         "day_name": "Sat",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": -1,
         "end": -1
     },
     {
         "day_name": "Sun",
         "shift_name": "MORNING01",
-        "shift_type": "MORNING",
+        "shift_type": "MORNING01",
+        "shift_group": "MORNING",
         "start": -1,
         "end": -1
     },
     {
         "day_name": "Sun",
         "shift_name": "AFTERNOON01",
-        "shift_type": "AFTERNOON",
+        "shift_type": "AFTERNOON01",
+        "shift_group": "AFTERNOON",
         "start": 14,
         "end": 22
     },
     {
         "day_name": "Sun",
         "shift_name": "NIGHT01",
-        "shift_type": "NIGHT",
+        "shift_type": "NIGHT01",
+        "shift_group": "NIGHT",
         "start": 22,
         "end": 6
     }

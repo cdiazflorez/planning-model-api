@@ -5,7 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionStrategy;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingBacklogProjectionUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingRegularBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.ProcessParams;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.WavingBacklogProjectionUseCase;
@@ -51,7 +51,7 @@ public class BacklogProjectionUseCaseTest {
     private PickingBacklogProjectionUseCase pickingBacklogProjection;
 
     @Mock
-    private PackingBacklogProjectionUseCase packingBacklogProjection;
+    private PackingRegularBacklogProjectionUseCase packingBacklogProjection;
 
     @Test
     @DisplayName("Project all backlogs")

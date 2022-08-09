@@ -86,7 +86,7 @@ public class ProjectionTestsUtils {
                 .dateFrom(A_FIXED_DATE.minusMinutes(15))
                 .dateTo(dateTo)
                 .planningUnits(mockPlanningDistributionOutputs())
-                .ratioPackingRegular(1.0)
+                .packingWallRatios(Map.of(A_FIXED_DATE, 1.00))
                 .build();
     }
 

@@ -160,7 +160,7 @@ public class ProjectionController {
         .dateTo(request.getDateTo())
         .currentBacklogs(request.getCurrentBacklog())
         .processNames(request.getProcessName())
-        .ratioPackingRegular(request.getRatioPackingRegular())
+        .packingWallRatios(request.getPackingWallRatios())
         .build()));
   }
 

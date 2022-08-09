@@ -23,11 +23,9 @@ public enum ProcessName {
     WAVING(null, false),
     PICKING(WAVING, true),
     PACKING(PICKING, false),
-    PACKING_PROCESS(PICKING, false),
     BATCH_SORTER(PICKING, false),
     WALL_IN(BATCH_SORTER, false),
     PACKING_WALL(WALL_IN, false),
-    PACKING_WALL_PROCESS(WALL_IN, false),
     EXPEDITION(PACKING, false),
     GLOBAL(null, false);
 

@@ -56,7 +56,7 @@ public class GetOutboundBacklogProjectionUseCase implements GetBacklogProjection
                 .currentBacklogs(input.getCurrentBacklogs())
                 .processNames(input.getProcessNames())
                 .planningUnits(planningUnits)
-                .ratioPackingRegular(input.getRatioPackingRegular())
+                .packingWallRatios(input.getPackingWallRatios())
                 .build());
     }
 

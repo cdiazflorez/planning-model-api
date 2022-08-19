@@ -4,11 +4,11 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
-import lombok.Builder;
-import lombok.Value;
-
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
@@ -28,5 +28,5 @@ public class BacklogProjectionInput {
 
     List<CurrentBacklog> currentBacklogs;
 
-    Double ratioPackingRegular;
+    Map<ZonedDateTime, Double> packingWallRatios;
 }

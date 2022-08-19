@@ -2,8 +2,8 @@ package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_STAGE;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_GROUP;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
@@ -68,18 +68,18 @@ public enum DomainType {
                     final List<String> dayNames = convertObjectListToStringList(objectList);
                     return dayNames.contains(shiftParameter.getDayName());
                 },
-                INCLUDE_SHIFT_TYPE, (List<Object> objectList) -> {
-                    final List<String> shiftTypes = convertObjectListToStringList(objectList);
-                    return shiftTypes.contains(shiftParameter.getShiftType());
+                INCLUDE_SHIFT_GROUP, (List<Object> objectList) -> {
+                    final List<String> shiftGroups = convertObjectListToStringList(objectList);
+                    return shiftGroups.contains(shiftParameter.getShiftGroup());
                 }
         );
 
         return domainFilterRequests.entrySet().stream()
                 .map(filterRequest -> {
                     final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
-                            .orElseThrow(() -> new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE));
+                            .orElseThrow(() -> new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP));
                     if (!shiftParametersFilters.containsKey(domainOptionFilter)) {
-                        throw new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_TYPE);
+                        throw new InvalidDomainFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP);
                     }
                     return shiftParametersFilters.get(domainOptionFilter).apply(filterRequest.getValue());
                 })
@@ -96,7 +96,7 @@ public enum DomainType {
                 },
                 INCLUDE_STAGE, (List<Object> objectList) -> {
                     final List<String> subProcess = convertObjectListToStringList(objectList);
-                    return subProcess.contains(nonSystemicRatio.getSubProcess());
+                    return subProcess.contains(nonSystemicRatio.getStage());
                 }
         );
 
@@ -181,7 +181,7 @@ public enum DomainType {
 
         String process;
 
-        String subProcess;
+        String stage;
 
         List<ShiftRatio> shiftRatios;
 
@@ -270,6 +270,8 @@ public enum DomainType {
         String dayName;
 
         String shiftName;
+
+        String shiftGroup;
 
         String shiftType;
 

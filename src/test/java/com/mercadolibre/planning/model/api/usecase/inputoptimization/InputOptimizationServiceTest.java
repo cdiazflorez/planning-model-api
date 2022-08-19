@@ -14,11 +14,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputoptimizatio
 import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKER_COSTS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_STAGE;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_GROUP;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -32,6 +33,7 @@ import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.Domai
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService.InputOptimizationRepository;
 import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.exception.InvalidDomainFilterException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,102 +52,156 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class InputOptimizationServiceTest {
 
-    @Mock
-    private InputOptimizationRepository inputOptimizationRepository;
+  @Mock
+  private InputOptimizationRepository inputOptimizationRepository;
 
-    private InputOptimizationService inputOptimizationService;
+  private InputOptimizationService inputOptimizationService;
 
-    @BeforeEach
-    public void setUp() {
-        inputOptimizationService = new InputOptimizationService(objectMapper(), inputOptimizationRepository);
-    }
+  @BeforeEach
+  public void setUp() {
+    inputOptimizationService = new InputOptimizationService(objectMapper(), inputOptimizationRepository);
+  }
 
-    @Test
-    public void allInputsOptimizationTest() throws IOException {
-        //GIVEN
-        final Map<DomainType, String> domainResults = new LinkedHashMap<>();
-        domainResults.put(ABSENCES, getResourceAsString("inputoptimization/domain/absences.json"));
-        domainResults.put(BACKLOG_BOUNDS, getResourceAsString("inputoptimization/domain/backlog_bounds.json"));
-        domainResults.put(CONFIGURATION, getResourceAsString("inputoptimization/domain/configuration.json"));
-        domainResults.put(CONTRACT_MODALITY_TYPES, getResourceAsString("inputoptimization/domain/contract_modality_type.json"));
-        domainResults.put(NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/domain/non_systemic_ratio.json"));
-        domainResults.put(POLYVALENCE_PARAMETERS, getResourceAsString("inputoptimization/domain/polyvalence_parameters.json"));
-        domainResults.put(PRESENCES, getResourceAsString("inputoptimization/domain/presences.json"));
-        domainResults.put(SHIFT_CONTRACT_MODALITIES, getResourceAsString("inputoptimization/domain/shift_contract_modality.json"));
-        domainResults.put(SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/domain/shift_parameters.json"));
-        domainResults.put(TRANSFERS, getResourceAsString("inputoptimization/domain/transfers.json"));
-        domainResults.put(WORKER_COSTS, getResourceAsString("inputoptimization/domain/worker_costs.json"));
-        domainResults.put(WORKERS_PARAMETERS, getResourceAsString("inputoptimization/domain/workers_parameters.json"));
+  @Test
+  public void allInputsOptimizationTest() throws IOException {
+    //GIVEN
+    final Map<DomainType, String> domainResults = new LinkedHashMap<>();
+    domainResults.put(ABSENCES, getResourceAsString("inputoptimization/domain/absences.json"));
+    domainResults.put(BACKLOG_BOUNDS, getResourceAsString("inputoptimization/domain/backlog_bounds.json"));
+    domainResults.put(CONFIGURATION, getResourceAsString("inputoptimization/domain/configuration.json"));
+    domainResults.put(CONTRACT_MODALITY_TYPES, getResourceAsString("inputoptimization/domain/contract_modality_type.json"));
+    domainResults.put(NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/domain/non_systemic_ratio.json"));
+    domainResults.put(POLYVALENCE_PARAMETERS, getResourceAsString("inputoptimization/domain/polyvalence_parameters.json"));
+    domainResults.put(PRESENCES, getResourceAsString("inputoptimization/domain/presences.json"));
+    domainResults.put(SHIFT_CONTRACT_MODALITIES, getResourceAsString("inputoptimization/domain/shift_contract_modality.json"));
+    domainResults.put(SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/domain/shift_parameters.json"));
+    domainResults.put(TRANSFERS, getResourceAsString("inputoptimization/domain/transfers.json"));
+    domainResults.put(WORKER_COSTS, getResourceAsString("inputoptimization/domain/worker_costs.json"));
+    domainResults.put(WORKERS_PARAMETERS, getResourceAsString("inputoptimization/domain/workers_parameters.json"));
 
-        final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of());
+    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of());
 
-        when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), Set.of())).thenReturn(
-                domainResults);
+    when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), Set.of())).thenReturn(
+        domainResults);
 
-        //WHEN
-        Map<DomainType, Object> result = inputOptimizationService.getInputOptimization(getInputOptimization);
-        //THEN
-        assertEquals(12, result.size());
-        assertTrue(result.containsKey(ABSENCES));
-        assertTrue(result.containsKey(BACKLOG_BOUNDS));
-        assertTrue(result.containsKey(CONFIGURATION));
-        assertTrue(result.containsKey(CONTRACT_MODALITY_TYPES));
-        assertTrue(result.containsKey(NON_SYSTEMIC_RATIO));
-        assertTrue(result.containsKey(POLYVALENCE_PARAMETERS));
-        assertTrue(result.containsKey(SHIFT_CONTRACT_MODALITIES));
-        assertTrue(result.containsKey(SHIFTS_PARAMETERS));
-        assertTrue(result.containsKey(TRANSFERS));
-        assertTrue(result.containsKey(WORKER_COSTS));
-        assertTrue(result.containsKey(WORKERS_PARAMETERS));
+    //WHEN
+    Map<DomainType, Object> result = inputOptimizationService.getInputOptimization(getInputOptimization);
+    //THEN
+    assertEquals(12, result.size());
+    assertTrue(result.containsKey(ABSENCES));
+    assertTrue(result.containsKey(BACKLOG_BOUNDS));
+    assertTrue(result.containsKey(CONFIGURATION));
+    assertTrue(result.containsKey(CONTRACT_MODALITY_TYPES));
+    assertTrue(result.containsKey(NON_SYSTEMIC_RATIO));
+    assertTrue(result.containsKey(POLYVALENCE_PARAMETERS));
+    assertTrue(result.containsKey(SHIFT_CONTRACT_MODALITIES));
+    assertTrue(result.containsKey(SHIFTS_PARAMETERS));
+    assertTrue(result.containsKey(TRANSFERS));
+    assertTrue(result.containsKey(WORKER_COSTS));
+    assertTrue(result.containsKey(WORKERS_PARAMETERS));
 
-    }
+  }
 
-    @ParameterizedTest
-    @MethodSource("domainFilterArguments")
-    public void someInputsOptimizationTest(final Map<DomainType, Map<String, List<Object>>> domainFilters) throws IOException {
-        //GIVEN
-        final Map<DomainType, String> domainResults = Map.of(
-                NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/domain/non_systemic_ratio.json"),
-                SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/domain/shift_parameters.json")
-        );
+  @ParameterizedTest
+  @MethodSource("domainFilterArguments")
+  public void someInputsOptimizationTest(final Map<DomainType, Map<String, List<Object>>> domainFilters) throws IOException {
+    //GIVEN
+    final Map<DomainType, String> domainResults = Map.of(
+        NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/response_with_filters/non_systemic_ratio.json"),
+        SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/response_with_filters/shift_parameters.json")
+    );
 
-        final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, domainFilters);
+    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, domainFilters);
 
-        when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
-                .thenReturn(domainResults);
+    when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+        .thenReturn(domainResults);
 
-        //WHEN
-        Map<DomainType, Object> result = inputOptimizationService.getInputOptimization(getInputOptimization);
+    //WHEN
+    Map<DomainType, Object> result = inputOptimizationService.getInputOptimization(getInputOptimization);
 
-        //THEN
-        assertEquals(2, result.size());
-        assertTrue(result.containsKey(NON_SYSTEMIC_RATIO));
-        assertTrue(result.containsKey(SHIFTS_PARAMETERS));
-    }
+    //THEN
+    assertEquals(2, result.size());
+    assertTrue(result.containsKey(NON_SYSTEMIC_RATIO));
+    assertTrue(result.containsKey(SHIFTS_PARAMETERS));
+  }
 
-    private static Stream<Arguments> domainFilterArguments() {
-        return Stream.of(
-                Arguments.of(Map.of()),
-                Arguments.of(Map.of(
-                        SHIFTS_PARAMETERS, Map.of(
-                                INCLUDE_DAY_NAME.toJson(), List.of("Mon", "Thu"),
-                                INCLUDE_SHIFT_TYPE.toJson(), List.of("AFTERNOON01")
-                        ),
-                        NON_SYSTEMIC_RATIO, Map.of(
-                                INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),
-                                INCLUDE_STAGE.toJson(), List.of("put_away")
-                        )
-                ))
-        );
-    }
+  @Test
+  public void invalidShiftParametersFilterTest() throws IOException {
+    //GIVEN
+    String expectedMessage = "Domain SHIFTS_PARAMETERS only can use [INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP] parameters";
+    final Map<DomainType, String> domainResults = Map.of(
+        SHIFTS_PARAMETERS, getResourceAsString("inputoptimization/response_with_filters/shift_parameters.json")
+    );
+
+    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of(
+        SHIFTS_PARAMETERS, Map.of(
+            INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),
+            INCLUDE_STAGE.toJson(), List.of("put_away")
+        )
+    ));
+
+    when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+        .thenReturn(domainResults);
+
+    //WHEN
+
+    final InvalidDomainFilterException exception = assertThrows(InvalidDomainFilterException.class,
+        () -> inputOptimizationService.getInputOptimization(getInputOptimization));
+
+    //THEN
+    assertEquals(expectedMessage, exception.getMessage());
+  }
+
+  @Test
+  public void invalidNonSystemicRatioFilterTest() throws IOException {
+    //GIVEN
+    String expectedMessage = "Domain NON_SYSTEMIC_RATIO only can use [INCLUDE_PROCESS, INCLUDE_STAGE] parameters";
+    final Map<DomainType, String> domainResults = Map.of(
+        NON_SYSTEMIC_RATIO, getResourceAsString("inputoptimization/response_with_filters/non_systemic_ratio.json")
+    );
+
+    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of(
+        NON_SYSTEMIC_RATIO, Map.of(
+            INCLUDE_DAY_NAME.toJson(), List.of("Mon", "Thu"),
+            INCLUDE_SHIFT_GROUP.toJson(), List.of("AFTERNOON01")
+        )
+    ));
+
+    when(inputOptimizationRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+        .thenReturn(domainResults);
+
+    //WHEN
+
+    final InvalidDomainFilterException exception = assertThrows(InvalidDomainFilterException.class,
+        () -> inputOptimizationService.getInputOptimization(getInputOptimization));
+
+    //THEN
+    assertEquals(expectedMessage, exception.getMessage());
+  }
+
+  private static Stream<Arguments> domainFilterArguments() {
+    return Stream.of(
+        Arguments.of(Map.of()),
+        Arguments.of(Map.of(
+            SHIFTS_PARAMETERS, Map.of(
+                INCLUDE_DAY_NAME.toJson(), List.of("Mon", "Thu"),
+                INCLUDE_SHIFT_GROUP.toJson(), List.of("AFTERNOON01")
+            ),
+            NON_SYSTEMIC_RATIO, Map.of(
+                INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),
+                INCLUDE_STAGE.toJson(), List.of("put_away")
+            )
+        ))
+    );
+  }
 
 
-    public ObjectMapper objectMapper() {
-        return ((JsonJackson) JsonUtils.INSTANCE.getEngine())
-                .getMapper()
-                .registerModule(new ParameterNamesModule())
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    }
+  public ObjectMapper objectMapper() {
+    return ((JsonJackson) JsonUtils.INSTANCE.getEngine())
+        .getMapper()
+        .registerModule(new ParameterNamesModule())
+        .registerModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+  }
 
 }

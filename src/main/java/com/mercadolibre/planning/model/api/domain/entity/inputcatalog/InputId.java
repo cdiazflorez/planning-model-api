@@ -77,9 +77,11 @@ public enum InputId {
         return domainFilterRequests.entrySet().stream()
                 .map(filterRequest -> {
                     final InputOptionFilter inputOptionFilter = InputOptionFilter.of(filterRequest.getKey())
-                            .orElseThrow(() -> new InvalidInputFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP));
+                            .orElseThrow(() -> new InvalidInputFilterException(SHIFTS_PARAMETERS,
+                                    new InputOptionFilter[]{INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP}));
                     if (!shiftParametersFilters.containsKey(inputOptionFilter)) {
-                        throw new InvalidInputFilterException(SHIFTS_PARAMETERS, INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP);
+                        throw new InvalidInputFilterException(SHIFTS_PARAMETERS,
+                                new InputOptionFilter[]{INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP});
                     }
                     return shiftParametersFilters.get(inputOptionFilter).apply(filterRequest.getValue());
                 })
@@ -103,9 +105,10 @@ public enum InputId {
         return domainFilterRequests.entrySet().stream()
                 .map(filterRequest -> {
                     final InputOptionFilter inputOptionFilter = InputOptionFilter.of(filterRequest.getKey())
-                            .orElseThrow(() -> new InvalidInputFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_STAGE));
+                            .orElseThrow(() -> new InvalidInputFilterException(NON_SYSTEMIC_RATIO,
+                                    new InputOptionFilter[]{INCLUDE_PROCESS, INCLUDE_STAGE}));
                     if (!nonSystemicRatioFilters.containsKey(inputOptionFilter)) {
-                        throw new InvalidInputFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_STAGE);
+                        throw new InvalidInputFilterException(NON_SYSTEMIC_RATIO, new InputOptionFilter[]{INCLUDE_PROCESS, INCLUDE_STAGE});
                     }
                     return nonSystemicRatioFilters.get(inputOptionFilter).apply(filterRequest.getValue());
                 })

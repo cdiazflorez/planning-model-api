@@ -10,11 +10,13 @@ public class InvalidInputFilterException extends RuntimeException {
 
     public static final String MESSAGE = "Input %s only can use %s parameters";
 
+    private static final long serialVersionUID = 5800400356721253970L;
+
     private final InputId inputId;
 
     private final InputOptionFilter[] inputOptionFilters;
 
-    public InvalidInputFilterException(final InputId inputId, final InputOptionFilter... inputOptionFilters) {
+    public InvalidInputFilterException(final InputId inputId, final InputOptionFilter[] inputOptionFilters) {
         this.inputId = inputId;
         this.inputOptionFilters = inputOptionFilters;
     }

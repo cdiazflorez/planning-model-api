@@ -1,9 +1,9 @@
-package com.mercadolibre.planning.model.api.web.controller.inputoptimization;
+package com.mercadolibre.planning.model.api.web.controller.inputcatalog;
 
-import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.InputOptimizationService;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.get.GetInputOptimization;
-import com.mercadolibre.planning.model.api.web.controller.inputoptimization.request.InputOptimizationRequest;
+import com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.InputCatalogService;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.web.controller.inputcatalog.request.InputsCatalogRequest;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/inputs")
-public class InputOptimizationController {
+public class InputsCatalogController {
 
-    private InputOptimizationService inputOptimizationService;
+    private InputCatalogService inputCatalogService;
 
     @PostMapping
-    public ResponseEntity<Map<DomainType, Object>> getInputsOptimization(@Valid @RequestBody final InputOptimizationRequest request) {
+    public ResponseEntity<Map<InputId, Object>> getInputsOptimization(@Valid @RequestBody final InputsCatalogRequest request) {
 
-        final Map<DomainType, Map<String, List<Object>>> domainsWithFilters = request.getInputs() == null || request.getInputs().isEmpty()
+        final Map<InputId, Map<String, List<Object>>> domainsWithFilters = request.getInputs() == null || request.getInputs().isEmpty()
         ? Map.of()
         : request.getInputs();
 
@@ -38,7 +38,7 @@ public class InputOptimizationController {
 
         final GetInputOptimization getInputOptimization = new GetInputOptimization(request.getWarehouseId(), domainsWithFilters);
 
-        return ResponseEntity.ok(inputOptimizationService.getInputOptimization(getInputOptimization));
+        return ResponseEntity.ok(inputCatalogService.getInputOptimization(getInputOptimization));
     }
 
 

@@ -17,18 +17,18 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.M
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.ABSENCES;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.BACKLOG_BOUNDS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONFIGURATION;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.CONTRACT_MODALITY_TYPES;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.NON_SYSTEMIC_RATIO;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.POLYVALENCE_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.PRESENCES;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFT_CONTRACT_MODALITIES;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.TRANSFERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKERS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.WORKER_COSTS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.ABSENCES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.BACKLOG_BOUNDS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.CONFIGURATION;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.CONTRACT_MODALITY_TYPES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.NON_SYSTEMIC_RATIO;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.POLYVALENCE_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.PRESENCES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFTS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFT_CONTRACT_MODALITIES;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.TRANSFERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKER_COSTS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
@@ -56,7 +56,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.MaxCapacityVie
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType;
+import com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
@@ -1039,8 +1039,8 @@ public final class TestUtils {
         return List.of(1L, 2L);
     }
 
-    public static Map<DomainType, Object> mockInputOptimization() {
-        final Map<DomainType, Object> inputResult = new LinkedHashMap<>();
+    public static Map<InputId, Object> mockInputsCatalog() {
+        final Map<InputId, Object> inputResult = new LinkedHashMap<>();
         inputResult.put(ABSENCES, List.of());
         inputResult.put(BACKLOG_BOUNDS, List.of());
         inputResult.put(CONFIGURATION, null);

@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
+package com.mercadolibre.planning.model.api.domain.entity.inputcatalog;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -21,7 +21,7 @@ public class InputOptimization {
 
     @Id
     @Enumerated(EnumType.STRING)
-    private DomainType domain;
+    private InputId domain;
 
     private String jsonValue;
 

@@ -16,7 +16,7 @@ public enum DomainOptionFilter {
     INCLUDE_DAY_NAME,
     INCLUDE_SHIFT_TYPE,
     INCLUDE_PROCESS,
-    INCLUDE_SUB_PROCESS;
+    INCLUDE_STAGE;
 
     private static final Map<String, DomainOptionFilter> LOOKUP = Arrays.stream(values()).collect(
             toMap(DomainOptionFilter::toString, Function.identity())

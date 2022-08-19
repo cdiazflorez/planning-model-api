@@ -15,7 +15,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputoptimizatio
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SUB_PROCESS;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_STAGE;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -133,7 +133,7 @@ public class InputOptimizationServiceTest {
                         ),
                         NON_SYSTEMIC_RATIO, Map.of(
                                 INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),
-                                INCLUDE_SUB_PROCESS.toJson(), List.of("put_away")
+                                INCLUDE_STAGE.toJson(), List.of("put_away")
                         )
                 ))
         );

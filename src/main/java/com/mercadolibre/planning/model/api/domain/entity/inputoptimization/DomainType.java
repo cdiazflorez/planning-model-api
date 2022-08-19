@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_PROCESS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_TYPE;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SUB_PROCESS;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_STAGE;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
@@ -94,7 +94,7 @@ public enum DomainType {
                     final List<String> process = convertObjectListToStringList(objectList);
                     return process.contains(nonSystemicRatio.getProcess());
                 },
-                INCLUDE_SUB_PROCESS, (List<Object> objectList) -> {
+                INCLUDE_STAGE, (List<Object> objectList) -> {
                     final List<String> subProcess = convertObjectListToStringList(objectList);
                     return subProcess.contains(nonSystemicRatio.getSubProcess());
                 }
@@ -103,9 +103,9 @@ public enum DomainType {
         return domainFilterRequests.entrySet().stream()
                 .map(filterRequest -> {
                     final DomainOptionFilter domainOptionFilter = DomainOptionFilter.of(filterRequest.getKey())
-                            .orElseThrow(() -> new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS));
+                            .orElseThrow(() -> new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_STAGE));
                     if (!nonSystemicRatioFilters.containsKey(domainOptionFilter)) {
-                        throw new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_SUB_PROCESS);
+                        throw new InvalidDomainFilterException(NON_SYSTEMIC_RATIO, INCLUDE_PROCESS, INCLUDE_STAGE);
                     }
                     return nonSystemicRatioFilters.get(domainOptionFilter).apply(filterRequest.getValue());
                 })

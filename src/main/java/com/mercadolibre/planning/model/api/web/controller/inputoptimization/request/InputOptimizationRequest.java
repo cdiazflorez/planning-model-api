@@ -12,6 +12,6 @@ public class InputOptimizationRequest {
     @NotEmpty
     String warehouseId;
 
-    Map<DomainType, Map<String, List<Object>>> domains;
+    Map<DomainType, Map<String, List<Object>>> inputs;
 
 }

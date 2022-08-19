@@ -24,9 +24,9 @@ public class InputOptimizationController {
     @PostMapping
     public ResponseEntity<Map<DomainType, Object>> getInputsOptimization(@Valid @RequestBody final InputOptimizationRequest request) {
 
-        final Map<DomainType, Map<String, List<Object>>> domainsWithFilters = request.getDomains() == null || request.getDomains().isEmpty()
+        final Map<DomainType, Map<String, List<Object>>> domainsWithFilters = request.getInputs() == null || request.getInputs().isEmpty()
         ? Map.of()
-        : request.getDomains();
+        : request.getInputs();
 
         domainsWithFilters.keySet().forEach(
                 key -> {

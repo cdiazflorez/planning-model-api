@@ -1,9 +1,9 @@
 package com.mercadolibre.planning.model.api.exception;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.domain.entity.inputoptimization.DomainType.SHIFTS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_DAY_NAME;
-import static com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter.INCLUDE_SHIFT_GROUP;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFTS_PARAMETERS;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_DAY_NAME;
+import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_SHIFT_GROUP;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
-import com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain.DomainOptionFilter;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter;
 import java.util.Arrays;
 import org.assertj.core.util.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
@@ -224,13 +224,13 @@ public class ApiExceptionHandlerTest {
     @Test
     public void handleInvalidDomainFilterException() {
         //GIVEN
-        final DomainOptionFilter[] domainOptionFilters = {INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP};
+        final InputOptionFilter[] inputOptionFilters = {INCLUDE_DAY_NAME, INCLUDE_SHIFT_GROUP};
 
-        final InvalidDomainFilterException exception = new InvalidDomainFilterException(SHIFTS_PARAMETERS, domainOptionFilters);
+        final InvalidInputFilterException exception = new InvalidInputFilterException(SHIFTS_PARAMETERS, inputOptionFilters);
 
         final ErrorResponse expectedResponse = new ErrorResponse(
                 BAD_REQUEST,
-                String.format("Domain %s only can use %s parameters", SHIFTS_PARAMETERS, Arrays.toString(domainOptionFilters)),
+                String.format("Input %s only can use %s parameters", SHIFTS_PARAMETERS, Arrays.toString(inputOptionFilters)),
                 "invalid_domain_filter"
         );
 

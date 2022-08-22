@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.entity.inputoptimization;
+package com.mercadolibre.planning.model.api.domain.entity.inputcatalog;
 
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -14,6 +14,6 @@ public class InputOptimizationId implements Serializable {
 
     private String warehouseId;
 
-    private DomainType domain;
+    private InputId domain;
 
 }

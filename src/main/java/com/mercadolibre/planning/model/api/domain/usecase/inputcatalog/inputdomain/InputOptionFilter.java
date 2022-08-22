@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.domain.usecase.inputoptimization.inputdomain;
+package com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain;
 
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
@@ -12,17 +12,17 @@ import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum DomainOptionFilter {
+public enum InputOptionFilter {
     INCLUDE_DAY_NAME,
     INCLUDE_SHIFT_GROUP,
     INCLUDE_PROCESS,
-    INCLUDE_SUB_PROCESS;
+    INCLUDE_STAGE;
 
-    private static final Map<String, DomainOptionFilter> LOOKUP = Arrays.stream(values()).collect(
-            toMap(DomainOptionFilter::toString, Function.identity())
+    private static final Map<String, InputOptionFilter> LOOKUP = Arrays.stream(values()).collect(
+            toMap(InputOptionFilter::toString, Function.identity())
     );
 
-    public static Optional<DomainOptionFilter> of(final String value) {
+    public static Optional<InputOptionFilter> of(final String value) {
         return ofNullable(LOOKUP.get(value.toUpperCase(Locale.getDefault())));
     }
 

@@ -36,7 +36,8 @@ public enum InputId {
     SHIFT_CONTRACT_MODALITIES(new InputMultiple(), ShiftContractModality.class),
     SHIFTS_PARAMETERS(new InputMultiple(), ShiftParameter.class),
     TRANSFERS(new InputMultiple(), Transfer.class),
-    WORKER_COSTS(new InputMultiple(), WorkerCost.class),
+    WORKERS_COSTS(new InputMultiple(), WorkersCost.class),
+    WORKERS_INITIAL(new InputMultiple(), WorkersInitial.class),
     WORKERS_PARAMETERS(new InputMultiple(), WorkersParameter.class);
 
     public final InputStrategy inputStrategy;
@@ -149,6 +150,8 @@ public enum InputId {
 
         int upperBound;
 
+        int maxThroughput;
+
     }
 
     @Value
@@ -167,6 +170,14 @@ public enum InputId {
         boolean activateHourlyWorkers;
 
         float hourlyWorkersCost;
+
+        float hourlyWorkersForce;
+
+        boolean activateHiringConstraint;
+
+        boolean activateMaxThroughput;
+
+        boolean balanceShifts;
 
     }
 
@@ -303,7 +314,7 @@ public enum InputId {
     }
 
     @Value
-    private static class WorkerCost implements InputCatalog {
+    private static class WorkersCost implements InputCatalog {
 
         String shiftName;
 
@@ -314,6 +325,21 @@ public enum InputId {
         float dismissalCost;
 
         float unitaryCost;
+
+    }
+
+    @Value
+    private static class WorkersInitial implements InputCatalog {
+
+        String shiftType;
+
+        String process;
+
+        String contractModality;
+
+        int stage;
+
+        int value;
 
     }
 

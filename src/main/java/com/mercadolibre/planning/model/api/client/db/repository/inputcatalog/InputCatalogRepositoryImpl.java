@@ -12,20 +12,20 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class InputCatalogRepositoryImpl implements InputCatalogRepository {
 
-    private final InputOptimizationJpaRepository inputOptimizationJpaRepository;
+    private final InputCatalogJpaRepository inputCatalogJpaRepository;
 
     @Override
     public Map<InputId, String> getInputs(final String warehouseId,
                                           final Set<InputId> domains) {
 
         if (domains.isEmpty()) {
-            return inputOptimizationJpaRepository.findAllByWarehouseId(warehouseId).stream()
+            return inputCatalogJpaRepository.findAllByWarehouseId(warehouseId).stream()
                     .collect(Collectors.toMap(
                             InputCatalogView::getDomain,
                             InputCatalogView::getJsonValue)
                     );
         } else {
-            return inputOptimizationJpaRepository.findAllByWarehouseIdAndDomainIn(warehouseId, domains).stream()
+            return inputCatalogJpaRepository.findAllByWarehouseIdAndDomainIn(warehouseId, domains).stream()
                     .collect(Collectors.toMap(
                             InputCatalogView::getDomain,
                             InputCatalogView::getJsonValue)

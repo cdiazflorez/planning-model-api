@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @Entity(name = "inputs_optimization")
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(InputOptimizationId.class)
-public class InputOptimization {
+@IdClass(InputCatalogId.class)
+public class InputCatalog {
 
     @Id
     private String warehouseId;

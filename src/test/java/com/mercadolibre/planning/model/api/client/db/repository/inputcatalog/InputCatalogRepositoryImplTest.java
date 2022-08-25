@@ -26,13 +26,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class InputCatalogRepositoryImplTest {
 
     @Mock
-    private InputOptimizationJpaRepository inputOptimizationJpaRepository;
+    private InputCatalogJpaRepository inputCatalogJpaRepository;
 
     private InputCatalogRepositoryImpl inputOptimizationRepository;
 
     @BeforeEach
     public void setUp() {
-        inputOptimizationRepository = new InputCatalogRepositoryImpl(inputOptimizationJpaRepository);
+        inputOptimizationRepository = new InputCatalogRepositoryImpl(inputCatalogJpaRepository);
     }
 
     @Test
@@ -45,7 +45,7 @@ public class InputCatalogRepositoryImplTest {
                 new InputCatalogViewImpl(CONTRACT_MODALITY_TYPES, getResourceAsString(
                         "inputcatalog/inputs/contract_modality_type.json"))
         );
-        when(inputOptimizationJpaRepository.findAllByWarehouseId(WAREHOUSE_ID)).thenReturn(expectedInputCatalogViews);
+        when(inputCatalogJpaRepository.findAllByWarehouseId(WAREHOUSE_ID)).thenReturn(expectedInputCatalogViews);
         // WHEN
         final Map<InputId, String> result = inputOptimizationRepository.getInputs(WAREHOUSE_ID, Set.of());
         // THEN
@@ -62,7 +62,7 @@ public class InputCatalogRepositoryImplTest {
         final Set<InputCatalogView> expectedInputCatalogViews = Set.of(
                 new InputCatalogViewImpl(CONFIGURATION, getResourceAsString("inputcatalog/inputs/configuration.json"))
         );
-        when(inputOptimizationJpaRepository.findAllByWarehouseIdAndDomainIn(WAREHOUSE_ID, Set.of(CONFIGURATION)))
+        when(inputCatalogJpaRepository.findAllByWarehouseIdAndDomainIn(WAREHOUSE_ID, Set.of(CONFIGURATION)))
                 .thenReturn(expectedInputCatalogViews);
         // WHEN
         final Map<InputId, String> result = inputOptimizationRepository.getInputs(WAREHOUSE_ID, Set.of(CONFIGURATION));

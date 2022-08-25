@@ -11,7 +11,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFT_CONTRACT_MODALITIES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.TRANSFERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKER_COSTS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_COSTS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_PROCESS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_SHIFT_GROUP;
@@ -77,7 +77,7 @@ public class InputCatalogServiceTest {
     domainResults.put(SHIFT_CONTRACT_MODALITIES, getResourceAsString("inputcatalog/inputs/shift_contract_modality.json"));
     domainResults.put(SHIFTS_PARAMETERS, getResourceAsString("inputcatalog/inputs/shift_parameters.json"));
     domainResults.put(TRANSFERS, getResourceAsString("inputcatalog/inputs/transfers.json"));
-    domainResults.put(WORKER_COSTS, getResourceAsString("inputcatalog/inputs/worker_costs.json"));
+    domainResults.put(WORKERS_COSTS, getResourceAsString("inputcatalog/inputs/worker_costs.json"));
     domainResults.put(WORKERS_PARAMETERS, getResourceAsString("inputcatalog/inputs/workers_parameters.json"));
 
     final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of());
@@ -98,7 +98,7 @@ public class InputCatalogServiceTest {
     assertTrue(result.containsKey(SHIFT_CONTRACT_MODALITIES));
     assertTrue(result.containsKey(SHIFTS_PARAMETERS));
     assertTrue(result.containsKey(TRANSFERS));
-    assertTrue(result.containsKey(WORKER_COSTS));
+    assertTrue(result.containsKey(WORKERS_COSTS));
     assertTrue(result.containsKey(WORKERS_PARAMETERS));
 
   }

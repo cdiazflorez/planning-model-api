@@ -27,8 +27,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFTS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFT_CONTRACT_MODALITIES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.TRANSFERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_COSTS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;

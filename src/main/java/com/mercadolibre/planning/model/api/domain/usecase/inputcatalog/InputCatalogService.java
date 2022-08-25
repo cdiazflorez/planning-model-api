@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId;
-import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputCatalog;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputStrategy;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +25,11 @@ public class InputCatalogService {
 
     private InputCatalogRepository inputCatalogRepository;
 
-    public Map<InputId, Object> getInputOptimization(final GetInputOptimization getInputOptimization) {
+    public Map<InputId, Object> getInputsCatalog(final GetInputCatalog getInputCatalog) {
 
         return buildMapResponse(
-                inputCatalogRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()),
-                getInputOptimization.getDomains()
+                inputCatalogRepository.getInputs(getInputCatalog.getWarehouseId(), getInputCatalog.getDomains().keySet()),
+                getInputCatalog.getDomains()
         );
 
     }

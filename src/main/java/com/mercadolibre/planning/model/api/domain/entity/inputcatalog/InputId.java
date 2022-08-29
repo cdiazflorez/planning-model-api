@@ -7,7 +7,6 @@ import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.in
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputMultiple;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter;
@@ -246,25 +245,18 @@ public enum InputId {
 
         int hour;
 
-        @JsonProperty("Mon")
         float mon;
 
-        @JsonProperty("Tue")
         float tue;
 
-        @JsonProperty("Wed")
         float wed;
 
-        @JsonProperty("Thu")
         float thu;
 
-        @JsonProperty("Fri")
         float fri;
 
-        @JsonProperty("Sat")
         float sat;
 
-        @JsonProperty("Sun")
         float sun;
 
     }

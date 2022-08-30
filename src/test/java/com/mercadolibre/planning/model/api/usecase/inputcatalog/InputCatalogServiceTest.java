@@ -10,8 +10,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFTS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.SHIFT_CONTRACT_MODALITIES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.TRANSFERS;
+import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_COSTS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKER_COSTS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_PROCESS;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_SHIFT_GROUP;
@@ -33,7 +33,7 @@ import com.mercadolibre.json_jackson.JsonJackson;
 import com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.InputCatalogService;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.InputCatalogService.InputCatalogRepository;
-import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputCatalog;
 import com.mercadolibre.planning.model.api.exception.InvalidInputFilterException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -77,16 +77,16 @@ public class InputCatalogServiceTest {
     domainResults.put(SHIFT_CONTRACT_MODALITIES, getResourceAsString("inputcatalog/inputs/shift_contract_modality.json"));
     domainResults.put(SHIFTS_PARAMETERS, getResourceAsString("inputcatalog/inputs/shift_parameters.json"));
     domainResults.put(TRANSFERS, getResourceAsString("inputcatalog/inputs/transfers.json"));
-    domainResults.put(WORKER_COSTS, getResourceAsString("inputcatalog/inputs/worker_costs.json"));
+    domainResults.put(WORKERS_COSTS, getResourceAsString("inputcatalog/inputs/worker_costs.json"));
     domainResults.put(WORKERS_PARAMETERS, getResourceAsString("inputcatalog/inputs/workers_parameters.json"));
 
-    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of());
+    final GetInputCatalog getInputCatalog = new GetInputCatalog(WAREHOUSE_ID, Map.of());
 
-    when(inputCatalogRepository.getInputs(getInputOptimization.getWarehouseId(), Set.of())).thenReturn(
+    when(inputCatalogRepository.getInputs(getInputCatalog.getWarehouseId(), Set.of())).thenReturn(
         domainResults);
 
     //WHEN
-    Map<InputId, Object> result = inputCatalogService.getInputOptimization(getInputOptimization);
+    Map<InputId, Object> result = inputCatalogService.getInputsCatalog(getInputCatalog);
     //THEN
     assertEquals(12, result.size());
     assertTrue(result.containsKey(ABSENCES));
@@ -98,7 +98,7 @@ public class InputCatalogServiceTest {
     assertTrue(result.containsKey(SHIFT_CONTRACT_MODALITIES));
     assertTrue(result.containsKey(SHIFTS_PARAMETERS));
     assertTrue(result.containsKey(TRANSFERS));
-    assertTrue(result.containsKey(WORKER_COSTS));
+    assertTrue(result.containsKey(WORKERS_COSTS));
     assertTrue(result.containsKey(WORKERS_PARAMETERS));
 
   }
@@ -112,13 +112,13 @@ public class InputCatalogServiceTest {
         SHIFTS_PARAMETERS, getResourceAsString("inputcatalog/response_with_filters/shift_parameters.json")
     );
 
-    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, domainFilters);
+    final GetInputCatalog getInputCatalog = new GetInputCatalog(WAREHOUSE_ID, domainFilters);
 
-    when(inputCatalogRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+    when(inputCatalogRepository.getInputs(getInputCatalog.getWarehouseId(), getInputCatalog.getDomains().keySet()))
         .thenReturn(domainResults);
 
     //WHEN
-    Map<InputId, Object> result = inputCatalogService.getInputOptimization(getInputOptimization);
+    Map<InputId, Object> result = inputCatalogService.getInputsCatalog(getInputCatalog);
 
     //THEN
     assertEquals(2, result.size());
@@ -134,20 +134,20 @@ public class InputCatalogServiceTest {
         SHIFTS_PARAMETERS, getResourceAsString("inputcatalog/response_with_filters/shift_parameters.json")
     );
 
-    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of(
+    final GetInputCatalog getInputCatalog = new GetInputCatalog(WAREHOUSE_ID, Map.of(
         SHIFTS_PARAMETERS, Map.of(
             INCLUDE_PROCESS.toJson(), List.of("fbm_wms_inbound"),
             INCLUDE_STAGE.toJson(), List.of("put_away")
         )
     ));
 
-    when(inputCatalogRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+    when(inputCatalogRepository.getInputs(getInputCatalog.getWarehouseId(), getInputCatalog.getDomains().keySet()))
         .thenReturn(domainResults);
 
     //WHEN
 
     final InvalidInputFilterException exception = assertThrows(InvalidInputFilterException.class,
-        () -> inputCatalogService.getInputOptimization(getInputOptimization));
+        () -> inputCatalogService.getInputsCatalog(getInputCatalog));
 
     //THEN
     assertEquals(expectedMessage, exception.getMessage());
@@ -161,20 +161,20 @@ public class InputCatalogServiceTest {
         NON_SYSTEMIC_RATIO, getResourceAsString("inputcatalog/response_with_filters/non_systemic_ratio.json")
     );
 
-    final GetInputOptimization getInputOptimization = new GetInputOptimization(WAREHOUSE_ID, Map.of(
+    final GetInputCatalog getInputCatalog = new GetInputCatalog(WAREHOUSE_ID, Map.of(
         NON_SYSTEMIC_RATIO, Map.of(
             INCLUDE_DAY_NAME.toJson(), List.of("Mon", "Thu"),
             INCLUDE_SHIFT_GROUP.toJson(), List.of("AFTERNOON01")
         )
     ));
 
-    when(inputCatalogRepository.getInputs(getInputOptimization.getWarehouseId(), getInputOptimization.getDomains().keySet()))
+    when(inputCatalogRepository.getInputs(getInputCatalog.getWarehouseId(), getInputCatalog.getDomains().keySet()))
         .thenReturn(domainResults);
 
     //WHEN
 
     final InvalidInputFilterException exception = assertThrows(InvalidInputFilterException.class,
-        () -> inputCatalogService.getInputOptimization(getInputOptimization));
+        () -> inputCatalogService.getInputsCatalog(getInputCatalog));
 
     //THEN
     assertEquals(expectedMessage, exception.getMessage());

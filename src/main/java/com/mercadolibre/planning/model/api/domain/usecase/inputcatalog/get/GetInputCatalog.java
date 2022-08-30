@@ -6,7 +6,7 @@ import java.util.Map;
 import lombok.Value;
 
 @Value
-public class GetInputOptimization {
+public class GetInputCatalog {
 
     String warehouseId;
 

@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.InputCatalogService;
-import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputCatalog;
 import com.mercadolibre.planning.model.api.web.controller.inputcatalog.InputsCatalogController;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class InputsCatalogControllerTest {
     @DisplayName("Get input optimization OK")
     public void testInputOptimizationOk() throws Exception {
         //GIVEN
-        when(inputCatalogService.getInputOptimization(any(GetInputOptimization.class))).thenReturn(mockInputsCatalog());
+        when(inputCatalogService.getInputsCatalog(any(GetInputCatalog.class))).thenReturn(mockInputsCatalog());
         //WHEN
         final ResultActions resultActions = mvc.perform(
                 post(URL)
@@ -52,7 +52,7 @@ public class InputsCatalogControllerTest {
     @DisplayName("Get input optimization with filters OK")
     public void testInputOptimizationWithFilterOk() throws Exception {
         //GIVEN
-        when(inputCatalogService.getInputOptimization(any(GetInputOptimization.class)))
+        when(inputCatalogService.getInputsCatalog(any(GetInputCatalog.class)))
                 .thenReturn(Map.of(SHIFTS_PARAMETERS, List.of()));
         //WHEN
         final ResultActions resultActions = mvc.perform(

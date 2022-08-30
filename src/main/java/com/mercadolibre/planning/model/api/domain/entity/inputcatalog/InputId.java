@@ -7,7 +7,6 @@ import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.in
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputMultiple;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter;
@@ -36,7 +35,8 @@ public enum InputId {
     SHIFT_CONTRACT_MODALITIES(new InputMultiple(), ShiftContractModality.class),
     SHIFTS_PARAMETERS(new InputMultiple(), ShiftParameter.class),
     TRANSFERS(new InputMultiple(), Transfer.class),
-    WORKER_COSTS(new InputMultiple(), WorkerCost.class),
+    WORKERS_COSTS(new InputMultiple(), WorkersCost.class),
+    WORKERS_INITIAL(new InputMultiple(), WorkersInitial.class),
     WORKERS_PARAMETERS(new InputMultiple(), WorkersParameter.class);
 
     public final InputStrategy inputStrategy;
@@ -149,6 +149,8 @@ public enum InputId {
 
         int upperBound;
 
+        int maxThroughput;
+
     }
 
     @Value
@@ -167,6 +169,14 @@ public enum InputId {
         boolean activateHourlyWorkers;
 
         float hourlyWorkersCost;
+
+        float hourlyWorkersForce;
+
+        boolean activateHiringConstraint;
+
+        boolean activateMaxThroughput;
+
+        boolean balanceShifts;
 
     }
 
@@ -235,25 +245,18 @@ public enum InputId {
 
         int hour;
 
-        @JsonProperty("Mon")
         float mon;
 
-        @JsonProperty("Tue")
         float tue;
 
-        @JsonProperty("Wed")
         float wed;
 
-        @JsonProperty("Thu")
         float thu;
 
-        @JsonProperty("Fri")
         float fri;
 
-        @JsonProperty("Sat")
         float sat;
 
-        @JsonProperty("Sun")
         float sun;
 
     }
@@ -303,7 +306,7 @@ public enum InputId {
     }
 
     @Value
-    private static class WorkerCost implements InputCatalog {
+    private static class WorkersCost implements InputCatalog {
 
         String shiftName;
 
@@ -314,6 +317,21 @@ public enum InputId {
         float dismissalCost;
 
         float unitaryCost;
+
+    }
+
+    @Value
+    private static class WorkersInitial implements InputCatalog {
+
+        String shiftType;
+
+        String process;
+
+        String contractModality;
+
+        int stage;
+
+        int value;
 
     }
 

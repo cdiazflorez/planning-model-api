@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InputOptimizationId implements Serializable {
+public class InputCatalogId implements Serializable {
 
     private static final long serialVersionUID = -8778186008039745895L;
 

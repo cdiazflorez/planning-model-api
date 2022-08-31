@@ -36,6 +36,10 @@ public final class DateUtils {
     return ofInstant(date.toInstant(), UTC);
   }
 
+  public static ZonedDateTime fromInstant(final Instant date) {
+    return ofInstant(date, UTC);
+  }
+
   public static Set<String> getForecastWeeks(final ZonedDateTime dateFrom,
                                              final ZonedDateTime dateTo) {
 

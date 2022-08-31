@@ -2,7 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller.inputcatalog;
 
 import com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.InputCatalogService;
-import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputOptimization;
+import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.get.GetInputCatalog;
 import com.mercadolibre.planning.model.api.web.controller.inputcatalog.request.InputsCatalogRequest;
 import java.util.List;
 import java.util.Map;
@@ -22,23 +22,23 @@ public class InputsCatalogController {
     private InputCatalogService inputCatalogService;
 
     @PostMapping
-    public ResponseEntity<Map<InputId, Object>> getInputsOptimization(@Valid @RequestBody final InputsCatalogRequest request) {
+    public ResponseEntity<Map<InputId, Object>> getInputsCatalog(@Valid @RequestBody final InputsCatalogRequest request) {
 
-        final Map<InputId, Map<String, List<Object>>> domainsWithFilters = request.getInputs() == null || request.getInputs().isEmpty()
+        final Map<InputId, Map<String, List<Object>>> inputsWithFilters = request.getInputs() == null || request.getInputs().isEmpty()
         ? Map.of()
         : request.getInputs();
 
-        domainsWithFilters.keySet().forEach(
+        inputsWithFilters.keySet().forEach(
                 key -> {
-                    if (domainsWithFilters.get(key) == null || domainsWithFilters.get(key).isEmpty()) {
-                        domainsWithFilters.put(key, Map.of());
+                    if (inputsWithFilters.get(key) == null || inputsWithFilters.get(key).isEmpty()) {
+                        inputsWithFilters.put(key, Map.of());
                     }
                 }
         );
 
-        final GetInputOptimization getInputOptimization = new GetInputOptimization(request.getWarehouseId(), domainsWithFilters);
+        final GetInputCatalog getInputCatalog = new GetInputCatalog(request.getWarehouseId(), inputsWithFilters);
 
-        return ResponseEntity.ok(inputCatalogService.getInputOptimization(getInputOptimization));
+        return ResponseEntity.ok(inputCatalogService.getInputsCatalog(getInputCatalog));
     }
 
 

@@ -84,4 +84,9 @@ public final class DateUtils {
     return Stream.of(first, middle, last)
         .flatMap(Function.identity());
   }
+
+  public static String getActualForecastWeek(final ZonedDateTime dateTime) {
+    return toWeekYear(dateTime);
+  }
+
 }

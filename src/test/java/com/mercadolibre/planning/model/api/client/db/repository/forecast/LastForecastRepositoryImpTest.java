@@ -31,7 +31,7 @@ class LastForecastRepositoryImpTest {
   private ForecastRepository forecastRepository;
 
   @Test
-  public void getForecastIdByWorkflowOK() {
+  public void testGetForecastByWorkflowOK() {
 
     final ForecastId a = new ForecastId(2L);
 
@@ -46,7 +46,7 @@ class LastForecastRepositoryImpTest {
   }
 
   @Test
-  public void getForecastIdByWorkflowThrows() {
+  public void testGetForecastByWorkflowThrows() {
 
     when(forecastRepository
         .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND.name(), Set.of(WEEK)))
@@ -63,6 +63,4 @@ class LastForecastRepositoryImpTest {
   private static class ForecastId implements ForecastIdView {
     private final Long id;
   }
-
-
 }

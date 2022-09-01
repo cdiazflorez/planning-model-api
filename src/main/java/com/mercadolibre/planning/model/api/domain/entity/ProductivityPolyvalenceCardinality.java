@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,12 +32,12 @@ public enum ProductivityPolyvalenceCardinality {
   private final String tagName;
 
   public static Optional<ProductivityPolyvalenceCardinality> of(final String value) {
-    return Optional.ofNullable(LOOKUP.get(value.toUpperCase()));
+    return Optional.ofNullable(LOOKUP.get(value.toUpperCase(Locale.ROOT)));
   }
 
   @JsonValue
   public String toJson() {
-    return this.toString().toLowerCase();
+    return this.toString().toLowerCase(Locale.ROOT);
   }
 
 }

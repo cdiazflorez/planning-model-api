@@ -63,23 +63,23 @@ class PolyvalenceMetadataControllerTest {
 
   private static PolyvalenceMetadata mockPolyvalenceMetadata(final Workflow workflow) {
 
-    return Workflow.FBM_WMS_INBOUND.equals(workflow) ?
-        new PolyvalenceMetadata(
-            Map.of(
-                ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE, 80.0F,
-                ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE, 85.0F,
-                ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE, 75.0F
-            )
-        ) :
-        new PolyvalenceMetadata(
-            Map.of(
-                ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE, 80.0F,
-                ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE, 85.0F,
-                ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE, 75.0F,
-                ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE, 75.0F,
-                ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE, 75.0F
-            )
-        );
+    return Workflow.FBM_WMS_INBOUND.equals(workflow)
+        ? new PolyvalenceMetadata(
+        Map.of(
+            ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE, 80.0F,
+            ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE, 85.0F,
+            ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE, 75.0F
+        )
+    )
+        : new PolyvalenceMetadata(
+        Map.of(
+            ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE, 80.0F,
+            ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE, 85.0F,
+            ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE, 75.0F,
+            ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE, 75.0F,
+            ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE, 75.0F
+        )
+    );
   }
 
   @ParameterizedTest
@@ -116,5 +116,4 @@ class PolyvalenceMetadataControllerTest {
     //THEN
     result.andExpect(status().isInternalServerError());
   }
-
 }

@@ -14,7 +14,7 @@ public class LastForecastRepositoryImp implements GetPolyvalenceForecastMetadata
   private final ForecastRepository forecastRepository;
 
   @Override
-  public Long getForecastByWorkflow(String logisticCenterId, Workflow workflow, String week) {
+  public Long getForecastByWorkflow(final String logisticCenterId, final Workflow workflow, final String week) {
 
     final ForecastIdView forecastIdView = forecastRepository
         .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(logisticCenterId, workflow.name(), Set.of(week))

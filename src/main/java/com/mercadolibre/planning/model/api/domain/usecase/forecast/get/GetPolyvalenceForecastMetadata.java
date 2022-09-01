@@ -30,14 +30,35 @@ public class GetPolyvalenceForecastMetadata {
   }
 
 
+  /**
+   * Get last forecast from repository by workflow.
+   */
   public interface LastForecastRepository {
 
+    /**
+     * Get last forecastId of week by workflow.
+     *
+     * @param logisticCenterId logistic center id.
+     * @param workflow         workflow
+     * @param week             week of received day
+     * @return ForecastId.
+     */
     Long getForecastByWorkflow(String logisticCenterId, Workflow workflow, String week);
 
   }
 
+  /**
+   * Get polyvalence percentage metadata of process (stage) from repository
+   */
   public interface PolyvalenceMetadataRepository {
 
+    /**
+     * Get polyvalence percentage of process (stages) from forecast_metadata by forecast id and workflow.
+     *
+     * @param forecastId ForecastId
+     * @param workflow   workflow
+     * @return PolyvalenceMetadata - percentage polyvalences of process (stages) by workflow.
+     */
     PolyvalenceMetadata getPolyvalencePercentageByWorkflow(Long forecastId, Workflow workflow);
 
   }

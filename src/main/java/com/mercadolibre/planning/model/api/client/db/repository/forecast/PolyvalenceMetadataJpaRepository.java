@@ -18,15 +18,15 @@ public class PolyvalenceMetadataJpaRepository implements GetPolyvalenceForecastM
   private ForecastMetadataRepository forecastMetadataRepository;
 
   @Override
-  public PolyvalenceMetadata getPolyvalencePercentageByWorkflow(Long forecastId, Workflow workflow) {
+  public PolyvalenceMetadata getPolyvalencePercentageByWorkflow(final Long forecastId, final Workflow workflow) {
     final List<String> cardinality = getPolyvalenceCardinality().get(workflow);
     List<ForecastMetadataView> polyvalencesMetadata =
         forecastMetadataRepository.findLastForecastMetadataByWarehouseId(cardinality, List.of(forecastId));
 
     final Map<ProductivityPolyvalenceCardinality, Float> polyvalences = polyvalencesMetadata.stream()
         .collect(Collectors
-            .toMap(forecastMetadataView -> polyvalenceKey(forecastMetadataView.getKey()),
-                forecastMetadataView -> polyvalenceValue(forecastMetadataView.getValue()))
+            .toMap(forecastMetadataView -> getPolyvalenceKey(forecastMetadataView.getKey()),
+                forecastMetadataView -> getPolyvalenceValue(forecastMetadataView.getValue()))
         );
 
     return new PolyvalenceMetadata(polyvalences);
@@ -49,14 +49,14 @@ public class PolyvalenceMetadataJpaRepository implements GetPolyvalenceForecastM
         ));
   }
 
-  private ProductivityPolyvalenceCardinality polyvalenceKey(String key) {
+  private ProductivityPolyvalenceCardinality getPolyvalenceKey(final String key) {
     return Arrays.stream(ProductivityPolyvalenceCardinality.values())
         .filter(cardinality -> cardinality.getTagName().equals(key))
         .findAny()
         .get();
   }
 
-  private Float polyvalenceValue(String value) {
+  private Float getPolyvalenceValue(final String value) {
     return Float.parseFloat(value);
   }
 }

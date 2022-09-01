@@ -47,35 +47,35 @@ class PolyvalenceMetadataJpaRepositoryTest {
   private static List<ForecastMetadataView> mockMetadataView(final Workflow workflow) {
 
 
-    return Workflow.FBM_WMS_INBOUND.equals(workflow) ?
-        List.of(
-            new MetadataView("inbound_receiving_productivity_polyvalences", "80.0"),
-            new MetadataView("inbound_putaway_productivity_polivalences", "85.0"),
-            new MetadataView("inbound_checkin_productivity_polyvalences", "75.0")
-        ) :
-        List.of(
-            new MetadataView("outbound_batch_sorter_productivity", "80.0"),
-            new MetadataView("outbound_packing_productivity", "85.0"),
-            new MetadataView("outbound_packing_wall_productivity", "75.0"),
-            new MetadataView("outbound_picking_productivity", "90.0"),
-            new MetadataView("outbound_wall_in_productivity", "70.0")
-        );
+    return Workflow.FBM_WMS_INBOUND.equals(workflow)
+        ? List.of(
+        new MetadataView("inbound_receiving_productivity_polyvalences", "80.0"),
+        new MetadataView("inbound_putaway_productivity_polivalences", "85.0"),
+        new MetadataView("inbound_checkin_productivity_polyvalences", "75.0")
+    )
+        : List.of(
+        new MetadataView("outbound_batch_sorter_productivity", "80.0"),
+        new MetadataView("outbound_packing_productivity", "85.0"),
+        new MetadataView("outbound_packing_wall_productivity", "75.0"),
+        new MetadataView("outbound_picking_productivity", "90.0"),
+        new MetadataView("outbound_wall_in_productivity", "70.0")
+    );
   }
 
   private static List<String> mockPolyvalenceCardinality(final Workflow workflow) {
-    return Workflow.FBM_WMS_INBOUND.equals(workflow) ?
-        List.of(
-            ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE.getTagName()
-        ) :
-        List.of(
-            ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE.getTagName(),
-            ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE.getTagName()
-        );
+    return Workflow.FBM_WMS_INBOUND.equals(workflow)
+        ? List.of(
+        ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE.getTagName()
+    )
+        : List.of(
+        ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE.getTagName(),
+        ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE.getTagName()
+    );
 
   }
 
@@ -92,7 +92,7 @@ class PolyvalenceMetadataJpaRepositoryTest {
         .thenReturn(forecastMetadataViewList);
 
     //WHEN
-    PolyvalenceMetadata result = polyvalenceMetadataJpaRepository.getPolyvalencePercentageByWorkflow(forecastId, workflow);
+    final PolyvalenceMetadata result = polyvalenceMetadataJpaRepository.getPolyvalencePercentageByWorkflow(forecastId, workflow);
 
     //THEN
     Assertions.assertNotNull(result);
@@ -108,4 +108,3 @@ class PolyvalenceMetadataJpaRepositoryTest {
     private final String value;
   }
 }
-

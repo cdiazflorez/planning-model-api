@@ -48,7 +48,7 @@ public class GetPolyvalenceForecastMetadata {
   }
 
   /**
-   * Get polyvalence percentage metadata of process (stage) from repository
+   * Get polyvalence percentage metadata of process (stage) from repository.
    */
   public interface PolyvalenceMetadataRepository {
 

@@ -1,5 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller.entity;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME;
+import static org.springframework.http.HttpStatus.OK;
+
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -29,6 +33,11 @@ import com.mercadolibre.planning.model.api.web.controller.entity.request.Product
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.request.EntitySearchRequest;
 import com.newrelic.api.agent.Trace;
+import java.io.ByteArrayInputStream;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.core.io.InputStreamResource;
@@ -44,160 +53,153 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-
-import java.io.ByteArrayInputStream;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME;
-import static org.springframework.http.HttpStatus.OK;
-
 @RestController
 @AllArgsConstructor
 @SuppressWarnings("PMD.ExcessiveImports")
 @RequestMapping("/planning/model/workflows/{workflow}/entities")
 public class EntityController {
 
-    private final SearchEntitiesUseCase searchEntitiesUseCase;
-    private final GetHeadcountEntityUseCase getHeadcountUseCase;
-    private final GetProductivityEntityUseCase getProductivityUseCase;
-    private final GetThroughputUseCase getThroughputUseCase;
-    private final SearchEntityUseCase searchEntityUseCase;
-    private final GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
+  private final SearchEntitiesUseCase searchEntitiesUseCase;
 
-    private final GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
+  private final GetHeadcountEntityUseCase getHeadcountUseCase;
 
-    @GetMapping("/headcount")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<EntityOutput>> getHeadcounts(
-            @PathVariable final Workflow workflow,
-            @Valid final HeadcountRequest request) {
+  private final GetProductivityEntityUseCase getProductivityUseCase;
 
-        final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
-        return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
-    }
+  private final GetThroughputUseCase getThroughputUseCase;
 
-    @GetMapping("/productivity")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<ProductivityOutput>> getProductivity(
-            @PathVariable final Workflow workflow,
-            @Valid final ProductivityRequest request) {
+  private final SearchEntityUseCase searchEntityUseCase;
 
-        final GetProductivityInput input = request.toGetProductivityInput(workflow);
-        return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
-    }
+  private final GetMaxCapacityEntityUseCase getMaxCapacityEntityUseCase;
 
-    @GetMapping("/throughput")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<EntityOutput>> getThroughput(
-            @PathVariable final Workflow workflow,
-            @Valid final EntityRequest request) {
+  private final GetMaxCapacityByWarehouseEntityUseCase getMaxCapacityByWarehouseEntityUseCase;
 
-        final GetEntityInput input = request.toGetEntityInput(workflow);
-        return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
-    }
+  @GetMapping("/headcount")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<EntityOutput>> getHeadcounts(
+      @PathVariable final Workflow workflow,
+      @Valid final HeadcountRequest request) {
 
-    @GetMapping("/performed_processing")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<EntityOutput>> getPerformedProcessing(
-            @PathVariable final Workflow workflow,
-            @Valid final EntityRequest request) {
+    final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
+    return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
+  }
 
-        final GetEntityInput input =
-                request.toGetEntityInput(workflow, EntityType.PERFORMED_PROCESSING);
+  @GetMapping("/productivity")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<ProductivityOutput>> getProductivity(
+      @PathVariable final Workflow workflow,
+      @Valid final ProductivityRequest request) {
 
-        return ResponseEntity.status(OK).body(searchEntityUseCase.execute(input));
-    }
+    final GetProductivityInput input = request.toGetProductivityInput(workflow);
+    return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
+  }
 
-    @PostMapping("/search")
-    @Trace(dispatcher = true)
-    public ResponseEntity<Map<EntityType, Object>> searchEntities(
-            @PathVariable final Workflow workflow,
-            @RequestBody @Valid final EntitySearchRequest request) {
-        return ResponseEntity.ok(searchEntitiesUseCase.execute(request.toSearchInput(workflow))
-        );
-    }
+  @GetMapping("/throughput")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<EntityOutput>> getThroughput(
+      @PathVariable final Workflow workflow,
+      @Valid final EntityRequest request) {
 
-    @PostMapping("/headcount")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
-            @PathVariable final Workflow workflow,
-            @RequestBody @Valid final HeadcountRequest request) {
+    final GetEntityInput input = request.toGetEntityInput(workflow);
+    return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
+  }
 
-        final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
-        return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
-    }
+  @GetMapping("/performed_processing")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<EntityOutput>> getPerformedProcessing(
+      @PathVariable final Workflow workflow,
+      @Valid final EntityRequest request) {
 
-    @PostMapping("/productivity")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<ProductivityOutput>> getProductivityWithSimulations(
-            @PathVariable final Workflow workflow,
-            @RequestBody @Valid final ProductivityRequest request) {
+    final GetEntityInput input =
+        request.toGetEntityInput(workflow, EntityType.PERFORMED_PROCESSING);
 
-        final GetProductivityInput input = request.toGetProductivityInput(workflow);
-        return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
-    }
+    return ResponseEntity.status(OK).body(searchEntityUseCase.execute(input));
+  }
 
-    @PostMapping("/throughput")
-    @Trace(dispatcher = true)
-    public ResponseEntity<List<EntityOutput>> getThroughputWithSimulations(
-            @PathVariable final Workflow workflow,
-            @RequestBody @Valid final EntityRequest request) {
+  @PostMapping("/search")
+  @Trace(dispatcher = true)
+  public ResponseEntity<Map<EntityType, Object>> searchEntities(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final EntitySearchRequest request) {
+    return ResponseEntity.ok(searchEntitiesUseCase.execute(request.toSearchInput(workflow))
+    );
+  }
 
-        final GetEntityInput input = request.toGetEntityInput(workflow);
-        return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
-    }
+  @PostMapping("/headcount")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<EntityOutput>> getHeadcountsWithSimulations(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final HeadcountRequest request) {
 
-    @PostMapping("/remaining_processing")
-    public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
-            @PathVariable final Workflow workflow,
-            @RequestBody @Valid final EntityRequest request) {
+    final GetHeadcountInput input = request.toGetHeadcountInput(workflow);
+    return ResponseEntity.status(OK).body(getHeadcountUseCase.execute(input));
+  }
 
-        final GetEntityInput input =
-                request.toGetEntityInput(workflow, EntityType.REMAINING_PROCESSING);
+  @PostMapping("/productivity")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<ProductivityOutput>> getProductivityWithSimulations(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final ProductivityRequest request) {
 
-        return ResponseEntity.status(OK).body(searchEntityUseCase.execute(input));
-    }
+    final GetProductivityInput input = request.toGetProductivityInput(workflow);
+    return ResponseEntity.status(OK).body(getProductivityUseCase.execute(input));
+  }
 
-    @GetMapping(value = "/max_capacity", produces = "text/csv")
-    public ResponseEntity<?> getMaxCapacity(
-            @PathVariable final Workflow workflow,
-            @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
-            @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
+  @PostMapping("/throughput")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<EntityOutput>> getThroughputWithSimulations(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final EntityRequest request) {
 
-        final String csvFile = ConvertUtils.toCsvFile(
-                getMaxCapacityEntityUseCase.execute(workflow, dateFrom, dateTo));
+    final GetEntityInput input = request.toGetEntityInput(workflow);
+    return ResponseEntity.status(OK).body(getThroughputUseCase.execute(input));
+  }
 
+  @PostMapping("/remaining_processing")
+  public ResponseEntity<List<EntityOutput>> getRemainingProcessing(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final EntityRequest request) {
 
-        return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; "
-                        + "filename=MaxCapacityFile.csv")
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
-    }
+    final GetEntityInput input =
+        request.toGetEntityInput(workflow, EntityType.REMAINING_PROCESSING);
 
-    @GetMapping("/tph")
-    public ResponseEntity<?> getTphMaxCapacity(
-        @RequestParam final String warehouse,
-        @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
-        @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
+    return ResponseEntity.status(OK).body(searchEntityUseCase.execute(input));
+  }
+
+  @GetMapping(value = "/max_capacity", produces = "text/csv")
+  public ResponseEntity<?> getMaxCapacity(
+      @PathVariable final Workflow workflow,
+      @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
+      @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
+
+    final String csvFile = ConvertUtils.toCsvFile(
+        getMaxCapacityEntityUseCase.execute(workflow, dateFrom, dateTo));
 
 
-        return ResponseEntity.ok()
-            .body(getMaxCapacityByWarehouseEntityUseCase.execute(warehouse, dateFrom, dateTo));
-    }
+    return ResponseEntity.ok()
+        .header("Content-Disposition", "attachment; "
+            + "filename=MaxCapacityFile.csv")
+        .contentType(MediaType.parseMediaType("text/csv"))
+        .body(new InputStreamResource(new ByteArrayInputStream(csvFile.getBytes(UTF_8))));
+  }
 
-    @InitBinder
-    public void initBinder(final PropertyEditorRegistry dataBinder) {
-        dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
-        dataBinder.registerCustomEditor(EntityType.class, new EntityTypeEditor());
-        dataBinder.registerCustomEditor(MetricUnit.class, new MetricUnitEditor());
-        dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
-        dataBinder.registerCustomEditor(Source.class, new SourceEditor());
-        dataBinder.registerCustomEditor(ProcessingType.class, new ProcessingTypeEditor());
-    }
+  @GetMapping("/tph")
+  public ResponseEntity<?> getTphMaxCapacity(
+      @RequestParam final String warehouse,
+      @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateFrom,
+      @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTo) {
+
+
+    return ResponseEntity.ok()
+        .body(getMaxCapacityByWarehouseEntityUseCase.execute(warehouse, dateFrom, dateTo));
+  }
+
+  @InitBinder
+  public void initBinder(final PropertyEditorRegistry dataBinder) {
+    dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
+    dataBinder.registerCustomEditor(EntityType.class, new EntityTypeEditor());
+    dataBinder.registerCustomEditor(MetricUnit.class, new MetricUnitEditor());
+    dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
+    dataBinder.registerCustomEditor(Source.class, new SourceEditor());
+    dataBinder.registerCustomEditor(ProcessingType.class, new ProcessingTypeEditor());
+  }
 }

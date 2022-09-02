@@ -19,13 +19,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LastForecastRepositoryImpTest {
+class LastForecastRepositoryImplTest {
 
   private static final String WAREHOUSE_ID = "ARTW01";
   private static final String WEEK = "36-2022";
 
   @InjectMocks
-  private LastForecastRepositoryImp lastForecastRepositoryImp;
+  private LastForecastRepositoryImpl lastForecastRepositoryImpl;
 
   @Mock
   private ForecastRepository forecastRepository;
@@ -33,27 +33,31 @@ class LastForecastRepositoryImpTest {
   @Test
   public void testGetForecastByWorkflowOK() {
 
-    final ForecastId a = new ForecastId(2L);
-
+    //GIVEN
     when(forecastRepository
         .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND.name(), Set.of(WEEK)))
-        .thenReturn(List.of(a));
+        .thenReturn(List.of(new ForecastId(2L)));
 
-    final Long id = lastForecastRepositoryImp.getForecastByWorkflow(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND, WEEK);
+    //WHEN
+    final Long idForecast = lastForecastRepositoryImpl.getForecastByWorkflow(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND, WEEK);
 
-    Assertions.assertNotNull(id);
+    //THEN
+    Assertions.assertNotNull(idForecast);
 
   }
 
   @Test
   public void testGetForecastByWorkflowThrows() {
 
+    //GIVEN
     when(forecastRepository
         .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND.name(), Set.of(WEEK)))
         .thenReturn(Collections.emptyList());
 
-    final Executable executable = () -> lastForecastRepositoryImp.getForecastByWorkflow(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND, WEEK);
+    //WHEN
+    final Executable executable = () -> lastForecastRepositoryImpl.getForecastByWorkflow(WAREHOUSE_ID, Workflow.FBM_WMS_INBOUND, WEEK);
 
+    //THEN
     assertThrows(ForecastNotFoundException.class, executable);
 
   }

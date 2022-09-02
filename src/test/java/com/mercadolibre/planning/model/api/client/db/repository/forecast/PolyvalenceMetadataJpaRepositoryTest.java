@@ -1,11 +1,20 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE;
+import static com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProductivityPolyvalenceCardinality;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.PolyvalenceMetadata;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -49,33 +58,23 @@ class PolyvalenceMetadataJpaRepositoryTest {
 
     return Workflow.FBM_WMS_INBOUND.equals(workflow)
         ? List.of(
-        new MetadataView("inbound_receiving_productivity_polyvalences", "80.0"),
-        new MetadataView("inbound_putaway_productivity_polivalences", "85.0"),
-        new MetadataView("inbound_checkin_productivity_polyvalences", "75.0")
+        new MetadataView(RECEIVING_POLYVALENCE.getTagName(), "80.0"),
+        new MetadataView(CHECK_IN_POLYVALENCE.getTagName(), "85.0"),
+        new MetadataView(PUT_AWAY_POLYVALENCE.getTagName(), "75.0")
     )
         : List.of(
-        new MetadataView("outbound_batch_sorter_productivity", "80.0"),
-        new MetadataView("outbound_packing_productivity", "85.0"),
-        new MetadataView("outbound_packing_wall_productivity", "75.0"),
-        new MetadataView("outbound_picking_productivity", "90.0"),
-        new MetadataView("outbound_wall_in_productivity", "70.0")
+        new MetadataView(BATCH_SORTER_POLYVALENCE.getTagName(), "80.0"),
+        new MetadataView(PACKING_POLYVALENCE.getTagName(), "85.0"),
+        new MetadataView(PACKING_WALL_POLYVALENCE.getTagName(), "75.0"),
+        new MetadataView(PICKING_POLYVALENCE.getTagName(), "90.0"),
+        new MetadataView(WALL_IN_POLYVALENCE.getTagName(), "70.0")
     );
   }
 
   private static List<String> mockPolyvalenceCardinality(final Workflow workflow) {
-    return Workflow.FBM_WMS_INBOUND.equals(workflow)
-        ? List.of(
-        ProductivityPolyvalenceCardinality.RECEIVING_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.CHECK_IN_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.PUT_AWAY_POLYVALENCE.getTagName()
-    )
-        : List.of(
-        ProductivityPolyvalenceCardinality.WALL_IN_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.PICKING_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.PACKING_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.PACKING_WALL_POLYVALENCE.getTagName(),
-        ProductivityPolyvalenceCardinality.BATCH_SORTER_POLYVALENCE.getTagName()
-    );
+    return ProductivityPolyvalenceCardinality.getPolyvalencesByWorkflow(workflow).stream()
+        .map(ProductivityPolyvalenceCardinality::getTagName)
+        .collect(Collectors.toList());
 
   }
 
@@ -96,7 +95,37 @@ class PolyvalenceMetadataJpaRepositoryTest {
 
     //THEN
     Assertions.assertNotNull(result);
+    validatePolyvalences(workflow, result);
 
+
+  }
+
+  private void validatePolyvalences(final Workflow workflow, final PolyvalenceMetadata result) {
+
+    if (Workflow.FBM_WMS_INBOUND.equals(workflow)) {
+      Assertions.assertEquals(80.0F, getValueExpected(result, RECEIVING_POLYVALENCE));
+      Assertions.assertEquals(85.0F, getValueExpected(result, CHECK_IN_POLYVALENCE));
+      Assertions.assertEquals(75.0F, getValueExpected(result, PUT_AWAY_POLYVALENCE));
+
+    } else {
+      Assertions.assertEquals(80.0F, getValueExpected(result, BATCH_SORTER_POLYVALENCE));
+      Assertions.assertEquals(85.0F, getValueExpected(result, PACKING_POLYVALENCE));
+      Assertions.assertEquals(75.0F, getValueExpected(result, PACKING_WALL_POLYVALENCE));
+      Assertions.assertEquals(90.0F, getValueExpected(result, PICKING_POLYVALENCE));
+      Assertions.assertEquals(70.0F, getValueExpected(result, WALL_IN_POLYVALENCE));
+
+    }
+
+
+  }
+
+  private float getValueExpected(final PolyvalenceMetadata polyvalenceMetadata, final ProductivityPolyvalenceCardinality cardinality) {
+
+    return polyvalenceMetadata.getPolyvalences().entrySet().stream()
+        .filter(resultPoly -> resultPoly.getKey().equals(cardinality))
+        .findAny()
+        .get()
+        .getValue();
   }
 
   @Getter

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LastForecastRepositoryImp implements GetPolyvalenceForecastMetadata.LastForecastRepository {
+public class LastForecastRepositoryImpl implements GetPolyvalenceForecastMetadata.LastForecastRepository {
 
   private final ForecastRepository forecastRepository;
 
@@ -20,11 +20,7 @@ public class LastForecastRepositoryImp implements GetPolyvalenceForecastMetadata
         .findLastForecastIdByWarehouseIdAAndWorkflowAndWeeks(logisticCenterId, workflow.name(), Set.of(week))
         .stream()
         .findAny()
-        .orElse(null);
-
-    if (forecastIdView == null) {
-      throw new ForecastNotFoundException(workflow.name(), logisticCenterId, Set.of(week));
-    }
+        .orElseThrow(() -> new ForecastNotFoundException(workflow.name(), logisticCenterId, Set.of(week)));
 
     return forecastIdView.getId();
   }

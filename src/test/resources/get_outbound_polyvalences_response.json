@@ -1,0 +1,7 @@
+{
+  "picking_polyvalence": 75.0,
+  "packing_wall_polyvalence": 75.0,
+  "wall_in_polyvalence": 75.0,
+  "batch_sorter_polyvalence": 80.0,
+  "packing_polyvalence": 85.0
+}

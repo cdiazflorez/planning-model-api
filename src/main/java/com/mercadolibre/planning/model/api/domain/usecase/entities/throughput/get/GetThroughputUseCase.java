@@ -73,11 +73,8 @@ public class GetThroughputUseCase
       allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
     }
 
-    final List<EntityOutput> headcounts = headcountEntityUseCase.execute(
-        createHeadcountInput(input));
-
-    final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(
-        createProductivityInput(input));
+    final List<EntityOutput> headcounts = headcountEntityUseCase.execute(createHeadcountInput(input));
+    final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(createProductivityInput(input));
 
     allThroughputs.addAll(createThroughput(input.getProcessName(), headcounts, productivity, input.getWorkflow()));
     return allThroughputs;
@@ -103,41 +100,43 @@ public class GetThroughputUseCase
     final Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>> headcountsMap =
         toMapByProcessNameDateAndSource(headcounts);
 
-    final Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>> productivityMap =
+    final Map<ProcessName, Map<ZonedDateTime, Map<Source, ProductivityOutput>>> regularProductivityMap =
         toMapByProcessNameDateAndSource(productivity.stream()
             .filter(ProductivityOutput::isMainProductivity)
             .collect(toList()));
 
-    final Map<ProcessName, Map<ZonedDateTime, EntityOutput>> polyvalentProductivityMap =
-        toMapByProcessNameAndDate(productivity.stream()
-            .filter(ProductivityOutput::isPolyvalentProductivity)
-            .collect(toList()));
+    // Despite the `current_headcount_productivity` table has the `ability_level` field, currently (2022-08-26) it contains no polyvalent
+    // productivity information. Therefore, this map contains polivalent productivity from the forecast only.
+    final Map<ProcessName, Map<ZonedDateTime, ProductivityOutput>> polyvalentProductivityMap =
+        toMapByProcessNameAndDate(productivity.stream().filter(ProductivityOutput::isPolyvalentProductivity));
 
     // receiving is filtered as it has its own way of calculating its tph
-    return processes.stream()
-        .filter(process -> process != ProcessName.RECEIVING)
-        .flatMap(process -> createThroughputs(
-            workflow,
-            process,
-            headcountsMap.get(process),
-            productivityMap.get(process),
-            polyvalentProductivityMap.get(process)).stream()
-        ).collect(toList());
+      return processes.stream()
+          .filter(process -> process != ProcessName.RECEIVING)
+          .flatMap(process ->
+              createThroughputs(
+              workflow,
+              process,
+              headcountsMap.get(process),
+              regularProductivityMap.get(process),
+              polyvalentProductivityMap.get(process)
+          ).stream())
+          .collect(toList());
   }
 
   private List<EntityOutput> createThroughputs(final Workflow workflow,
                                                final ProcessName process,
                                                final Map<ZonedDateTime, Map<Source, EntityOutput>> headcount,
-                                               final Map<ZonedDateTime, Map<Source, EntityOutput>> productivity,
-                                               final Map<ZonedDateTime, EntityOutput> polyvalentProductivity) {
+                                               final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivity,
+                                               final Map<ZonedDateTime, ProductivityOutput> polyvalentProductivity) {
 
-    if (Objects.isNull(headcount) || Objects.isNull(productivity)) {
+    if (Objects.isNull(headcount) || Objects.isNull(regularProductivity)) {
       return Collections.emptyList();
     }
 
     return headcount.keySet()
         .stream()
-        .map(dateTime -> calculate(dateTime, workflow, process, headcount, productivity, polyvalentProductivity))
+        .map(dateTime -> calculate(dateTime, workflow, process, headcount, regularProductivity, polyvalentProductivity))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(toList());
@@ -146,71 +145,52 @@ public class GetThroughputUseCase
   private Optional<EntityOutput> calculate(final ZonedDateTime dateTime,
                                            final Workflow workflow,
                                            final ProcessName process,
-                                           final Map<ZonedDateTime, Map<Source, EntityOutput>> headcountsMap,
-                                           final Map<ZonedDateTime, Map<Source, EntityOutput>> productivity,
-                                           final Map<ZonedDateTime, EntityOutput> polyvalentProductivity) {
-
-    final Map<Source, EntityOutput> productivityBySource = productivity.get(dateTime);
-
-    if (CollectionUtils.isEmpty(productivityBySource)) {
+                                           final Map<ZonedDateTime, Map<Source, EntityOutput>> headcountsBySourceByDate,
+                                           final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivityBySourceByDate,
+                                           final Map<ZonedDateTime, ProductivityOutput> forecastPolyvalentProductivityByDate
+  ) {
+    final Map<Source, EntityOutput> headcountBySource = headcountsBySourceByDate.get(dateTime);
+    final Map<Source, ProductivityOutput> regularProductivityBySource = regularProductivityBySourceByDate.get(dateTime);
+    if (CollectionUtils.isEmpty(headcountBySource) || CollectionUtils.isEmpty(regularProductivityBySource)) {
       return Optional.empty();
     }
 
+    final var forecastHeadcount = headcountBySource.get(FORECAST);
+    final var forecastRegularProductivity = regularProductivityBySource.get(FORECAST);
+    if (forecastHeadcount == null || forecastRegularProductivity == null) {
+        return Optional.empty();
+    }
+    final var simulatedHeadcount = headcountBySource.getOrDefault(SIMULATION, forecastHeadcount);
+    final var simulatedRegularProductivity = regularProductivityBySource.getOrDefault(SIMULATION, forecastRegularProductivity);
+    final var forecastPolyvalentProductivity = Optional.ofNullable(forecastPolyvalentProductivityByDate)
+        .flatMap(pp -> Optional.ofNullable(pp.get(dateTime)))
+        .map(EntityOutput::getValue);
+
     final long tph;
-
-    final Map<Source, EntityOutput> headcountBySource = headcountsMap.get(dateTime);
-    final EntityOutput headcount = headcountBySource.get(FORECAST);
-    final EntityOutput currentProductivity = productivityBySource
-        .getOrDefault(SIMULATION, productivityBySource.get(FORECAST));
-
-    final EntityOutput simulatedHeadcount = headcountBySource.get(SIMULATION);
-    if (simulatedHeadcount == null) {
-      tph = headcount.getValue() * currentProductivity.getValue();
+    if (simulatedHeadcount.getValue() <= forecastHeadcount.getValue()
+        || workflow != Workflow.FBM_WMS_OUTBOUND
+        || forecastPolyvalentProductivity.isEmpty()
+    ) {
+        tph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
     } else {
-      final long currentPolyvalentProductivity = Optional.ofNullable(
-              polyvalentProductivity
-          )
-          .flatMap(polivalentProductivity ->
-              Optional.ofNullable(polivalentProductivity.get(dateTime))
-          )
-          .map(EntityOutput::getValue)
-          .orElse(0L);
-
-      tph = calculateTphValue(
-          workflow,
-          headcount == null ? 0 : headcount.getValue(),
-          simulatedHeadcount.getValue(),
-          currentProductivity.getValue(),
-          currentPolyvalentProductivity
-      );
+        final var regularHeadcount = forecastHeadcount.getValue();
+        final var regularProductivity = simulatedRegularProductivity.getValue();
+        final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
+        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / (double) forecastRegularProductivity.getValue();
+        final double polyvalentProductivity = simulatedRegularProductivity.getValue() * polyvalentProductivityRatio;
+        tph = regularHeadcount * regularProductivity + Math.round(polyvalentHeadcount * polyvalentProductivity);
     }
 
     return Optional.of(
         EntityOutput.builder()
             .workflow(workflow)
             .date(dateTime)
-            .source(currentProductivity.getSource())
+            .source(simulatedRegularProductivity.getSource())
             .processName(process)
             .metricUnit(UNITS_PER_HOUR)
             .value(tph)
             .build()
     );
-  }
-
-  private Long calculateTphValue(final Workflow workflow,
-                                 final long forecastHeadcountValue,
-                                 final long simulatedHeadcountValue,
-                                 final long productivityValue,
-                                 final long multiFunctionalPdtValue) {
-
-    final long valueDifference = simulatedHeadcountValue - forecastHeadcountValue;
-
-    if (valueDifference > 0 && workflow == Workflow.FBM_WMS_OUTBOUND) {
-      return valueDifference * multiFunctionalPdtValue
-          + forecastHeadcountValue * productivityValue;
-    } else {
-      return simulatedHeadcountValue * productivityValue;
-    }
   }
 
   private GetProductivityInput createProductivityInput(final GetEntityInput input) {

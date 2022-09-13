@@ -12,14 +12,15 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.min;
 
 public class EntitiesUtil {
 
-    public static Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>>
-            toMapByProcessNameDateAndSource(final List<EntityOutput> entities) {
+    public static <T extends EntityOutput> Map<ProcessName, Map<ZonedDateTime, Map<Source, T>>>
+            toMapByProcessNameDateAndSource(final List<T> entities) {
 
         return entities.stream().collect(Collectors.groupingBy(
                 EntityOutput::getProcessName,
@@ -36,10 +37,10 @@ public class EntitiesUtil {
         ));
     }
 
-    public static Map<ProcessName, Map<ZonedDateTime, EntityOutput>> toMapByProcessNameAndDate(
-            final List<EntityOutput> entities) {
+    public static <T extends EntityOutput> Map<ProcessName, Map<ZonedDateTime, T>>
+        toMapByProcessNameAndDate(final Stream<T> entities) {
 
-        return entities.stream().collect(Collectors.groupingBy(
+        return entities.collect(Collectors.groupingBy(
                 EntityOutput::getProcessName,
                 TreeMap::new,
                 Collectors.toMap(

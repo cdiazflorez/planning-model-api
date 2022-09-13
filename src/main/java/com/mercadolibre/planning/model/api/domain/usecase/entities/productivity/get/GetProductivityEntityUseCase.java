@@ -42,7 +42,7 @@ public class GetProductivityEntityUseCase
         if (input.getSource() == FORECAST) {
             return getForecastProductivity(input);
         } else {
-            return getSimulationProductivity(input);
+            return getSimulationAndForecastProductivity(input);
         }
     }
 
@@ -62,16 +62,13 @@ public class GetProductivityEntityUseCase
                 .collect(toList());
     }
 
-    private List<ProductivityOutput> getSimulationProductivity(final GetProductivityInput input) {
-        final List<CurrentHeadcountProductivity> currentProductivity =
-                findCurrentProductivityBy(input);
-
-        final List<ProductivityOutput> entities = getForecastProductivity(input);
+    private List<ProductivityOutput> getSimulationAndForecastProductivity(final GetProductivityInput input) {
+        final List<ProductivityOutput> productivityAccumulator = getForecastProductivity(input);
         final List<ProductivityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
 
-        currentProductivity.forEach(sp -> {
+        findCurrentProductivityBy(input).forEach(sp -> {
             if (noSimulationExistsWithSameProperties(inputSimulatedEntities, sp)) {
-                entities.add(ProductivityOutput.builder()
+                productivityAccumulator.add(ProductivityOutput.builder()
                         .workflow(input.getWorkflow())
                         .value(sp.getProductivity())
                         .source(SIMULATION)
@@ -83,8 +80,8 @@ public class GetProductivityEntityUseCase
             }
         });
 
-        entities.addAll(inputSimulatedEntities);
-        return new ArrayList<>(entities);
+        productivityAccumulator.addAll(inputSimulatedEntities);
+        return new ArrayList<>(productivityAccumulator);
     }
 
     private boolean noSimulationExistsWithSameProperties(

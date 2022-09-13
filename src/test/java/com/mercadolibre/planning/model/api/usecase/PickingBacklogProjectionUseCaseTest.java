@@ -69,7 +69,7 @@ public class PickingBacklogProjectionUseCaseTest {
     // THEN
     assertEquals(PICKING, processParams.getProcessName());
     assertEquals(3000, processParams.getCurrentBacklog());
-    assertNull(processParams.getPreviousBacklogsByDate());
+    assertNull(processParams.getProcessedUnitsByDate());
 
     final List<EntityOutput> pickingCapacity = mockThroughputs().stream()
         .filter(e -> e.getProcessName() == PICKING).collect(toList());

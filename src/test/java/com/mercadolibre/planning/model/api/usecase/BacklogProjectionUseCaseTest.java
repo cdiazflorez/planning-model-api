@@ -1,9 +1,22 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.A_FIXED_DATE;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockBacklogProjectionInput;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockPlanningSalesByDate;
+import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockThroughputs;
+import static java.util.stream.Collectors.toMap;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BatchSorterBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.CalculateBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PackingRegularBacklogProjectionUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.PickingBacklogProjectionUseCase;
@@ -24,16 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.A_FIXED_DATE;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockBacklogProjectionInput;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockPlanningSalesByDate;
-import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockThroughputs;
-import static java.util.stream.Collectors.toMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class BacklogProjectionUseCaseTest {
@@ -53,6 +56,9 @@ public class BacklogProjectionUseCaseTest {
     @Mock
     private PackingRegularBacklogProjectionUseCase packingBacklogProjection;
 
+    @Mock
+    private BatchSorterBacklogProjectionUseCase batchSortedBacklogProjection;
+
     @Test
     @DisplayName("Project all backlogs")
     public void testProjectAllBacklogs() {
@@ -61,28 +67,32 @@ public class BacklogProjectionUseCaseTest {
         processNames.add(WAVING);
         processNames.add(PICKING);
         processNames.add(PACKING);
+        processNames.add(BATCH_SORTER);
 
         final BacklogProjectionInput input = mockBacklogProjectionInput(
                 processNames,
                 List.of(new CurrentBacklog(WAVING, 0),
                         new CurrentBacklog(PICKING, 3000),
-                        new CurrentBacklog(PACKING, 1110)),
+                        new CurrentBacklog(PACKING, 1110),
+                        new CurrentBacklog(BATCH_SORTER, 1800)),
                 A_FIXED_DATE.plusHours(4)
         );
 
         mockWavingBacklogProjection(input);
         mockPickingBacklogProjection(input);
         mockPackingBacklogProjection(input);
+        mockBatchSortedProjection(input);
 
         // WHEN
         final List<BacklogProjection> results = calculateBacklogProjection.execute(input);
 
         // THEN
-        assertEquals(3, results.size());
+        assertEquals(4, results.size());
 
         assertBacklogOutputs(List.of(50L, 0L, 0L, 0L, 1400L), WAVING, results.get(0));
-        assertBacklogOutputs(List.of(2788L, 2038L, 1438L, 838L, 838L), PICKING, results.get(1));
-        assertBacklogOutputs(List.of(1160L, 1410L, 1310L, 1210L, 1160L), PACKING, results.get(2));
+        assertBacklogOutputs(List.of(2788L, 1988L, 1738L, 1538L, 1538L), PICKING, results.get(1));
+        assertBacklogOutputs(List.of(948L, 610L, 710L, 610L, 1160L), PACKING, results.get(2));
+        assertBacklogOutputs(List.of(1638L, 1194L, 994L, 669L, 544L), BATCH_SORTER, results.get(3));
     }
 
     private void assertBacklogOutputs(final List<Long> wantedQuantities,
@@ -112,7 +122,7 @@ public class BacklogProjectionUseCaseTest {
                                 EntityOutput::getValue,
                                 Math::min)))
                         .planningUnitsByDate(mockPlanningSalesByDate())
-                        .previousBacklogsByDate(null)
+                        .processedUnitsByDate(null)
                         .build());
     }
 
@@ -129,7 +139,7 @@ public class BacklogProjectionUseCaseTest {
                                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .planningUnitsByDate(input.getThroughputs().stream()
                                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Math::min)))
-                        .previousBacklogsByDate(Map.of(
+                        .processedUnitsByDate(Map.of(
                                 A_FIXED_DATE, 50L,
                                 A_FIXED_DATE.plusHours(1), 0L,
                                 A_FIXED_DATE.plusHours(2), 0L,
@@ -152,7 +162,29 @@ public class BacklogProjectionUseCaseTest {
                         .planningUnitsByDate(input.getThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PICKING)
                                 .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
-                        .previousBacklogsByDate(null)
                         .build());
+    }
+
+    private void mockBatchSortedProjection(final BacklogProjectionInput input) {
+        when(backlogProjectionStrategy.getBy(BATCH_SORTER))
+            .thenReturn(Optional.of(batchSortedBacklogProjection));
+
+        when(batchSortedBacklogProjection.execute(BATCH_SORTER, input))
+            .thenReturn(ProcessParams.builder()
+                .processName(BATCH_SORTER)
+                .currentBacklog(1800)
+                .capacityByDate(mockThroughputs().stream()
+                    .filter(e -> e.getProcessName() == BATCH_SORTER)
+                    .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
+                .planningUnitsByDate(input.getThroughputs().stream()
+                    .filter(e -> e.getProcessName() == BATCH_SORTER)
+                    .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
+                .ratiosByDate(Map.of(
+                    A_FIXED_DATE, 0.5,
+                    A_FIXED_DATE.plusHours(1), 0.5,
+                    A_FIXED_DATE.plusHours(2), 0.625,
+                    A_FIXED_DATE.plusHours(3), 0.375,
+                    A_FIXED_DATE.plusHours(4), 0.715))
+                .build());
     }
 }

@@ -45,7 +45,7 @@ public class GetOutboundBacklogProjectionUseCase implements GetBacklogProjection
                         .warehouseId(input.getLogisticCenterId())
                         .dateInTo(input.getDateTo().plusDays(1))
                         .dateOutFrom(input.getDateFrom())
-                        .dateOutTo(input.getDateFrom().plusDays(1))
+                        .dateOutTo(input.getDateTo())
                         .applyDeviation(true)
                         .build());
 

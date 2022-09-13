@@ -63,7 +63,7 @@ public class BatchSorterBacklogProjectionUseCaseTest {
     // THEN
     assertEquals(BATCH_SORTER, processParams.getProcessName());
     assertEquals(1110, processParams.getCurrentBacklog());
-    assertNull(processParams.getPreviousBacklogsByDate());
+    assertNull(processParams.getProcessedUnitsByDate());
 
     assertEquals(650, processParams.getCapacityByDate().get(A_FIXED_DATE.minusHours(1)));
     assertEquals(550, processParams.getCapacityByDate().get(A_FIXED_DATE));
@@ -98,7 +98,7 @@ public class BatchSorterBacklogProjectionUseCaseTest {
     // THEN
     assertEquals(BATCH_SORTER, processParams.getProcessName());
     assertEquals(1110, processParams.getCurrentBacklog());
-    assertNull(processParams.getPreviousBacklogsByDate());
+    assertNull(processParams.getProcessedUnitsByDate());
 
     assertEquals(650, processParams.getCapacityByDate().get(A_FIXED_DATE.minusHours(1)));
     assertEquals(550, processParams.getCapacityByDate().get(A_FIXED_DATE));

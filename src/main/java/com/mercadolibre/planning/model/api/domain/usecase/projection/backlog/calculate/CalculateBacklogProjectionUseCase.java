@@ -1,9 +1,11 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProcessedUnits;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutputValue;
 import com.mercadolibre.planning.model.api.util.DateUtils;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +23,6 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingLong;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.iterate;
 
@@ -32,10 +32,12 @@ public class CalculateBacklogProjectionUseCase {
 
     private static final int HOUR_IN_MINUTES = 60;
 
+    private static final double DEFAULT_RATIO = 0.5;
+
     private final BacklogProjectionStrategy projectionStrategy;
 
     public List<BacklogProjection> execute(final BacklogProjectionInput input) {
-        final List<BacklogProjection> outputs = new ArrayList<>(estimateSize(input));
+        final List<BacklogProcessedUnits> outputs = new ArrayList<>(estimateSize(input));
 
         final List<ProcessName> processes = input.getProcessNames().stream()
                 .sorted()
@@ -47,19 +49,22 @@ public class CalculateBacklogProjectionUseCase {
                 final ProcessParams processParams = useCase.get().execute(process, input);
 
                 if (processParams.getProcessName().isConsiderPreviousBacklog()) {
-                    final List<BacklogProjectionOutputValue> previousBacklogs = outputs
+                    final Map<ZonedDateTime, Long> processedUnits = outputs
                             .stream()
-                            .filter(o -> o.getProcessName() == process.getPreviousProcesses())
+                            .filter(o -> o.getBacklogProjection().getProcessName() == process.getPreviousProcesses())
                             .findFirst()
-                            .map(BacklogProjection::getValues)
-                            .orElseGet(Collections::emptyList);
+                            .map(BacklogProcessedUnits::getProcessedUnits).orElse(Collections.emptyMap());
 
-                    processParams.setPreviousBacklogsByDate(adaptToMap(previousBacklogs));
+                    processParams.setProcessedUnitsByDate(processedUnits);
                 }
+
                 outputs.add(calculateProjectionOutput(input, processParams));
             }
         }
-        return outputs;
+        return outputs
+            .stream()
+            .map(BacklogProcessedUnits::getBacklogProjection)
+            .collect(Collectors.toList());
     }
 
     private int estimateSize(final BacklogProjectionInput projectionInput) {
@@ -67,13 +72,7 @@ public class CalculateBacklogProjectionUseCase {
                 * (int) HOURS.between(projectionInput.getDateFrom(), projectionInput.getDateTo());
     }
 
-    private Map<ZonedDateTime, Long> adaptToMap(final List<BacklogProjectionOutputValue> values) {
-        return values.stream()
-                .collect(groupingBy(BacklogProjectionOutputValue::getDate,
-                        summingLong(BacklogProjectionOutputValue::getQuantity)));
-    }
-
-    private BacklogProjection calculateProjectionOutput(final BacklogProjectionInput input,
+    private BacklogProcessedUnits calculateProjectionOutput(final BacklogProjectionInput input,
                                                         final ProcessParams processParams) {
 
         final ZonedDateTime dateFrom = input.getDateFrom().withFixedOffsetZone();
@@ -81,12 +80,16 @@ public class CalculateBacklogProjectionUseCase {
         long processBacklog = processParams.getCurrentBacklog();
         final List<BacklogProjectionOutputValue> processValues = new ArrayList<>(dates.size());
 
+        Map<ZonedDateTime, Long> planningUnitsByDate = getDefinitiveUnits(processParams);
+        final Map<ZonedDateTime, Long> processUnitsByDate = new ConcurrentHashMap<>();
+
         for (final ZonedDateTime date : dates) {
             final long capacity = getPreviousProcessCapacity(date, dateFrom, processParams);
-            final long planningUnits = getPlanningUnitsQuantity(date, dateFrom, processParams);
+            final long planningUnits = getPlanningUnitsQuantity(date, dateFrom, planningUnitsByDate);
 
             final long quantity = max(processBacklog + planningUnits - capacity, 0);
-
+            final long processUnits = min(capacity, processBacklog + planningUnits);
+            processUnitsByDate.put(date, processUnits);
             processValues.add(BacklogProjectionOutputValue.builder()
                     .quantity(quantity)
                     .date(date)
@@ -95,14 +98,16 @@ public class CalculateBacklogProjectionUseCase {
             processBacklog = quantity;
         }
 
-        return new BacklogProjection(processParams.getProcessName(), processValues, FORECAST);
+        return new BacklogProcessedUnits(
+            new BacklogProjection(processParams.getProcessName(), processValues, FORECAST),
+            processUnitsByDate
+        );
     }
 
     private long getPlanningUnitsQuantity(final ZonedDateTime date,
                                           final ZonedDateTime dateFrom,
-                                          final ProcessParams processParams) {
+                                          Map<ZonedDateTime, Long> planningUnitsByDate) {
         final boolean isFirstDate = nextHour(dateFrom).equals(date);
-        final Map<ZonedDateTime, Long> planningUnitsByDate = getDefinitiveUnits(processParams);
 
         final ZonedDateTime afterDate = isFirstDate
                 ? dateFrom.truncatedTo(HOURS).minusMinutes(1)
@@ -134,10 +139,12 @@ public class CalculateBacklogProjectionUseCase {
         final Map<ZonedDateTime, Long> incomingUnitsByDate = new HashMap<>();
         for (final Map.Entry<ZonedDateTime, Long> unitByDate : planningUnitsByDate.entrySet()) {
             final ZonedDateTime date = unitByDate.getKey();
-            if (processParams.getPreviousBacklogsByDate().get(date) != null) {
-                incomingUnitsByDate.put(date,
-                        min(planningUnitsByDate.get(date),
-                                processParams.getPreviousBacklogsByDate().get(date)));
+            if (processParams.getProcessedUnitsByDate().get(date) != null) {
+                final Long processedUnits = processParams.getRatiosByDate() == null
+                    ? processParams.getProcessedUnitsByDate().get(date)
+                    : (long) (processParams.getProcessedUnitsByDate().get(date)
+                        * processParams.getRatiosByDate().getOrDefault(date, DEFAULT_RATIO));
+                incomingUnitsByDate.put(date, processedUnits);
             }
         }
 

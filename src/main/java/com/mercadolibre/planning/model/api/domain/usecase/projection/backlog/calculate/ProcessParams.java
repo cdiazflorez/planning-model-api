@@ -19,6 +19,7 @@ public class ProcessParams {
     private long currentBacklog;
     private Map<ZonedDateTime, Long> planningUnitsByDate;
     private Map<ZonedDateTime, Long> capacityByDate;
-    private Map<ZonedDateTime, Long> previousBacklogsByDate;
+    private Map<ZonedDateTime, Long> processedUnitsByDate;
+    private Map<ZonedDateTime, Double> ratiosByDate;
 
 }

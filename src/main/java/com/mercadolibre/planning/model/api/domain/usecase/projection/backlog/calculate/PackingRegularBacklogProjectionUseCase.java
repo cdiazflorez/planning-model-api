@@ -39,11 +39,18 @@ public class PackingRegularBacklogProjectionUseCase implements GetBacklogProject
         .currentBacklog(currentBacklog)
         .planningUnitsByDate(previousProcessCapacity)
         .capacityByDate(packingRegularCapacityByDate)
+        .ratiosByDate(getRatios(input.getPackingWallRatios()))
         .build();
   }
 
   private long getPackingRegularDistribution(final EntityOutput item, final Map<ZonedDateTime, Double> packingWallRatios) {
     final Double packingWallRatio = packingWallRatios.getOrDefault(item.getDate(), 0.00);
     return (long) (item.getValue() * (1 - packingWallRatio));
+  }
+
+  private Map<ZonedDateTime, Double> getRatios(final Map<ZonedDateTime, Double> packingWallRatios) {
+    return packingWallRatios.entrySet()
+        .stream()
+        .collect(toMap(Map.Entry::getKey, v -> 1 - v.getValue()));
   }
 }

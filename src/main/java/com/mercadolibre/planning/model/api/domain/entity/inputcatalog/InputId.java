@@ -178,6 +178,8 @@ public enum InputId {
 
         boolean balanceShifts;
 
+        boolean activateReceiveInRealTime;
+
     }
 
     @Value

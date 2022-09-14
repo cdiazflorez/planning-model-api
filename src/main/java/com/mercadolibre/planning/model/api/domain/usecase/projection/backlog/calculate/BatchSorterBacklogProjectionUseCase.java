@@ -39,6 +39,7 @@ public class BatchSorterBacklogProjectionUseCase implements GetBacklogProjection
         .currentBacklog(currentBacklog)
         .planningUnitsByDate(previousProcessCapacity)
         .capacityByDate(batchSorterCapacityByDate)
+        .ratiosByDate(input.getPackingWallRatios())
         .build();
   }
 

@@ -1,15 +1,6 @@
 package com.mercadolibre.planning.model.api.util;
 
-import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -21,6 +12,15 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
+import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 
 public class ProjectionTestsUtils {
 
@@ -39,8 +39,14 @@ public class ProjectionTestsUtils {
                 mockThroughputEntity(A_FIXED_DATE.plusHours(3), PICKING, 0),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(3), PACKING, 50),
                 mockThroughputEntity(A_FIXED_DATE.plusHours(4), PICKING, 1000),
-                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING, 910)
-        );
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), PACKING, 910),
+                mockThroughputEntity(A_FIXED_DATE.minusHours(1), BATCH_SORTER, 650),
+                mockThroughputEntity(A_FIXED_DATE, BATCH_SORTER, 550),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(1), BATCH_SORTER, 600),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(2), BATCH_SORTER, 700),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(3), BATCH_SORTER, 350),
+                mockThroughputEntity(A_FIXED_DATE.plusHours(4), BATCH_SORTER, 450)
+            );
     }
 
     public static List<EntityOutput> getMinCapacity() {

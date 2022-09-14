@@ -22,10 +22,10 @@ public enum ProcessName {
     // FBM WMS OUTBOUND
     WAVING(null, false),
     PICKING(WAVING, true),
-    PACKING(PICKING, false),
-    BATCH_SORTER(PICKING, false),
-    WALL_IN(BATCH_SORTER, false),
-    PACKING_WALL(WALL_IN, false),
+    PACKING(PICKING, true),
+    BATCH_SORTER(PICKING, true),
+    WALL_IN(BATCH_SORTER, true),
+    PACKING_WALL(WALL_IN, true),
     EXPEDITION(PACKING, false),
     GLOBAL(null, false);
 

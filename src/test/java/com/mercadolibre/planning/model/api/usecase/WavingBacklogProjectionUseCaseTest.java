@@ -70,7 +70,7 @@ public class WavingBacklogProjectionUseCaseTest {
     // THEN
     assertEquals(WAVING, processParams.getProcessName());
     assertEquals(0, processParams.getCurrentBacklog());
-    assertNull(processParams.getPreviousBacklogsByDate());
+    assertNull(processParams.getProcessedUnitsByDate());
     assertCapacityByDate(processParams.getCapacityByDate(), getMinCapacity());
     assertPlanningUnits(processParams.getPlanningUnitsByDate());
   }

@@ -153,11 +153,12 @@ public class GetThroughputUseCaseTestDto {
         final List<EntityOutput> output = getForecastedThroughputUseCase.execute(input);
 
         // THEN
-        assertEquals(4, output.size());
+        // TODO Reviewers of the PR: please check this behaviour change is ok.
+        assertEquals(3, output.size());
         final EntityOutput output1 = output.get(0);
         assertEquals(A_DATE_UTC.withFixedOffsetZone(), output1.getDate());
         assertEquals(PICKING, output1.getProcessName());
-        assertEquals(4900, output1.getValue());
+        assertEquals(4950, output1.getValue());
         assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
         assertEquals(SIMULATION, output1.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
@@ -173,25 +174,9 @@ public class GetThroughputUseCaseTestDto {
         final EntityOutput output3 = output.get(2);
         assertEquals(A_DATE_UTC.withFixedOffsetZone(), output3.getDate());
         assertEquals(PACKING, output3.getProcessName());
-        assertEquals(4900, output3.getValue());
+        assertEquals(4853, output3.getValue());
         assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
         assertEquals(SIMULATION, output3.getSource());
         assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
-
-        final EntityOutput output4 = output.get(3);
-        assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output4.getDate());
-        assertEquals(PACKING, output4.getProcessName());
-        assertEquals(1800, output4.getValue());
-        assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
-        assertEquals(SIMULATION, output4.getSource());
-        assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
-    }
-
-    private static Stream<Arguments> getSupportedEntitites() {
-        return Stream.of(
-                Arguments.of(THROUGHPUT, true),
-                Arguments.of(PRODUCTIVITY, false),
-                Arguments.of(HEADCOUNT, false)
-        );
     }
 }

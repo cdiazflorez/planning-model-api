@@ -61,7 +61,7 @@ dependencies {
     compileOnly 'org.springframework:spring-context-support'
 
     runtimeOnly 'mysql:mysql-connector-java'
-    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.h2database:h2:2.1.214'
 
     // Testing
     testImplementation 'com.mercadolibre.restclient:meli-restclient-core:0.5.4:tests' // TODO omitir versión

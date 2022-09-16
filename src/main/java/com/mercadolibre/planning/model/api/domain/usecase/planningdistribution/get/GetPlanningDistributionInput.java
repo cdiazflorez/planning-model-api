@@ -1,21 +1,27 @@
 package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import lombok.Builder;
 import lombok.Value;
-
-import java.time.ZonedDateTime;
 
 @Value
 @Builder
 public class GetPlanningDistributionInput {
+  String warehouseId;
 
-    private String warehouseId;
-    private Workflow workflow;
-    private ZonedDateTime dateOutFrom;
-    private ZonedDateTime dateOutTo;
-    private ZonedDateTime dateInFrom;
-    private ZonedDateTime dateInTo;
-    private boolean applyDeviation;
+  Workflow workflow;
 
+  ZonedDateTime dateOutFrom;
+
+  ZonedDateTime dateOutTo;
+
+  ZonedDateTime dateInFrom;
+
+  ZonedDateTime dateInTo;
+
+  boolean applyDeviation;
+
+  Instant viewDate;
 }

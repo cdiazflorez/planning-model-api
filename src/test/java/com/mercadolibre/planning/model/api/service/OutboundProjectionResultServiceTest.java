@@ -27,7 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class OutboundSlaPropertiesServiceTest {
+public class OutboundProjectionResultServiceTest {
 
   private static final List<ZonedDateTime> SLAS = List.of(
       ZonedDateTime.parse("2022-08-22T12:00:00Z"),

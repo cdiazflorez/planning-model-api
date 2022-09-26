@@ -171,7 +171,7 @@ public class PlanningDistributionService {
       final Instant viewDate
   ) {
     return viewDate == null
-        ? currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrue(warehouseId)
+        ? currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(warehouseId, workflow)
         .stream()
         .max(comparing(CurrentForecastDeviation::getLastUpdated))
         : currentForecastDeviationRepository.findActiveDeviationAt(warehouseId, workflow.name(), viewDate)

@@ -1,21 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.Optional;
-import java.util.Set;
-
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecast;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
@@ -27,84 +12,133 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+
 @DataJpaTest
+@ActiveProfiles("development")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ForecastRepositoryTest {
 
-    @Autowired
-    private ForecastRepository repository;
+  private static final Instant VIEW_DATE = Instant.parse("2022-09-08T12:31:00Z");
 
-    @Autowired
-    private TestEntityManager entityManager;
+  private static final Set<String> WEEKS = Set.of("34-2022", "35-2022");
 
-    @Test
-    @DisplayName("Looking for a forecast that exists, returns it")
-    public void testFindForecastById() {
-        // GIVEN
-        final Forecast forecast = persistForecast();
+  private static final String WAREHOUSE_ID = "ARTW01";
 
-        // WHEN
-        final Optional<Forecast> optForecast = repository.findById(forecast.getId());
+  @Autowired
+  private ForecastRepository repository;
 
-        // THEN
-        assertTrue(optForecast.isPresent());
+  @Autowired
+  private TestEntityManager entityManager;
 
-        final Forecast foundForecast = optForecast.get();
-        assertEquals(forecast.getId(), foundForecast.getId());
-        assertEquals(forecast.getWorkflow(), foundForecast.getWorkflow());
-        assertEquals(forecast.getDateCreated(), foundForecast.getDateCreated());
-        assertEquals(forecast.getLastUpdated(), foundForecast.getLastUpdated());
-        assertEquals(forecast.getMetadatas(), foundForecast.getMetadatas());
+  @Test
+  @DisplayName("Looking for a forecast that exists, returns it")
+  public void testFindForecastById() {
+    // GIVEN
+    final Forecast forecast = persistForecast();
 
-        assertEquals(forecast.getPlanningDistributions(),
-                foundForecast.getPlanningDistributions());
+    // WHEN
+    final Optional<Forecast> optForecast = repository.findById(forecast.getId());
 
-        assertEquals(forecast.getHeadcountDistributions(),
-                foundForecast.getHeadcountDistributions());
+    // THEN
+    assertTrue(optForecast.isPresent());
 
-        assertEquals(forecast.getProcessingDistributions(),
-                foundForecast.getProcessingDistributions());
+    final Forecast foundForecast = optForecast.get();
+    assertEquals(forecast.getId(), foundForecast.getId());
+    assertEquals(forecast.getWorkflow(), foundForecast.getWorkflow());
+    assertEquals(forecast.getDateCreated(), foundForecast.getDateCreated());
+    assertEquals(forecast.getLastUpdated(), foundForecast.getLastUpdated());
+    assertEquals(forecast.getMetadatas(), foundForecast.getMetadatas());
 
-        assertEquals(forecast.getHeadcountProductivities(),
-                foundForecast.getHeadcountProductivities());
-    }
+    assertEquals(forecast.getPlanningDistributions(),
+        foundForecast.getPlanningDistributions());
 
-    @Test
-    @DisplayName("Looking for a forecast that doesn't exist, returns nothing")
-    public void testForecastDoesntExist() {
-        // WHEN
-        final Optional<Forecast> optForecast = repository.findById(1L);
+    assertEquals(forecast.getHeadcountDistributions(),
+        foundForecast.getHeadcountDistributions());
 
-        // THEN
-        assertFalse(optForecast.isPresent());
-    }
+    assertEquals(forecast.getProcessingDistributions(),
+        foundForecast.getProcessingDistributions());
 
-    private Forecast persistForecast() {
-        final HeadcountDistribution headcountDistribution = mockHeadcountDist(null);
-        entityManager.persistAndFlush(headcountDistribution);
+    assertEquals(forecast.getHeadcountProductivities(),
+        foundForecast.getHeadcountProductivities());
+  }
 
-        final HeadcountProductivity headcountProductivity = mockHeadcountProd(null);
-        entityManager.persistAndFlush(headcountProductivity);
+  @Test
+  @DisplayName("Looking for a forecast that doesn't exist, returns nothing")
+  public void testForecastDoesntExist() {
+    // WHEN
+    final Optional<Forecast> optForecast = repository.findById(1L);
 
-        final PlanningDistribution planningDistribution = mockPlanningDist(null);
-        entityManager.persistAndFlush(planningDistribution);
+    // THEN
+    assertFalse(optForecast.isPresent());
+  }
 
-        final ProcessingDistribution processingDistribution = mockProcessingDist(null);
-        entityManager.persistAndFlush(processingDistribution);
+  private Forecast persistForecast() {
+    final HeadcountDistribution headcountDistribution = mockHeadcountDist(null);
+    entityManager.persistAndFlush(headcountDistribution);
 
-        final Forecast forecast = mockForecast(
-                Set.of(headcountDistribution),
-                Set.of(headcountProductivity),
-                Set.of(planningDistribution),
-                Set.of(processingDistribution),
-                null,
-                USER_ID);
+    final HeadcountProductivity headcountProductivity = mockHeadcountProd(null);
+    entityManager.persistAndFlush(headcountProductivity);
 
-        entityManager.persistAndFlush(forecast);
+    final PlanningDistribution planningDistribution = mockPlanningDist(null);
+    entityManager.persistAndFlush(planningDistribution);
 
-        final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
-        entityManager.persistAndFlush(forecastMetadata);
+    final ProcessingDistribution processingDistribution = mockProcessingDist(null);
+    entityManager.persistAndFlush(processingDistribution);
 
-        return forecast;
-    }
+    final Forecast forecast = mockForecast(
+        Set.of(headcountDistribution),
+        Set.of(headcountProductivity),
+        Set.of(planningDistribution),
+        Set.of(processingDistribution),
+        null,
+        USER_ID);
+
+    entityManager.persistAndFlush(forecast);
+
+    final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
+    entityManager.persistAndFlush(forecastMetadata);
+
+    return forecast;
+  }
+
+  @Test
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testSearchForecastWithViewDateShouldReturnForecastsCreatedBeforeViewDate() {
+    // GIVEN
+
+    // WHEN
+    final var idViews = repository.findForecastIdsByWarehouseIdAAndWorkflowAndWeeksAtViewDate(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND.name(),
+        WEEKS,
+        VIEW_DATE
+    );
+
+    // THEN
+    assertEquals(2, idViews.size());
+
+    final var ids = idViews.stream().map(ForecastIdView::getId).collect(Collectors.toSet());
+    assertTrue(ids.contains(2L));
+    assertTrue(ids.contains(5L));
+  }
 }

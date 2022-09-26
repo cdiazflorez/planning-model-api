@@ -17,7 +17,9 @@ import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** A sequence of processes that to achieve a common goal. */
+/**
+ * A sequence of processes that to achieve a common goal.
+ */
 @AllArgsConstructor
 public enum Workflow {
   FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound),
@@ -55,12 +57,21 @@ public enum Workflow {
   /**
    * Deserialization of a String that represents a workflow.
    *
-   * @param  value the selected Workflow.
-   * @return       an Optional with the desired Workflow if the String matches a valid representation.
+   * @param value the selected Workflow.
+   * @return an Optional with the desired Workflow if the String matches a valid representation.
    */
   @JsonCreator
   public static Optional<Workflow> of(final String value) {
     return Optional.ofNullable(LOOKUP.get(value.toUpperCase(Locale.US).replace('-', '_')));
+  }
+
+  /**
+   * Get name of workflow
+   *
+   * @return name of wokflow
+   */
+  public String getName() {
+    return name().toLowerCase(Locale.ROOT);
   }
 
   /**
@@ -76,12 +87,12 @@ public enum Workflow {
   /**
    * Execution of a workflow service.
    *
-   * @param  service the selected service.
-   * @param  params  parameters to the service.
-   * @param  <T>     type of the service parameter.
-   * @param  <V>     return type of the service.
-   * @return         the service output.
-   * @deprecated     use strategy or enum approach
+   * @param service the selected service.
+   * @param params  parameters to the service.
+   * @param <T>     type of the service parameter.
+   * @param <V>     return type of the service.
+   * @return the service output.
+   * @deprecated use strategy or enum approach
    */
   @Deprecated
   public <T, V> V execute(final WorkflowService<T, V> service, final T params) {
@@ -99,12 +110,12 @@ public enum Workflow {
     /**
      * Method to be executed.
      *
-     * @param  service the selected service.
-     * @param  params  parameters to the service.
-     * @param  <T>     type of the service parameter.
-     * @param  <V>     return type of the service.
-     * @return         the service output.
-     * @deprecated     use strategy or enum approach
+     * @param service the selected service.
+     * @param params  parameters to the service.
+     * @param <T>     type of the service parameter.
+     * @param <V>     return type of the service.
+     * @return the service output.
+     * @deprecated use strategy or enum approach
      */
     @Deprecated
     <T, V> V execute(WorkflowService<T, V> service, T params);

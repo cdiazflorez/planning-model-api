@@ -1,21 +1,20 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import java.time.ZonedDateTime;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
-import java.time.ZonedDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Data
@@ -24,28 +23,29 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 public class CurrentForecastDeviation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
 
-    private String logisticCenterId;
+  private String logisticCenterId;
 
-    private ZonedDateTime dateFrom;
+  private ZonedDateTime dateFrom;
 
-    private ZonedDateTime dateTo;
+  private ZonedDateTime dateTo;
 
-    private double value;
+  @Column(name = "`value`")
+  private double value;
 
-    private boolean isActive;
+  private boolean isActive;
 
-    private Long userId;
+  private Long userId;
 
-    @Enumerated(EnumType.STRING)
-    private Workflow workflow;
+  @Enumerated(EnumType.STRING)
+  private Workflow workflow;
 
-    @CreationTimestamp
-    private ZonedDateTime dateCreated;
+  @CreationTimestamp
+  private ZonedDateTime dateCreated;
 
-    @UpdateTimestamp
-    private ZonedDateTime lastUpdated;
+  @UpdateTimestamp
+  private ZonedDateTime lastUpdated;
 }

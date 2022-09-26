@@ -67,7 +67,7 @@ public class GetOutboundBacklogProjectionUseCaseTest {
                 .warehouseId(input.getLogisticCenterId())
                 .dateInTo(input.getDateTo().plusDays(1))
                 .dateOutFrom(input.getDateFrom())
-                .dateOutTo(input.getDateTo())
+                .dateOutTo(input.getDateTo().plusDays(1))
                 .applyDeviation(true)
                 .build())).thenReturn(emptyList());
 

@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -44,5 +45,9 @@ public enum ProcessName {
     @JsonValue
     public String toJson() {
         return toString().toLowerCase();
+    }
+
+    public String getName() {
+        return name().toLowerCase(Locale.ROOT);
     }
 }

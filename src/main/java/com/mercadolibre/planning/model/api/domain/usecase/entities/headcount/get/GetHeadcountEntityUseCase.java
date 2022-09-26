@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.toSet;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -24,17 +25,19 @@ import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class GetHeadcountEntityUseCase
-    implements EntityUseCase<GetHeadcountInput, List<EntityOutput>> {
+public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInput, List<EntityOutput>> {
 
   private final ProcessingDistributionRepository processingDistRepository;
+
   private final CurrentProcessingDistributionRepository currentPDistributionRepository;
+
   private final GetForecastUseCase getForecastUseCase;
 
   @Override
@@ -104,8 +107,7 @@ public class GetHeadcountEntityUseCase
         .isEqual(cpd.getDate().withFixedOffsetZone()));
   }
 
-  private List<ProcessingDistributionView> findProcessingDistributionBy(
-      final GetHeadcountInput input) {
+  private List<ProcessingDistributionView> findProcessingDistributionBy(final GetHeadcountInput input) {
     final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
         input.getWarehouseId(),
         input.getWorkflow(),
@@ -122,19 +124,27 @@ public class GetHeadcountEntityUseCase
             forecastIds);
   }
 
-  private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(
-      final GetHeadcountInput input) {
+  private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(final GetHeadcountInput input) {
+    final var types = Optional.ofNullable(input.getProcessingType())
+        .map(processingTypes -> processingTypes.stream()
+            .map(ProcessingType::name)
+            .collect(toSet())
+        ).orElse(Set.of(ProcessingType.ACTIVE_WORKERS.name()));
 
-    return currentPDistributionRepository
-        .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-            input.getWarehouseId(),
-            input.getWorkflow(),
-            input.getProcessingType() == null
-                ? Set.of(ProcessingType.ACTIVE_WORKERS)
-                : input.getProcessingType(),
-            input.getProcessName(),
-            input.getDateFrom(),
-            input.getDateTo());
+    final var processes = input.getProcessName()
+        .stream()
+        .map(ProcessName::name)
+        .collect(toSet());
+
+    return currentPDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+        input.getWarehouseId(),
+        input.getWorkflow().name(),
+        processes,
+        types,
+        input.getDateFrom(),
+        input.getDateTo(),
+        input.viewDate()
+    );
   }
 
   private Set<String> getProcessingTypeAsStringOrNull(

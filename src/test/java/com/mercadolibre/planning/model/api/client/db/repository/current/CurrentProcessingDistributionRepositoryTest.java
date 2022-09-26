@@ -15,19 +15,34 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
 @DataJpaTest
+@ActiveProfiles("development")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class CurrentProcessingDistributionRepositoryTest {
+
+  public static final ZonedDateTime DATE_FROM = ZonedDateTime.parse("2022-09-08T12:00:00Z");
+
+  public static final ZonedDateTime DATE_TO = ZonedDateTime.parse("2022-09-08T14:00:00Z");
+
+  public static final Instant VIEW_DATE = Instant.parse("2022-09-08T10:30:00Z");
 
   @Autowired
   private CurrentProcessingDistributionRepository repository;
@@ -118,6 +133,63 @@ class CurrentProcessingDistributionRepositoryTest {
     assertTrue(result.isPresent());
     assertFalse(result.get().isActive());
     assertEquals(USER_ID, result.get().getUserId());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"ARTW00", "ARTW01", "ARTW02"})
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testCurrentHeadcountProductivityWithViewDateShouldProduceNoResults(final String logisticCenterId) {
+    // GIVEN
+
+    // WHEN
+    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+        logisticCenterId,
+        FBM_WMS_OUTBOUND.name(),
+        Set.of(PICKING.name(), PACKING.name()),
+        Set.of(ACTIVE_WORKERS.name()),
+        DATE_FROM,
+        DATE_TO,
+        VIEW_DATE
+    );
+
+    // THEN
+    assertTrue(result.isEmpty());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"ARTW03", "ARTW04"})
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testCurrentHeadcountProductivityWithViewDateShouldFoundResults(final String logisticCenterId) {
+    // GIVEN
+
+    // WHEN
+    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+        logisticCenterId,
+        FBM_WMS_OUTBOUND.name(),
+        Set.of(PICKING.name(), PACKING.name()),
+        Set.of(ACTIVE_WORKERS.name()),
+        DATE_FROM,
+        DATE_TO,
+        VIEW_DATE
+    );
+
+    // THEN
+    assertEquals(2, result.size());
+
+    final var picking = result.stream()
+        .filter(p -> p.getProcessName() == PICKING)
+        .findFirst();
+
+    assertTrue(picking.isPresent());
+    assertEquals(10L, picking.get().getQuantity());
+
+
+    final var packing = result.stream()
+        .filter(p -> p.getProcessName() == PACKING)
+        .findFirst();
+
+    assertTrue(packing.isPresent());
+    assertEquals(10L, packing.get().getQuantity());
   }
 
   private void whenCurrentDistributionIsOk(final CurrentProcessingDistribution currentProcessing,

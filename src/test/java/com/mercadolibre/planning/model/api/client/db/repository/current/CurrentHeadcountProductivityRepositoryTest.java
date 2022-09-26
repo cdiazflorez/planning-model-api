@@ -1,16 +1,5 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.List;
-import java.util.Optional;
-
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
@@ -24,98 +13,150 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
+
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class CurrentHeadcountProductivityRepositoryTest {
 
-    @Autowired
-    private CurrentHeadcountProductivityRepository repository;
+  public static final ZonedDateTime DATE_FROM = ZonedDateTime.parse("2022-09-08T12:00:00Z");
 
-    @Autowired
-    private TestEntityManager entityManager;
+  public static final ZonedDateTime DATE_TO = ZonedDateTime.parse("2022-09-08T14:00:00Z");
 
-    @Test
-    @DisplayName("Looking for a current headcount productivity that exists, returns it")
-    public void testFindCurrentHeadcountProductivityById() {
-        // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
-        entityManager.persistAndFlush(currentProd);
+  public static final Instant VIEW_DATE = Instant.parse("2022-09-08T10:30:00Z");
 
-        // WHEN
-        final Optional<CurrentHeadcountProductivity> optCurrentProd = repository.findById(1L);
+  @Autowired
+  private CurrentHeadcountProductivityRepository repository;
 
-        // THEN
-        assertTrue(optCurrentProd.isPresent());
+  @Autowired
+  private TestEntityManager entityManager;
 
-        final CurrentHeadcountProductivity foundCurrentProd = optCurrentProd.get();
-        assertCurrentProductivity(currentProd, foundCurrentProd);
-    }
+  @Test
+  @DisplayName("Looking for a current headcount productivity that exists, returns it")
+  public void testFindCurrentHeadcountProductivityById() {
+    // GIVEN
+    final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
+    entityManager.persistAndFlush(currentProd);
 
-    @Test
-    @DisplayName("Looking for a current headcount productivity that doesn't exist, returns nothing")
-    public void testCurrentHeadcountProductivityDoesntExist() {
-        // WHEN
-        final Optional<CurrentHeadcountProductivity> optProd = repository.findById(1L);
+    // WHEN
+    final Optional<CurrentHeadcountProductivity> optCurrentProd = repository.findById(1L);
 
-        // THEN
-        assertFalse(optProd.isPresent());
-    }
+    // THEN
+    assertTrue(optCurrentProd.isPresent());
 
-    @Test
-    @DisplayName("Looking for a current headcount productivity that exists by simulation "
-            + "filtered with params and returns it")
-    public void testFindCurrentHeadcountProductivityByFilters() {
-        // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
-        entityManager.persistAndFlush(currentProd);
+    final CurrentHeadcountProductivity foundCurrentProd = optCurrentProd.get();
+    assertCurrentProductivity(currentProd, foundCurrentProd);
+  }
 
-        // WHEN
-        final List<CurrentHeadcountProductivity> optCurrentProd = repository
-                .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-                        currentProd.getLogisticCenterId(),
-                        currentProd.getWorkflow(),
-                        List.of(PICKING, PACKING),
-                        currentProd.getDate().minusDays(1),
-                        currentProd.getDate().plusDays(1)
-                );
+  @Test
+  @DisplayName("Looking for a current headcount productivity that doesn't exist, returns nothing")
+  public void testCurrentHeadcountProductivityDoesntExist() {
+    // WHEN
+    final Optional<CurrentHeadcountProductivity> optProd = repository.findById(1L);
 
-        // THEN
-        assertFalse(optCurrentProd.isEmpty());
+    // THEN
+    assertFalse(optProd.isPresent());
+  }
 
-        final CurrentHeadcountProductivity foundCurrentProd = optCurrentProd.get(0);
-        assertCurrentProductivity(currentProd, foundCurrentProd);
-    }
+  @Test
+  @DisplayName("Deactivate productivity")
+  public void testDeactivateProductivity() {
+    // GIVEN
+    final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
+    entityManager.persistAndFlush(currentProd);
 
-    @Test
-    @DisplayName("Deactivate productivity")
-    public void testDeactivateProductivity() {
-        // GIVEN
-        final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
-        entityManager.persistAndFlush(currentProd);
+    // WHEN
+    repository.deactivateProductivity(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PICKING,
+        singletonList(A_DATE_UTC), UNITS_PER_HOUR, USER_ID, 1);
 
-        // WHEN
-        repository.deactivateProductivity(WAREHOUSE_ID, FBM_WMS_OUTBOUND, PICKING,
-                singletonList(A_DATE_UTC), UNITS_PER_HOUR, USER_ID, 1);
+    final Optional<CurrentHeadcountProductivity> result = repository.findById(1L);
 
-        final Optional<CurrentHeadcountProductivity> result = repository.findById(1L);
+    // THEN
+    assertTrue(result.isPresent());
+    assertFalse(result.get().isActive());
+    assertEquals(USER_ID, result.get().getUserId());
+  }
 
-        // THEN
-        assertTrue(result.isPresent());
-        assertFalse(result.get().isActive());
-        assertEquals(USER_ID, result.get().getUserId());
-    }
+  @ParameterizedTest
+  @ValueSource(strings = {"ARTW00", "ARTW01", "ARTW02"})
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testCurrentHeadcountProductivityWithViewDateShouldProduceNoResults(final String logisticCenterId) {
+    // GIVEN
 
-    private void assertCurrentProductivity(final CurrentHeadcountProductivity currentProd,
-                                           final CurrentHeadcountProductivity foundCurrentProd) {
-        assertEquals(currentProd.getId(), foundCurrentProd.getId());
-        assertEquals(currentProd.getWorkflow(), foundCurrentProd.getWorkflow());
-        assertEquals(currentProd.getAbilityLevel(), foundCurrentProd.getAbilityLevel());
-        assertEquals(currentProd.getLogisticCenterId(), foundCurrentProd.getLogisticCenterId());
-        assertEquals(currentProd.getDate(), foundCurrentProd.getDate());
-        assertEquals(currentProd.getProcessName(), foundCurrentProd.getProcessName());
-        assertEquals(currentProd.getProductivity(), foundCurrentProd.getProductivity());
-        assertEquals(currentProd.getProductivityMetricUnit(),
-                foundCurrentProd.getProductivityMetricUnit());
-        assertEquals(currentProd.isActive(), foundCurrentProd.isActive());
-    }
+    // WHEN
+    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+        logisticCenterId,
+        FBM_WMS_OUTBOUND.name(),
+        Set.of(PICKING.name(), PACKING.name()),
+        DATE_FROM,
+        DATE_TO,
+        VIEW_DATE
+    );
+
+    // THEN
+    assertTrue(result.isEmpty());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"ARTW03", "ARTW04"})
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testCurrentHeadcountProductivityWithViewDateShouldFoundResults(final String logisticCenterId) {
+    // GIVEN
+
+    // WHEN
+    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+        logisticCenterId,
+        FBM_WMS_OUTBOUND.name(),
+        Set.of(PICKING.name(), PACKING.name()),
+        DATE_FROM,
+        DATE_TO,
+        VIEW_DATE
+    );
+
+    // THEN
+    assertEquals(2, result.size());
+
+    final var picking = result.stream()
+        .filter(p -> p.getProcessName() == PICKING)
+        .findFirst();
+
+    assertTrue(picking.isPresent());
+    assertEquals(10L, picking.get().getProductivity());
+
+
+    final var packing = result.stream()
+        .filter(p -> p.getProcessName() == PACKING)
+        .findFirst();
+
+    assertTrue(packing.isPresent());
+    assertEquals(10L, packing.get().getProductivity());
+  }
+
+  private void assertCurrentProductivity(final CurrentHeadcountProductivity currentProd,
+                                         final CurrentHeadcountProductivity foundCurrentProd) {
+    assertEquals(currentProd.getId(), foundCurrentProd.getId());
+    assertEquals(currentProd.getWorkflow(), foundCurrentProd.getWorkflow());
+    assertEquals(currentProd.getAbilityLevel(), foundCurrentProd.getAbilityLevel());
+    assertEquals(currentProd.getLogisticCenterId(), foundCurrentProd.getLogisticCenterId());
+    assertEquals(currentProd.getDate(), foundCurrentProd.getDate());
+    assertEquals(currentProd.getProcessName(), foundCurrentProd.getProcessName());
+    assertEquals(currentProd.getProductivity(), foundCurrentProd.getProductivity());
+    assertEquals(currentProd.getProductivityMetricUnit(),
+        foundCurrentProd.getProductivityMetricUnit());
+    assertEquals(currentProd.isActive(), foundCurrentProd.isActive());
+  }
 }

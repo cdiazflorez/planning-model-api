@@ -89,6 +89,7 @@ public class GetThroughputUseCase
         .dateTo(input.getDateTo())
         .source(input.getSource())
         .processName(List.of(ProcessName.RECEIVING))
+        .viewDate(input.getViewDate())
         .build();
   }
 
@@ -204,6 +205,7 @@ public class GetThroughputUseCase
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
         .abilityLevel(Set.of(MAIN_ABILITY, POLYVALENT_ABILITY))
+        .viewDate(input.getViewDate())
         .build();
   }
 
@@ -218,6 +220,7 @@ public class GetThroughputUseCase
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
         .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+        .viewDate(input.getViewDate())
         .build();
   }
 }

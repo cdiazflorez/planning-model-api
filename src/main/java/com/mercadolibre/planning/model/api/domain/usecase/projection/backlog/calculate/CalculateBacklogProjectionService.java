@@ -51,7 +51,7 @@ public final class CalculateBacklogProjectionService {
 
     T carryOver = initialBacklog;
     for (Instant operatingHour : operatingHours) {
-      final T upstream = incomingBacklog.get(operatingHour);
+      final T upstream = incomingBacklog.get(operatingHour.minus(1, ChronoUnit.HOURS));
 
       final T current = helper.merge(carryOver, upstream);
       final ProcessedBacklog<T> afterProcessing = helper.consume(current, throughput.getAvailableQuantityFor(operatingHour));

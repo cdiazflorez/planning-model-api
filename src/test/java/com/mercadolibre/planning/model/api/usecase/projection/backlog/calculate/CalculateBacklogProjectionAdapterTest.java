@@ -84,13 +84,30 @@ public class CalculateBacklogProjectionAdapterTest {
   private static void assertFirstOperatingHourValues(final ProjectionResult<BacklogBySla> projectionResult) {
     final var state = projectionResult.getResultingState();
     final var processed = state.getProcessed().getDistributions();
+    assertEquals(2, processed.size());
+    assertEquals(SLA_A, processed.get(0).getDate());
+    assertEquals(5, processed.get(0).getQuantity());
+    assertEquals(SLA_B, processed.get(1).getDate());
+    assertEquals(10, processed.get(1).getQuantity());
+
+    final var carryOver = state.getCarryOver().getDistributions();
+    assertEquals(2, carryOver.size());
+    assertEquals(SLA_A, carryOver.get(0).getDate());
+    assertEquals(0, carryOver.get(0).getQuantity());
+    assertEquals(SLA_B, carryOver.get(1).getDate());
+    assertEquals(0, carryOver.get(1).getQuantity());
+  }
+
+  private static void assertSecondOperatingHourValues(final ProjectionResult<BacklogBySla> projectionResult) {
+    final var state = projectionResult.getResultingState();
+    final var processed = state.getProcessed().getDistributions();
     assertEquals(3, processed.size());
     assertEquals(SLA_A, processed.get(0).getDate());
-    assertEquals(15, processed.get(0).getQuantity());
+    assertEquals(10, processed.get(0).getQuantity());
     assertEquals(SLA_B, processed.get(1).getDate());
-    assertEquals(25, processed.get(1).getQuantity());
+    assertEquals(15, processed.get(1).getQuantity());
     assertEquals(SLA_C, processed.get(2).getDate());
-    assertEquals(10, processed.get(2).getQuantity());
+    assertEquals(20, processed.get(2).getQuantity());
 
     final var carryOver = state.getCarryOver().getDistributions();
     assertEquals(3, carryOver.size());
@@ -99,24 +116,7 @@ public class CalculateBacklogProjectionAdapterTest {
     assertEquals(SLA_B, carryOver.get(1).getDate());
     assertEquals(0, carryOver.get(1).getQuantity());
     assertEquals(SLA_C, carryOver.get(2).getDate());
-    assertEquals(10, carryOver.get(2).getQuantity());
-  }
-
-  private static void assertSecondOperatingHourValues(final ProjectionResult<BacklogBySla> projectionResult) {
-    final var state = projectionResult.getResultingState();
-    final var processed = state.getProcessed().getDistributions();
-    assertEquals(2, processed.size());
-    assertEquals(SLA_B, processed.get(0).getDate());
-    assertEquals(20, processed.get(0).getQuantity());
-    assertEquals(SLA_C, processed.get(1).getDate());
-    assertEquals(30, processed.get(1).getQuantity());
-
-    final var carryOver = state.getCarryOver().getDistributions();
-    assertEquals(2, carryOver.size());
-    assertEquals(SLA_B, carryOver.get(0).getDate());
-    assertEquals(0, carryOver.get(0).getQuantity());
-    assertEquals(SLA_C, carryOver.get(1).getDate());
-    assertEquals(15, carryOver.get(1).getQuantity());
+    assertEquals(0, carryOver.get(2).getQuantity());
   }
 
   @Test
@@ -137,7 +137,7 @@ public class CalculateBacklogProjectionAdapterTest {
 
     // THEN
     assertNotNull(result);
-    assertEquals(2, result.size());
+    assertEquals(3, result.size());
 
 
     assertEquals(DATE_FROM, result.get(0).getOperatingHour());
@@ -166,9 +166,9 @@ public class CalculateBacklogProjectionAdapterTest {
     final var incomingBacklog = new PlannedBacklogBySla(
         Map.of(
             DATE_FROM, new BacklogBySla(List.of(
-                new QuantityAtDate(SLA_A, 20),
-                new QuantityAtDate(SLA_B, 30),
-                new QuantityAtDate(SLA_C, 40)
+                new QuantityAtDate(SLA_A, 10),
+                new QuantityAtDate(SLA_B, 15),
+                new QuantityAtDate(SLA_C, 20)
             )),
             DATE_BETWEEN, new BacklogBySla(List.of(
                 new QuantityAtDate(SLA_B, 20),
@@ -194,7 +194,7 @@ public class CalculateBacklogProjectionAdapterTest {
 
     // THEN
     assertNotNull(result);
-    assertEquals(2, result.size());
+    assertEquals(3, result.size());
 
     assertEquals(dateFrom, result.get(0).getOperatingHour());
     assertFirstOperatingHourValues(result.get(0));
@@ -221,7 +221,7 @@ public class CalculateBacklogProjectionAdapterTest {
 
     final var upstreamBacklog = new UpstreamBacklog(
         Map.of(
-            dateFrom, new BacklogBySla(List.of(
+            DATE_FROM, new BacklogBySla(List.of(
                 new QuantityAtDate(SLA_A, 10),
                 new QuantityAtDate(SLA_B, 15),
                 new QuantityAtDate(SLA_C, 20)
@@ -250,7 +250,7 @@ public class CalculateBacklogProjectionAdapterTest {
 
     // THEN
     assertNotNull(result);
-    assertEquals(2, result.size());
+    assertEquals(3, result.size());
 
     assertEquals(dateFrom, result.get(0).getOperatingHour());
     assertFirstOperatingHourValues(result.get(0));

@@ -80,7 +80,7 @@ public final class DateUtils {
     final Stream<Instant> last = end.equals(to) ? Stream.empty() : Stream.of(end);
 
     final var start = from.truncatedTo(step);
-    final var steps = step.between(start, end);
+    final var steps = step.between(start, end) + 1L;
     final Stream<Instant> middle = LongStream.range(1, steps)
         .mapToObj(shift -> start.plus(shift, step));
 

@@ -180,8 +180,7 @@ public class CalculateBacklogProjectionUseCase {
     private long calculatePercentage(final ZonedDateTime dateFrom,
                                     final long completeHourQuantity) {
         final int minutes = dateFrom.getMinute();
-        return minutes <= 30
-                ? completeHourQuantity * minutes / HOUR_IN_MINUTES
-                : completeHourQuantity * (HOUR_IN_MINUTES - minutes) / HOUR_IN_MINUTES;
+        return completeHourQuantity * (HOUR_IN_MINUTES - minutes) / HOUR_IN_MINUTES;
     }
 }
+

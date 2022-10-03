@@ -140,80 +140,107 @@ public class BacklogProjectionBySlaTest {
   }
 
   private void assertWavingResults(final List<ProjectionResult<BacklogBySla>> projectionResults) {
-    assertEquals(2, projectionResults.size());
+    assertEquals(3, projectionResults.size());
 
     final var firstHour = projectionResults.get(0);
 
     final var firstHourProcessed = firstHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(70, firstHourProcessed.get(0).getQuantity());
-    assertEquals(30, firstHourProcessed.get(1).getQuantity());
+    assertEquals(50, firstHourProcessed.get(0).getQuantity());
+    assertEquals(50, firstHourProcessed.get(1).getQuantity());
 
     final var firstHourCarryOver = firstHour.getResultingState().getCarryOver().getDistributions();
     assertEquals(0, firstHourCarryOver.get(0).getQuantity());
-    assertEquals(80, firstHourCarryOver.get(1).getQuantity());
+    assertEquals(20, firstHourCarryOver.get(1).getQuantity());
 
     final var secondHour = projectionResults.get(1);
 
     final var secondHourProcessed = secondHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(130, secondHourProcessed.get(0).getQuantity());
-    assertEquals(0, secondHourProcessed.get(1).getQuantity());
-    assertEquals(0, secondHourProcessed.get(2).getQuantity());
-
-    final var secondHourCarryOver = secondHour.getResultingState().getCarryOver().getDistributions();
-    assertEquals(0, secondHourCarryOver.get(0).getQuantity());
-    assertEquals(60, secondHourCarryOver.get(1).getQuantity());
-    assertEquals(20, secondHourCarryOver.get(2).getQuantity());
-  }
-
-  private void assertPickingResults(final List<ProjectionResult<BacklogBySla>> projectionResults) {
-    assertEquals(2, projectionResults.size());
-
-    final var firstHour = projectionResults.get(0);
-
-    final var firstHourProcessed = firstHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(100, firstHourProcessed.get(0).getQuantity());
-    assertEquals(0, firstHourProcessed.get(1).getQuantity());
-
-    final var firstHourCarryOver = firstHour.getResultingState().getCarryOver().getDistributions();
-    assertEquals(45, firstHourCarryOver.get(0).getQuantity());
-    assertEquals(110, firstHourCarryOver.get(1).getQuantity());
-
-    final var secondHour = projectionResults.get(1);
-
-    final var secondHourProcessed = secondHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(45, secondHourProcessed.get(0).getQuantity());
-    assertEquals(155, secondHourProcessed.get(1).getQuantity());
-
-    final var secondHourCarryOver = secondHour.getResultingState().getCarryOver().getDistributions();
-    assertEquals(0, secondHourCarryOver.get(0).getQuantity());
-    assertEquals(85, secondHourCarryOver.get(1).getQuantity());
-  }
-
-  private void assertPackingResults(final List<ProjectionResult<BacklogBySla>> projectionResults) {
-    assertEquals(2, projectionResults.size());
-
-    final var firstHour = projectionResults.get(0);
-
-    final var firstHourProcessed = firstHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(100, firstHourProcessed.get(0).getQuantity());
-    assertEquals(110, firstHourProcessed.get(1).getQuantity());
-    assertEquals(15, firstHourProcessed.get(2).getQuantity());
-
-    final var firstHourCarryOver = firstHour.getResultingState().getCarryOver().getDistributions();
-    assertEquals(0, firstHourCarryOver.get(0).getQuantity());
-    assertEquals(0, firstHourCarryOver.get(1).getQuantity());
-    assertEquals(60, firstHourCarryOver.get(2).getQuantity());
-
-    final var secondHour = projectionResults.get(1);
-
-    final var secondHourProcessed = secondHour.getResultingState().getProcessed().getDistributions();
-    assertEquals(45, secondHourProcessed.get(0).getQuantity());
-    assertEquals(155, secondHourProcessed.get(1).getQuantity());
-    assertEquals(50, secondHourProcessed.get(2).getQuantity());
+    assertEquals(20, secondHourProcessed.get(0).getQuantity());
+    assertEquals(60, secondHourProcessed.get(1).getQuantity());
 
     final var secondHourCarryOver = secondHour.getResultingState().getCarryOver().getDistributions();
     assertEquals(0, secondHourCarryOver.get(0).getQuantity());
     assertEquals(0, secondHourCarryOver.get(1).getQuantity());
-    assertEquals(10, secondHourCarryOver.get(2).getQuantity());
+
+    final var thirdHour = projectionResults.get(2);
+
+    final var thirdHourProcessed = thirdHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(50, thirdHourProcessed.get(0).getQuantity());
+    assertEquals(60, thirdHourProcessed.get(1).getQuantity());
+    assertEquals(20, thirdHourProcessed.get(2).getQuantity());
+
+    final var thirdHourCarryOver = thirdHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, thirdHourCarryOver.get(0).getQuantity());
+    assertEquals(0, thirdHourCarryOver.get(1).getQuantity());
+    assertEquals(0, thirdHourCarryOver.get(2).getQuantity());
+
+  }
+
+  private void assertPickingResults(final List<ProjectionResult<BacklogBySla>> projectionResults) {
+    assertEquals(3, projectionResults.size());
+
+    final var firstHour = projectionResults.get(0);
+
+    final var firstHourProcessed = firstHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(75, firstHourProcessed.get(0).getQuantity());
+    assertEquals(25, firstHourProcessed.get(1).getQuantity());
+
+    final var firstHourCarryOver = firstHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, firstHourCarryOver.get(0).getQuantity());
+    assertEquals(55, firstHourCarryOver.get(1).getQuantity());
+
+    final var secondHour = projectionResults.get(1);
+
+    final var secondHourProcessed = secondHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(50, secondHourProcessed.get(0).getQuantity());
+    assertEquals(105, secondHourProcessed.get(1).getQuantity());
+
+    final var secondHourCarryOver = secondHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, secondHourCarryOver.get(0).getQuantity());
+    assertEquals(0, secondHourCarryOver.get(1).getQuantity());
+
+    final var thirdHour = projectionResults.get(2);
+
+    final var thirdHourProcessed = thirdHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(20, thirdHourProcessed.get(0).getQuantity());
+    assertEquals(60, thirdHourProcessed.get(1).getQuantity());
+
+    final var thirdHourCarryOver = thirdHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, thirdHourCarryOver.get(0).getQuantity());
+    assertEquals(0, thirdHourCarryOver.get(1).getQuantity());
+  }
+
+  private void assertPackingResults(final List<ProjectionResult<BacklogBySla>> projectionResults) {
+    assertEquals(3, projectionResults.size());
+
+    final var firstHour = projectionResults.get(0);
+
+    final var firstHourProcessed = firstHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(110, firstHourProcessed.get(0).getQuantity());
+    assertEquals(75, firstHourProcessed.get(1).getQuantity());
+
+    final var firstHourCarryOver = firstHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, firstHourCarryOver.get(0).getQuantity());
+    assertEquals(0, firstHourCarryOver.get(1).getQuantity());
+
+    final var secondHour = projectionResults.get(1);
+
+    final var secondHourProcessed = secondHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(75, secondHourProcessed.get(0).getQuantity());
+    assertEquals(25, secondHourProcessed.get(1).getQuantity());
+
+    final var secondHourCarryOver = secondHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, secondHourCarryOver.get(0).getQuantity());
+    assertEquals(0, secondHourCarryOver.get(1).getQuantity());
+
+    final var thirdHour = projectionResults.get(2);
+
+    final var thirdHourProcessed = thirdHour.getResultingState().getProcessed().getDistributions();
+    assertEquals(50, thirdHourProcessed.get(0).getQuantity());
+    assertEquals(105, thirdHourProcessed.get(1).getQuantity());
+
+    final var thirdHourCarryOver = thirdHour.getResultingState().getCarryOver().getDistributions();
+    assertEquals(0, thirdHourCarryOver.get(0).getQuantity());
+    assertEquals(0, thirdHourCarryOver.get(1).getQuantity());
   }
 }

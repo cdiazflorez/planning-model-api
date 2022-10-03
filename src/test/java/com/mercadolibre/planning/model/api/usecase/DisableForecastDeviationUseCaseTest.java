@@ -40,7 +40,7 @@ public class DisableForecastDeviationUseCaseTest {
         final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
 
         // WHEN
-        when(deviationRepository.findByLogisticCenterId(WAREHOUSE_ID))
+        when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND))
                 .thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
 
         final List<CurrentForecastDeviation> toSave = mockCurrentForecastDeviation(false, now());
@@ -50,7 +50,7 @@ public class DisableForecastDeviationUseCaseTest {
         final int output = useCase.execute(input);
 
         // THEN
-        verify(deviationRepository).findByLogisticCenterId(WAREHOUSE_ID);
+        verify(deviationRepository).findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
         verify(deviationRepository).saveAll(any(List.class));
         assertEquals(deviationDisable, output);
     }

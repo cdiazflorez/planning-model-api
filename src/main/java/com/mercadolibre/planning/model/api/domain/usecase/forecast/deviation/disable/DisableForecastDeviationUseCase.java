@@ -13,8 +13,7 @@ import static java.time.ZonedDateTime.now;
 
 @Service
 @AllArgsConstructor
-public class DisableForecastDeviationUseCase
-        implements UseCase<DisableForecastDeviationInput, Integer> {
+public class DisableForecastDeviationUseCase implements UseCase<DisableForecastDeviationInput, Integer> {
 
     private final CurrentForecastDeviationRepository deviationRepository;
 
@@ -22,7 +21,7 @@ public class DisableForecastDeviationUseCase
     @Transactional
     public Integer execute(final DisableForecastDeviationInput input) {
         final List<CurrentForecastDeviation> warehouseDeviations =
-                deviationRepository.findByLogisticCenterId(input.getWarehouseId());
+                deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(input.getWarehouseId(), input.getWorkflow());
 
         warehouseDeviations.forEach(
                 currentForecastDeviation -> {

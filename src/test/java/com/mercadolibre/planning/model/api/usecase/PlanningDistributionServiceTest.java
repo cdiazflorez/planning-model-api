@@ -283,7 +283,7 @@ public class PlanningDistributionServiceTest {
                 mockForecastIds())
         ).thenReturn(planningDistributions());
 
-        when(currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrue(input.getWarehouseId()))
+        when(currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND))
                 .thenReturn(
                         List.of(new CurrentForecastDeviation(
                                 1, input.getWarehouseId(), A_DATE_UTC, A_DATE_UTC, 1.0, true, 123L,

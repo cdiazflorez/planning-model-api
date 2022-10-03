@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
@@ -16,8 +17,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface CurrentProcessingDistributionRepository
-    extends JpaRepository<CurrentProcessingDistribution, Long> {
+public interface CurrentProcessingDistributionRepository extends JpaRepository<CurrentProcessingDistribution, Long> {
 
   @Query("SELECT "
       + " cpd "
@@ -64,4 +64,25 @@ public interface CurrentProcessingDistributionRepository
       @Param("user_id") long userId,
       @Param("metric_unit") MetricUnit metricUnit);
 
+  @Query(
+      value = "SELECT cpd.* "
+          + "FROM current_processing_distribution cpd "
+          + "WHERE cpd.logistic_center_id = :warehouse_id "
+          + "    AND cpd.workflow = :workflow "
+          + "    AND cpd.process_name IN (:process_name) "
+          + "    AND cpd.`type` IN (:type) "
+          + "    AND cpd.date BETWEEN :date_from AND :date_to "
+          + "    AND date_created <= :view_date "
+          + "    AND (last_updated = date_created OR :view_date < last_updated) "
+          + "ORDER BY date",
+      nativeQuery = true)
+  List<CurrentProcessingDistribution> findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+      @Param("warehouse_id") String warehouseId,
+      @Param("workflow") String workflow,
+      @Param("process_name") Set<String> processNames,
+      @Param("type") Set<String> type,
+      @Param("date_from") ZonedDateTime dateFrom,
+      @Param("date_to") ZonedDateTime dateTo,
+      @Param("view_date") Instant viewDate
+  );
 }

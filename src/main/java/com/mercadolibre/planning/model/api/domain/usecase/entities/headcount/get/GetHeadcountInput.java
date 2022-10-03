@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.ge
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import java.time.Instant;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
@@ -14,4 +15,8 @@ import java.util.Set;
 public class GetHeadcountInput extends GetEntityInput {
 
     private Set<ProcessingType> processingType;
+
+    public Instant viewDate() {
+      return super.getViewDate() == null ? Instant.now() : super.getViewDate();
+    }
 }

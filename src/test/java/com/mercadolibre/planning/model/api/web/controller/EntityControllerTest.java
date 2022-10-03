@@ -21,6 +21,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -38,10 +39,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchE
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityByWarehouseEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.GetMaxCapacityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityController;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -132,8 +133,12 @@ public class EntityControllerTest {
   @Test
   public void testGetProductivityEntityOk() throws Exception {
     // GIVEN
-    when(getProductivityEntityUseCase.execute(any(GetProductivityInput.class)))
-        .thenReturn(mockProductivityEntityOutput());
+    final var viewDate = Instant.parse("2020-08-19T17:00:00Z");
+
+    when(getProductivityEntityUseCase.execute(argThat(input ->
+            input.getViewDate().equals(viewDate) && "ARBA01".equals(input.getWarehouseId())
+        ))
+    ).thenReturn(mockProductivityEntityOutput());
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -144,6 +149,7 @@ public class EntityControllerTest {
             .param("date_from", A_DATE_UTC.toString())
             .param("date_to", A_DATE_UTC.plusHours(1).toString())
             .param("process_name", "picking,packing")
+            .param("view_date", viewDate.toString())
     );
 
     // THEN
@@ -304,20 +310,24 @@ public class EntityControllerTest {
   @Test
   public void testSearchEntitiesOk() throws Exception {
     // GIVEN
+    final var dateFrom = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0, ZoneId.of("UTC"));
+    final var dateTo = ZonedDateTime.of(2020, 8, 20, 17, 0, 0, 0, ZoneId.of("UTC"));
     when(searchEntitiesUseCase.execute(SearchEntitiesInput.builder()
-        .warehouseId(WAREHOUSE_ID)
-        .workflow(FBM_WMS_OUTBOUND)
-        .dateFrom(ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0, ZoneId.of("UTC")))
-        .dateTo(ZonedDateTime.of(2020, 8, 20, 17, 0, 0, 0, ZoneId.of("UTC")))
-        .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING))
-        .processName(List.of(PICKING, PACKING))
-        .entityFilters(Map.of(
-            HEADCOUNT, Map.of(
-                PROCESSING_TYPE.toJson(), List.of(ACTIVE_WORKERS.toJson())
-            ),
-            PRODUCTIVITY, Map.of(ABILITY_LEVEL.toJson(), List.of("1"))
-        ))
-        .build())
+            .warehouseId(WAREHOUSE_ID)
+            .workflow(FBM_WMS_OUTBOUND)
+            .dateFrom(dateFrom)
+            .dateTo(dateTo)
+            .entityTypes(List.of(HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING))
+            .processName(List.of(PICKING, PACKING))
+            .entityFilters(Map.of(
+                HEADCOUNT, Map.of(
+                    PROCESSING_TYPE.toJson(), List.of(ACTIVE_WORKERS.toJson())
+                ),
+                PRODUCTIVITY, Map.of(ABILITY_LEVEL.toJson(), List.of("1"))
+            ))
+            .viewDate(dateTo.toInstant())
+            .build()
+        )
     ).thenReturn(mockSearchEntitiesOutput());
 
     // WHEN

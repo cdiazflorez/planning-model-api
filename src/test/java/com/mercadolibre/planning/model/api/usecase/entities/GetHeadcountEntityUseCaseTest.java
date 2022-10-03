@@ -37,7 +37,6 @@ import com.mercadolibre.planning.model.api.web.controller.projection.request.Sou
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -149,13 +148,14 @@ class GetHeadcountEntityUseCaseTest {
         .dateTo(input.getDateTo())
         .build())).thenReturn(forecastIds);
 
-    when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+    when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         WAREHOUSE_ID,
-        FBM_WMS_OUTBOUND,
-        input.getProcessingType(),
-        List.of(PICKING, PACKING),
+        FBM_WMS_OUTBOUND.name(),
+        Set.of(PICKING.name(), PACKING.name()),
+        Set.of(ProcessingType.ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
         input.getDateFrom(),
-        input.getDateTo()
+        input.getDateTo(),
+        A_DATE_UTC.toInstant()
     )).thenReturn(List.of(
         mockCurrentProcDist(A_DATE_UTC, 40L),
         mockCurrentProcDist(A_DATE_UTC.plusHours(1), 60L)
@@ -250,15 +250,15 @@ class GetHeadcountEntityUseCaseTest {
         forecastIds)
     ).thenReturn(processingDistributions());
 
-    when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-        input.getWarehouseId(),
-        input.getWorkflow(),
-        input.getProcessingType() == null
-            ? Set.of(ProcessingType.ACTIVE_WORKERS)
-            : input.getProcessingType(),
-        input.getProcessName(),
-        input.getDateFrom(),
-        input.getDateTo())
+    when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+            input.getWarehouseId(),
+            FBM_WMS_OUTBOUND.name(),
+            Set.of(PICKING.name(), PACKING.name()),
+            Set.of(ProcessingType.ACTIVE_WORKERS.name()),
+            input.getDateFrom(),
+            input.getDateTo(),
+            A_DATE_UTC.toInstant()
+        )
     ).thenReturn(currentDistribution());
 
     // WHEN

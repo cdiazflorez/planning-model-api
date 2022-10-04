@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller.forecast;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -25,7 +24,6 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Proce
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.HttpStatus;
@@ -44,6 +42,8 @@ import javax.validation.Valid;
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/forecasts")
 public class ForecastController {
+
+    private static final String WAREHOUSE_ID = "warehouse_id";
 
     private final CreateForecastUseCase createForecastUseCase;
 
@@ -84,7 +84,7 @@ public class ForecastController {
     private List<DeactivateSimulationInput> buildDeactivateSimulationInputs(final CreateForecastInput input) {
 
         final String logisticCenterId = input.getMetadata().stream()
-                .filter(metadataRequest -> metadataRequest.getKey().equals("warehouse_id"))
+                .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
                 .map(MetadataRequest::getValue)
                 .findFirst().orElseThrow();
 

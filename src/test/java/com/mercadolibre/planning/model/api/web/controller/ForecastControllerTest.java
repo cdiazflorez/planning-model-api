@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.Create
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.forecast.ForecastController;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +24,9 @@ import java.util.stream.Stream;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +48,9 @@ public class ForecastControllerTest {
     @MockBean
     private DeleteForecastUseCase deleteForecastUseCase;
 
+    @MockBean
+    private DeactivateSimulationUseCase deactivateSimulationUseCase;
+
     @DisplayName("Create forecast when path variable is ")
     @ParameterizedTest(name = "{0}")
     @MethodSource("workflowValues")
@@ -60,6 +67,7 @@ public class ForecastControllerTest {
         );
 
         // THEN
+        verify(deactivateSimulationUseCase).deactivateSimulation(anyList());
         result.andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(1));
     }
 

@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
 import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
@@ -42,6 +43,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForec
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -64,6 +66,9 @@ public class CreateForecastUseCaseTest {
 
     @Mock
     private PlanningDistributionGateway planningDistributionGateway;
+
+    @Mock
+    private DeactivateSimulationService deactivateSimulationService;
 
     @InjectMocks
     private CreateForecastUseCase createForecastUseCase;
@@ -100,7 +105,12 @@ public class CreateForecastUseCaseTest {
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 
         // THEN
-        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+        verifyNoMoreInteractions(processingDistributionGateway,
+                headcountDistributionGateway,
+                headcountProductivityGateway,
+                planningDistributionGateway,
+                deactivateSimulationService
+        );
 
         assertEquals(1L, output.getId());
     }
@@ -137,7 +147,12 @@ public class CreateForecastUseCaseTest {
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 
         // THEN
-        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+        verifyNoMoreInteractions(processingDistributionGateway,
+                headcountDistributionGateway,
+                headcountProductivityGateway,
+                planningDistributionGateway,
+                deactivateSimulationService
+        );
 
         assertEquals(1L, output.getId());
     }
@@ -179,6 +194,8 @@ public class CreateForecastUseCaseTest {
                 getPlanningDistributions(savedForecast),
                 savedForecast.getId());
 
+        verify(deactivateSimulationService).deactivateSimulation(anyList());
+
         assertEquals(1L, output.getId());
     }
 
@@ -218,6 +235,7 @@ public class CreateForecastUseCaseTest {
         verifyNoInteractions(headcountDistributionGateway);
         verifyNoInteractions(headcountProductivityGateway);
         verifyNoInteractions(planningDistributionGateway);
+        verifyNoInteractions(deactivateSimulationService);
 
         assertEquals(1L, output.getId());
     }

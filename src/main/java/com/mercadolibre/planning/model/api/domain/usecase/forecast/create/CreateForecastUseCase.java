@@ -6,7 +6,8 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistr
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
 import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
@@ -14,7 +15,9 @@ import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.MetadataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.PlanningDistributionRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
@@ -25,11 +28,14 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 
 @Service
 @AllArgsConstructor
 public class CreateForecastUseCase {
+
+    private static final String WAREHOUSE_ID = "warehouse_id";
 
     private final ForecastGateway forecastGateway;
 
@@ -41,9 +47,13 @@ public class CreateForecastUseCase {
 
     private final PlanningDistributionGateway planningDistributionGateway;
 
+    private final DeactivateSimulationService deactivateSimulationService;
+
     @Trace
     @Transactional
     public CreateForecastOutput execute(final CreateForecastInput input) {
+
+        deactivateSimulation(input);
 
         final Forecast forecast = saveForecast(input);
 
@@ -150,6 +160,45 @@ public class CreateForecastUseCase {
                         .flatMap(List::stream).distinct().collect(toList());
 
         processingDistributionGateway.create(backlogList, forecast.getId());
+    }
+
+    private void deactivateSimulation(final CreateForecastInput input) {
+
+        final List<ProcessingDistributionRequest> processingDistribution = input.getProcessingDistributions();
+
+        if (isEmpty(processingDistribution)) {
+            return;
+        }
+
+        final String logisticCenterId = input.getMetadata().stream()
+                .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
+                .map(MetadataRequest::getValue)
+                .findFirst().orElseThrow();
+
+        final var groupingByDateAndByProcessName = processingDistribution.stream()
+                .collect(
+                        toMap(
+                                ProcessingDistributionRequest::getProcessName,
+                                processDistribution -> processDistribution.getData().stream()
+                                        .map(ProcessingDistributionDataRequest::getDate)
+                                        .distinct()
+                                        .collect(toList())
+                        )
+                );
+
+        List<DeactivateSimulationInput> deactivateSimulationInputs = groupingByDateAndByProcessName.entrySet().stream()
+                .map(group -> new DeactivateSimulationInput(
+                                logisticCenterId,
+                                input.getWorkflow(),
+                                group.getKey(),
+                                group.getValue(),
+                                input.getUserId()
+                        )
+                ).collect(toList());
+
+        deactivateSimulationService.deactivateSimulation(deactivateSimulationInputs);
+
+
     }
 
     private static <T> boolean isEmpty(List<T> collection) {

@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.usecase;
+package com.mercadolibre.planning.model.api.usecase.simulation.activate;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;

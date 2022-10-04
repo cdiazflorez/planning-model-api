@@ -1,8 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller.forecast;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -12,18 +9,12 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.Create
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessingTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.CreateForecastRequest;
-import com.mercadolibre.planning.model.api.web.controller.forecast.request.MetadataRequest;
-import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
-import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.HttpStatus;
@@ -43,13 +34,9 @@ import javax.validation.Valid;
 @RequestMapping("/planning/model/workflows/{workflow}/forecasts")
 public class ForecastController {
 
-    private static final String WAREHOUSE_ID = "warehouse_id";
-
     private final CreateForecastUseCase createForecastUseCase;
 
     private final DeleteForecastUseCase deleteForecastUseCase;
-
-    private final DeactivateSimulationUseCase deactivateSimulationUseCase;
 
     @PostMapping
     @Trace(dispatcher = true)
@@ -60,8 +47,6 @@ public class ForecastController {
         final CreateForecastInput input = createForecastRequest.toCreateForecastInput(workflow);
 
         final CreateForecastOutput output = createForecastUseCase.execute(input);
-
-        deactivateSimulationUseCase.deactivateSimulation(buildDeactivateSimulationInputs(input));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new CreateForecastResponse(output.getId()));
@@ -79,37 +64,6 @@ public class ForecastController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new DeleteForecastResponse(updatedRows));
-    }
-
-    private List<DeactivateSimulationInput> buildDeactivateSimulationInputs(final CreateForecastInput input) {
-
-        final String logisticCenterId = input.getMetadata().stream()
-                .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
-                .map(MetadataRequest::getValue)
-                .findFirst().orElseThrow();
-
-        final var groupingByDateAndByProcessName = input.getProcessingDistributions().stream()
-                .collect(
-                        toMap(
-                                ProcessingDistributionRequest::getProcessName,
-                                processDistribution -> processDistribution.getData().stream()
-                                        .map(ProcessingDistributionDataRequest::getDate)
-                                        .distinct()
-                                        .collect(toList())
-                        )
-                );
-
-        return groupingByDateAndByProcessName.entrySet().stream()
-                .map(group -> new DeactivateSimulationInput(
-                        logisticCenterId,
-                        input.getWorkflow(),
-                        group.getKey(),
-                        group.getValue(),
-                        input.getUserId()
-                        )
-                ).collect(toList());
-
-
     }
 
     @InitBinder

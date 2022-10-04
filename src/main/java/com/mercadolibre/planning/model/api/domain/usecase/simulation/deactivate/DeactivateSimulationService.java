@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DeactivateSimulationUseCase {
+public class DeactivateSimulationService {
 
     private static final int ORIGINAL_WORKER_ABILITY = 1;
     private final CurrentProcessingDistributionRepository currentProcessingDistributionRepository;

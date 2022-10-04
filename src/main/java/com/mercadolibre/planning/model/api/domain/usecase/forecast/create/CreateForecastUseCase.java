@@ -1,5 +1,8 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.create;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
@@ -22,13 +25,8 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Proce
 import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
-
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 
 @Service

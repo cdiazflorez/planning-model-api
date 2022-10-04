@@ -1,5 +1,28 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.CALLER_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
@@ -22,32 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.List;
-
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
-import static com.mercadolibre.planning.model.api.util.TestUtils.CALLER_ID;
-import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
-import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateForecastUseCaseTest {

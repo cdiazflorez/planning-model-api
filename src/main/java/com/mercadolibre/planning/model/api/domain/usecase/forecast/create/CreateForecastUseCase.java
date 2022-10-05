@@ -181,7 +181,10 @@ public class CreateForecastUseCase {
                                         .map(ProcessingDistributionDataRequest::getDate)
                                         .distinct()
                                         .collect(toList()),
-                                (o1, o2) -> {o2.addAll(o1); return o2.stream().distinct().collect(toList());}
+                                (o1, o2) -> {
+                                    o2.addAll(o1);
+                                    return o2.stream().distinct().collect(toList());
+                                }
                         )
                 );
 

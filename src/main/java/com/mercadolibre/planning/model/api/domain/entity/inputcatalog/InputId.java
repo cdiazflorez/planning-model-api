@@ -37,7 +37,11 @@ public enum InputId {
     TRANSFERS(new InputMultiple(), Transfer.class),
     WORKERS_COSTS(new InputMultiple(), WorkersCost.class),
     WORKERS_INITIAL(new InputMultiple(), WorkersInitial.class),
-    WORKERS_PARAMETERS(new InputMultiple(), WorkersParameter.class);
+    WORKERS_PARAMETERS(new InputMultiple(), WorkersParameter.class),
+    CANALIZATION_DEFERRAL(new InputMultiple(), CanalizationDeferral.class),
+    HOURLY_DEFERRAL_COST(new InputMultiple(), HourlyDeferralCost.class),
+    FIXED_COST(new InputMultiple(), FixedCost.class);
+
 
     public final InputStrategy inputStrategy;
 
@@ -179,6 +183,18 @@ public enum InputId {
         boolean balanceShifts;
 
         boolean activateReceiveInRealTime;
+
+        float marginCost;
+
+        boolean activateDeferralPerCanalization;
+
+        int maxHoursDeferral;
+
+        boolean activateDeferralPerHour;
+
+        boolean useExperimentalVersionForIdealPlanType;
+
+        boolean useExperimentalVersionForPossiblePlanType;
 
     }
 
@@ -352,6 +368,34 @@ public enum InputId {
 
         Integer maxWorkers;
 
+    }
+
+    @Value
+    private static class CanalizationDeferral implements InputCatalog {
+
+        String process;
+
+        String carrier;
+
+        float losses;
+
+        int maxTimesDelay;
+    }
+
+    @Value
+    private static class HourlyDeferralCost implements InputCatalog {
+
+       int hourlyDeferral;
+
+       float unitaryCost;
+    }
+
+    @Value
+    private static class FixedCost implements InputCatalog {
+
+        float slaTarget;
+
+        float unitaryCost;
     }
 
 }

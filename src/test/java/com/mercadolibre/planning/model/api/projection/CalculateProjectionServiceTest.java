@@ -75,31 +75,25 @@ public class CalculateProjectionServiceTest {
         .collect(Collectors.toList());
 
     // THEN
-    assertEquals(expected(), sortedProjection);
+    assertEquals(expectedProjectionResult(), sortedProjection);
   }
 
-  private List<ProjectionResult> expected() {
-    return List.of(
-        new ProjectionResult(
-            FIRST_DATE_CPT,
-            null,
-            Instant.parse("2022-08-22T01:41:15Z"),
-            675
-        ),
-        new ProjectionResult(
-            SECOND_DATE_CPT,
-            null,
-            Instant.parse("2022-08-22T05:18:45Z"),
-            2150
-        ),
-        new ProjectionResult(
-            THIRD_DATE_CPT,
-            null,
-            null,
-            2125
-        )
-    );
-  }
+    private static ProjectionResult projectionResult(final Instant cpt, final Instant projectedEndDate, final Integer remainingQuantity) {
+        return new ProjectionResult(
+                cpt,
+                null,
+                projectedEndDate,
+                remainingQuantity
+        );
+    }
+
+    private List<ProjectionResult> expectedProjectionResult() {
+        return List.of(
+                projectionResult(FIRST_DATE_CPT, Instant.parse("2022-08-22T01:21:40Z"), 564),
+                projectionResult(SECOND_DATE_CPT, Instant.parse("2022-08-22T05:24:32Z"), 2149),
+                projectionResult(THIRD_DATE_CPT, null, 2038)
+        );
+    }
 
   private Map<Instant, ProjectionRequest.PackingRatio> ratioByHour() {
     return Map.of(

@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.create;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
@@ -9,7 +8,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistr
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationOfWeek;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
 import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
@@ -23,6 +22,8 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Plann
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
+import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
@@ -173,32 +174,27 @@ public class CreateForecastUseCase {
                 .map(MetadataRequest::getValue)
                 .findFirst().orElseThrow();
 
-        final var groupingByDateAndByProcessName = processingDistribution.stream()
-                .collect(
-                        toMap(
-                                ProcessingDistributionRequest::getProcessName,
-                                processDistribution -> processDistribution.getData().stream()
-                                        .map(ProcessingDistributionDataRequest::getDate)
-                                        .distinct()
-                                        .collect(toList()),
-                                (o1, o2) -> {
-                                    o2.addAll(o1);
-                                    return o2.stream().distinct().collect(toList());
-                                }
-                        )
-                );
+        final ZonedDateTime dateFrom = processingDistribution.stream()
+                .map(ProcessingDistributionRequest::getData)
+                .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
+                        .map(ProcessingDistributionDataRequest::getDate)
+                        .max(ChronoZonedDateTime::compareTo)
+                        .get())
+                .max(ChronoZonedDateTime::compareTo)
+                .get();
 
-        List<DeactivateSimulationInput> deactivateSimulationInputs = groupingByDateAndByProcessName.entrySet().stream()
-                .map(group -> new DeactivateSimulationInput(
-                                logisticCenterId,
-                                input.getWorkflow(),
-                                group.getKey(),
-                                group.getValue(),
-                                input.getUserId()
-                        )
-                ).collect(toList());
+        final ZonedDateTime dateTo = processingDistribution.stream()
+                .map(ProcessingDistributionRequest::getData)
+                .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
+                        .map(ProcessingDistributionDataRequest::getDate)
+                        .min(ChronoZonedDateTime::compareTo)
+                        .get())
+                .min(ChronoZonedDateTime::compareTo)
+                .get();
 
-        deactivateSimulationService.deactivateSimulation(deactivateSimulationInputs);
+        deactivateSimulationService.deactivateSimulation(
+                new DeactivateSimulationOfWeek(logisticCenterId, dateFrom, dateTo, input.getUserId())
+        );
 
 
     }

@@ -17,7 +17,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -33,6 +33,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDist
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationOfWeek;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
 import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
@@ -192,7 +193,7 @@ public class CreateForecastUseCaseTest {
                 getPlanningDistributions(savedForecast),
                 savedForecast.getId());
 
-        verify(deactivateSimulationService).deactivateSimulation(anyList());
+        verify(deactivateSimulationService).deactivateSimulation(any(DeactivateSimulationOfWeek.class));
 
         assertEquals(1L, output.getId());
     }

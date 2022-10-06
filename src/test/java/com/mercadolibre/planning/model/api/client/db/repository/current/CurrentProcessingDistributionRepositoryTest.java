@@ -6,9 +6,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_FROM;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_TO;
 import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcDist;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProcessingDistributions;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -133,6 +136,39 @@ class CurrentProcessingDistributionRepositoryTest {
     assertTrue(result.isPresent());
     assertFalse(result.get().isActive());
     assertEquals(USER_ID, result.get().getUserId());
+  }
+
+  @Test
+  @DisplayName("Deactivate processing distribution for range of dates")
+  public void testDeactivateProcessingDistributionForRangeOfDates() {
+      // GIVEN
+      final List<CurrentProcessingDistribution> currentProcessingDistributions = mockCurrentProcessingDistributions();
+      currentProcessingDistributions.forEach(
+              currentProcessingDistribution -> entityManager.persistAndFlush(currentProcessingDistribution)
+      );
+
+      // WHEN
+      repository.deactivateProcessingDistributionForRangeOfDates(
+              WAREHOUSE_ID,
+              DEACTIVATE_DATE_FROM,
+              DEACTIVATE_DATE_TO,
+              USER_ID
+      );
+
+      final List<CurrentProcessingDistribution> results = repository.findAll();
+
+      // THEN
+      assertFalse(results.isEmpty());
+      assertEquals(2,
+              results.stream()
+                      .filter(CurrentProcessingDistribution::isActive)
+                      .count()
+      );
+      assertEquals(1,
+              results.stream()
+                      .filter(currentProcessingDistribution -> !currentProcessingDistribution.isActive())
+                      .count()
+      );
   }
 
   @ParameterizedTest

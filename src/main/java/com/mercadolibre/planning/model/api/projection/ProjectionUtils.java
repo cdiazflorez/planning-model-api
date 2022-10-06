@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
@@ -13,6 +14,8 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.projection.dto.ProjectionRequest;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +25,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 class ProjectionUtils {
-  private static final Duration HALF_AN_HOUR = Duration.ofMinutes(30);
+  private static final int INFLECTION_POINT_DURATION = 5;
 
-  private static final Duration HOUR = Duration.ofHours(1);
+  private static final ZoneId UTC = ZoneId.of("UTC");
 
   private static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
 
@@ -32,21 +35,20 @@ class ProjectionUtils {
       new OrderedBacklogByDateRatioSplitter.Distribution<>(Map.of(PACKING.getName(), 0.5, CONSOLIDATION_PROCESS_GROUP, 0.5));
 
   static List<Instant> generateInflectionPoints(final Instant dateFrom, final Instant dateTo) {
-    final Instant dateFromTruncate = dateFrom.truncatedTo(ChronoUnit.HOURS);
+      final Instant firstInflectionPoint = dateFrom.truncatedTo(MINUTES);
+      final int currentMinute = LocalDateTime.ofInstant(firstInflectionPoint, UTC).getMinute();
+      final int minutesToSecondInflectionPoint = INFLECTION_POINT_DURATION - (currentMinute % INFLECTION_POINT_DURATION);
+      final Instant secondInflectionPoint = firstInflectionPoint.plus(minutesToSecondInflectionPoint, MINUTES);
 
-    final List<Instant> inflectionPoints = new ArrayList<>();
-    inflectionPoints.add(dateFrom);
+      final List<Instant> inflectionPoints = new ArrayList<>();
+      inflectionPoints.add(firstInflectionPoint);
+      Instant date = secondInflectionPoint;
 
-    Instant date = dateFromTruncate.plus(HALF_AN_HOUR).isBefore(dateFrom)
-        ? dateFromTruncate.plus(HOUR)
-        : dateFromTruncate.plus(HALF_AN_HOUR);
-
-    while (date.isBefore(dateTo) || date.equals(dateTo)) {
-      inflectionPoints.add(date);
-      date = date.plus(HALF_AN_HOUR);
-    }
-
-    return inflectionPoints;
+      while (date.isBefore(dateTo) || date.equals(dateTo)) {
+          inflectionPoints.add(date);
+          date = date.plus(INFLECTION_POINT_DURATION, MINUTES);
+      }
+      return inflectionPoints;
   }
 
   static UpstreamByInflectionPoints mapForecastToUpstreamBacklog(final List<ProjectionRequest.PlanningDistribution> forecastSales) {

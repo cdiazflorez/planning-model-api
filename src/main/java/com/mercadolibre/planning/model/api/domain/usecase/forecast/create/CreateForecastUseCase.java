@@ -178,18 +178,18 @@ public class CreateForecastUseCase {
                 .map(ProcessingDistributionRequest::getData)
                 .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
                         .map(ProcessingDistributionDataRequest::getDate)
-                        .max(ChronoZonedDateTime::compareTo)
+                        .min(ChronoZonedDateTime::compareTo)
                         .get())
-                .max(ChronoZonedDateTime::compareTo)
+                .min(ChronoZonedDateTime::compareTo)
                 .get();
 
         final ZonedDateTime dateTo = processingDistribution.stream()
                 .map(ProcessingDistributionRequest::getData)
                 .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
                         .map(ProcessingDistributionDataRequest::getDate)
-                        .min(ChronoZonedDateTime::compareTo)
+                        .max(ChronoZonedDateTime::compareTo)
                         .get())
-                .min(ChronoZonedDateTime::compareTo)
+                .max(ChronoZonedDateTime::compareTo)
                 .get();
 
         deactivateSimulationService.deactivateSimulation(

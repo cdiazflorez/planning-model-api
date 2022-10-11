@@ -35,6 +35,7 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -113,6 +114,10 @@ public final class TestUtils {
 
   public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
       ZoneId.of("UTC"));
+
+  public static final ZonedDateTime DEACTIVATE_DATE_FROM = ZonedDateTime.now();
+
+  public static final ZonedDateTime DEACTIVATE_DATE_TO = DEACTIVATE_DATE_FROM.plus(3, DAYS);
 
   public static final String FORECAST_METADATA_KEY = "mono_order_distribution";
 
@@ -268,6 +273,44 @@ public final class TestUtils {
         .build();
   }
 
+  public static List<CurrentHeadcountProductivity> mockCurrentProductivities() {
+      return List.of(
+              CurrentHeadcountProductivity.builder()
+                      .abilityLevel(1)
+                      .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
+                      .isActive(true)
+                      .productivity(10)
+                      .productivityMetricUnit(UNITS_PER_HOUR)
+                      .processName(PICKING)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build(),
+              CurrentHeadcountProductivity.builder()
+                      .abilityLevel(1)
+                      .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+                      .isActive(true)
+                      .productivity(10)
+                      .productivityMetricUnit(UNITS_PER_HOUR)
+                      .processName(PICKING)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build(),
+              CurrentHeadcountProductivity.builder()
+                      .abilityLevel(1)
+                      .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
+                      .isActive(true)
+                      .productivity(10)
+                      .productivityMetricUnit(UNITS_PER_HOUR)
+                      .processName(PICKING)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build()
+      );
+  }
+
   public static CurrentProcessingDistribution mockCurrentProcDist(final ZonedDateTime date,
                                                                   final long value) {
     return CurrentProcessingDistribution.builder()
@@ -280,6 +323,41 @@ public final class TestUtils {
         .workflow(FBM_WMS_OUTBOUND)
         .logisticCenterId(WAREHOUSE_ID)
         .build();
+  }
+
+  public static List<CurrentProcessingDistribution> mockCurrentProcessingDistributions() {
+      return List.of(
+              CurrentProcessingDistribution.builder()
+                      .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
+                      .isActive(true)
+                      .processName(PACKING)
+                      .quantity(10)
+                      .quantityMetricUnit(WORKERS)
+                      .type(ACTIVE_WORKERS)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build(),
+              CurrentProcessingDistribution.builder()
+                      .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+                      .isActive(true)
+                      .processName(PACKING)
+                      .quantity(10)
+                      .quantityMetricUnit(WORKERS)
+                      .type(ACTIVE_WORKERS)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build(),
+              CurrentProcessingDistribution.builder()
+                      .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
+                      .isActive(true)
+                      .processName(PACKING)
+                      .quantity(10)
+                      .quantityMetricUnit(WORKERS)
+                      .type(ACTIVE_WORKERS)
+                      .workflow(FBM_WMS_OUTBOUND)
+                      .logisticCenterId(WAREHOUSE_ID)
+                      .build()
+      );
   }
 
   public static List<PlanningDistributionElemView> planningDistributions() {

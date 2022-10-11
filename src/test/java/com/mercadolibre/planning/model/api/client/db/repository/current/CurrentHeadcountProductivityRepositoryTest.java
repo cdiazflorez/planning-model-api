@@ -5,9 +5,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_FROM;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_TO;
 import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProdEntity;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentProductivities;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -89,6 +92,34 @@ public class CurrentHeadcountProductivityRepositoryTest {
     assertTrue(result.isPresent());
     assertFalse(result.get().isActive());
     assertEquals(USER_ID, result.get().getUserId());
+  }
+
+  @Test
+  @DisplayName("Deactivate productivity for range of dates")
+  public void testDeactivateProductivityForRangeOfDates() {
+      //GIVEN
+      final List<CurrentHeadcountProductivity> currentHeadcountProductivities = mockCurrentProductivities();
+      currentHeadcountProductivities.forEach(
+              currentHeadcountProductivity -> entityManager.persistAndFlush(currentHeadcountProductivity)
+      );
+
+      //WHEN
+      repository.deactivateProductivityForRangeOfDates(WAREHOUSE_ID, DEACTIVATE_DATE_FROM, DEACTIVATE_DATE_TO, USER_ID);
+
+      final List<CurrentHeadcountProductivity> results = repository.findAll();
+      //THEN
+      assertFalse(results.isEmpty());
+      assertEquals(2,
+              results.stream()
+              .filter(CurrentHeadcountProductivity::isActive)
+              .count()
+      );
+      assertEquals(1,
+              results.stream()
+                      .filter(currentHeadcountProductivity -> !currentHeadcountProductivity.isActive())
+                      .count()
+      );
+
   }
 
   @ParameterizedTest

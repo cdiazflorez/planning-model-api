@@ -395,7 +395,7 @@ public enum InputId {
 
         float slaTarget;
 
-        float unitaryCost;
+        float cost;
     }
 
 }

@@ -1,29 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
-import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
-import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
-import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
-import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
-import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
@@ -41,11 +17,36 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationOfWeek;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
+import com.mercadolibre.planning.model.api.gateway.ForecastGateway;
+import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
+import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
+import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
+import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateForecastUseCaseTest {
@@ -64,6 +65,9 @@ public class CreateForecastUseCaseTest {
 
     @Mock
     private PlanningDistributionGateway planningDistributionGateway;
+
+    @Mock
+    private DeactivateSimulationService deactivateSimulationService;
 
     @InjectMocks
     private CreateForecastUseCase createForecastUseCase;
@@ -100,7 +104,12 @@ public class CreateForecastUseCaseTest {
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 
         // THEN
-        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+        verifyNoMoreInteractions(processingDistributionGateway,
+                headcountDistributionGateway,
+                headcountProductivityGateway,
+                planningDistributionGateway,
+                deactivateSimulationService
+        );
 
         assertEquals(1L, output.getId());
     }
@@ -137,7 +146,12 @@ public class CreateForecastUseCaseTest {
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 
         // THEN
-        verifyNoMoreInteractions(processingDistributionGateway, headcountDistributionGateway, headcountProductivityGateway, planningDistributionGateway);
+        verifyNoMoreInteractions(processingDistributionGateway,
+                headcountDistributionGateway,
+                headcountProductivityGateway,
+                planningDistributionGateway,
+                deactivateSimulationService
+        );
 
         assertEquals(1L, output.getId());
     }
@@ -179,6 +193,8 @@ public class CreateForecastUseCaseTest {
                 getPlanningDistributions(savedForecast),
                 savedForecast.getId());
 
+        verify(deactivateSimulationService).deactivateSimulation(any(DeactivateSimulationOfWeek.class));
+
         assertEquals(1L, output.getId());
     }
 
@@ -218,6 +234,7 @@ public class CreateForecastUseCaseTest {
         verifyNoInteractions(headcountDistributionGateway);
         verifyNoInteractions(headcountProductivityGateway);
         verifyNoInteractions(planningDistributionGateway);
+        verifyNoInteractions(deactivateSimulationService);
 
         assertEquals(1L, output.getId());
     }

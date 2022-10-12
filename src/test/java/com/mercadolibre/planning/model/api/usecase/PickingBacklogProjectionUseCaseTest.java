@@ -60,7 +60,7 @@ public class PickingBacklogProjectionUseCaseTest {
     when(getCapacityUseCase.execute(FBM_WMS_OUTBOUND, capacities))
         .thenReturn(getMinCapacity().stream()
                         .map(entityOutput -> new CapacityOutput(
-                            entityOutput.getDate(), null, entityOutput.getValue()))
+                            entityOutput.getDate(), null, entityOutput.getLongValue()))
                         .collect(toList()));
 
     // WHEN

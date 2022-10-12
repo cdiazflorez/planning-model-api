@@ -172,12 +172,12 @@ public class GetThroughputUseCase
         || workflow != Workflow.FBM_WMS_OUTBOUND
         || forecastPolyvalentProductivity.isEmpty()
     ) {
-        tph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
+        tph = simulatedHeadcount.getLongValue() * simulatedRegularProductivity.getLongValue();
     } else {
-        final var regularHeadcount = forecastHeadcount.getValue();
-        final var regularProductivity = simulatedRegularProductivity.getValue();
+        final var regularHeadcount = forecastHeadcount.getLongValue();
+        final var regularProductivity = simulatedRegularProductivity.getLongValue();
         final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / (double) forecastRegularProductivity.getValue();
+        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / forecastRegularProductivity.getValue();
         final double polyvalentProductivity = simulatedRegularProductivity.getValue() * polyvalentProductivityRatio;
         tph = regularHeadcount * regularProductivity + Math.round(polyvalentHeadcount * polyvalentProductivity);
     }

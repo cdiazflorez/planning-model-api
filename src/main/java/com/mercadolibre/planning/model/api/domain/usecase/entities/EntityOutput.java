@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -28,7 +30,14 @@ public class EntityOutput {
     private ProcessingType type;
     private MetricUnit metricUnit;
     private Source source;
-    private long value;
+
+    @JsonIgnore
+    private double value;
+
+    @JsonProperty("value")
+    public long getLongValue() {
+      return (long) value;
+    }
 
     public static EntityOutput fromProcessingDistributionView(
             final ProcessingDistributionView processingDistributionView,

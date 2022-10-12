@@ -28,7 +28,7 @@ public class PackingRegularBacklogProjectionUseCase implements GetBacklogProject
 
     final Map<ZonedDateTime, Long> packingRegularCapacityByDate = input.getThroughputs().stream()
         .filter(e -> e.getProcessName() == PACKING)
-        .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
+        .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue, Long::sum));
 
     final long currentBacklog = input.getCurrentBacklogs().stream()
         .filter(cb -> PACKING == cb.getProcessName())

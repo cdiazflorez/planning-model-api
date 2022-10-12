@@ -41,6 +41,7 @@ public class EntityOutput {
   @JsonIgnore
   private double value;
 
+  // TODO: remove this method after adopting double values in the app
   @JsonProperty("value")
   public long getLongValue() {
     return (long) value;

@@ -15,6 +15,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -170,6 +171,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
                     .map(quantityByDate -> new EntityOutput(
                             input.getWorkflow(),
                             quantityByDate.getDate().withFixedOffsetZone(),
+                            ProcessPath.AMBIENT,
                             simulation.getProcessName(),
                             entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
                             entity.getType() == HEADCOUNT ? WORKERS : UNITS_PER_HOUR,

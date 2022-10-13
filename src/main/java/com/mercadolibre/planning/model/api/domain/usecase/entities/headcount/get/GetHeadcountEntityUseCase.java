@@ -112,7 +112,8 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getDateFrom(),
-        input.getDateTo()
+        input.getDateTo(),
+        input.getViewDate()
     ));
 
     return processingDistRepository

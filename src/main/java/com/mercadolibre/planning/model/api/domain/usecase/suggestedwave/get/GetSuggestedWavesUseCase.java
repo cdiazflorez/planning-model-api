@@ -4,6 +4,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Forecas
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -100,8 +101,9 @@ public class GetSuggestedWavesUseCase {
     private long getCapex(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
         final List<ProcessingDistributionView> processingDistributionView =
                 processingDistRepository
-                        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                        .findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
                                 Set.of(ProcessingType.MAX_CAPACITY.name()),
+                                List.of(ProcessPath.GLOBAL.toString()),
                                 List.of(ProcessName.GLOBAL.toJson()),
                                 input.getDateTo().minusHours(1),
                                 input.getDateTo().minusHours(1),

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityService;
@@ -138,8 +139,9 @@ public class MaxCapacityServiceTest {
             .build()
         ).collect(Collectors.toList());
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
         Set.of(MAX_CAPACITY.name()),
+        List.of(ProcessPath.GLOBAL.toString()),
         of(GLOBAL.toJson()),
         FROM,
         TO,

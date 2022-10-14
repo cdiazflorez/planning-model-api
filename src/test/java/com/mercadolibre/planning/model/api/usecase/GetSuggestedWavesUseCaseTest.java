@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.usecase;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.WaveCardinality;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -102,8 +103,9 @@ public class GetSuggestedWavesUseCaseTest {
         when(planningDistributionService.applyDeviation(anyString(), any()))
                 .thenAnswer(answer -> answer.getArgument(1));
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
+                List.of(ProcessPath.GLOBAL.toString()),
                 List.of(GLOBAL.toJson()),
                 input.getDateTo().minusHours(1),
                 input.getDateTo().minusHours(1),
@@ -216,8 +218,9 @@ public class GetSuggestedWavesUseCaseTest {
                 )
         ).thenReturn(List.of());
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
+                List.of(ProcessPath.GLOBAL.toString()),
                 List.of(GLOBAL.toJson()),
                 input.getDateTo().minusHours(1),
                 input.getDateTo().minusHours(1),

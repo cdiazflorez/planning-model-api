@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -89,9 +90,9 @@ class GetHeadcountEntityUseCaseTest {
         .build())
     ).thenReturn(forecastIds);
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
-
+    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
         Set.of(ProcessingType.ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),
         forecastIds)
@@ -165,8 +166,9 @@ class GetHeadcountEntityUseCaseTest {
         mockCurrentProcDist(A_DATE_UTC.plusHours(1), 60L)
     ));
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
         Set.of(ProcessingType.ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),
         forecastIds)
@@ -248,8 +250,9 @@ class GetHeadcountEntityUseCaseTest {
         .build())
     ).thenReturn(forecastIds);
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
         null,
+        List.of(ProcessPath.GLOBAL.toString()),
         input.getProcessNamesAsString(),
         input.getDateFrom(),
         input.getDateTo(),

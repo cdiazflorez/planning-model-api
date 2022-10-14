@@ -120,8 +120,9 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     ));
 
     return processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        .findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
             getProcessingTypeAsStringOrNull(input.getProcessingType()),
+            List.of(ProcessPath.GLOBAL.toString()),
             input.getProcessNamesAsString(),
             input.getDateFrom(),
             input.getDateTo(),

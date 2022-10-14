@@ -85,7 +85,9 @@ class GetHeadcountEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
-        .build())).thenReturn(forecastIds);
+        .viewDate(A_DATE_UTC.toInstant())
+        .build())
+    ).thenReturn(forecastIds);
 
     when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
 
@@ -146,7 +148,9 @@ class GetHeadcountEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
-        .build())).thenReturn(forecastIds);
+        .viewDate(A_DATE_UTC.toInstant())
+        .build())
+    ).thenReturn(forecastIds);
 
     when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         WAREHOUSE_ID,
@@ -240,7 +244,9 @@ class GetHeadcountEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
-        .build())).thenReturn(forecastIds);
+        .viewDate(A_DATE_UTC.toInstant())
+        .build())
+    ).thenReturn(forecastIds);
 
     when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
         null,

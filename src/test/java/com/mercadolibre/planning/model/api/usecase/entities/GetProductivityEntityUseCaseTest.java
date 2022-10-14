@@ -69,6 +69,7 @@ public class GetProductivityEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
+        .viewDate(A_DATE_UTC.toInstant())
         .build())
     ).thenReturn(forecastIds);
 
@@ -112,6 +113,7 @@ public class GetProductivityEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
+        .viewDate(A_DATE_UTC.toInstant())
         .build())
     ).thenReturn(forecastIds);
 
@@ -165,6 +167,7 @@ public class GetProductivityEntityUseCaseTest {
         .warehouseId(input.getWarehouseId())
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
+        .viewDate(A_DATE_UTC.toInstant())
         .build())
     ).thenReturn(forecastIds);
 

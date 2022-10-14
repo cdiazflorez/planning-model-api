@@ -119,7 +119,8 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
         input.getWarehouseId(),
         input.getWorkflow(),
         input.getDateFrom(),
-        input.getDateTo()
+        input.getDateTo(),
+        input.getViewDate()
     ));
 
     return productivityRepository.findBy(

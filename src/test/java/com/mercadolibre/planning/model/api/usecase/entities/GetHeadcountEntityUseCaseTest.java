@@ -287,6 +287,7 @@ class GetHeadcountEntityUseCaseTest {
         new ProcessingDistributionViewImpl(
             1,
             Date.from(A_DATE_UTC.toInstant()),
+            ProcessPath.GLOBAL,
             PICKING,
             100,
             WORKERS,
@@ -294,6 +295,7 @@ class GetHeadcountEntityUseCaseTest {
         new ProcessingDistributionViewImpl(
             2,
             Date.from(A_DATE_UTC.plusHours(1).toInstant()),
+            ProcessPath.GLOBAL,
             PICKING,
             120,
             WORKERS,
@@ -301,6 +303,7 @@ class GetHeadcountEntityUseCaseTest {
         new ProcessingDistributionViewImpl(
             3,
             Date.from(A_DATE_UTC.plusHours(2).toInstant()),
+            ProcessPath.GLOBAL,
             PACKING,
             120,
             WORKERS,

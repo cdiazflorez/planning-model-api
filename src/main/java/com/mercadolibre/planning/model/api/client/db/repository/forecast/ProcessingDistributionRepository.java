@@ -18,7 +18,7 @@ public interface ProcessingDistributionRepository extends CrudRepository<Process
   @Query(value =
       "SELECT p.date, process_path as processPath, process_name as processName, quantity, quantity_metric_unit as quantityMetricUnit, type "
           + "FROM processing_distribution p "
-          + "WHERE p.process_path IN (:process_name) "
+          + "WHERE p.process_path IN (:process_paths) "
           + "AND p.process_name IN (:process_name) "
           + "AND p.date BETWEEN :date_from AND :date_to "
           + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "

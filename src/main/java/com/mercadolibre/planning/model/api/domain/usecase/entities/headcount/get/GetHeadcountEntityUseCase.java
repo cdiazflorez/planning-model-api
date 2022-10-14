@@ -74,8 +74,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
   }
 
   private List<EntityOutput> getSimulationHeadcount(final GetHeadcountInput input) {
-    final List<CurrentProcessingDistribution> currentProcessingDistributions =
-        findCurrentProcessingDistributionBy(input);
+    final List<CurrentProcessingDistribution> currentProcessingDistributions = findCurrentProcessingDistributionBy(input);
 
     final List<EntityOutput> entities = getForecastHeadcount(input);
     final List<EntityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
@@ -119,14 +118,14 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
         input.getViewDate()
     ));
 
-    return processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+    return processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
             getProcessingTypeAsStringOrNull(input.getProcessingType()),
             List.of(ProcessPath.GLOBAL.toString()),
             input.getProcessNamesAsString(),
             input.getDateFrom(),
             input.getDateTo(),
-            forecastIds);
+            forecastIds
+    );
   }
 
   private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(final GetHeadcountInput input) {
@@ -152,8 +151,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     );
   }
 
-  private Set<String> getProcessingTypeAsStringOrNull(
-      final Set<ProcessingType> processingTypes) {
+  private Set<String> getProcessingTypeAsStringOrNull(final Set<ProcessingType> processingTypes) {
     return processingTypes == null
         ? null
         : processingTypes.stream().map(Enum::name).collect(toSet());

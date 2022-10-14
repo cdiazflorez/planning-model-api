@@ -72,6 +72,7 @@ public class SearchEntityUseCaseTest {
         ).thenReturn(List.of(new ProcessingDistributionViewImpl(
                 1,
                 Date.from(A_DATE_UTC.toInstant()),
+                ProcessPath.GLOBAL,
                 WAVING,
                 308,
                 MINUTES,
@@ -126,6 +127,7 @@ public class SearchEntityUseCaseTest {
         ).thenReturn(List.of(new ProcessingDistributionViewImpl(
                 1,
                 Date.from(A_DATE_UTC.toInstant()),
+                ProcessPath.GLOBAL,
                 WAVING,
                 308,
                 MINUTES,

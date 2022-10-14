@@ -166,6 +166,7 @@ public class GetSuggestedWavesUseCaseTest {
         return List.of(new ProcessingDistributionViewImpl(
                 1L,
                 Date.from(input.getDateTo().minusHours(1).toInstant()),
+                ProcessPath.GLOBAL,
                 GLOBAL,
                 quantity,
                 UNITS_PER_HOUR,

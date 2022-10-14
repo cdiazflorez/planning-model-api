@@ -4,7 +4,6 @@ import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -39,12 +38,11 @@ public class EntityOutput {
   private Source source;
 
   @JsonIgnore
-  private double value;
+  private double quantity;
 
   // TODO: remove this method after adopting double values in the app
-  @JsonProperty("value")
-  public long getLongValue() {
-    return (long) value;
+  public long getValue() {
+    return (long) quantity;
   }
 
   public static EntityOutput fromProcessingDistributionView(
@@ -57,7 +55,7 @@ public class EntityOutput {
         .type(processingDistributionView.getType())
         .date(fromDate(processingDistributionView.getDate()))
         .metricUnit(processingDistributionView.getQuantityMetricUnit())
-        .value(processingDistributionView.getQuantity())
+        .quantity(processingDistributionView.getQuantity())
         .build();
   }
 }

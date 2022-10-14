@@ -24,11 +24,11 @@ public class PackingWallBacklogProjectionUseCase implements GetBacklogProjection
   public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
     final Map<ZonedDateTime, Long> previousProcessCapacity = input.getThroughputs().stream()
         .filter(e -> e.getProcessName() == PACKING_WALL.getPreviousProcesses())
-        .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue, (v1, v2) -> v2));
+        .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
 
     final Map<ZonedDateTime, Long> packingWallCapacityByDate = input.getThroughputs().stream()
         .filter(e -> e.getProcessName() == PACKING_WALL)
-        .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue, Long::sum));
+        .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
 
     final long currentBacklog = input.getCurrentBacklogs().stream()
         .filter(cb -> cb.getProcessName() == PACKING_WALL)

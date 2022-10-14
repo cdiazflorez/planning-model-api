@@ -153,8 +153,8 @@ class GetSlaProjectionUseCaseTest {
     final ZonedDateTime projectedTime = parse("2020-01-02T10:00:00Z");
 
     final var entities = List.of(
-        EntityOutput.builder().workflow(FBM_WMS_INBOUND).date(DATE_FROM).processName(PUT_AWAY).value(5).build(),
-        EntityOutput.builder().workflow(FBM_WMS_INBOUND).date(DATE_FROM).processName(PUT_AWAY).value(10).build()
+        EntityOutput.builder().workflow(FBM_WMS_INBOUND).date(DATE_FROM).processName(PUT_AWAY).quantity(5).build(),
+        EntityOutput.builder().workflow(FBM_WMS_INBOUND).date(DATE_FROM).processName(PUT_AWAY).quantity(10).build()
     );
 
     when(getThroughputUseCase.execute(any(GetEntityInput.class)))

@@ -119,7 +119,7 @@ public class BacklogProjectionUseCaseTest {
                         .currentBacklog(0)
                         .capacityByDate(mockThroughputs().stream().collect(toMap(
                                 EntityOutput::getDate,
-                                EntityOutput::getLongValue,
+                                EntityOutput::getValue,
                                 Math::min)))
                         .planningUnitsByDate(mockPlanningSalesByDate())
                         .processedUnitsByDate(null)
@@ -136,9 +136,9 @@ public class BacklogProjectionUseCaseTest {
                         .currentBacklog(3000)
                         .capacityByDate(mockThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PICKING)
-                                .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue)))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .planningUnitsByDate(input.getThroughputs().stream()
-                                .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue, Math::min)))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Math::min)))
                         .processedUnitsByDate(Map.of(
                                 A_FIXED_DATE, 50L,
                                 A_FIXED_DATE.plusHours(1), 0L,
@@ -158,10 +158,10 @@ public class BacklogProjectionUseCaseTest {
                         .currentBacklog(1110)
                         .capacityByDate(mockThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PACKING)
-                                .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue)))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .planningUnitsByDate(input.getThroughputs().stream()
                                 .filter(e -> e.getProcessName() == PICKING)
-                                .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue)))
+                                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                         .build());
     }
 
@@ -175,10 +175,10 @@ public class BacklogProjectionUseCaseTest {
                 .currentBacklog(1800)
                 .capacityByDate(mockThroughputs().stream()
                     .filter(e -> e.getProcessName() == BATCH_SORTER)
-                    .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue)))
+                    .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                 .planningUnitsByDate(input.getThroughputs().stream()
                     .filter(e -> e.getProcessName() == BATCH_SORTER)
-                    .collect(toMap(EntityOutput::getDate, EntityOutput::getLongValue)))
+                    .collect(toMap(EntityOutput::getDate, EntityOutput::getValue)))
                 .ratiosByDate(Map.of(
                     A_FIXED_DATE, 0.5,
                     A_FIXED_DATE.plusHours(1), 0.5,

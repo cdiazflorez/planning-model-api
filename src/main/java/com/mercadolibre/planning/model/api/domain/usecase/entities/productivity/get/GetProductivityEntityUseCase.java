@@ -13,6 +13,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Headcou
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -56,8 +57,9 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
       if (noSimulationExistsWithSameProperties(inputSimulatedEntities, sp)) {
         productivityAccumulator.add(ProductivityOutput.builder()
             .workflow(input.getWorkflow())
-            .value(sp.getProductivity())
+            .quantity(sp.getProductivity())
             .source(SIMULATION)
+            .processPath(ProcessPath.GLOBAL)
             .processName(sp.getProcessName())
             .metricUnit(sp.getProductivityMetricUnit())
             .date(sp.getDate())
@@ -77,8 +79,9 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
         .map(p -> ProductivityOutput.builder()
             .workflow(input.getWorkflow())
             .date(ofInstant(p.getDate().toInstant(), UTC))
+            .processPath(ProcessPath.GLOBAL)
             .processName(p.getProcessName())
-            .value(p.getProductivity())
+            .quantity(p.getProductivity())
             .metricUnit(p.getProductivityMetricUnit())
             .source(FORECAST)
             .abilityLevel(p.getAbilityLevel())
@@ -145,9 +148,10 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
                     .workflow(input.getWorkflow())
                     .date(quantityByDate.getDate().withFixedOffsetZone())
                     .metricUnit(MetricUnit.UNITS_PER_HOUR)
+                    .processPath(ProcessPath.GLOBAL)
                     .processName(simulation.getProcessName())
                     .source(SIMULATION)
-                    .value(quantityByDate.getQuantity())
+                    .quantity(quantityByDate.getQuantity())
                     .abilityLevel(1)
                     .build()))));
     return simulatedEntities;

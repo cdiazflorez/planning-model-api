@@ -49,7 +49,7 @@ public class MaxCapacityService {
   public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input) {
 
     final List<ProcessingDistributionView> maxCapacityBD = processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+        .findByTypeProcessPathProcessNameAndDateInRange(
             Set.of(MAX_CAPACITY.name()),
             List.of(ProcessPath.GLOBAL.toString()),
             List.of(GLOBAL.toJson()),

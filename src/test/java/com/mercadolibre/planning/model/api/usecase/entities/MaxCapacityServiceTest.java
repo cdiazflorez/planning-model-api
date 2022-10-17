@@ -139,7 +139,7 @@ public class MaxCapacityServiceTest {
             .build()
         ).collect(Collectors.toList());
 
-    when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+    when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
         Set.of(MAX_CAPACITY.name()),
         List.of(ProcessPath.GLOBAL.toString()),
         of(GLOBAL.toJson()),

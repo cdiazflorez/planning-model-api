@@ -63,7 +63,7 @@ public class SearchEntityUseCaseTest {
                 .dateTo(input.getDateTo())
                 .build())).thenReturn(forecastIds);
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(ProcessingType.PERFORMED_PROCESSING.name()),
                 List.of(ProcessPath.GLOBAL.toString()),
                 List.of(WAVING.name()),
@@ -118,7 +118,7 @@ public class SearchEntityUseCaseTest {
                 .dateTo(input.getDateTo())
                 .build())).thenReturn(forecastIds);
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(ProcessingType.REMAINING_PROCESSING.name()),
                 List.of(ProcessPath.GLOBAL.toString()),
                 List.of(WAVING.name()),

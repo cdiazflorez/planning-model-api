@@ -23,7 +23,7 @@ public interface ProcessingDistributionRepository extends CrudRepository<Process
           + "AND p.date BETWEEN :date_from AND :date_to "
           + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "
           + "AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
-  List<ProcessingDistributionView> findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+  List<ProcessingDistributionView> findByTypeProcessPathProcessNameAndDateInRange(
       @Param("type") Set<String> type,
       @Param("process_paths") List<String> processPaths,
       @Param("process_name") List<String> processNames,

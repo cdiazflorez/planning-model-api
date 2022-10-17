@@ -101,7 +101,7 @@ public class GetSuggestedWavesUseCase {
     private long getCapex(final GetSuggestedWavesInput input, final List<Long> forecastIds) {
         final List<ProcessingDistributionView> processingDistributionView =
                 processingDistRepository
-                        .findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+                        .findByTypeProcessPathProcessNameAndDateInRange(
                                 Set.of(ProcessingType.MAX_CAPACITY.name()),
                                 List.of(ProcessPath.GLOBAL.toString()),
                                 List.of(ProcessName.GLOBAL.toJson()),

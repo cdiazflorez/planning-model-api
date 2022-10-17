@@ -103,7 +103,7 @@ public class GetSuggestedWavesUseCaseTest {
         when(planningDistributionService.applyDeviation(anyString(), any()))
                 .thenAnswer(answer -> answer.getArgument(1));
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
                 List.of(ProcessPath.GLOBAL.toString()),
                 List.of(GLOBAL.toJson()),
@@ -219,7 +219,7 @@ public class GetSuggestedWavesUseCaseTest {
                 )
         ).thenReturn(List.of());
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(MAX_CAPACITY.name()),
                 List.of(ProcessPath.GLOBAL.toString()),
                 List.of(GLOBAL.toJson()),

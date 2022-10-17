@@ -51,7 +51,7 @@ public class SearchEntityUseCase implements EntityUseCase<GetEntityInput, List<E
         ));
 
         final List<ProcessingDistributionView> performedProcessing =
-                processingDistRepository.findByWarehouseIdWorkflowTypeProcessPathProcessNameAndDateInRange(
+                processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                         Set.of(targetEntityType.name()),
                         List.of(ProcessPath.GLOBAL.toString()),
                         input.getProcessNamesAsString(),

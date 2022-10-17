@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.entity.current;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.ZonedDateTime;
@@ -39,6 +40,9 @@ public class CurrentProcessingDistribution {
   private Workflow workflow;
 
   @Enumerated(EnumType.STRING)
+  private ProcessPath processPath;
+
+  @Enumerated(EnumType.STRING)
   private ProcessName processName;
 
   private long quantity;
@@ -61,4 +65,8 @@ public class CurrentProcessingDistribution {
 
   @UpdateTimestamp
   private ZonedDateTime lastUpdated;
+
+  public ProcessPath getProcessPath() {
+    return processPath == null ? ProcessPath.GLOBAL : processPath;
+  }
 }

@@ -12,5 +12,5 @@ public class ProcessingDistributionDataRequest {
     @NotNull
     private ZonedDateTime date;
 
-    private long quantity;
+    private double quantity;
 }

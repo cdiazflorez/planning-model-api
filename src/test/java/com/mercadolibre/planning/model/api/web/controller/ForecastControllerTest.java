@@ -1,5 +1,14 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
@@ -7,6 +16,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.Delete
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
 import com.mercadolibre.planning.model.api.web.controller.forecast.ForecastController;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,17 +27,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.util.stream.Stream;
-
-import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ForecastController.class)
 @SuppressWarnings("PMD.SignatureDeclareThrowsException")

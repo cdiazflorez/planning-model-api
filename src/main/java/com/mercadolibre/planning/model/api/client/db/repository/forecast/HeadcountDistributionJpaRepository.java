@@ -23,15 +23,13 @@ public class HeadcountDistributionJpaRepository implements HeadcountDistribution
     @Trace
     @Override
     public void create(final List<HeadcountDistribution> entities, final long forecastId) {
-        final List<List<?>> pages = EntitiesUtil.paginate(entities, INSERT_SIZE);
+        final List<List<HeadcountDistribution>> pages = EntitiesUtil.paginate(entities, INSERT_SIZE);
 
         pages.forEach(page -> {
             final Query query = entityManager.createNativeQuery(getInsertQuery(page.size()));
 
             int paramIndex = 1;
-            for (final Object object : page) {
-                final HeadcountDistribution entity = (HeadcountDistribution) object;
-
+            for (final HeadcountDistribution entity : page) {
                 query.setParameter(paramIndex++, forecastId);
                 query.setParameter(paramIndex++, entity.getArea());
                 query.setParameter(paramIndex++, entity.getProcessName().name());

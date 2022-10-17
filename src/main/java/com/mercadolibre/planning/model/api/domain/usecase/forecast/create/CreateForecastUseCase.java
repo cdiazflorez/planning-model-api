@@ -22,184 +22,166 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Plann
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
+import java.util.List;
+import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
-import java.util.List;
-
 
 @Service
 @AllArgsConstructor
 public class CreateForecastUseCase {
 
-    private static final String WAREHOUSE_ID = "warehouse_id";
+  private static final String WAREHOUSE_ID = "warehouse_id";
 
-    private final ForecastGateway forecastGateway;
+  private final ForecastGateway forecastGateway;
 
-    private final ProcessingDistributionGateway processingDistributionGateway;
+  private final ProcessingDistributionGateway processingDistributionGateway;
 
-    private final HeadcountDistributionGateway headcountDistributionGateway;
+  private final HeadcountDistributionGateway headcountDistributionGateway;
 
-    private final HeadcountProductivityGateway headcountProductivityGateway;
+  private final HeadcountProductivityGateway headcountProductivityGateway;
 
-    private final PlanningDistributionGateway planningDistributionGateway;
+  private final PlanningDistributionGateway planningDistributionGateway;
 
-    private final DeactivateSimulationService deactivateSimulationService;
+  private final DeactivateSimulationService deactivateSimulationService;
 
-    @Trace
-    @Transactional
-    public CreateForecastOutput execute(final CreateForecastInput input) {
+  @Trace
+  @Transactional
+  public CreateForecastOutput execute(final CreateForecastInput input) {
 
-        deactivateSimulation(input);
+    deactivateSimulation(input);
 
-        final Forecast forecast = saveForecast(input);
+    final Forecast forecast = saveForecast(input);
 
-        saveProcessingDistributions(input, forecast);
-        saveHeadcountDistribution(input, forecast);
-        saveHeadcountProductivity(input, forecast);
-        savePlanningDistributions(input, forecast);
-        saveBackloglimit(input, forecast);
+    saveProcessingDistributions(input, forecast);
+    saveHeadcountDistribution(input, forecast);
+    saveHeadcountProductivity(input, forecast);
+    savePlanningDistributions(input, forecast);
+    saveBackloglimit(input, forecast);
 
-        return new CreateForecastOutput(forecast.getId());
+    return new CreateForecastOutput(forecast.getId());
+  }
+
+  private Forecast saveForecast(final CreateForecastInput input) {
+    final Forecast forecast = Forecast.builder()
+        .userId(input.getUserId())
+        .workflow(input.getWorkflow()).build();
+
+    final List<ForecastMetadata> metadata = input.getMetadata().stream()
+        .map(metadataRequest -> ForecastMetadata.builder()
+            .key(metadataRequest.getKey())
+            .value(metadataRequest.getValue())
+            .build())
+        .collect(toList());
+
+    return forecastGateway.create(forecast, metadata);
+  }
+
+  private void saveProcessingDistributions(final CreateForecastInput input, final Forecast forecast) {
+    final List<ProcessingDistributionRequest> distributions = input.getProcessingDistributions();
+
+    if (isEmpty(distributions)) {
+      return;
     }
 
-    private Forecast saveForecast(final CreateForecastInput input) {
+    final List<ProcessingDistribution> processingDistributions = distributions.stream()
+        .map(e -> e.toProcessingDistributions(forecast))
+        .flatMap(List::stream).distinct().collect(toList());
 
-        final Forecast forecast = Forecast.builder()
-                .userId(input.getUserId())
-                .workflow(input.getWorkflow()).build();
-        final List<ForecastMetadata> metadata = input.getMetadata().stream()
-                .map(metadataRequest -> ForecastMetadata.builder()
-                        .key(metadataRequest.getKey())
-                        .value(metadataRequest.getValue())
-                        .build())
-                .collect(toList());
+    processingDistributionGateway.create(processingDistributions, forecast.getId());
+  }
 
-        return forecastGateway.create(forecast, metadata);
+  private void saveHeadcountDistribution(final CreateForecastInput input, final Forecast forecast) {
+    final List<HeadcountDistributionRequest> distributions = input.getHeadcountDistributions();
+    if (isEmpty(distributions)) {
+      return;
     }
 
-    private void saveProcessingDistributions(final CreateForecastInput input,
-                                             final Forecast forecast) {
+    final List<HeadcountDistribution> headcountDistributions = distributions.stream()
+        .map(e -> e.toHeadcountDists(forecast))
+        .flatMap(List::stream).distinct().collect(toList());
 
-        final List<ProcessingDistributionRequest> distributions =
-                input.getProcessingDistributions();
+    headcountDistributionGateway.create(headcountDistributions, forecast.getId());
+  }
 
-        if (isEmpty(distributions)) {
-            return;
-        }
-
-        final List<ProcessingDistribution> processingDistributions = distributions.stream()
-                        .map(e -> e.toProcessingDistributions(forecast))
-                        .flatMap(List::stream).distinct().collect(toList());
-
-        processingDistributionGateway.create(processingDistributions, forecast.getId());
+  private void saveHeadcountProductivity(final CreateForecastInput input, final Forecast forecast) {
+    final List<HeadcountProductivityRequest> productivities = input.getHeadcountProductivities();
+    if (isEmpty(productivities)) {
+      return;
     }
 
-    private void saveHeadcountDistribution(final CreateForecastInput input,
-                                           final Forecast forecast) {
+    final List<HeadcountProductivity> headcountProductivities = productivities.stream()
+        .map(e -> e.toHeadcountProductivities(forecast, input.getPolyvalentProductivities()))
+        .flatMap(List::stream).distinct().collect(toList());
 
-        final List<HeadcountDistributionRequest> distributions = input.getHeadcountDistributions();
-        if (isEmpty(distributions)) {
-            return;
-        }
+    headcountProductivityGateway.create(headcountProductivities, forecast.getId());
+  }
 
-        final List<HeadcountDistribution> headcountDistributions = distributions.stream()
-                        .map(e -> e.toHeadcountDists(forecast))
-                        .flatMap(List::stream).distinct().collect(toList());
-
-        headcountDistributionGateway.create(headcountDistributions, forecast.getId());
+  private void savePlanningDistributions(final CreateForecastInput input, final Forecast forecast) {
+    final List<PlanningDistributionRequest> distributions = input.getPlanningDistributions();
+    if (isEmpty(distributions)) {
+      return;
     }
 
-    private void saveHeadcountProductivity(final CreateForecastInput input,
-                                           final Forecast forecast) {
+    final List<PlanningDistribution> planningDistributions = distributions.stream()
+        .map(pdr -> pdr.toPlanningDistribution(forecast))
+        .collect(toList());
 
-        final List<HeadcountProductivityRequest> productivities =
-                input.getHeadcountProductivities();
+    planningDistributionGateway.create(planningDistributions, forecast.getId());
+  }
 
-        if (isEmpty(productivities)) {
-            return;
-        }
-
-        final List<HeadcountProductivity> headcountProductivities = productivities.stream()
-                        .map(e -> e.toHeadcountProductivities(
-                                forecast,
-                                input.getPolyvalentProductivities()))
-                        .flatMap(List::stream).distinct().collect(toList());
-
-        headcountProductivityGateway.create(headcountProductivities, forecast.getId());
+  private void saveBackloglimit(final CreateForecastInput input, final Forecast forecast) {
+    final List<ProcessingDistributionRequest> limits = input.getBacklogLimits();
+    if (isEmpty(limits)) {
+      return;
     }
 
-    private void savePlanningDistributions(final CreateForecastInput input,
-                                           final Forecast forecast) {
+    final List<ProcessingDistribution> backlogList = limits.stream()
+        .map(e -> e.toProcessingDistributions(forecast))
+        .flatMap(List::stream).distinct().collect(toList());
 
-        final List<PlanningDistributionRequest> distributions = input.getPlanningDistributions();
-        if (isEmpty(distributions)) {
-            return;
-        }
+    processingDistributionGateway.create(backlogList, forecast.getId());
+  }
 
-        final List<PlanningDistribution> planningDistributions = distributions.stream()
-                .map(pdr -> pdr.toPlanningDistribution(forecast))
-                .collect(toList());
+  private void deactivateSimulation(final CreateForecastInput input) {
 
-        planningDistributionGateway.create(planningDistributions, forecast.getId());
+    final List<ProcessingDistributionRequest> processingDistribution = input.getProcessingDistributions();
+
+    if (isEmpty(processingDistribution)) {
+      return;
     }
 
-    private void saveBackloglimit(final CreateForecastInput input,
-                                   final Forecast forecast) {
+    final String logisticCenterId = input.getMetadata().stream()
+        .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
+        .map(MetadataRequest::getValue)
+        .findFirst().orElseThrow();
 
-        final List<ProcessingDistributionRequest> limits = input.getBacklogLimits();
-        if (isEmpty(limits)) {
-            return;
-        }
+    final ZonedDateTime dateFrom = processingDistribution.stream()
+        .map(ProcessingDistributionRequest::getData)
+        .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
+            .map(ProcessingDistributionDataRequest::getDate)
+            .min(ChronoZonedDateTime::compareTo)
+            .get())
+        .min(ChronoZonedDateTime::compareTo)
+        .get();
 
-        final List<ProcessingDistribution> backlogList = limits.stream()
-                        .map(e -> e.toProcessingDistributions(forecast))
-                        .flatMap(List::stream).distinct().collect(toList());
+    final ZonedDateTime dateTo = processingDistribution.stream()
+        .map(ProcessingDistributionRequest::getData)
+        .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
+            .map(ProcessingDistributionDataRequest::getDate)
+            .max(ChronoZonedDateTime::compareTo)
+            .get())
+        .max(ChronoZonedDateTime::compareTo)
+        .get();
 
-        processingDistributionGateway.create(backlogList, forecast.getId());
-    }
+    deactivateSimulationService.deactivateSimulation(
+        new DeactivateSimulationOfWeek(logisticCenterId, dateFrom, dateTo, input.getUserId())
+    );
+  }
 
-    private void deactivateSimulation(final CreateForecastInput input) {
-
-        final List<ProcessingDistributionRequest> processingDistribution = input.getProcessingDistributions();
-
-        if (isEmpty(processingDistribution)) {
-            return;
-        }
-
-        final String logisticCenterId = input.getMetadata().stream()
-                .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
-                .map(MetadataRequest::getValue)
-                .findFirst().orElseThrow();
-
-        final ZonedDateTime dateFrom = processingDistribution.stream()
-                .map(ProcessingDistributionRequest::getData)
-                .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
-                        .map(ProcessingDistributionDataRequest::getDate)
-                        .min(ChronoZonedDateTime::compareTo)
-                        .get())
-                .min(ChronoZonedDateTime::compareTo)
-                .get();
-
-        final ZonedDateTime dateTo = processingDistribution.stream()
-                .map(ProcessingDistributionRequest::getData)
-                .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
-                        .map(ProcessingDistributionDataRequest::getDate)
-                        .max(ChronoZonedDateTime::compareTo)
-                        .get())
-                .max(ChronoZonedDateTime::compareTo)
-                .get();
-
-        deactivateSimulationService.deactivateSimulation(
-                new DeactivateSimulationOfWeek(logisticCenterId, dateFrom, dateTo, input.getUserId())
-        );
-
-
-    }
-
-    private static <T> boolean isEmpty(List<T> collection) {
-        return collection == null || collection.isEmpty();
-    }
+  private static <T> boolean isEmpty(List<T> collection) {
+    return collection == null || collection.isEmpty();
+  }
 }

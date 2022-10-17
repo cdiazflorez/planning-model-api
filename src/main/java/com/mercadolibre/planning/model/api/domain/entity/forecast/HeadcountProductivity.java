@@ -2,6 +2,16 @@ package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import java.time.ZonedDateTime;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,17 +21,6 @@ import lombok.ToString;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import java.time.ZonedDateTime;
-
 @Entity
 @Builder
 @AllArgsConstructor
@@ -29,26 +28,29 @@ import java.time.ZonedDateTime;
 @Data
 public class HeadcountProductivity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
 
-    private ZonedDateTime date;
+  private ZonedDateTime date;
 
-    @Enumerated(EnumType.STRING)
-    private ProcessName processName;
+  @Enumerated(EnumType.STRING)
+  private ProcessPath processPath;
 
-    private long productivity;
+  @Enumerated(EnumType.STRING)
+  private ProcessName processName;
 
-    @Enumerated(EnumType.STRING)
-    private MetricUnit productivityMetricUnit;
+  private long productivity;
 
-    private int abilityLevel;
+  @Enumerated(EnumType.STRING)
+  private MetricUnit productivityMetricUnit;
 
-    @ManyToOne
-    @JoinColumn(name = "forecast_id")
-    @Fetch(FetchMode.SELECT)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Forecast forecast;
+  private int abilityLevel;
+
+  @ManyToOne
+  @JoinColumn(name = "forecast_id")
+  @Fetch(FetchMode.SELECT)
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  private Forecast forecast;
 }

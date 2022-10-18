@@ -79,7 +79,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
         .map(p -> ProductivityOutput.builder()
             .workflow(input.getWorkflow())
             .date(ofInstant(p.getDate().toInstant(), UTC))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(p.getProcessPath())
             .processName(p.getProcessName())
             .quantity(p.getProductivity())
             .metricUnit(p.getProductivityMetricUnit())

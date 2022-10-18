@@ -11,6 +11,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -177,7 +178,7 @@ public class GetThroughputUseCase
         final var regularHeadcount = forecastHeadcount.getValue();
         final var regularProductivity = simulatedRegularProductivity.getValue();
         final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / (double) forecastRegularProductivity.getValue();
+        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / forecastRegularProductivity.getQuantity();
         final double polyvalentProductivity = simulatedRegularProductivity.getValue() * polyvalentProductivityRatio;
         tph = regularHeadcount * regularProductivity + Math.round(polyvalentHeadcount * polyvalentProductivity);
     }
@@ -185,11 +186,12 @@ public class GetThroughputUseCase
     return Optional.of(
         EntityOutput.builder()
             .workflow(workflow)
+            .processPath(ProcessPath.GLOBAL)
+            .processName(process)
             .date(dateTime)
             .source(simulatedRegularProductivity.getSource())
-            .processName(process)
             .metricUnit(UNITS_PER_HOUR)
-            .value(tph)
+            .quantity(tph)
             .build()
     );
   }

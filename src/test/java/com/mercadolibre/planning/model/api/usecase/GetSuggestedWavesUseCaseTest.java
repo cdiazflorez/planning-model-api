@@ -183,7 +183,7 @@ public class GetSuggestedWavesUseCaseTest {
                 EntityOutput.builder()
                         .workflow(FBM_WMS_OUTBOUND)
                         .date(A_DATE_UTC)
-                        .value(value)
+                        .quantity(value)
                         .source(FORECAST)
                         .processName(PICKING)
                         .metricUnit(MINUTES)

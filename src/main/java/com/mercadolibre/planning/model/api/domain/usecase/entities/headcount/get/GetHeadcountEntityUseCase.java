@@ -15,6 +15,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
@@ -62,8 +63,9 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
         .map(p -> EntityOutput.builder()
             .workflow(input.getWorkflow())
             .date(fromDate(p.getDate()))
+            .processPath(ProcessPath.GLOBAL)
             .processName(p.getProcessName())
-            .value(p.getQuantity())
+            .quantity(p.getQuantity())
             .metricUnit(p.getQuantityMetricUnit())
             .type(p.getType())
             .source(FORECAST)
@@ -84,8 +86,9 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
             EntityOutput.builder()
                 .workflow(input.getWorkflow())
                 .date(cpd.getDate())
-                .value(cpd.getQuantity())
+                .quantity(cpd.getQuantity())
                 .source(SIMULATION)
+                .processPath(ProcessPath.GLOBAL)
                 .processName(cpd.getProcessName())
                 .metricUnit(cpd.getQuantityMetricUnit())
                 .type(cpd.getType())
@@ -170,6 +173,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
                     .map(quantityByDate -> new EntityOutput(
                             input.getWorkflow(),
                             quantityByDate.getDate().withFixedOffsetZone(),
+                            ProcessPath.GLOBAL,
                             simulation.getProcessName(),
                             entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
                             entity.getType() == HEADCOUNT ? WORKERS : UNITS_PER_HOUR,

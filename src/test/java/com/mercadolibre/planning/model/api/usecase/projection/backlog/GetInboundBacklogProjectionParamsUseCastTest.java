@@ -43,13 +43,13 @@ public class GetInboundBacklogProjectionParamsUseCastTest {
 
     private List<EntityOutput> mockThroughput() {
         return List.of(
-                EntityOutput.builder().processName(RECEIVING).date(NOW).value(100).build(),
-                EntityOutput.builder().processName(RECEIVING).date(NOW.plusHours(1)).value(150).build(),
-                EntityOutput.builder().processName(CHECK_IN).date(NOW).value(200).build(),
-                EntityOutput.builder().processName(CHECK_IN).date(NOW).value(200).build(),
-                EntityOutput.builder().processName(CHECK_IN).date(NOW.plusHours(1)).value(70).build(),
-                EntityOutput.builder().processName(PUT_AWAY).date(NOW).value(230).build(),
-                EntityOutput.builder().processName(PUT_AWAY).date(NOW.plusHours(1)).value(240).build());
+                EntityOutput.builder().processName(RECEIVING).date(NOW).quantity(100).build(),
+                EntityOutput.builder().processName(RECEIVING).date(NOW.plusHours(1)).quantity(150).build(),
+                EntityOutput.builder().processName(CHECK_IN).date(NOW).quantity(200).build(),
+                EntityOutput.builder().processName(CHECK_IN).date(NOW).quantity(200).build(),
+                EntityOutput.builder().processName(CHECK_IN).date(NOW.plusHours(1)).quantity(70).build(),
+                EntityOutput.builder().processName(PUT_AWAY).date(NOW).quantity(230).build(),
+                EntityOutput.builder().processName(PUT_AWAY).date(NOW.plusHours(1)).quantity(240).build());
     }
 
     private List<CurrentBacklog> mockBacklogs() {

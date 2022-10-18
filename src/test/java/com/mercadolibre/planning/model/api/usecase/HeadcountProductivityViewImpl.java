@@ -5,9 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import lombok.AllArgsConstructor;
-
 import java.util.Date;
-import org.apache.tomcat.jni.Proc;
 
 @AllArgsConstructor
 public class HeadcountProductivityViewImpl implements HeadcountProductivityView {

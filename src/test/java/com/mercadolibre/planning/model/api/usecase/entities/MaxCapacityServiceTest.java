@@ -141,7 +141,7 @@ public class MaxCapacityServiceTest {
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
         Set.of(MAX_CAPACITY.name()),
-        List.of(ProcessPath.GLOBAL.toString()),
+        of(ProcessPath.GLOBAL.toString()),
         of(GLOBAL.toJson()),
         FROM,
         TO,

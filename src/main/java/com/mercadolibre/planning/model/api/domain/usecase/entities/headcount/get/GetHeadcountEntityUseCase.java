@@ -54,7 +54,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     return Stream.concat(
         getForecastHeadcount(input).stream(),
         simulations
-    ).collect(Collectors.toList());
+    ).collect(toList());
   }
 
   private List<EntityOutput> getForecastHeadcount(final GetHeadcountInput input) {
@@ -104,7 +104,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
 
     final Set<EntityOutputKey> unappliedSimulationKeys = inputSimulatedEntities.stream()
         .map(EntityOutputKey::from)
-        .collect(Collectors.toSet());
+        .collect(toSet());
 
     final var storedSimulations = findCurrentProcessingDistributionBy(input)
         .stream()
@@ -122,7 +122,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
         );
 
     return Stream.concat(inputSimulatedEntities.stream(), storedSimulations)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(final GetHeadcountInput input) {
@@ -141,7 +141,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     final var processPaths = input.getProcessPaths()
         .stream()
         .map(ProcessPath::name)
-        .collect(Collectors.toSet());
+        .collect(toSet());
 
     return currentPDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         input.getWarehouseId(),

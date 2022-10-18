@@ -29,16 +29,14 @@ public class PlanningDistributionJpaRepository implements PlanningDistributionGa
     @Trace
     @Override
     public void create(final List<PlanningDistribution> entities, final long forecastId) {
-        final List<List<?>> pages = paginate(entities, INSERT_SIZE);
+        final List<List<PlanningDistribution>> pages = paginate(entities, INSERT_SIZE);
 
         pages.forEach(page -> {
             final Query query = entityManager.createNativeQuery(
                     getPlanningDistributionQuery(page.size())
             );
             int paramIndex = 1;
-            for (final Object object : page) {
-                final var entity = (PlanningDistribution) object;
-
+            for (final PlanningDistribution entity : page) {
                 query.setParameter(paramIndex++, forecastId);
                 query.setParameter(paramIndex++, entity.getDateIn());
                 query.setParameter(paramIndex++, entity.getDateOut());
@@ -79,15 +77,14 @@ public class PlanningDistributionJpaRepository implements PlanningDistributionGa
 
     @Trace
     private void createMetadata(final List<PlanningDistributionMetadata> metadataList) {
-        final List<List<?>> pages = paginate(metadataList, INSERT_SIZE);
+        final List<List<PlanningDistributionMetadata>> pages = paginate(metadataList, INSERT_SIZE);
 
         pages.forEach(page -> {
             final Query query = entityManager.createNativeQuery(
                     getPlanningDistributionMetadataQuery(page.size())
             );
             int paramIndex = 1;
-            for (final Object object : page) {
-                final var metadata = (PlanningDistributionMetadata) object;
+            for (final PlanningDistributionMetadata metadata : page) {
                 query.setParameter(paramIndex++, metadata.getPlanningDistributionId());
                 query.setParameter(paramIndex++, metadata.getKey());
                 query.setParameter(paramIndex++, metadata.getValue());

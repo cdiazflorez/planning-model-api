@@ -1,40 +1,45 @@
 package com.mercadolibre.planning.model.api.web.controller.forecast.request;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
-import lombok.Value;
-
-import javax.validation.constraints.NotNull;
-
 import java.time.ZonedDateTime;
-
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import javax.validation.constraints.NotNull;
+import lombok.Value;
 
 @Value
 public class PolyvalentProductivityRequest {
 
-    @NotNull
-    private ProcessName processName;
+  private static final Integer ONE_HUNDRED_PERCENT = 100;
 
-    @NotNull
-    private MetricUnit productivityMetricUnit;
+  @NotNull
+  ProcessName processName;
 
-    private long productivity;
+  @NotNull
+  MetricUnit productivityMetricUnit;
 
-    private int abilityLevel;
+  long productivity;
 
-    public HeadcountProductivity toHeadcountProductivity(final Forecast forecast,
-                                                         final long regularProductivity,
-                                                         final ZonedDateTime date) {
-        return HeadcountProductivity.builder()
-                .abilityLevel(abilityLevel)
-                .processName(processName)
-                .productivityMetricUnit(UNITS_PER_HOUR)
-                .date(date)
-                .productivity((regularProductivity * productivity) / 100)
-                .forecast(forecast)
-                .build();
-    }
+  int abilityLevel;
+
+  public HeadcountProductivity toHeadcountProductivity(
+      final Forecast forecast,
+      final ProcessPath processPath,
+      final long regularProductivity,
+      final ZonedDateTime date
+  ) {
+    return HeadcountProductivity.builder()
+        .abilityLevel(abilityLevel)
+        .processPath(processPath)
+        .processName(processName)
+        .productivityMetricUnit(UNITS_PER_HOUR)
+        .date(date)
+        .productivity((regularProductivity * productivity) / ONE_HUNDRED_PERCENT)
+        .forecast(forecast)
+        .build();
+  }
 }

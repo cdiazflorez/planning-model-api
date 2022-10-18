@@ -5,7 +5,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCE
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
@@ -44,6 +43,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
@@ -872,17 +873,19 @@ public final class TestUtils {
   private static List<ProcessingDistributionRequest> mockProcessingDistributions() {
     return List.of(
         new ProcessingDistributionRequest(
+            ProcessPath.TOT_MONO,
+            WAVING,
             PERFORMED_PROCESSING,
             UNITS,
-            WAVING,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            ProcessName.GLOBAL,
             MAX_CAPACITY,
             UNITS_PER_HOUR,
-            GLOBAL,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 1000),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 1000)
@@ -893,25 +896,28 @@ public final class TestUtils {
   private static List<ProcessingDistributionRequest> mockBacklogLimits() {
     return List.of(
         new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            WAVING,
             BACKLOG_LOWER_LIMIT,
             MINUTES,
-            WAVING,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            PICKING,
             BACKLOG_UPPER_LIMIT,
             MINUTES,
-            PICKING,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            PACKING,
             BACKLOG_LOWER_LIMIT,
             MINUTES,
-            PACKING,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
@@ -949,11 +955,11 @@ public final class TestUtils {
 
   private static List<HeadcountProductivityRequest> mockProductivities() {
     return asList(
-        new HeadcountProductivityRequest(PICKING, UNITS_PER_HOUR, 0, List.of(
+        new HeadcountProductivityRequest(ProcessPath.TOT_MONO, PICKING, UNITS_PER_HOUR, 0, List.of(
             new HeadcountProductivityDataRequest(A_DATE_UTC, 85),
             new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
         )),
-        new HeadcountProductivityRequest(PACKING, UNITS_PER_HOUR, 0, List.of(
+        new HeadcountProductivityRequest(ProcessPath.GLOBAL, PACKING, UNITS_PER_HOUR, 0, List.of(
             new HeadcountProductivityDataRequest(A_DATE_UTC, 92),
             new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
         ))

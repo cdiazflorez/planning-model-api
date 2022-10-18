@@ -2,45 +2,50 @@ package com.mercadolibre.planning.model.api.web.controller.forecast.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import lombok.Value;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Value;
 
 @Value
 public class ProcessingDistributionRequest {
+  @NotNull
+  ProcessPath processPath;
 
-    @NotNull
-    private ProcessingType type;
+  @NotNull
+  ProcessName processName;
 
-    @NotNull
-    private MetricUnit quantityMetricUnit;
+  @NotNull
+  ProcessingType type;
 
-    @NotNull
-    private ProcessName processName;
+  @NotNull
+  MetricUnit quantityMetricUnit;
 
-    @NotEmpty
-    @Valid
-    private List<ProcessingDistributionDataRequest> data;
+  @NotEmpty
+  @Valid
+  List<ProcessingDistributionDataRequest> data;
 
-    public List<ProcessingDistribution> toProcessingDistributions(final Forecast forecast) {
-        final List<ProcessingDistribution> processingDistributions = new ArrayList<>();
-        data.forEach(data -> processingDistributions.add(ProcessingDistribution.builder()
+  public List<ProcessingDistribution> toProcessingDistributions(final Forecast forecast) {
+    final List<ProcessingDistribution> processingDistributions = new ArrayList<>();
+    data.forEach(pddr -> processingDistributions.add(
+            ProcessingDistribution.builder()
+                .processPath(processPath)
                 .processName(processName)
                 .quantityMetricUnit(quantityMetricUnit)
                 .type(type)
-                .date(data.getDate())
+                .date(pddr.getDate())
                 .forecast(forecast)
-                .quantity(data.getQuantity())
-                .build()));
+                .quantity(pddr.getQuantity())
+                .build()
+        )
+    );
 
-        return processingDistributions;
-    }
+    return processingDistributions;
+  }
 }

@@ -1,70 +1,140 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.Optional;
-
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProcessingDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.adapter.headcount.ProcessPathShareAdapter.ShareView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
+
 @DataJpaTest
+@ActiveProfiles("development")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ProcessingDistributionRepositoryTest {
+class ProcessingDistributionRepositoryTest {
 
-    @Autowired
-    private ProcessingDistributionRepository repository;
+  private static final Instant DATE_FROM = Instant.parse("2022-09-08T10:00:00Z");
 
-    @Autowired
-    private TestEntityManager entityManager;
+  private static final Instant MIDDLE_DATE = Instant.parse("2022-09-08T11:00:00Z");
 
-    @Test
-    @DisplayName("Looking for a processing distribution that exists, returns it")
-    public void testFindProcessingDistributionById() {
-        // GIVEN
-        final Forecast forecast = mockSimpleForecast();
-        entityManager.persistAndFlush(forecast);
-        entityManager.persistAndFlush(mockProcessingDist(forecast));
+  private static final Instant DATE_TO = Instant.parse("2022-09-08T12:00:00Z");
 
-        // WHEN
-        final Optional<ProcessingDistribution> optProcessingDistribution =
-                repository.findById(1L);
+  private static final Map<ProcessPath, Map<Instant, Double>> EXPECTED_SHARE_RESULTS = Map.of(
+      GLOBAL, Map.of(
+          DATE_FROM, 1.0,
+          MIDDLE_DATE, 1.0,
+          DATE_TO, 1.0
+      ),
+      TOT_MONO, Map.of(
+          DATE_FROM, 0.700,
+          MIDDLE_DATE, 0.600,
+          DATE_TO, 0.066
+      ),
+      TOT_MULTI_BATCH, Map.of(
+          DATE_FROM, 0.3,
+          MIDDLE_DATE, 0.4
+      ),
+      NON_TOT_MONO, Map.of(
+          DATE_TO, 0.933
+      )
+  );
 
-        // THEN
-        assertTrue(optProcessingDistribution.isPresent());
+  @Autowired
+  private ProcessingDistributionRepository repository;
 
-        final ProcessingDistribution foundProcessingDistribution =
-                optProcessingDistribution.get();
+  @Autowired
+  private TestEntityManager entityManager;
 
-        assertEquals(1L, foundProcessingDistribution.getId());
-        assertEquals(A_DATE_UTC, foundProcessingDistribution.getDate());
-        assertEquals(1000, foundProcessingDistribution.getQuantity());
-        assertEquals("UNITS", foundProcessingDistribution.getQuantityMetricUnit().name());
-        assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
-        assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
+  private static void assertResults(final List<ShareView> views) {
+    for (final ShareView view : views) {
+      final var expected = EXPECTED_SHARE_RESULTS.get(view.getProcessPath()).get(view.getDate());
 
-        final Forecast foundForecast = foundProcessingDistribution.getForecast();
-        assertEquals(1L, foundForecast.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
+      assertEquals(PICKING, view.getProcessName());
+      assertEquals(expected, view.getShare(), 0.001);
     }
+  }
 
-    @Test
-    @DisplayName("Looking for a processing distribution that doesn't exist, returns nothing")
-    public void testProcessingDistributionDoesntExist() {
-        // WHEN
-        final Optional<ProcessingDistribution> optProcessingDist = repository.findById(1L);
+  @Test
+  @DisplayName("Looking for a processing distribution that exists, returns it")
+  void testFindProcessingDistributionById() {
+    // GIVEN
+    final Forecast forecast = mockSimpleForecast();
+    entityManager.persistAndFlush(forecast);
+    entityManager.persistAndFlush(mockProcessingDist(forecast));
 
-        // THEN
-        assertFalse(optProcessingDist.isPresent());
-    }
+    // WHEN
+    final Optional<ProcessingDistribution> optProcessingDistribution =
+        repository.findById(1L);
+
+    // THEN
+    assertTrue(optProcessingDistribution.isPresent());
+
+    final ProcessingDistribution foundProcessingDistribution =
+        optProcessingDistribution.get();
+
+    assertEquals(1L, foundProcessingDistribution.getId());
+    assertEquals(A_DATE_UTC, foundProcessingDistribution.getDate());
+    assertEquals(1000, foundProcessingDistribution.getQuantity());
+    assertEquals("UNITS", foundProcessingDistribution.getQuantityMetricUnit().name());
+    assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
+    assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
+
+    final Forecast foundForecast = foundProcessingDistribution.getForecast();
+    assertEquals(1L, foundForecast.getId());
+    assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
+  }
+
+  @Test
+  @DisplayName("Looking for a processing distribution that doesn't exist, returns nothing")
+  void testProcessingDistributionDoesntExist() {
+    // WHEN
+    final Optional<ProcessingDistribution> optProcessingDist = repository.findById(1L);
+
+    // THEN
+    assertFalse(optProcessingDist.isPresent());
+  }
+
+  @Test
+  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
+  void testGetHeadcountProcessPathShare() {
+    // GIVEN
+
+    // WHEN
+    final var result = repository.getProcessPathHeadcountShare(
+        List.of("PICKING"),
+        DATE_FROM,
+        DATE_TO,
+        List.of(1L, 2L)
+    );
+
+    // THEN
+    assertNotNull(result);
+
+    assertEquals(9, result.size());
+    assertResults(result);
+  }
 }

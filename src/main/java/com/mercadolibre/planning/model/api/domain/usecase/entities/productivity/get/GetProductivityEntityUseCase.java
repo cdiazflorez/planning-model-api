@@ -48,7 +48,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
   public boolean supportsEntityType(final EntityType entityType) {
     return entityType == PRODUCTIVITY;
   }
-  
+
   private List<ProductivityOutput> getSimulationAndForecastProductivity(final GetProductivityInput input) {
     final List<ProductivityOutput> productivityAccumulator = getForecastProductivity(input);
     final List<ProductivityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
@@ -71,7 +71,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
     productivityAccumulator.addAll(inputSimulatedEntities);
     return new ArrayList<>(productivityAccumulator);
   }
-  
+
   private List<ProductivityOutput> getForecastProductivity(final GetProductivityInput input) {
     final List<HeadcountProductivityView> productivities = findProductivityBy(input);
 
@@ -88,7 +88,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
             .build())
         .collect(toList());
   }
-  
+
   private boolean noSimulationExistsWithSameProperties(
       final List<ProductivityOutput> entities,
       final CurrentHeadcountProductivity currentHeadcountProductivity
@@ -128,6 +128,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
 
     return productivityRepository.findBy(
         input.getProcessNamesAsString(),
+        input.getProcessPaths(),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,

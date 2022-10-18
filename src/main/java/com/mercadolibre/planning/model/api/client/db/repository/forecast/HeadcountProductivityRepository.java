@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -14,15 +15,17 @@ import java.util.Set;
 public interface HeadcountProductivityRepository
         extends CrudRepository<HeadcountProductivity, Long> {
 
-    @Query(value = "SELECT process_name as processName, productivity, hd.date as date, "
+    @Query(value = "SELECT process_name as processName, productivity, process_path as processPath, hd.date as date, "
             + "productivity_metric_unit as productivityMetricUnit, ability_level as abilityLevel "
             + "FROM headcount_productivity hd "
             + "WHERE hd.process_name IN (:process_name) "
+            + "AND hd.process_path IN (:process_path)"
             + "AND hd.date BETWEEN :date_from AND :date_to "
             + "AND hd.ability_level in (:ability_levels)  "
             + "AND hd.forecast_id in (:forecast_ids)", nativeQuery = true)
     List<HeadcountProductivityView> findBy(
             @Param("process_name") List<String> processNames,
+            @Param("process_path") List<ProcessPath> processPaths,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,
             @Param("forecast_ids") List<Long> forecastIds,

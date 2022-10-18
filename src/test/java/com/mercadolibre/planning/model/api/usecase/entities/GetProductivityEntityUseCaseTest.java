@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.usecase.entities;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -75,6 +76,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -133,6 +135,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -173,6 +176,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -205,13 +209,13 @@ public class GetProductivityEntityUseCaseTest {
   private List<HeadcountProductivityView> productivities() {
     return List.of(
         new HeadcountProductivityViewImpl(PICKING,
-            80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
+            80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PICKING,
-            85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1),
+            85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PACKING,
-            90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
+            90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PACKING,
-            92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1)
+            92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1, GLOBAL)
     );
   }
 

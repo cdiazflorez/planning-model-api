@@ -4,51 +4,49 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
 import com.mercadolibre.planning.model.api.util.EntitiesUtil;
 import com.newrelic.api.agent.Trace;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
-
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import java.util.List;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
 public class HeadcountProductivityJpaRepository implements HeadcountProductivityGateway {
 
-    private static final int INSERT_SIZE = 1000;
+  private static final String COLUMN_NAMES =
+      "forecast_id, date, process_path, process_name, productivity, productivity_metric_unit, ability_level";
 
-    private final EntityManager entityManager;
+  private static final String COLUMN_PLACEHOLDERS = "(?,?,?,?,?,?,?),";
 
-    @Trace
-    @Override
-    public void create(final List<HeadcountProductivity> entities, final long forecastId) {
-        final List<List<?>> pages = EntitiesUtil.paginate(entities, INSERT_SIZE);
+  private static final int INSERT_SIZE = 1000;
 
-        pages.forEach(page -> {
-            final Query query = entityManager.createNativeQuery(getInsertQuery(page.size()));
+  private final EntityManager entityManager;
 
-            int paramIndex = 1;
-            for (final Object object : page) {
-                final HeadcountProductivity entity = (HeadcountProductivity) object;
+  @Trace
+  @Override
+  public void create(final List<HeadcountProductivity> entities, final long forecastId) {
+    final List<List<HeadcountProductivity>> pages = EntitiesUtil.paginate(entities, INSERT_SIZE);
 
-                query.setParameter(paramIndex++, forecastId);
-                query.setParameter(paramIndex++, entity.getDate());
-                query.setParameter(paramIndex++, entity.getProcessName().name());
-                query.setParameter(paramIndex++, entity.getProductivity());
-                query.setParameter(paramIndex++, entity.getProductivityMetricUnit().name());
-                query.setParameter(paramIndex++, entity.getAbilityLevel());
-            }
-            query.executeUpdate();
-        });
-    }
+    pages.forEach(page -> {
+      final Query query = entityManager.createNativeQuery(getInsertQuery(page.size()));
 
-    private String getInsertQuery(final int size) {
-        final String query = "INSERT INTO headcount_productivity "
-                + "(forecast_id, date, process_name, productivity,"
-                + " productivity_metric_unit, ability_level) "
-                + "VALUES " + "(?,?,?,?,?,?),".repeat(size);
+      int paramIndex = 1;
+      for (final HeadcountProductivity entity : page) {
+        query.setParameter(paramIndex++, forecastId);
+        query.setParameter(paramIndex++, entity.getDate());
+        query.setParameter(paramIndex++, entity.getProcessPath().name());
+        query.setParameter(paramIndex++, entity.getProcessName().name());
+        query.setParameter(paramIndex++, entity.getProductivity());
+        query.setParameter(paramIndex++, entity.getProductivityMetricUnit().name());
+        query.setParameter(paramIndex++, entity.getAbilityLevel());
+      }
+      query.executeUpdate();
+    });
+  }
 
-        return query.substring(0, query.length() - 1);
-    }
+  private String getInsertQuery(final int size) {
+    final String query = "INSERT INTO headcount_productivity ( " + COLUMN_NAMES + ") VALUES " + COLUMN_PLACEHOLDERS.repeat(size);
+    return query.substring(0, query.length() - 1);
+  }
 }

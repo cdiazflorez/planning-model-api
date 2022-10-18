@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -50,14 +49,13 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
 
   @Override
   public List<EntityOutput> execute(final GetHeadcountInput input) {
-    final Stream<EntityOutput> simulations = input.getSource() == FORECAST ? Stream.empty() : getSimulationHeadcount(input).stream();
     return Stream.concat(
-        getForecastHeadcount(input).stream(),
-        simulations
+        getForecastHeadcount(input),
+        getSimulationHeadcount(input)
     ).collect(toList());
   }
 
-  private List<EntityOutput> getForecastHeadcount(final GetHeadcountInput input) {
+  private Stream<EntityOutput> getForecastHeadcount(final GetHeadcountInput input) {
     final List<ProcessingDistributionView> processingDistributions = findProcessingDistributionBy(input);
 
     return processingDistributions.stream()
@@ -70,8 +68,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
             .metricUnit(p.getQuantityMetricUnit())
             .type(p.getType())
             .source(FORECAST)
-            .build())
-        .collect(toList());
+            .build());
   }
 
   private List<ProcessingDistributionView> findProcessingDistributionBy(final GetHeadcountInput input) {
@@ -99,7 +96,11 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     );
   }
 
-  private List<EntityOutput> getSimulationHeadcount(final GetHeadcountInput input) {
+  private Stream<EntityOutput> getSimulationHeadcount(final GetHeadcountInput input) {
+    if (input.getSource() == FORECAST) {
+      return Stream.empty();
+    }
+
     final List<EntityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
 
     final Set<EntityOutputKey> unappliedSimulationKeys = inputSimulatedEntities.stream()
@@ -121,8 +122,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
             .build()
         );
 
-    return Stream.concat(inputSimulatedEntities.stream(), storedSimulations)
-        .collect(toList());
+    return Stream.concat(inputSimulatedEntities.stream(), storedSimulations);
   }
 
   private List<CurrentProcessingDistribution> findCurrentProcessingDistributionBy(final GetHeadcountInput input) {

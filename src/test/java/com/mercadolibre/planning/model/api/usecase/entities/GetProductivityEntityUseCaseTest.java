@@ -77,7 +77,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
-        List.of(GLOBAL),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -137,7 +137,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
-        List.of(GLOBAL),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -178,7 +178,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
-        List.of(GLOBAL),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,

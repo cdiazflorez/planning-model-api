@@ -25,7 +25,7 @@ public interface HeadcountProductivityRepository
             + "AND hd.forecast_id in (:forecast_ids)", nativeQuery = true)
     List<HeadcountProductivityView> findBy(
             @Param("process_name") List<String> processNames,
-            @Param("process_path") List<ProcessPath> processPaths,
+            @Param("process_path") List<String> processPaths,
             @Param("date_from") ZonedDateTime dateFrom,
             @Param("date_to") ZonedDateTime dateTo,
             @Param("forecast_ids") List<Long> forecastIds,

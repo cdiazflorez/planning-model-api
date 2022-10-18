@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
@@ -20,10 +21,10 @@ public class GetProductivityInput extends GetEntityInput {
 
     List<ProcessPath> processPaths;
 
-    public List<ProcessPath> getProcessPaths() {
+    public List<String> getProcessPathsAsString() {
         return processPaths == null || processPaths.isEmpty()
-                ? List.of(GLOBAL)
-                : processPaths;
+                ? List.of(GLOBAL.name())
+                : getProcessPaths().stream().map(Enum::name).collect(Collectors.toList());
     }
 
     public Instant viewDate() {

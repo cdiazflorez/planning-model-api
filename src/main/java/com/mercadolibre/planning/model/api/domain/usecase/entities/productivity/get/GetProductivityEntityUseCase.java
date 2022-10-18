@@ -128,7 +128,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
 
     return productivityRepository.findBy(
         input.getProcessNamesAsString(),
-        input.getProcessPaths(),
+        input.getProcessPathsAsString(),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,

@@ -464,7 +464,8 @@ public final class TestUtils {
 
   public static GetProductivityInput mockGetProductivityEntityInput(
       final Source source,
-      final List<Simulation> simulations) {
+      final List<Simulation> simulations,
+      final List<ProcessPath> processPaths) {
     return GetProductivityInput.builder()
         .warehouseId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
@@ -473,6 +474,7 @@ public final class TestUtils {
         .dateTo(A_DATE_UTC.plusDays(2))
         .source(source)
         .processName(List.of(PICKING, PACKING))
+        .processPaths(processPaths)
         .simulations(simulations)
         .abilityLevel(Set.of(1))
         .viewDate(A_DATE_UTC.toInstant())

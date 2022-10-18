@@ -12,6 +12,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProducti
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,7 +63,7 @@ public class GetProductivityEntityUseCaseTest {
   @DisplayName("Get productivity entity when source is forecast")
   public void testGetProductivityOk() {
     // GIVEN
-    final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null);
+    final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null, List.of(GLOBAL));
     final List<Long> forecastIds = singletonList(1L);
 
     when(getForecastUseCase.execute(GetForecastInput.builder()
@@ -106,7 +107,8 @@ public class GetProductivityEntityUseCaseTest {
             List.of(new SimulationEntity(
                 PRODUCTIVITY,
                 List.of(new QuantityByDate(A_DATE_UTC, 100),
-                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))));
+                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))),
+            null);
 
     final List<Long> forecastIds = List.of(1L);
 
@@ -160,7 +162,7 @@ public class GetProductivityEntityUseCaseTest {
   @DisplayName("Get productivity entity when source is simulation")
   public void testGetProductivityFromSourceSimulation() {
     // GIVEN
-    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null);
+    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, emptyList());
     final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
     final List<Long> forecastIds = List.of(1L);
 

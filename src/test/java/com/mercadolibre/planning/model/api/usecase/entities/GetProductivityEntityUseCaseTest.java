@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -207,6 +208,44 @@ public class GetProductivityEntityUseCaseTest {
     outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
     outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 68);
   }
+
+  @Test
+  @DisplayName("Get productivity entity when source is simulation and contains a process path other than global")
+  public void testGetProductivityFromSourceSimulationAndProcessPath() {
+        // GIVEN
+        final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, List.of(TOT_MONO));
+        final List<Long> forecastIds = List.of(1L);
+
+        // WHEN
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .viewDate(A_DATE_UTC.toInstant())
+                .build())
+        ).thenReturn(forecastIds);
+
+        when(productivityRepository.findBy(
+                List.of(PICKING.name(), PACKING.name()),
+                List.of(TOT_MONO.name()),
+                input.getDateFrom(),
+                input.getDateTo(),
+                forecastIds,
+                Set.of(1))
+        ).thenReturn(productivities());
+
+        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
+
+        // THEN
+        assertThat(output).isNotEmpty();
+        assertEquals(4, output.size());
+        verifyNoInteractions(currentProductivityRepository);
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+    }
 
   private List<HeadcountProductivityView> productivities() {
     return List.of(

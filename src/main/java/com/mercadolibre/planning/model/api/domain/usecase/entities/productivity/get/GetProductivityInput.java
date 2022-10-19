@@ -17,17 +17,21 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class GetProductivityInput extends GetEntityInput {
 
-    Set<Integer> abilityLevel;
+  Set<Integer> abilityLevel;
 
-    List<ProcessPath> processPaths;
+  List<ProcessPath> processPaths;
 
-    public List<String> getProcessPathsAsString() {
-        return processPaths == null || processPaths.isEmpty()
-                ? List.of(GLOBAL.name())
-                : getProcessPaths().stream().map(Enum::name).collect(Collectors.toList());
-    }
+  public List<ProcessPath> getProcessPaths() {
+      return  processPaths == null || processPaths.isEmpty()
+              ? List.of(GLOBAL)
+              : processPaths;
+  }
 
-    public Instant viewDate() {
+  public List<String> getProcessPathsAsString() {
+    return getProcessPaths().stream().map(Enum::name).collect(Collectors.toList());
+  }
+
+  public Instant viewDate() {
     return super.getViewDate() == null ? Instant.now() : super.getViewDate();
   }
 }

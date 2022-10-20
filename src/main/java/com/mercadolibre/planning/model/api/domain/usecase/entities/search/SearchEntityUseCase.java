@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.entities.search;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -50,8 +51,9 @@ public class SearchEntityUseCase implements EntityUseCase<GetEntityInput, List<E
         ));
 
         final List<ProcessingDistributionView> performedProcessing =
-                processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+                processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                         Set.of(targetEntityType.name()),
+                        List.of(ProcessPath.GLOBAL.toString()),
                         input.getProcessNamesAsString(),
                         input.getDateFrom(),
                         input.getDateTo(),

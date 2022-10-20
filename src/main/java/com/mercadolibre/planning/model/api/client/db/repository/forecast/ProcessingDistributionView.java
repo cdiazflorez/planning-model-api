@@ -2,22 +2,24 @@ package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
-
 import java.util.Date;
 
 public interface ProcessingDistributionView {
 
-    long getId();
+  long getId();
 
-    Date getDate();
+  Date getDate();
 
-    ProcessName getProcessName();
+  ProcessPath getProcessPath();
 
-    long getQuantity();
+  ProcessName getProcessName();
 
-    MetricUnit getQuantityMetricUnit();
+  long getQuantity();
 
-    ProcessingType getType();
+  MetricUnit getQuantityMetricUnit();
+
+  ProcessingType getType();
 
 }

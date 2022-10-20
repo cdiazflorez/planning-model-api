@@ -275,48 +275,48 @@ public final class TestUtils {
   }
 
   public static List<CurrentHeadcountProductivity> mockCurrentProductivities() {
-      return List.of(
-              CurrentHeadcountProductivity.builder()
-                      .abilityLevel(1)
-                      .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
-                      .isActive(true)
-                      .productivity(10)
-                      .productivityMetricUnit(UNITS_PER_HOUR)
-                      .processName(PICKING)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build(),
-              CurrentHeadcountProductivity.builder()
-                      .abilityLevel(1)
-                      .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
-                      .isActive(true)
-                      .productivity(10)
-                      .productivityMetricUnit(UNITS_PER_HOUR)
-                      .processName(PICKING)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build(),
-              CurrentHeadcountProductivity.builder()
-                      .abilityLevel(1)
-                      .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
-                      .isActive(true)
-                      .productivity(10)
-                      .productivityMetricUnit(UNITS_PER_HOUR)
-                      .processName(PICKING)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build()
-      );
+    return List.of(
+        CurrentHeadcountProductivity.builder()
+            .abilityLevel(1)
+            .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
+            .isActive(true)
+            .productivity(10)
+            .productivityMetricUnit(UNITS_PER_HOUR)
+            .processName(PICKING)
+            .logisticCenterId(WAREHOUSE_ID)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentHeadcountProductivity.builder()
+            .abilityLevel(1)
+            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+            .isActive(true)
+            .productivity(10)
+            .productivityMetricUnit(UNITS_PER_HOUR)
+            .processName(PICKING)
+            .logisticCenterId(WAREHOUSE_ID)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentHeadcountProductivity.builder()
+            .abilityLevel(1)
+            .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
+            .isActive(true)
+            .productivity(10)
+            .productivityMetricUnit(UNITS_PER_HOUR)
+            .processName(PICKING)
+            .logisticCenterId(WAREHOUSE_ID)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build()
+    );
   }
 
-  public static CurrentProcessingDistribution mockCurrentProcDist(final ZonedDateTime date,
-                                                                  final long value) {
+  public static CurrentProcessingDistribution mockCurrentProcDist(final ZonedDateTime date, final long value) {
     return CurrentProcessingDistribution.builder()
         .date(date)
         .isActive(true)
+        .processPath(ProcessPath.GLOBAL)
         .processName(PACKING)
         .quantity(value)
         .quantityMetricUnit(WORKERS)
@@ -327,38 +327,38 @@ public final class TestUtils {
   }
 
   public static List<CurrentProcessingDistribution> mockCurrentProcessingDistributions() {
-      return List.of(
-              CurrentProcessingDistribution.builder()
-                      .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
-                      .isActive(true)
-                      .processName(PACKING)
-                      .quantity(10)
-                      .quantityMetricUnit(WORKERS)
-                      .type(ACTIVE_WORKERS)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build(),
-              CurrentProcessingDistribution.builder()
-                      .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
-                      .isActive(true)
-                      .processName(PACKING)
-                      .quantity(10)
-                      .quantityMetricUnit(WORKERS)
-                      .type(ACTIVE_WORKERS)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build(),
-              CurrentProcessingDistribution.builder()
-                      .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
-                      .isActive(true)
-                      .processName(PACKING)
-                      .quantity(10)
-                      .quantityMetricUnit(WORKERS)
-                      .type(ACTIVE_WORKERS)
-                      .workflow(FBM_WMS_OUTBOUND)
-                      .logisticCenterId(WAREHOUSE_ID)
-                      .build()
-      );
+    return List.of(
+        CurrentProcessingDistribution.builder()
+            .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
+            .isActive(true)
+            .processName(PACKING)
+            .quantity(10)
+            .quantityMetricUnit(WORKERS)
+            .type(ACTIVE_WORKERS)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentProcessingDistribution.builder()
+            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+            .isActive(true)
+            .processName(PACKING)
+            .quantity(10)
+            .quantityMetricUnit(WORKERS)
+            .type(ACTIVE_WORKERS)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentProcessingDistribution.builder()
+            .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
+            .isActive(true)
+            .processName(PACKING)
+            .quantity(10)
+            .quantityMetricUnit(WORKERS)
+            .type(ACTIVE_WORKERS)
+            .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build()
+    );
   }
 
   public static List<PlanningDistributionElemView> planningDistributions() {
@@ -443,11 +443,20 @@ public final class TestUtils {
     return mockGetHeadcountEntityInput(source, null, null);
   }
 
-
   public static GetHeadcountInput mockGetHeadcountEntityInput(
       final Source source,
       final Set<ProcessingType> processingTypes,
-      final List<Simulation> simulations) {
+      final List<Simulation> simulations
+  ) {
+    return mockGetHeadcountEntityInput(List.of(ProcessPath.GLOBAL), source, processingTypes, simulations);
+  }
+
+  public static GetHeadcountInput mockGetHeadcountEntityInput(
+      final List<ProcessPath> processPaths,
+      final Source source,
+      final Set<ProcessingType> processingTypes,
+      final List<Simulation> simulations
+  ) {
     return GetHeadcountInput.builder()
         .warehouseId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
@@ -455,6 +464,7 @@ public final class TestUtils {
         .dateFrom(A_DATE_UTC)
         .dateTo(A_DATE_UTC.plusDays(2))
         .source(source)
+        .processPaths(processPaths)
         .processName(List.of(PICKING, PACKING))
         .processingType(processingTypes)
         .simulations(simulations)

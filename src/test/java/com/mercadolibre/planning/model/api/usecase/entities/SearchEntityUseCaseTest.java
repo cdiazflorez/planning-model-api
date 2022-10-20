@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.usecase.entities;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -62,14 +63,16 @@ public class SearchEntityUseCaseTest {
                 .dateTo(input.getDateTo())
                 .build())).thenReturn(forecastIds);
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(ProcessingType.PERFORMED_PROCESSING.name()),
+                List.of(ProcessPath.GLOBAL.toString()),
                 List.of(WAVING.name()),
                 A_DATE_UTC, A_DATE_UTC,
                 forecastIds)
         ).thenReturn(List.of(new ProcessingDistributionViewImpl(
                 1,
                 Date.from(A_DATE_UTC.toInstant()),
+                ProcessPath.GLOBAL,
                 WAVING,
                 308,
                 MINUTES,
@@ -115,14 +118,16 @@ public class SearchEntityUseCaseTest {
                 .dateTo(input.getDateTo())
                 .build())).thenReturn(forecastIds);
 
-        when(processingDistRepository.findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
                 Set.of(ProcessingType.REMAINING_PROCESSING.name()),
+                List.of(ProcessPath.GLOBAL.toString()),
                 List.of(WAVING.name()),
                 A_DATE_UTC, A_DATE_UTC,
                 forecastIds)
         ).thenReturn(List.of(new ProcessingDistributionViewImpl(
                 1,
                 Date.from(A_DATE_UTC.toInstant()),
+                ProcessPath.GLOBAL,
                 WAVING,
                 308,
                 MINUTES,

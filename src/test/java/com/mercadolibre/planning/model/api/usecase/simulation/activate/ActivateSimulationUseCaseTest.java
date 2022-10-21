@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -18,22 +19,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
+import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationOutput;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +65,9 @@ public class ActivateSimulationUseCaseTest {
   @Mock
   private CurrentProcessingDistributionRepository currentProcessingRepository;
 
+  @Mock
+  private ProcessPathHeadcountShareService processPathHeadcountShareService;
+
   @Test
   @DisplayName("When creating a new simulation, the old ones turn inactive")
   public void activateSimulationTest() {
@@ -75,6 +87,20 @@ public class ActivateSimulationUseCaseTest {
     ));
 
     final Workflow workflow = input.getWorkflow();
+
+    final Map<ProcessPath, Map<ProcessName, Map<Instant, Double>>> processPathHeadcountResponse = Map.of(
+            ProcessPath.GLOBAL,
+            Map.of(
+                    PICKING,
+                    Map.of(
+                            DATE_12.toInstant(), 1.0D,
+                            DATE_13.toInstant(), 1.0D
+                    )
+            )
+    );
+
+    when(processPathHeadcountShareService.getHeadcountShareByProcessPath(anyString(), any(), anySet(), any(), any(), any()))
+            .thenReturn(processPathHeadcountResponse);
 
     when(currentProcessingRepository.saveAll(any(List.class)))
         .thenReturn(mockCurrentDistribution());
@@ -123,6 +149,30 @@ public class ActivateSimulationUseCaseTest {
     assertTrue(simulation3.isActive());
   }
 
+
+  @Test
+  @DisplayName("Create a new simulation with process paths active")
+  public void activateSimulationWithProcessPathTest() {
+    //GIVEN
+    final SimulationInput input = mockSimulationInput(
+            List.of(
+                    mockSimulation(PICKING, HEADCOUNT, 15),
+                    mockSimulation(PICKING, PRODUCTIVITY, 30),
+                    mockSimulation(PACKING, HEADCOUNT, 5),
+                    mockSimulation(PACKING, PRODUCTIVITY, 35),
+                    mockSimulation(PACKING_WALL, HEADCOUNT, 10),
+                    mockSimulation(PACKING_WALL, PRODUCTIVITY, 15)
+            )
+    );
+
+    final Workflow workflow = input.getWorkflow();
+
+    final Map<ProcessPath, Map<ProcessName, Map<Instant, Double>>> processPathHeadcountResponse = mockProcessPathHeadcountShare();
+
+    //WHEN
+    //THEN
+  }
+
   private SimulationInput mockSimulationInput(final List<Simulation> simulations) {
     return SimulationInput.builder()
         .warehouseId(WAREHOUSE_ID)
@@ -165,5 +215,51 @@ public class ActivateSimulationUseCaseTest {
         .workflow(FBM_WMS_OUTBOUND)
         .isActive(true)
         .build());
+  }
+
+  private Simulation mockSimulation(final ProcessName processName,
+                                    final EntityType entityType,
+                                    final int quantity) {
+      return new Simulation(
+              processName,
+              singletonList(
+                      new SimulationEntity(
+                              entityType,
+                              List.of(
+                                      new QuantityByDate(DATE_12, quantity),
+                                      new QuantityByDate(DATE_13, quantity)
+                              )
+                      )
+              )
+      );
+  }
+
+  private Map<ProcessPath, Map<ProcessName, Map<Instant, Double>>> mockProcessPathHeadcountShare() {
+      return Map.of(
+              ProcessPath.GLOBAL,
+              Map.of(
+                      PICKING,
+                      Map.of(
+                              DATE_12.toInstant(), 1.0D,
+                              DATE_13.toInstant(), 1.0D
+                      )
+              ),
+              ProcessPath.TOT_MULTI_ORDER,
+              Map.of(
+                      PICKING,
+                      Map.of(
+                              DATE_12.toInstant(), 0.5D,
+                              DATE_13.toInstant(), 0.5D
+                      )
+              ),
+              ProcessPath.NON_TOT_MULTI_ORDER,
+              Map.of(
+                      PICKING,
+                      Map.of(
+                              DATE_12.toInstant(), 0.7D,
+                              DATE_13.toInstant(), 0.3D
+                      )
+              )
+      );
   }
 }

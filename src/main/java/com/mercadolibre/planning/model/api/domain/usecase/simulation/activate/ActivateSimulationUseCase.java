@@ -7,7 +7,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.A
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
@@ -18,6 +19,8 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessi
 import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
+import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
+import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -25,10 +28,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
-import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -185,7 +186,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
 
     final Set<ProcessName> processNames = input.getSimulations().stream()
             .map(Simulation::getProcessName)
-            .collect(Collectors.toSet());
+            .collect(toSet());
 
     final var simulationEntities = input.getSimulations().stream()
             .filter(simulation -> processNames.stream().anyMatch(processName -> simulation.getProcessName() == processName))
@@ -220,24 +221,24 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
 
       if (dateByProcessNameAndByProcessPath.keySet().size() > 1) {
 
-        dateByProcessNameAndByProcessPath.remove(GLOBAL);
-
         return input.getSimulations().stream()
                 .flatMap(simulation -> simulation.getEntities().stream()
                        .filter(simulationEntity -> simulationEntity.getType() == HEADCOUNT)
                        .map(SimulationEntity::getValues)
                        .flatMap(quantityByDates -> quantityByDates.stream()
                                .flatMap(quantityByDate -> dateByProcessNameAndByProcessPath.entrySet().stream()
+                                       .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
                                        .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
                                                .filter(processNameMapEntry -> processNameMapEntry.getKey() == simulation.getProcessName())
                                                .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()
-                                                       .filter(ratioByDate -> ratioByDate.getKey().equals(quantityByDate.getDate().toInstant()))
-                                                       .map(ratioByDate -> CurrentProcessingDistribution.builder()
+                                                       .filter(ratioByDate -> ratioByDate.getKey()
+                                                               .equals(quantityByDate.getDate().toInstant())
+                                                       ).map(ratioByDate -> CurrentProcessingDistribution.builder()
                                                                .workflow(input.getWorkflow())
                                                                .processName(simulation.getProcessName())
                                                                .processPath(processPathMapEntry.getKey())
                                                                .date(ZonedDateTime.ofInstant(ratioByDate.getKey(), ZoneId.of("UTC")))
-                                                               .quantity(Math.round(quantityByDate.getQuantity() * ratioByDate.getValue()))
+                                                               .quantity(quantityByDate.getQuantity() * ratioByDate.getValue())
                                                                .logisticCenterId(input.getWarehouseId())
                                                                .quantityMetricUnit(WORKERS)
                                                                .userId(input.getUserId())

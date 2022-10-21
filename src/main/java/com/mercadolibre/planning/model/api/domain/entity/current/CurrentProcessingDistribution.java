@@ -45,7 +45,7 @@ public class CurrentProcessingDistribution {
   @Enumerated(EnumType.STRING)
   private ProcessName processName;
 
-  private long quantity;
+  private double quantity;
 
   @Enumerated(EnumType.STRING)
   private MetricUnit quantityMetricUnit;

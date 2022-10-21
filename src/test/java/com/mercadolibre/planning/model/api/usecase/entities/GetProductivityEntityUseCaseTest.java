@@ -3,6 +3,8 @@ package com.mercadolibre.planning.model.api.usecase.entities;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -11,6 +13,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetProducti
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,7 +64,7 @@ public class GetProductivityEntityUseCaseTest {
   @DisplayName("Get productivity entity when source is forecast")
   public void testGetProductivityOk() {
     // GIVEN
-    final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null);
+    final GetProductivityInput input = mockGetProductivityEntityInput(FORECAST, null, List.of(GLOBAL));
     final List<Long> forecastIds = singletonList(1L);
 
     when(getForecastUseCase.execute(GetForecastInput.builder()
@@ -75,6 +78,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -104,7 +108,8 @@ public class GetProductivityEntityUseCaseTest {
             List.of(new SimulationEntity(
                 PRODUCTIVITY,
                 List.of(new QuantityByDate(A_DATE_UTC, 100),
-                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))));
+                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))),
+            null);
 
     final List<Long> forecastIds = List.of(1L);
 
@@ -133,6 +138,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -157,7 +163,7 @@ public class GetProductivityEntityUseCaseTest {
   @DisplayName("Get productivity entity when source is simulation")
   public void testGetProductivityFromSourceSimulation() {
     // GIVEN
-    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null);
+    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, emptyList());
     final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
     final List<Long> forecastIds = List.of(1L);
 
@@ -173,6 +179,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL.name()),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -202,16 +209,54 @@ public class GetProductivityEntityUseCaseTest {
     outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 68);
   }
 
+  @Test
+  @DisplayName("Get productivity entity when source is simulation and contains a process path other than global")
+  public void testGetProductivityFromSourceSimulationAndProcessPath() {
+        // GIVEN
+        final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, List.of(TOT_MONO));
+        final List<Long> forecastIds = List.of(1L);
+
+        // WHEN
+        when(getForecastUseCase.execute(GetForecastInput.builder()
+                .workflow(input.getWorkflow())
+                .warehouseId(input.getWarehouseId())
+                .dateFrom(input.getDateFrom())
+                .dateTo(input.getDateTo())
+                .viewDate(A_DATE_UTC.toInstant())
+                .build())
+        ).thenReturn(forecastIds);
+
+        when(productivityRepository.findBy(
+                List.of(PICKING.name(), PACKING.name()),
+                List.of(TOT_MONO.name()),
+                input.getDateFrom(),
+                input.getDateTo(),
+                forecastIds,
+                Set.of(1))
+        ).thenReturn(productivities());
+
+        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
+
+        // THEN
+        assertThat(output).isNotEmpty();
+        assertEquals(4, output.size());
+        verifyNoInteractions(currentProductivityRepository);
+        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+    }
+
   private List<HeadcountProductivityView> productivities() {
     return List.of(
         new HeadcountProductivityViewImpl(PICKING,
-            80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
+            80, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PICKING,
-            85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1),
+            85, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PACKING,
-            90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1),
+            90, UNITS_PER_HOUR, Date.from(A_DATE_UTC.toInstant()), 1, GLOBAL),
         new HeadcountProductivityViewImpl(PACKING,
-            92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1)
+            92, UNITS_PER_HOUR, Date.from(A_DATE_UTC.plusHours(1).toInstant()), 1, GLOBAL)
     );
   }
 

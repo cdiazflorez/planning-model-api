@@ -3,8 +3,8 @@ package com.mercadolibre.planning.model.api.usecase;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import lombok.AllArgsConstructor;
-
 import java.util.Date;
 
 @AllArgsConstructor
@@ -19,6 +19,8 @@ public class HeadcountProductivityViewImpl implements HeadcountProductivityView 
     private Date date;
 
     private int abilityLevel;
+
+    private ProcessPath processPath;
 
 
     @Override
@@ -44,5 +46,10 @@ public class HeadcountProductivityViewImpl implements HeadcountProductivityView 
     @Override
     public int getAbilityLevel() {
         return abilityLevel;
+    }
+
+    @Override
+    public ProcessPath getProcessPath() {
+        return processPath;
     }
 }

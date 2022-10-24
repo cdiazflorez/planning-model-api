@@ -1,8 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameAndDate;
-import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessNameDateAndSource;
+import static com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.PolyvalenteProductivityUtils.calculatePolyvalentProductivityRatioByProcessPath;
+import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameAndDate;
+import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameDateAndSource;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
@@ -41,15 +42,12 @@ import org.springframework.util.CollectionUtils;
  * it is calculated as the headcount times the productivity.
  *
  * <p>
- *   Both of these inputs are retrieved from the forecast and updated with the values from stored simulations or unnaplied simulations.
+ * Both of these inputs are retrieved from the forecast and updated with the values from stored simulations or unnaplied simulations.
  * </p>
- *
- * */
+ */
 @Service
 @AllArgsConstructor
-@SuppressWarnings("PMD.ExcessiveImports")
-public class GetThroughputUseCase
-    implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
+public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 
   private static final int MAIN_ABILITY = 1;
 
@@ -64,7 +62,9 @@ public class GetThroughputUseCase
     return entityType == THROUGHPUT;
   }
 
-  /** Calculates the productivity for each of the specified processes. */
+  /**
+   * Calculates the productivity for each of the specified processes.
+   */
   @Override
   public List<EntityOutput> execute(final GetEntityInput input) {
     List<EntityOutput> allThroughputs = new ArrayList<>();
@@ -77,7 +77,15 @@ public class GetThroughputUseCase
     final List<EntityOutput> headcounts = headcountEntityUseCase.execute(createHeadcountInput(input));
     final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(createProductivityInput(input));
 
-    allThroughputs.addAll(createThroughput(input.getProcessName(), headcounts, productivity, input.getWorkflow()));
+    allThroughputs.addAll(createThroughput(
+            input.getProcessPaths(),
+            input.getProcessName(),
+            headcounts,
+            productivity,
+            input.getWorkflow(),
+            input.getSource()
+        )
+    );
     return allThroughputs;
   }
 
@@ -94,43 +102,58 @@ public class GetThroughputUseCase
         .build();
   }
 
-  private List<EntityOutput> createThroughput(final List<ProcessName> processes,
-                                              final List<EntityOutput> headcounts,
-                                              final List<ProductivityOutput> productivity,
-                                              final Workflow workflow) {
+  private List<EntityOutput> createThroughput(
+      final List<ProcessPath> processPaths,
+      final List<ProcessName> processes,
+      final List<EntityOutput> headcounts,
+      final List<ProductivityOutput> productivity,
+      final Workflow workflow,
+      final Source source
+  ) {
 
-    final Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>> headcountsMap =
-        toMapByProcessNameDateAndSource(headcounts);
+    final var headcountsMap = toMapByProcessPathProcessNameDateAndSource(headcounts);
 
-    final Map<ProcessName, Map<ZonedDateTime, Map<Source, ProductivityOutput>>> regularProductivityMap =
-        toMapByProcessNameDateAndSource(productivity.stream()
-            .filter(ProductivityOutput::isMainProductivity)
-            .collect(toList()));
+    final var regularProductivityMap = toMapByProcessPathProcessNameDateAndSource(productivity.stream()
+        .filter(ProductivityOutput::isMainProductivity)
+        .collect(toList()));
 
     // Despite the `current_headcount_productivity` table has the `ability_level` field, currently (2022-08-26) it contains no polyvalent
     // productivity information. Therefore, this map contains polivalent productivity from the forecast only.
-    final Map<ProcessName, Map<ZonedDateTime, ProductivityOutput>> polyvalentProductivityMap =
-        toMapByProcessNameAndDate(productivity.stream().filter(ProductivityOutput::isPolyvalentProductivity));
+    final var polyvalentProductivityMap = toMapByProcessPathProcessNameAndDate(
+        productivity.stream()
+            .filter(ProductivityOutput::isPolyvalentProductivity)
+    );
 
-    // receiving is filtered as it has its own way of calculating its tph
-      return processes.stream()
-          .filter(process -> process != ProcessName.RECEIVING)
-          .flatMap(process ->
-              createThroughputs(
-              workflow,
-              process,
-              headcountsMap.get(process),
-              regularProductivityMap.get(process),
-              polyvalentProductivityMap.get(process)
-          ).stream())
-          .collect(toList());
+    final PolyvalentProductivityRatio polyvalentProductivityRatios = source == FORECAST
+        ? PolyvalentProductivityRatio.empty()
+        : calculatePolyvalentProductivityRatioByProcessPath(regularProductivityMap, polyvalentProductivityMap);
+
+    return processPaths.stream()
+        .flatMap(processPath ->
+            processes.stream()
+                // receiving is filtered as it has its own way of calculating its tph
+                .filter(process -> process != ProcessName.RECEIVING)
+                .flatMap(process ->
+                    createThroughputs(
+                        workflow,
+                        processPath,
+                        process,
+                        headcountsMap.get(processPath).get(process),
+                        regularProductivityMap.get(processPath).get(process),
+                        polyvalentProductivityRatios
+                    ).stream()
+                )
+        ).collect(toList());
   }
 
-  private List<EntityOutput> createThroughputs(final Workflow workflow,
-                                               final ProcessName process,
-                                               final Map<ZonedDateTime, Map<Source, EntityOutput>> headcount,
-                                               final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivity,
-                                               final Map<ZonedDateTime, ProductivityOutput> polyvalentProductivity) {
+  private List<EntityOutput> createThroughputs(
+      final Workflow workflow,
+      final ProcessPath processPath,
+      final ProcessName process,
+      final Map<ZonedDateTime, Map<Source, EntityOutput>> headcount,
+      final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivity,
+      final PolyvalentProductivityRatio polyvalentProductivityRatios
+  ) {
 
     if (Objects.isNull(headcount) || Objects.isNull(regularProductivity)) {
       return Collections.emptyList();
@@ -138,18 +161,20 @@ public class GetThroughputUseCase
 
     return headcount.keySet()
         .stream()
-        .map(dateTime -> calculate(dateTime, workflow, process, headcount, regularProductivity, polyvalentProductivity))
+        .map(dateTime -> calculate(dateTime, workflow, processPath, process, headcount, regularProductivity, polyvalentProductivityRatios))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(toList());
   }
 
-  private Optional<EntityOutput> calculate(final ZonedDateTime dateTime,
-                                           final Workflow workflow,
-                                           final ProcessName process,
-                                           final Map<ZonedDateTime, Map<Source, EntityOutput>> headcountsBySourceByDate,
-                                           final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivityBySourceByDate,
-                                           final Map<ZonedDateTime, ProductivityOutput> forecastPolyvalentProductivityByDate
+  private Optional<EntityOutput> calculate(
+      final ZonedDateTime dateTime,
+      final Workflow workflow,
+      final ProcessPath processPath,
+      final ProcessName process,
+      final Map<ZonedDateTime, Map<Source, EntityOutput>> headcountsBySourceByDate,
+      final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivityBySourceByDate,
+      final PolyvalentProductivityRatio polyvalentProductivityRatios
   ) {
     final Map<Source, EntityOutput> headcountBySource = headcountsBySourceByDate.get(dateTime);
     final Map<Source, ProductivityOutput> regularProductivityBySource = regularProductivityBySourceByDate.get(dateTime);
@@ -160,33 +185,32 @@ public class GetThroughputUseCase
     final var forecastHeadcount = headcountBySource.get(FORECAST);
     final var forecastRegularProductivity = regularProductivityBySource.get(FORECAST);
     if (forecastHeadcount == null || forecastRegularProductivity == null) {
-        return Optional.empty();
+      return Optional.empty();
     }
     final var simulatedHeadcount = headcountBySource.getOrDefault(SIMULATION, forecastHeadcount);
     final var simulatedRegularProductivity = regularProductivityBySource.getOrDefault(SIMULATION, forecastRegularProductivity);
-    final var forecastPolyvalentProductivity = Optional.ofNullable(forecastPolyvalentProductivityByDate)
-        .flatMap(pp -> Optional.ofNullable(pp.get(dateTime)))
-        .map(EntityOutput::getValue);
 
-    final long tph;
-    if (simulatedHeadcount.getValue() <= forecastHeadcount.getValue()
+    final var forecastPolyvalentProductivity =
+        polyvalentProductivityRatios.getForProcessPathProcessNameAndDate(processPath, process, dateTime);
+
+    final double tph;
+    if (simulatedHeadcount.getQuantity() <= forecastHeadcount.getQuantity()
         || workflow != Workflow.FBM_WMS_OUTBOUND
         || forecastPolyvalentProductivity.isEmpty()
     ) {
-        tph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
+      tph = simulatedHeadcount.getQuantity() * simulatedRegularProductivity.getQuantity();
     } else {
-        final var regularHeadcount = forecastHeadcount.getValue();
-        final var regularProductivity = simulatedRegularProductivity.getValue();
-        final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-        final double polyvalentProductivityRatio = forecastPolyvalentProductivity.get() / forecastRegularProductivity.getQuantity();
-        final double polyvalentProductivity = simulatedRegularProductivity.getValue() * polyvalentProductivityRatio;
-        tph = regularHeadcount * regularProductivity + Math.round(polyvalentHeadcount * polyvalentProductivity);
+      final var regularHeadcount = forecastHeadcount.getQuantity();
+      final var regularProductivity = simulatedRegularProductivity.getQuantity();
+      final var polyvalentHeadcount = simulatedHeadcount.getQuantity() - regularHeadcount;
+      final double polyvalentProductivity = simulatedRegularProductivity.getQuantity() * forecastPolyvalentProductivity.get();
+      tph = regularHeadcount * regularProductivity + polyvalentHeadcount * polyvalentProductivity;
     }
 
     return Optional.of(
         EntityOutput.builder()
             .workflow(workflow)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(processPath)
             .processName(process)
             .date(dateTime)
             .source(simulatedRegularProductivity.getSource())
@@ -204,6 +228,7 @@ public class GetThroughputUseCase
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
         .source(input.getSource())
+        .processPaths(input.getProcessPaths())
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
         .abilityLevel(Set.of(MAIN_ABILITY, POLYVALENT_ABILITY))
@@ -219,6 +244,7 @@ public class GetThroughputUseCase
         .dateFrom(input.getDateFrom())
         .dateTo(input.getDateTo())
         .source(input.getSource())
+        .processPaths(input.getProcessPaths())
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
         .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))

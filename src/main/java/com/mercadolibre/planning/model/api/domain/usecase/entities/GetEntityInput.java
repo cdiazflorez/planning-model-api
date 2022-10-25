@@ -14,6 +14,7 @@ import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
+import org.springframework.util.CollectionUtils;
 
 @Getter
 @SuperBuilder
@@ -45,6 +46,6 @@ public class GetEntityInput {
   }
 
   public List<ProcessPath> getProcessPaths() {
-    return processPaths == null ? List.of(ProcessPath.GLOBAL) : processPaths;
+    return CollectionUtils.isEmpty(processPaths) ? List.of(ProcessPath.GLOBAL) : processPaths;
   }
 }

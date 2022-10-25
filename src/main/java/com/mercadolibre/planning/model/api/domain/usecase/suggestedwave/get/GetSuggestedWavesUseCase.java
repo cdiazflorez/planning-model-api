@@ -113,6 +113,7 @@ public class GetSuggestedWavesUseCase {
         return processingDistributionView.stream()
                 .findFirst()
                 .map(ProcessingDistributionView::getQuantity)
+                .map(Double::longValue)
                 .orElse(0L);
     }
 

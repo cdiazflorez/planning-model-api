@@ -16,7 +16,7 @@ public interface ProcessingDistributionView {
 
   ProcessName getProcessName();
 
-  long getQuantity();
+  double getQuantity();
 
   MetricUnit getQuantityMetricUnit();
 

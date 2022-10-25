@@ -42,7 +42,7 @@ public class EntityOutput {
 
   // TODO: remove this method after adopting double values in the app
   public long getValue() {
-    return (long) quantity;
+    return Math.round(quantity);
   }
 
   public static EntityOutput fromProcessingDistributionView(

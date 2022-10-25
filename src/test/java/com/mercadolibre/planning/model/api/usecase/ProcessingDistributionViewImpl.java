@@ -24,7 +24,7 @@ public class ProcessingDistributionViewImpl implements ProcessingDistributionVie
 
     private final ProcessName processName;
 
-    private final long quantity;
+    private final double quantity;
 
     private final MetricUnit quantityMetricUnit;
 

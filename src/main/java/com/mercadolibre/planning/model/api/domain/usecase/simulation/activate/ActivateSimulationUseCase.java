@@ -7,30 +7,35 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.A
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
+import static java.util.stream.Collectors.flatMapping;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
-import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.Instant;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import lombok.AllArgsConstructor;
+import lombok.Value;
 import org.springframework.stereotype.Service;
 
 @AllArgsConstructor
@@ -184,76 +189,110 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
 
   private Stream<CurrentProcessingDistribution> createHeadcountByProcessPath(final SimulationInput input) {
 
-    final Set<ProcessName> processNames = input.getSimulations().stream()
-            .map(Simulation::getProcessName)
-            .collect(toSet());
+    final var simulationsByProcessAndDate = input.getSimulations()
+            .stream()
+            .filter(simulation -> simulation.getEntities().stream().anyMatch(simulationEntity -> simulationEntity.getType() == HEADCOUNT))
+            .collect(
+                    groupingBy(
+                            Simulation::getProcessName,
+                            flatMapping(
+                                    simulation -> simulation.getEntities().stream().flatMap(entity -> entity.getValues().stream()),
+                                    toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity)
+                            )
+                    )
+            );
 
-    final var simulationEntities = input.getSimulations().stream()
-            .filter(simulation -> processNames.stream().anyMatch(processName -> simulation.getProcessName() == processName))
-            .flatMap(simulation -> simulation.getEntities().stream()
-                    .filter(simulationEntity -> simulationEntity.getType() == HEADCOUNT)
-            ).collect(toList());
+    if (!simulationsByProcessAndDate.isEmpty()) {
 
-    if (simulationEntities.size() > 0) {
-
-      final var dateFrom = simulationEntities.stream()
-                      .map(simulationEntity -> simulationEntity.getValues().stream()
-                              .min(Comparator.comparing(QuantityByDate::getDate))
-                              .map(QuantityByDate::getDate)
-                              .get()
-                      ).min(ZonedDateTime::compareTo).get();
-
-      final var dateTo = simulationEntities.stream()
-                      .map(simulationEntity -> simulationEntity.getValues().stream()
-                              .max(Comparator.comparing(QuantityByDate::getDate))
-                              .map(QuantityByDate::getDate)
-                              .get()
-                      ).max(ZonedDateTime::compareTo).get();
-
-      final var dateByProcessNameAndByProcessPath = processPathHeadcountShareService.getHeadcountShareByProcessPath(
+      final List<RatioAtProcessPathProcessAndDate> ratioAtProcessPathProcessAndDates = getRatioByDateProcessAndProcessPath(
               input.getWarehouseId(),
               input.getWorkflow(),
-              processNames,
-              dateFrom.toInstant(),
-              dateTo.toInstant(),
-              Instant.now()
+              simulationsByProcessAndDate.keySet(),
+              simulationsByProcessAndDate
       );
 
-      if (dateByProcessNameAndByProcessPath.keySet().size() > 1) {
+      if (!ratioAtProcessPathProcessAndDates.isEmpty()) {
 
-        return input.getSimulations().stream()
-                .flatMap(simulation -> simulation.getEntities().stream()
-                       .filter(simulationEntity -> simulationEntity.getType() == HEADCOUNT)
-                       .map(SimulationEntity::getValues)
-                       .flatMap(quantityByDates -> quantityByDates.stream()
-                               .flatMap(quantityByDate -> dateByProcessNameAndByProcessPath.entrySet().stream()
-                                       .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
-                                       .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
-                                               .filter(processNameMapEntry -> processNameMapEntry.getKey() == simulation.getProcessName())
-                                               .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()
-                                                       .filter(ratioByDate -> ratioByDate.getKey()
-                                                               .equals(quantityByDate.getDate().toInstant())
-                                                       ).map(ratioByDate -> CurrentProcessingDistribution.builder()
-                                                               .workflow(input.getWorkflow())
-                                                               .processName(simulation.getProcessName())
-                                                               .processPath(processPathMapEntry.getKey())
-                                                               .date(ZonedDateTime.ofInstant(ratioByDate.getKey(), ZoneId.of("UTC")))
-                                                               .quantity(quantityByDate.getQuantity() * ratioByDate.getValue())
-                                                               .logisticCenterId(input.getWarehouseId())
-                                                               .quantityMetricUnit(WORKERS)
-                                                               .userId(input.getUserId())
-                                                               .type(ACTIVE_WORKERS)
-                                                               .isActive(true)
-                                                               .build())
-                                               )
-                                       ))
-                       )
-                );
+        return ratioAtProcessPathProcessAndDates.stream()
+                .map(ratio -> applyRatio(input, ratio, simulationsByProcessAndDate))
+                .filter(Optional::isPresent)
+                .map(Optional::get);
 
       }
 
     }
 
     return Stream.empty();
+  }
+
+  private List<RatioAtProcessPathProcessAndDate> getRatioByDateProcessAndProcessPath(
+          final String logisticCenterId,
+          final Workflow workflow,
+          final Set<ProcessName> processNames,
+          final Map<ProcessName, Map<Instant, Integer>> simulationEntities
+  ) {
+
+      final var dateFrom = simulationEntities.values().stream()
+              .map(quantityByDate -> quantityByDate.keySet().stream().min(Instant::compareTo).orElseThrow())
+              .min(Instant::compareTo)
+              .orElseThrow();
+
+      final var dateTo = simulationEntities.values().stream()
+              .map(quantityByDate -> quantityByDate.keySet().stream().max(Instant::compareTo).orElseThrow())
+              .max(Instant::compareTo)
+              .orElseThrow();
+
+      return processPathHeadcountShareService.getHeadcountShareByProcessPath(
+              logisticCenterId,
+              workflow,
+              processNames,
+              dateFrom,
+              dateTo,
+              Instant.now()).entrySet().stream()
+              .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
+              .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
+                      .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()
+                              .map(ratioByDate -> new RatioAtProcessPathProcessAndDate(processPathMapEntry.getKey(),
+                                      processNameMapEntry.getKey(),
+                                      ratioByDate.getKey(),
+                                      ratioByDate.getValue()))
+                      )
+              ).collect(toList());
+  }
+
+    private Optional<CurrentProcessingDistribution> applyRatio(
+            final SimulationInput input,
+            final RatioAtProcessPathProcessAndDate ratio,
+            final Map<ProcessName, Map<Instant, Integer>> simulationEntities
+    ) {
+        return Optional.ofNullable(simulationEntities)
+                .map(s -> s.get(ratio.getProcessName()))
+                .map(s -> s.get(ratio.getDate()))
+                .map(quantity -> CurrentProcessingDistribution.builder()
+                        .workflow(input.getWorkflow())
+                        .processPath(ratio.processPath)
+                        .processName(ratio.processName)
+                        .date(ZonedDateTime.ofInstant(ratio.getDate(), ZoneOffset.UTC))
+                        .quantity(quantity * ratio.getRatio())
+                        .logisticCenterId(input.getWarehouseId())
+                        .quantityMetricUnit(WORKERS)
+                        .userId(input.getUserId())
+                        .type(ACTIVE_WORKERS)
+                        .isActive(true)
+                        .build()
+                );
+    }
+
+  @Value
+  static class RatioAtProcessPathProcessAndDate {
+
+      ProcessPath processPath;
+
+      ProcessName processName;
+
+      Instant date;
+
+      Double ratio;
+
   }
 }

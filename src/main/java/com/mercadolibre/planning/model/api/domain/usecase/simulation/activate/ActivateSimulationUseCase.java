@@ -230,12 +230,12 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
   ) {
 
       final var dateFrom = simulationEntities.values().stream()
-              .map(quantityByDate -> quantityByDate.keySet().stream().min(Instant::compareTo).orElseThrow())
+              .flatMap(quantityByDate -> quantityByDate.keySet().stream())
               .min(Instant::compareTo)
               .orElseThrow();
 
       final var dateTo = simulationEntities.values().stream()
-              .map(quantityByDate -> quantityByDate.keySet().stream().max(Instant::compareTo).orElseThrow())
+              .flatMap(quantityByDate -> quantityByDate.keySet().stream())
               .max(Instant::compareTo)
               .orElseThrow();
 
@@ -245,7 +245,10 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
               simulationEntities.keySet(),
               dateFrom,
               dateTo,
-              Instant.now()).entrySet().stream()
+              Instant.now()
+              )
+              .entrySet()
+              .stream()
               .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
               .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
                       .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()

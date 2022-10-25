@@ -195,7 +195,9 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                     groupingBy(
                             Simulation::getProcessName,
                             flatMapping(
-                                    simulation -> simulation.getEntities().stream().flatMap(entity -> entity.getValues().stream()),
+                                    simulation -> simulation.getEntities().stream()
+                                            .filter(entity -> entity.getType() == HEADCOUNT)
+                                            .flatMap(entity -> entity.getValues().stream()),
                                     toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity)
                             )
                     )

@@ -207,7 +207,6 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
       final List<RatioAtProcessPathProcessAndDate> ratioAtProcessPathProcessAndDates = getRatioByDateProcessAndProcessPath(
               input.getWarehouseId(),
               input.getWorkflow(),
-              simulationsByProcessAndDate.keySet(),
               simulationsByProcessAndDate
       );
 
@@ -228,7 +227,6 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
   private List<RatioAtProcessPathProcessAndDate> getRatioByDateProcessAndProcessPath(
           final String logisticCenterId,
           final Workflow workflow,
-          final Set<ProcessName> processNames,
           final Map<ProcessName, Map<Instant, Integer>> simulationEntities
   ) {
 
@@ -245,7 +243,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
       return processPathHeadcountShareService.getHeadcountShareByProcessPath(
               logisticCenterId,
               workflow,
-              processNames,
+              simulationEntities.keySet(),
               dateFrom,
               dateTo,
               Instant.now()).entrySet().stream()

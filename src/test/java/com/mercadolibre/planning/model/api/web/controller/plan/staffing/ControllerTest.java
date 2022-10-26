@@ -111,7 +111,7 @@ class ControllerTest {
         .date(date)
         .metricUnit(UNITS_PER_HOUR)
         .source(SIMULATION)
-        .value(quantity)
+        .quantity(quantity)
         .build();
   }
 

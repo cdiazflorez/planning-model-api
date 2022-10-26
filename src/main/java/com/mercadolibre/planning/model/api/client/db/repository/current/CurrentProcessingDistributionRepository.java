@@ -87,6 +87,7 @@ public interface CurrentProcessingDistributionRepository extends JpaRepository<C
           + "FROM current_processing_distribution cpd "
           + "WHERE cpd.logistic_center_id = :warehouse_id "
           + "    AND cpd.workflow = :workflow "
+          + "    AND cpd.process_path IN (:process_paths) "
           + "    AND cpd.process_name IN (:process_name) "
           + "    AND cpd.`type` IN (:type) "
           + "    AND cpd.date BETWEEN :date_from AND :date_to "
@@ -97,6 +98,7 @@ public interface CurrentProcessingDistributionRepository extends JpaRepository<C
   List<CurrentProcessingDistribution> findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
       @Param("warehouse_id") String warehouseId,
       @Param("workflow") String workflow,
+      @Param("process_paths") Set<String> processPaths,
       @Param("process_name") Set<String> processNames,
       @Param("type") Set<String> type,
       @Param("date_from") ZonedDateTime dateFrom,

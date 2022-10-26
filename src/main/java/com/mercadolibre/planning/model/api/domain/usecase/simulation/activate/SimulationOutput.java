@@ -10,12 +10,12 @@ import java.time.ZonedDateTime;
 @Value
 public class SimulationOutput {
 
-    private long id;
-    private ZonedDateTime date;
-    private Workflow workflow;
-    private ProcessName processName;
-    private long quantity;
-    private MetricUnit quantityMetricUnit;
-    private boolean isActive;
-    private Integer abilityLevel;
+    long id;
+    ZonedDateTime date;
+    Workflow workflow;
+    ProcessName processName;
+    double quantity;
+    MetricUnit quantityMetricUnit;
+    boolean isActive;
+    Integer abilityLevel;
 }

@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.toSet;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -48,8 +49,9 @@ public class MaxCapacityService {
   public Map<ZonedDateTime, Integer> getMaxCapacity(MaxCapacityInput input) {
 
     final List<ProcessingDistributionView> maxCapacityBD = processingDistRepository
-        .findByWarehouseIdWorkflowTypeProcessNameAndDateInRange(
+        .findByTypeProcessPathProcessNameAndDateInRange(
             Set.of(MAX_CAPACITY.name()),
+            List.of(ProcessPath.GLOBAL.toString()),
             List.of(GLOBAL.toJson()),
             input.getDateFrom(),
             input.getDateTo(),

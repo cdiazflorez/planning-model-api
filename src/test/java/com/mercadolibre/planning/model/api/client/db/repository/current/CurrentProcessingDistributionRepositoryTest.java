@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -55,7 +56,7 @@ class CurrentProcessingDistributionRepositoryTest {
 
   @Test
   @DisplayName("Looking for a current processing distribution that exists, returns it")
-  public void testFindCurrentProcessingDistributionById() {
+  void testFindCurrentProcessingDistributionById() {
     // GIVEN
     final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
         A_DATE_UTC, 35L);
@@ -74,9 +75,8 @@ class CurrentProcessingDistributionRepositoryTest {
   }
 
   @Test
-  @DisplayName("Looking for a current processing distribution that doesn't exist,"
-      + " returns nothing")
-  public void testCurrentProcessingDistributionDoesntExist() {
+  @DisplayName("Looking for a current processing distribution that doesn't exist, returns nothing")
+  void testCurrentProcessingDistributionDoesntExist() {
     // WHEN
     final Optional<CurrentProcessingDistribution> optDistribution = repository
         .findById(1L);
@@ -86,9 +86,8 @@ class CurrentProcessingDistributionRepositoryTest {
   }
 
   @Test
-  @DisplayName("Looking for a current processing distributions that exists filterin by "
-      + "different params, returns it")
-  public void testFindCurrentProcessingDistributionBySimulations() {
+  @DisplayName("Looking for a current processing distributions that exists filterin by different params, returns it")
+  void testFindCurrentProcessingDistributionBySimulations() {
     // GIVEN
     final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
         A_DATE_UTC, 35L);
@@ -113,10 +112,9 @@ class CurrentProcessingDistributionRepositoryTest {
 
   @Test
   @DisplayName("Deactivate processing distribution")
-  public void testDeactivateProcessingDistribution() {
+  void testDeactivateProcessingDistribution() {
     // GIVEN
-    final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
-        A_DATE_UTC, 35L);
+    final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(A_DATE_UTC, 35L);
     entityManager.persistAndFlush(currentProcessingDist);
 
     // WHEN
@@ -140,7 +138,7 @@ class CurrentProcessingDistributionRepositoryTest {
 
   @Test
   @DisplayName("Deactivate processing distribution for range of dates")
-  public void testDeactivateProcessingDistributionForRangeOfDates() {
+  void testDeactivateProcessingDistributionForRangeOfDates() {
       // GIVEN
       final List<CurrentProcessingDistribution> currentProcessingDistributions = mockCurrentProcessingDistributions();
       currentProcessingDistributions.forEach(
@@ -181,6 +179,7 @@ class CurrentProcessingDistributionRepositoryTest {
     final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         logisticCenterId,
         FBM_WMS_OUTBOUND.name(),
+        Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
         Set.of(ACTIVE_WORKERS.name()),
         DATE_FROM,
@@ -202,6 +201,7 @@ class CurrentProcessingDistributionRepositoryTest {
     final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         logisticCenterId,
         FBM_WMS_OUTBOUND.name(),
+        Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
         Set.of(ACTIVE_WORKERS.name()),
         DATE_FROM,

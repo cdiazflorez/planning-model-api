@@ -4,6 +4,7 @@ import static java.lang.Math.ceil;
 import static java.lang.Math.min;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.ZonedDateTime;
@@ -21,34 +22,46 @@ public class EntitiesUtil {
   private EntitiesUtil() {
   }
 
-  public static <T extends EntityOutput> Map<ProcessName, Map<ZonedDateTime, Map<Source, T>>>
-  toMapByProcessNameDateAndSource(final List<T> entities) {
+  public static <T extends EntityOutput> Map<ProcessPath, Map<ProcessName, Map<ZonedDateTime, Map<Source, T>>>>
+  toMapByProcessPathProcessNameDateAndSource(final List<T> entities) {
 
-    return entities.stream().collect(Collectors.groupingBy(
-        EntityOutput::getProcessName,
-        TreeMap::new,
-        Collectors.groupingBy(
-            o -> o.getDate().withFixedOffsetZone(),
-            TreeMap::new,
-            Collectors.toMap(
-                EntityOutput::getSource,
-                Function.identity(),
-                (e1, e2) -> e2
-            )
-        )
-    ));
+    return entities.stream()
+        .collect(
+            Collectors.groupingBy(
+                EntityOutput::getProcessPath,
+                Collectors.groupingBy(
+                    EntityOutput::getProcessName,
+                    TreeMap::new,
+                    Collectors.groupingBy(
+                        o -> o.getDate().withFixedOffsetZone(),
+                        TreeMap::new,
+                        Collectors.toMap(
+                            EntityOutput::getSource,
+                            Function.identity(),
+                            (e1, e2) -> e2
+                        )
+                    )
+                )
+            ));
   }
 
-  public static <T extends EntityOutput> Map<ProcessName, Map<ZonedDateTime, T>> toMapByProcessNameAndDate(final Stream<T> entities) {
+  public static <T extends EntityOutput> Map<ProcessPath, Map<ProcessName, Map<ZonedDateTime, T>>> toMapByProcessPathProcessNameAndDate(
+      final Stream<T> entities
+  ) {
     return entities.collect(Collectors.groupingBy(
-        EntityOutput::getProcessName,
-        TreeMap::new,
-        Collectors.toMap(
-            o -> o.getDate().withFixedOffsetZone(),
-            Function.identity(),
-            (e1, e2) -> e2
+            EntityOutput::getProcessPath,
+            TreeMap::new,
+            Collectors.groupingBy(
+                EntityOutput::getProcessName,
+                TreeMap::new,
+                Collectors.toMap(
+                    o -> o.getDate().withFixedOffsetZone(),
+                    Function.identity(),
+                    (e1, e2) -> e2
+                )
+            )
         )
-    ));
+    );
   }
 
   public static <T> List<List<T>> paginate(final List<T> entities, final int pageSize) {

@@ -69,7 +69,7 @@ public class ProjectionTestsUtils {
                 .source(FORECAST)
                 .date(date)
                 .processName(processName)
-                .value(quantity)
+                .quantity(quantity)
                 .build();
     }
 

@@ -105,7 +105,8 @@ class ProcessPathHeadcountShareServiceTest {
         new ShareAtProcessPathAndProcessAndDate(GLOBAL, PICKING, DATE_2, 1.0),
         new ShareAtProcessPathAndProcessAndDate(TOT_MULTI_ORDER, PICKING, DATE_2, 0.34),
         new ShareAtProcessPathAndProcessAndDate(NON_TOT_MULTI_ORDER, PICKING, DATE_2, 0.66),
-        new ShareAtProcessPathAndProcessAndDate(GLOBAL, PICKING, DATE_TO, 1.0)
+        new ShareAtProcessPathAndProcessAndDate(GLOBAL, PICKING, DATE_TO, 1.0),
+        new ShareAtProcessPathAndProcessAndDate(GLOBAL, PICKING, DATE_1, null)
     );
   }
 

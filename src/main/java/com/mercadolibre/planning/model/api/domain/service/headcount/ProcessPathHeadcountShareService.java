@@ -40,6 +40,7 @@ public class ProcessPathHeadcountShareService {
     );
 
     return shares.stream()
+        .filter(share -> share.getShare() != null)
         .collect(Collectors.groupingBy(
             ShareAtProcessPathAndProcessAndDate::getProcessPath,
             Collectors.groupingBy(

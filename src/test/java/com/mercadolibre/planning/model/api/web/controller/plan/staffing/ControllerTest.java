@@ -2,6 +2,9 @@ package com.mercadolibre.planning.model.api.web.controller.plan.staffing;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
@@ -13,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
@@ -43,6 +47,20 @@ class ControllerTest {
 
   @MockBean
   private GetThroughputUseCase getThroughputUseCase;
+
+  private static GetEntityInput throughputInput() {
+    return GetEntityInput.builder()
+        .warehouseId(LOGISTIC_CENTER_ID)
+        .workflow(FBM_WMS_OUTBOUND)
+        .dateFrom(DATE_FROM.withFixedOffsetZone())
+        .dateTo(DATE_TO.withFixedOffsetZone())
+        .source(SIMULATION)
+        .processName(List.of(PICKING))
+        .processPaths(List.of(TOT_MONO, TOT_MULTI_BATCH, TOT_MULTI_ORDER))
+        .simulations(emptyList())
+        .viewDate(A_DATE_UTC.toInstant())
+        .build();
+  }
 
   @Test
   @DisplayName("get throughput by process path works ok")
@@ -91,23 +109,11 @@ class ControllerTest {
     result.andExpect(status().isNotFound());
   }
 
-  private static GetEntityInput throughputInput() {
-    return GetEntityInput.builder()
-        .warehouseId(LOGISTIC_CENTER_ID)
-        .workflow(FBM_WMS_OUTBOUND)
-        .dateFrom(DATE_FROM.withFixedOffsetZone())
-        .dateTo(DATE_TO.withFixedOffsetZone())
-        .source(SIMULATION)
-        .processName(List.of(PICKING))
-        .simulations(emptyList())
-        .viewDate(A_DATE_UTC.toInstant())
-        .build();
-  }
-
-  private EntityOutput entityOutput(final ZonedDateTime date, final long quantity) {
+  private EntityOutput entityOutput(final ZonedDateTime date, final long quantity, final ProcessPath processPath) {
     return EntityOutput.builder()
         .workflow(FBM_WMS_OUTBOUND)
         .processName(PICKING)
+        .processPath(processPath)
         .date(date)
         .metricUnit(UNITS_PER_HOUR)
         .source(SIMULATION)
@@ -117,12 +123,24 @@ class ControllerTest {
 
   private List<EntityOutput> mockThroughputs() {
     return List.of(
-        entityOutput(DATE_FROM, 100),
-        entityOutput(DATE_FROM.plusHours(1), 200),
-        entityOutput(DATE_FROM.plusHours(2), 300),
-        entityOutput(DATE_FROM.plusHours(3), 400),
-        entityOutput(DATE_FROM.plusHours(4), 500),
-        entityOutput(DATE_FROM.plusHours(5), 600)
+        entityOutput(DATE_FROM, 25, TOT_MONO),
+        entityOutput(DATE_FROM.plusHours(1), 50, TOT_MONO),
+        entityOutput(DATE_FROM.plusHours(2), 75, TOT_MONO),
+        entityOutput(DATE_FROM.plusHours(3), 100, TOT_MONO),
+        entityOutput(DATE_FROM.plusHours(4), 125, TOT_MONO),
+        entityOutput(DATE_FROM.plusHours(5), 150, TOT_MONO),
+        entityOutput(DATE_FROM, 13, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM.plusHours(1), 26, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM.plusHours(2), 39, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM.plusHours(3), 52, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM.plusHours(4), 65, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM.plusHours(5), 78, TOT_MULTI_ORDER),
+        entityOutput(DATE_FROM, 10, TOT_MULTI_BATCH),
+        entityOutput(DATE_FROM.plusHours(1), 20, TOT_MULTI_BATCH),
+        entityOutput(DATE_FROM.plusHours(2), 30, TOT_MULTI_BATCH),
+        entityOutput(DATE_FROM.plusHours(3), 40, TOT_MULTI_BATCH),
+        entityOutput(DATE_FROM.plusHours(4), 50, TOT_MULTI_BATCH),
+        entityOutput(DATE_FROM.plusHours(5), 60, TOT_MULTI_BATCH)
     );
   }
 

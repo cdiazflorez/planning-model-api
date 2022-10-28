@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @WebMvcTest(controllers = Controller.class)
 class ControllerTest {
 
-  private static final String BASE_URL = "/flow/logistic_center/{logistic_center_id}/plan/staffing/{entity}";
+  private static final String BASE_URL = "/logistic_center/{logistic_center_id}/plan/staffing/{entity}";
 
   private static final ZonedDateTime DATE_FROM = A_DATE_UTC;
 

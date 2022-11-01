@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/flow/logistic_center/{logisticCenterId}/plan/staffing")
+@RequestMapping("/logistic_center/{logisticCenterId}/plan/staffing")
 public class Controller {
 
   private static final Map<Workflow, List<ProcessName>> PROCESSES_BY_WORKFLOW = Map.of(

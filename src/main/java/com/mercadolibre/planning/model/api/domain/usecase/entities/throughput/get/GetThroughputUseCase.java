@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -134,16 +133,46 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
                 // receiving is filtered as it has its own way of calculating its tph
                 .filter(process -> process != ProcessName.RECEIVING)
                 .flatMap(process ->
-                    createThroughputs(
+                    createThroughput(
                         workflow,
                         processPath,
                         process,
-                        headcountsMap.get(processPath).get(process),
-                        regularProductivityMap.get(processPath).get(process),
+                        headcountsMap,
+                        regularProductivityMap,
                         polyvalentProductivityRatios
                     ).stream()
                 )
         ).collect(toList());
+  }
+
+  private List<EntityOutput> createThroughput(
+      final Workflow workflow,
+      final ProcessPath processPath,
+      final ProcessName process,
+      final Map<ProcessPath, Map<ProcessName, Map<ZonedDateTime, Map<Source, EntityOutput>>>> headcount,
+      final Map<ProcessPath, Map<ProcessName, Map<ZonedDateTime, Map<Source, ProductivityOutput>>>> regularProductivity,
+      final PolyvalentProductivityRatio polyvalentProductivityRatios
+  ) {
+    final var headcountOpt = Optional.of(headcount)
+        .map(hm -> hm.get(processPath))
+        .map(hm -> hm.get(process));
+
+    final var productivityOpt = Optional.of(regularProductivity)
+        .map(rp -> rp.get(processPath))
+        .map(rp -> rp.get(process));
+
+    if (headcountOpt.isEmpty() || productivityOpt.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return createThroughputs(
+        workflow,
+        processPath,
+        process,
+        headcountOpt.get(),
+        productivityOpt.get(),
+        polyvalentProductivityRatios
+    );
   }
 
   private List<EntityOutput> createThroughputs(
@@ -154,11 +183,6 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
       final Map<ZonedDateTime, Map<Source, ProductivityOutput>> regularProductivity,
       final PolyvalentProductivityRatio polyvalentProductivityRatios
   ) {
-
-    if (Objects.isNull(headcount) || Objects.isNull(regularProductivity)) {
-      return Collections.emptyList();
-    }
-
     return headcount.keySet()
         .stream()
         .map(dateTime -> calculate(dateTime, workflow, processPath, process, headcount, regularProductivity, polyvalentProductivityRatios))

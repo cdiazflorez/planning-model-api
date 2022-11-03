@@ -1,0 +1,8 @@
+{
+  "request_date": "2022-10-27T21:00:00Z",
+  "spa_request": "{\"configuration\": \"test\"}",
+  "spa_response": "{\"diaz\": 20 }",
+  "front_result": "{\"workers_inbound\": [{\"epoch\": 0,\"stage\": 0,\"permanents_hour\": \"3.66\",\"polyvalents_hour\": \"0.0\",\"process\": \"inbound\",\"stage_name\": \"receiving\",\"epoch_ts\": \"2022-10-24T15:00:00Z\",\"shift_name\": \"tt\",\"total_hour\": \"46.97\",\"total_hour_trim\": \"46.97\"}]}",
+  "response_date": "2022-10-27T21:01:00Z",
+  "logistic_center": "artw01"
+}

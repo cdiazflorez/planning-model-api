@@ -196,6 +196,8 @@ public enum InputId {
 
         boolean useExperimentalVersionForPossiblePlanType;
 
+        boolean dialogHistoryEnabled;
+
     }
 
     @Value

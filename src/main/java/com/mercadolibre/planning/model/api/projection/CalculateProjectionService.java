@@ -14,8 +14,8 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
+import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
-import com.mercadolibre.flow.projection.tools.services.entities.context.UpstreamByInflectionPoints;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
@@ -59,7 +59,7 @@ public class CalculateProjectionService {
   /**
    * Calculate projection about params.
    *
-   * @param workflow workflow
+   * @param workflow          workflow
    * @param projectionRequest request
    * @return projections
    */
@@ -69,7 +69,7 @@ public class CalculateProjectionService {
 
     final var ratios = ProjectionUtils.ratiosAsDistributions(projectionRequest.getRatioByHour(), inflectionPoints);
 
-    final UpstreamByInflectionPoints forecastedBacklog = ProjectionUtils.mapForecastToUpstreamBacklog(projectionRequest.getForecastSales());
+    final PiecewiseUpstream forecastedBacklog = ProjectionUtils.mapForecastToUpstreamBacklog(projectionRequest.getForecastSales());
 
     final SequentialProcess globalSequentialProcess = buildProcessGraph(workflow);
     final ContextsHolder context = buildContextsHolder(

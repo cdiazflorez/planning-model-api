@@ -32,7 +32,7 @@ repositories {
 //}
 dependencies {
     // managed by meLi BOM
-    implementation 'com.mercadolibre.fbm.flow:projection-tools:0.0.9'
+    implementation 'com.mercadolibre.fbm.flow:projection-tools:0.0.10'
     implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.2')
     implementation "com.mercadolibre:routing"
     implementation "com.mercadolibre:threading"

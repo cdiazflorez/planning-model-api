@@ -9,6 +9,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.projection.dto.ProjectionRequest;
@@ -16,7 +19,6 @@ import com.mercadolibre.planning.model.api.projection.dto.ProjectionResult;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -48,11 +50,26 @@ public class CalculateProjectionServiceTest {
 
   private static final ZoneId UTC = ZoneId.of("UTC");
 
+  private static final String MINUTES_ERROR_MESSAGE =
+      "actual projected end date differs from expected by more than five minutes. actual: %s, expected: %s";
+
+  private static final String UNITS_ERROR_MESSAGE =
+      "actual remaining quantity differs from expected by more than 10 units. actual: %s, expected: %s for date out: %s";
+
   @InjectMocks
   private CalculateProjectionService calculateProjectionService;
 
   private static ProjectionRequest.PlanningDistribution planningDistribution(final Instant dateIn, final Instant dateOut, final int total) {
     return new ProjectionRequest.PlanningDistribution(dateIn.atZone(UTC), dateOut.atZone(UTC), total);
+  }
+
+  private static ProjectionResult projectionResult(final Instant cpt, final Instant projectedEndDate, final Integer remainingQuantity) {
+    return new ProjectionResult(
+        cpt,
+        null,
+        projectedEndDate,
+        remainingQuantity
+    );
   }
 
   @Test
@@ -70,30 +87,46 @@ public class CalculateProjectionServiceTest {
     // WHEN
     final List<ProjectionResult> projection = calculateProjectionService.execute(FBM_WMS_OUTBOUND, projectionRequest);
 
-    List<ProjectionResult> sortedProjection = projection.stream()
-        .sorted(Comparator.comparing(ProjectionResult::getDateOut))
-        .collect(Collectors.toList());
-
     // THEN
-    assertEquals(expectedProjectionResult(), sortedProjection);
+    assertResults(projection);
   }
 
-    private static ProjectionResult projectionResult(final Instant cpt, final Instant projectedEndDate, final Integer remainingQuantity) {
-        return new ProjectionResult(
-                cpt,
-                null,
-                projectedEndDate,
-                remainingQuantity
-        );
-    }
+  private void assertResults(final List<ProjectionResult> results) {
+    final var expected = expectedProjectionResult();
+    final var actualByDate = results.stream()
+        .collect(Collectors.toMap(ProjectionResult::getDateOut, Function.identity()));
 
-    private List<ProjectionResult> expectedProjectionResult() {
-        return List.of(
-                projectionResult(FIRST_DATE_CPT, Instant.parse("2022-08-22T01:21:40Z"), 564),
-                projectionResult(SECOND_DATE_CPT, Instant.parse("2022-08-22T05:24:32Z"), 2149),
-                projectionResult(THIRD_DATE_CPT, null, 2038)
-        );
+    assertEquals(expected.size(), actualByDate.size(), "result size does not match expected size");
+    for (final ProjectionResult e : expected) {
+      final var actual = actualByDate.get(e.getDateOut());
+      assertNotNull(actual);
+
+      if (e.getProjectedEndDate() == null) {
+        assertNull(actual.getProjectedEndDate());
+      } else {
+        final var minutesError = Math.abs(ChronoUnit.MINUTES.between(e.getProjectedEndDate(), actual.getProjectedEndDate()));
+        final var minutesErrMessage = String.format(MINUTES_ERROR_MESSAGE, actual.getProjectedEndDate(), e.getProjectedEndDate());
+        assertTrue(minutesError < 5, minutesErrMessage);
+      }
+
+      final var expectedQuantityErr = Math.abs(e.getProjectedRemainingQuantity() - actual.getProjectedRemainingQuantity());
+      final var unitsErrMessage = String.format(
+          UNITS_ERROR_MESSAGE,
+          actual.getProjectedRemainingQuantity(),
+          e.getProjectedRemainingQuantity(),
+          e.getDateOut()
+      );
+      assertTrue(expectedQuantityErr < 10, unitsErrMessage);
     }
+  }
+
+  private List<ProjectionResult> expectedProjectionResult() {
+    return List.of(
+        projectionResult(FIRST_DATE_CPT, Instant.parse("2022-08-22T01:21:40Z"), 564),
+        projectionResult(SECOND_DATE_CPT, Instant.parse("2022-08-22T05:24:32Z"), 2159),
+        projectionResult(THIRD_DATE_CPT, null, 2061)
+    );
+  }
 
   private Map<Instant, ProjectionRequest.PackingRatio> ratioByHour() {
     return Map.of(

@@ -198,6 +198,8 @@ public enum InputId {
 
         boolean dialogHistoryEnabled;
 
+        boolean activatePolyvalencePerShift;
+
     }
 
     @Value

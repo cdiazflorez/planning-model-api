@@ -1,0 +1,578 @@
+[
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T12:00:00Z",
+      "date_out": "2022-11-21T16:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T13:00:00Z",
+      "date_out": "2022-11-21T17:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T14:00:00Z",
+      "date_out": "2022-11-21T18:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T15:00:00Z",
+      "date_out": "2022-11-21T19:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T16:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T17:00:00Z",
+      "date_out": "2022-11-21T20:00:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:00:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:00:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T18:00:00Z",
+      "date_out": "2022-11-21T22:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T19:00:00Z",
+      "date_out": "2022-11-21T23:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T20:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T00:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T21:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T22:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_mono",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_mono",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_batch",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 120.11
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_batch",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  },
+  {
+    "group": {
+      "process_path": "tot_multi_order",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 300.21
+  },
+  {
+    "group": {
+      "process_path": "non_tot_multi_order",
+      "date_in": "2022-11-21T23:00:00Z",
+      "date_out": "2022-11-22T01:30:00Z"
+    },
+    "total": 500.02
+  }
+]

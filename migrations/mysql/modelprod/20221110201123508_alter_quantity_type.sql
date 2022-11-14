@@ -1,0 +1,1 @@
+ALTER TABLE `planning_distribution` MODIFY COLUMN `quantity` DOUBLE NOT NULL DEFAULT 0;

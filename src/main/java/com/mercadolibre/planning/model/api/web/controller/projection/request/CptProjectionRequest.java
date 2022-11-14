@@ -34,4 +34,7 @@ public class CptProjectionRequest {
   private boolean applyDeviation;
 
   private List<Simulation> simulations;
+
+  private ZonedDateTime viewDate;
+
 }

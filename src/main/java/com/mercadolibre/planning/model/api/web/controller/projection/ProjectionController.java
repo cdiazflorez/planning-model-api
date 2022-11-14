@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
@@ -32,6 +33,7 @@ import com.mercadolibre.planning.model.api.web.controller.projection.request.Pro
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.projection.response.BacklogProjectionByAreaDto;
 import com.newrelic.api.agent.Trace;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import javax.validation.Valid;
@@ -77,6 +79,7 @@ public class ProjectionController {
       @PathVariable final Workflow workflow,
       @Valid @RequestBody final CptProjectionRequest request) {
 
+    ZonedDateTime viewDate = request.getViewDate() != null ? request.getViewDate() : getCurrentUtcDate();
     var input = new GetSlaProjectionInput(
         workflow,
         request.getWarehouseId(),
@@ -88,7 +91,8 @@ public class ProjectionController {
         request.getTimeZone(),
         SIMULATION,
         emptyList(),
-        request.isApplyDeviation()
+        request.isApplyDeviation(),
+        viewDate
     );
     if (request.getType() != null && COMMAND_CENTER_SLA.equals(request.getType().name())) {
       return ResponseEntity.ok(queueProjectionService.calculateCptProjection(input));

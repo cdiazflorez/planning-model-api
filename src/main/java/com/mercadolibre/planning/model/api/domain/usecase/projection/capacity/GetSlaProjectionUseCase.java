@@ -32,6 +32,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseO
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,6 +85,7 @@ public class GetSlaProjectionUseCase {
     final ZonedDateTime dateTo = request.getDateTo();
     final String timeZone = request.getTimeZone();
 
+
     final List<EntityOutput> throughput = getThroughputUseCase.execute(GetEntityInput
         .builder()
         .warehouseId(warehouseId)
@@ -130,7 +132,7 @@ public class GetSlaProjectionUseCase {
             .backlog(getBacklog(request.getBacklog()))
             .plannedUnits(expectedBacklog)
             .slaByWarehouse(slaByWarehouse)
-            .currentDate(getCurrentUtcDate())
+            .currentDate(request.getViewDate())
             .build());
 
     final Map<ZonedDateTime, Long> cycleTimeByCpt = getCycleTimes(

@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.simulation;
 
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static com.mercadolibre.planning.model.api.web.controller.simulation.RunSimulationResponse.fromProjectionOutputs;
@@ -59,7 +60,8 @@ public class SimulationController {
             request.getTimeZone(),
             SIMULATION,
             request.getSimulations(),
-            request.isApplyDeviation()
+            request.isApplyDeviation(),
+            getCurrentUtcDate()
         )
     );
 
@@ -92,7 +94,8 @@ public class SimulationController {
             request.getTimeZone(),
             SIMULATION,
             request.getSimulations(),
-            request.isApplyDeviation()
+            request.isApplyDeviation(),
+            getCurrentUtcDate()
         )
     );
 
@@ -108,7 +111,8 @@ public class SimulationController {
             request.getTimeZone(),
             SIMULATION,
             emptyList(),
-            request.isApplyDeviation()
+            request.isApplyDeviation(),
+            getCurrentUtcDate()
         )
     );
 
@@ -124,7 +128,6 @@ public class SimulationController {
 
     return ResponseEntity.ok("");
   }
-
 
   @InitBinder
   public void initBinder(final PropertyEditorRegistry dataBinder) {

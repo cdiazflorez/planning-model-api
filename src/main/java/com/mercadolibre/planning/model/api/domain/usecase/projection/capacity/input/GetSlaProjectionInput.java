@@ -6,10 +6,9 @@ import com.mercadolibre.planning.model.api.web.controller.projection.request.Pro
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
-import lombok.Value;
-
 import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.Value;
 
 @Value
 public class GetSlaProjectionInput {
@@ -35,4 +34,7 @@ public class GetSlaProjectionInput {
     private List<Simulation> simulations;
 
     private boolean applyDeviation;
+
+    private ZonedDateTime viewDate;
+
 }

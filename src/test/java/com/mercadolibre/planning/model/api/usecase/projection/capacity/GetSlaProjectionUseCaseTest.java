@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_AWAY;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static java.time.ZonedDateTime.now;
@@ -210,7 +211,8 @@ class GetSlaProjectionUseCaseTest {
         TIMEZONE,
         null,
         null,
-        false
+        false,
+        getCurrentUtcDate()
     );
   }
 
@@ -226,7 +228,8 @@ class GetSlaProjectionUseCaseTest {
         TIMEZONE,
         null,
         null,
-        false
+        false,
+        parse("2020-01-02T10:00:00Z")
     );
   }
 }

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static java.time.ZonedDateTime.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -119,7 +120,8 @@ class QueueProjectionServiceTest {
             TIMEZONE,
             null,
             null,
-            false
+            false,
+            getCurrentUtcDate()
         )
     );
 
@@ -202,7 +204,8 @@ class QueueProjectionServiceTest {
         TIMEZONE,
         null,
         null,
-        false
+        false,
+        getCurrentUtcDate()
     ));
 
     // THEN
@@ -229,7 +232,8 @@ class QueueProjectionServiceTest {
         TIMEZONE,
         null,
         null,
-        false
+        false,
+        getCurrentUtcDate()
     );
   }
 }

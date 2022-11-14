@@ -6,6 +6,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -129,13 +130,14 @@ class ProjectionControllerTest {
             WAREHOUSE_ID,
             ProjectionType.CPT,
             List.of(PICKING, PACKING),
-            parse("2020-01-01T12:00:00Z[UTC]"),
-            parse("2020-01-10T12:00:00Z[UTC]"),
+            parse("2020-01-01T12:00Z[UTC]"),
+            parse("2020-01-10T12:00Z[UTC]"),
             null,
             "America/Argentina/Buenos_Aires",
             SIMULATION,
             emptyList(),
-            false
+            false,
+            getCurrentUtcDate()
         )))
         .thenReturn(
             List.of(new CptProjectionOutput(

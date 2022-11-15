@@ -107,9 +107,9 @@ public class PlannedUnitsControllerTest {
             .param(GROUP_BY_PARAM, GROUP_BY)
     );
 
-    result.andExpect(status().is5xxServerError());
-    resultTwo.andExpect(status().is5xxServerError());
-    resultThree.andExpect(status().is5xxServerError());
+    result.andExpect(status().is4xxClientError());
+    resultTwo.andExpect(status().is4xxClientError());
+    resultThree.andExpect(status().is4xxClientError());
 
   }
 }

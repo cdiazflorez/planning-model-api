@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -159,6 +160,38 @@ public class ApiExceptionHandler {
         request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
 
         log.error("unknown_error", exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParameterException(
+        final MissingServletRequestParameterException exception,
+        final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            "missing_parameter"
+        );
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error(exception.getMessage(), exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
+
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDateRangeException(
+        final InvalidDateRangeException exception,
+        final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            "invalid_date_range"
+        );
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error(exception.getMessage(), exception);
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 

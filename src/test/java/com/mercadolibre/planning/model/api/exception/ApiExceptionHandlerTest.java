@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_DAY_NAME;
 import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter.INCLUDE_SHIFT_GROUP;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -12,7 +13,10 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import org.assertj.core.util.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,10 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
-
-import javax.servlet.http.HttpServletRequest;
-
-import java.util.Set;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 public class ApiExceptionHandlerTest {
 
@@ -260,6 +261,51 @@ public class ApiExceptionHandlerTest {
         // THEN
         verify(request).setAttribute(EXCEPTION_ATTRIBUTE, exception);
         assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    @DisplayName("Handle MissingServletRequestParameterException")
+    void handleMissingServletRequestParameterException() {
+        // GIVEN
+        final MissingServletRequestParameterException exception =
+            new MissingServletRequestParameterException("warehouseId", "string");
+        final ErrorResponse expectedResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            "missing_parameter"
+        );
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleMissingParameterException(exception, request);
+
+        // THEN
+        assertErrorResponse(expectedResponse, response);
+    }
+
+    @Test
+    @DisplayName("Handle InvalidDateRangeException")
+    void handleInvalidDateRangeException() {
+        //GIVEN
+        final Instant now = Instant.now();
+        final InvalidDateRangeException exception = new InvalidDateRangeException(
+            now,
+            now.plus(1, HOURS),
+            now,
+            now.plus(1, HOURS));
+
+        final ErrorResponse expectedResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            "invalid_date_range"
+        );
+
+        // WHEN
+        final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidDateRangeException(exception, request);
+
+        // THEN
+        assertErrorResponse(expectedResponse, response);
+
+
     }
 
 

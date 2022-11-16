@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.web.controller.forecast;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.exception.InvalidDateRangeException;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class PlannedUnitsController {
     }
 
   }
-
+  //TODO: Cuando se cree el enum para groupBy reemplazar el List<String>
   @GetMapping
   public ResponseEntity<List<PlannedUnitsResponse>> getForecast(
       @PathVariable final String logisticCenter,
@@ -51,7 +52,7 @@ public class PlannedUnitsController {
       @RequestParam(required = false) final Instant dateOutTo,
       @RequestParam final Instant viewDate,
       @RequestParam final List<String> groupBy
-  ) throws IOException, MissingServletRequestParameterException {
+  ) throws IOException {
 
     validateDatesRanges(dateInFrom, dateInTo, dateOutFrom, dateOutTo);
 
@@ -66,15 +67,9 @@ public class PlannedUnitsController {
   private void validateDatesRanges(final Instant dateInFrom,
                                    final Instant dateInTo,
                                    final Instant dateOutFrom,
-                                   final Instant dateOutTo) throws MissingServletRequestParameterException {
+                                   final Instant dateOutTo) {
     if (!((dateInFrom != null && dateInTo != null) || (dateOutFrom != null && dateOutTo != null))) {
-      final String message = String.format(
-          "The range of dates of entry or exit is not present. dateInFrom: %s, dateInTo: %s, dateOutFrom: %s, dateOutTo: %s",
-          dateInFrom,
-          dateInTo,
-          dateOutFrom,
-          dateOutTo);
-      throw new MissingServletRequestParameterException(message, Instant.class.getTypeName());
+      throw new InvalidDateRangeException(dateInFrom, dateInTo, dateOutFrom, dateOutTo);
     }
   }
 

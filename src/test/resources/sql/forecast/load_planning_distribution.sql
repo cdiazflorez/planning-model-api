@@ -4,10 +4,6 @@ VALUES (1, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100
        (3, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
        (4, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100);
 
-ALTER TABLE `planning_distribution` ADD COLUMN `process_path` varchar(45) NOT NULL DEFAULT 'GLOBAL';
-
-ALTER TABLE `planning_distribution` MODIFY COLUMN `quantity` DOUBLE NOT NULL DEFAULT 0;
-
 INSERT INTO planning_distribution(id, forecast_id, date_in, date_out, quantity, quantity_metric_unit, process_path)
 VALUES (1, 1, '2022-11-09 10:00:00', '2022-11-11 10:00:00', 100.0, 'UNIT', 'TOT_MONO'),
        (2, 1, '2022-11-09 10:00:00', '2022-11-11 10:00:00', 200.0, 'UNIT', 'NON_TOT_MONO'),

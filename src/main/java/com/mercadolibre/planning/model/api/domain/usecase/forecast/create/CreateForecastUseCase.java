@@ -1,7 +1,11 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.create;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
@@ -22,11 +26,13 @@ import com.mercadolibre.planning.model.api.web.controller.forecast.request.Plann
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
 import com.newrelic.api.agent.Trace;
-import java.util.List;
-import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
+import java.util.List;
+import javax.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -127,6 +133,16 @@ public class CreateForecastUseCase {
 
     final List<PlanningDistribution> planningDistributions = distributions.stream()
         .map(pdr -> pdr.toPlanningDistribution(forecast))
+        .collect(toMap(CreateForecastUseCase::getGrouperPlanningDistribution, PlanningDistribution::getQuantity, Double::sum)).entrySet()
+        .stream()
+        .map(item -> new PlanningDistribution(forecast.getId(),
+                                              item.getKey().getDateIn(),
+                                              item.getKey().getDateOut(),
+                                              item.getValue(),
+                                              item.getKey().getQuantityMetricUnit(),
+                                              item.getKey().getProcessPath(),
+                                              forecast,
+                                              emptyList()))
         .collect(toList());
 
     planningDistributionGateway.create(planningDistributions, forecast.getId());
@@ -183,5 +199,25 @@ public class CreateForecastUseCase {
 
   private static <T> boolean isEmpty(List<T> collection) {
     return collection == null || collection.isEmpty();
+  }
+
+  @AllArgsConstructor
+  @Getter
+  @EqualsAndHashCode
+  private static class GroupPlanningDistribution {
+    private ZonedDateTime dateIn;
+
+    private ZonedDateTime dateOut;
+
+    private MetricUnit quantityMetricUnit;
+
+    private ProcessPath processPath;
+  }
+
+  private static GroupPlanningDistribution getGrouperPlanningDistribution(final PlanningDistribution planningDistribution) {
+    return new GroupPlanningDistribution(planningDistribution.getDateIn(),
+                                         planningDistribution.getDateOut(),
+                                         planningDistribution.getQuantityMetricUnit(),
+                                         planningDistribution.getProcessPath());
   }
 }

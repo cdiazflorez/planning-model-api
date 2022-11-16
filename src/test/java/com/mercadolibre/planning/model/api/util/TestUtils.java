@@ -108,13 +108,13 @@ import org.apache.commons.io.IOUtils;
 public final class TestUtils {
 
   public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
-      ZoneId.of("UTC"));
+                                                                  ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
-      ZoneId.of("UTC"));
+                                                               ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
-      ZoneId.of("UTC"));
+                                                                ZoneId.of("UTC"));
 
   public static final ZonedDateTime DEACTIVATE_DATE_FROM = ZonedDateTime.now();
 
@@ -979,7 +979,7 @@ public final class TestUtils {
   private static List<PlanningDistributionRequest> mockPlanningDistributions() {
     return singletonList(
         new PlanningDistributionRequest(
-            DATE_IN, DATE_OUT, UNITS, 1200, asList(
+            DATE_IN, DATE_OUT, UNITS, ProcessPath.GLOBAL, 1200, asList(
             new MetadataRequest("carrier_id", "17502740"),
             new MetadataRequest("service_id", "851"),
             new MetadataRequest("canalization", "U")

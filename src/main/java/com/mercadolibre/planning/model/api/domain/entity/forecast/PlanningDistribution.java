@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,13 +45,16 @@ public class PlanningDistribution {
 
     private ZonedDateTime dateOut;
 
-    private long quantity;
+    private double quantity;
 
     /**
      * TODO remove this field.
      */
     @Enumerated(EnumType.STRING)
     private MetricUnit quantityMetricUnit;
+
+    @Enumerated(EnumType.STRING)
+    private ProcessPath processPath;
 
     @ManyToOne
     @JoinColumn(name = "forecast_id")

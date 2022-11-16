@@ -269,15 +269,7 @@ public class CreateForecastUseCaseTest {
 
   private List<PlanningDistribution> getPlanningDistributions(final Forecast forecast) {
     return List.of(new PlanningDistribution(
-        0, DATE_IN, DATE_OUT, 1200, UNITS, forecast, getPlanningMetadatas())
-    );
-  }
-
-  private List<PlanningDistributionMetadata> getPlanningMetadatas() {
-    return List.of(
-        new PlanningDistributionMetadata(0, "carrier_id", "17502740"),
-        new PlanningDistributionMetadata(0, "service_id", "851"),
-        new PlanningDistributionMetadata(0, "canalization", "U")
+        1, DATE_IN, DATE_OUT, 1200, UNITS, ProcessPath.GLOBAL, forecast, List.of())
     );
   }
 

@@ -1,48 +1,45 @@
 package com.mercadolibre.planning.model.api.web.controller.forecast.request;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
-import lombok.Value;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import lombok.Value;
 
 
 @Value
 public class PlanningDistributionRequest {
 
-    @NotNull
-    private ZonedDateTime dateIn;
+  @NotNull ZonedDateTime dateIn;
 
-    @NotNull
-    private ZonedDateTime dateOut;
+  @NotNull ZonedDateTime dateOut;
 
-    @NotNull
-    private MetricUnit quantityMetricUnit;
+  @NotNull MetricUnit quantityMetricUnit;
 
-    private long quantity;
+  ProcessPath processPath;
 
-    @NotEmpty
-    @Valid
-    private List<MetadataRequest> metadata;
+  double quantity;
 
-    public PlanningDistribution toPlanningDistribution(final Forecast forecast) {
-        return PlanningDistribution.builder()
-                .dateIn(dateIn)
-                .dateOut(dateOut)
-                .forecast(forecast)
-                .quantity(quantity)
-                .quantityMetricUnit(quantityMetricUnit)
-                .metadatas(metadata.stream()
-                        .map(MetadataRequest::toPlanningDistributionMetadata)
-                        .collect(Collectors.toList()))
-                .build();
-    }
+  @NotEmpty
+  @Valid List<MetadataRequest> metadata;
 
+  public PlanningDistribution toPlanningDistribution(final Forecast forecast) {
+    return PlanningDistribution.builder()
+        .dateIn(dateIn)
+        .dateOut(dateOut)
+        .processPath(processPath)
+        .forecast(forecast)
+        .quantity(quantity)
+        .quantityMetricUnit(quantityMetricUnit)
+        .metadatas(metadata.stream()
+                       .map(MetadataRequest::toPlanningDistributionMetadata)
+                       .collect(Collectors.toList()))
+        .build();
+  }
 }

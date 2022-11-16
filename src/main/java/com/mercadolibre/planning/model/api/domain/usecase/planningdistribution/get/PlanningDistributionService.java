@@ -211,12 +211,15 @@ public class PlanningDistributionService {
 
   /**
    * Removes distribution elements of overlapping forecasts.
+   * only the first occurrence is included in the result NOTE that the elements included in the result depend
+   * on the order they are in the received list.
    * TODO Eliminar este metodo cuando dejemos guardar el forecast por semana.
    *
-   * @return a list like the received but if two elements have different {@link PlanningDistributionElemView#getForecastId()} and the same
-   *     {@link PlanningDistributionElemView#getDateIn()} and {@link PlanningDistributionElemView#getDateOut()},
-   *     only the first occurrence is included in the result NOTE that the elements included in the result depend
-   *     on the order they are in the received list.
+   * {@link PlanningDistributionElemView#getForecastId()} and the same
+   * {@link PlanningDistributionElemView#getDateIn()} and
+   * {@link PlanningDistributionElemView#getDateOut()},
+   *
+   * @return a list like the received but if two elements have different
    */
   private List<PlanningDistributionElemView> removeDuplicatedData(final List<PlanningDistributionElemView> duplicatedPlanning) {
     final Map<Pair<Date, Date>, Long> dateByForecastId = new HashMap<>();

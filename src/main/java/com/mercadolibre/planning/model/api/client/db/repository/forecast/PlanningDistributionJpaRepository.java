@@ -42,6 +42,7 @@ public class PlanningDistributionJpaRepository implements PlanningDistributionGa
                 query.setParameter(paramIndex++, entity.getDateOut());
                 query.setParameter(paramIndex++, entity.getQuantity());
                 query.setParameter(paramIndex++, entity.getQuantityMetricUnit().name());
+                query.setParameter(paramIndex++, entity.getProcessPath().name());
             }
             query.executeUpdate();
         });
@@ -95,8 +96,8 @@ public class PlanningDistributionJpaRepository implements PlanningDistributionGa
 
     private String getPlanningDistributionQuery(final int size) {
         final String query = "INSERT INTO planning_distribution "
-                + "(forecast_id, date_in, date_out, quantity, quantity_metric_unit) "
-                + "VALUES " + "(?,?,?,?,?),".repeat(size);
+                + "(forecast_id, date_in, date_out, quantity, quantity_metric_unit, process_path) "
+                + "VALUES " + "(?,?,?,?,?,?),".repeat(size);
 
         return query.substring(0, query.length() - 1);
     }

@@ -33,11 +33,12 @@ repositories {
 dependencies {
     // managed by meLi BOM
     implementation 'com.mercadolibre.fbm.flow:projection-tools:0.0.10'
-    implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.2')
+    implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.6')
     implementation "com.mercadolibre:routing"
     implementation "com.mercadolibre:threading"
     implementation "com.mercadolibre.restclient:meli-restclient-default"
     implementation 'com.newrelic.agent.java:newrelic-api'
+    implementation 'commons-io:commons-io:2.6'
     implementation 'com.fury:furyutils'
     constraints {
         implementation('commons-io:commons-io:2.7') {

@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.forecast.get;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,5 +28,19 @@ public class GetForecastInput {
     this.dateFrom = dateFrom;
     this.dateTo = dateTo;
     this.viewDate = null;
+  }
+
+  public GetForecastInput(
+      final String warehouseId,
+      final Workflow workflow,
+      final Instant dateFrom,
+      final Instant dateTo,
+      final Instant viewDate
+  ) {
+    this.warehouseId = warehouseId;
+    this.workflow = workflow;
+    this.dateFrom = ZonedDateTime.ofInstant(dateFrom, ZoneOffset.UTC);
+    this.dateTo = ZonedDateTime.ofInstant(dateTo, ZoneOffset.UTC);
+    this.viewDate = viewDate;
   }
 }

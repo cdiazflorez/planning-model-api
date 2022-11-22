@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionRepository;
 import com.newrelic.api.agent.Trace;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -58,7 +57,8 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
 
     if (dateInFrom != null) {
       sqlQuery.withWhere("date_in BETWEEN :date_in_from AND :date_in_to");
-    } else if (dateOutFrom != null) {
+    }
+    if (dateOutFrom != null) {
       sqlQuery.withWhere("date_out BETWEEN :date_out_from AND :date_out_to");
     }
 
@@ -82,7 +82,8 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
     if (dateInFrom != null) {
       query.setParameter("date_in_from", dateInFrom);
       query.setParameter("date_in_to", dateInTo);
-    } else if (dateOutFrom != null) {
+    }
+    if (dateOutFrom != null) {
       query.setParameter("date_out_from", dateOutFrom);
       query.setParameter("date_out_to", dateOutTo);
     }
@@ -122,7 +123,7 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
       index.incrementAndGet();
     }
 
-    planningDistribution.setQuantity(((BigDecimal) row[index.get()]).doubleValue());
+    planningDistribution.setQuantity(((Number) row[index.get()]).doubleValue());
 
     return planningDistribution;
   }

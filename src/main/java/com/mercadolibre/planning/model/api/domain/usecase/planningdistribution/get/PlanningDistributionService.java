@@ -125,7 +125,7 @@ public class PlanningDistributionService {
 
   public List<PlanningDistributionOutput> getPlanningDistribution(final PlanningDistributionInput input) {
     final List<PlanningDistribution> distributions = plannedUnitsGateway.getPlanningDistributions(
-        input.logisticCenterId,
+        input.getLogisticCenterId(),
         input.getWorkflow(),
         input.getProcessPaths(),
         input.getDateInFrom(),

@@ -104,15 +104,13 @@ public final class DateUtils {
     final var x = Optional.ofNullable(one);
     final var y = Optional.ofNullable(other);
 
-    return x.map(d1 -> y.map(d2 -> d1.isAfter(d2) ? d1 : d2))
-        .orElse(y);
+    return x.isEmpty() ? y : y.isEmpty() ? x : x.get().isBefore(y.get()) ? y : x;
   }
 
   public static Optional<Instant> min(final Instant one, final Instant other) {
     final var x = Optional.ofNullable(one);
     final var y = Optional.ofNullable(other);
 
-    return x.map(d1 -> y.map(d2 -> d1.isBefore(d2) ? d1 : d2))
-        .orElse(y);
+    return x.isEmpty() ? y : y.isEmpty() ? x : x.get().isBefore(y.get()) ? x : y;
   }
 }

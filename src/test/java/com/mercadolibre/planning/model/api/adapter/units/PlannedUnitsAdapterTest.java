@@ -163,4 +163,53 @@ class PlannedUnitsAdapterTest {
     assertEquals(expected, result);
   }
 
+  @Test
+  @DisplayName("when searching units from only one forecast the units should be returned immediately without date in")
+  void testGetPlannedUnitsFromOneForecastWirhOutDateIn() {
+    // GIVEN
+    when(getForecastUseCase.execute(new GetForecastInput(
+            WAREHOUSE_ID,
+            FBM_WMS_OUTBOUND,
+            DATE_OUT_1,
+            DATE_OUT_3,
+            A_DATE_UTC.toInstant()
+        ))
+    ).thenReturn(mockForecastIds());
+
+    final var distributions = List.of(
+        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
+        new PlanningDistribution(1L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 44.5),
+        new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 30.0),
+
+        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, 0),
+        new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 10)
+    );
+
+    when(repository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
+        null,
+        null,
+        DATE_OUT_1,
+        DATE_OUT_3,
+        PROCESS_PATHS,
+        GROUPERS,
+        new HashSet<>(mockForecastIds())
+    )).thenReturn(distributions);
+
+    // WHEN
+    final var result = adapter.getPlanningDistributions(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND,
+        PROCESS_PATHS,
+        null,
+        null,
+        DATE_OUT_1,
+        DATE_OUT_3,
+        GROUPERS,
+        A_DATE_UTC.toInstant()
+    );
+
+    // THEN
+    assertEquals(distributions, result);
+  }
+
 }

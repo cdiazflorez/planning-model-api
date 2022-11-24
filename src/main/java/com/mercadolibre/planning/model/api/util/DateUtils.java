@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.LongStream;
@@ -57,6 +58,12 @@ public final class DateUtils {
     return date.equals(from) || date.equals(to) || date.isAfter(from) && date.isBefore(to);
   }
 
+  public static boolean isBetweenInclusive(final ChronoZonedDateTime<LocalDate> lower,
+                                           final Instant probe,
+                                           final ChronoZonedDateTime<LocalDate> higher) {
+    return !probe.isBefore(lower.toInstant()) && !higher.toInstant().isBefore(probe);
+  }
+
   private static String toWeekYear(final ZonedDateTime dateTime) {
     final int week = dateTime.get(WeekFields.SUNDAY_START.weekOfWeekBasedYear());
     final int year = dateTime.get(WeekFields.SUNDAY_START.weekBasedYear());
@@ -93,4 +100,17 @@ public final class DateUtils {
     return toWeekYear(dateTime);
   }
 
+  public static Optional<Instant> max(final Instant one, final Instant other) {
+    final var x = Optional.ofNullable(one);
+    final var y = Optional.ofNullable(other);
+
+    return x.isEmpty() ? y : y.isEmpty() ? x : x.get().isBefore(y.get()) ? y : x;
+  }
+
+  public static Optional<Instant> min(final Instant one, final Instant other) {
+    final var x = Optional.ofNullable(one);
+    final var y = Optional.ofNullable(other);
+
+    return x.isEmpty() ? y : y.isEmpty() ? x : x.get().isBefore(y.get()) ? x : y;
+  }
 }

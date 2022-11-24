@@ -1,13 +1,25 @@
 package com.mercadolibre.planning.model.api.web.controller;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_OUT;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.PROCESS_PATH;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.web.controller.forecast.PlannedUnitsController;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -33,11 +45,29 @@ public class PlannedUnitsControllerTest {
   private static final String GROUP_BY_PARAM = "group_by";
   private static final String VIEW_DATE_PARAM = "view_date";
 
+  @MockBean
+  private PlanningDistributionService planningDistributionService;
+
   @Autowired
   private MockMvc mvc;
 
   @Test
   public void testGetForecast() throws Exception {
+
+    when(planningDistributionService.getPlanningDistribution(new PlanningDistributionService.PlanningDistributionInput(
+        WH,
+        Workflow.FBM_WMS_OUTBOUND,
+        Set.of(TOT_MONO, NON_TOT_MONO),
+        Instant.parse(DATE_IN_FROM),
+        Instant.parse(DATE_IN_TO),
+        Instant.parse(DATE_OUT_FROM),
+        Instant.parse(DATE_OUT_TO),
+        Set.of(PROCESS_PATH, DATE_IN, DATE_OUT),
+        true,
+        Instant.parse(DATE_IN_FROM)
+    ))).thenReturn(
+        Collections.emptyList()
+    );
 
     // WHEN
     final ResultActions result = mvc.perform(

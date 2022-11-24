@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Comparator.comparing;
@@ -11,23 +12,26 @@ import static java.util.stream.Collectors.toMap;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionOutput.GroupKey;
+import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
+import lombok.Value;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -44,12 +48,7 @@ public class PlanningDistributionService {
 
   private final CurrentForecastDeviationRepository currentForecastDeviationRepository;
 
-  private static boolean isDateBetween(final ChronoZonedDateTime<LocalDate> lower,
-                                       final Date probe,
-                                       final ChronoZonedDateTime<LocalDate> higher) {
-    final var probeEpochSeconds = probe.toInstant();
-    return !probeEpochSeconds.isBefore(lower.toInstant()) && !higher.toInstant().isBefore(probeEpochSeconds);
-  }
+  private final PlannedUnitsGateway plannedUnitsGateway;
 
   public List<GetPlanningDistributionOutput> getPlanningDistribution(final GetPlanningDistributionInput input) {
     final Map<Instant, CurrentPlanningDistribution> currentPlanningDistributions =
@@ -124,6 +123,50 @@ public class PlanningDistributionService {
     return removeDuplicatedData(dirtyPlanningDistribution);
   }
 
+  public List<PlanningDistributionOutput> getPlanningDistribution(final PlanningDistributionInput input) {
+    final List<PlanningDistribution> distributions = plannedUnitsGateway.getPlanningDistributions(
+        input.getLogisticCenterId(),
+        input.getWorkflow(),
+        input.getProcessPaths(),
+        input.getDateInFrom(),
+        input.getDateInTo(),
+        input.getDateOutFrom(),
+        input.getDateOutTo(),
+        input.getGroupBy(),
+        input.getViewDate()
+    );
+
+    final List<PlanningDistribution> finalDistributions = input.isApplyDeviation() && input.getGroupBy().contains(DATE_IN)
+        ? applyDeviations(input.getLogisticCenterId(), input.getWorkflow(), distributions, input.getViewDate())
+        : distributions;
+
+    return finalDistributions.stream()
+        .map(distribution -> new PlanningDistributionOutput(
+            new GroupKey(distribution.getProcessPath(), distribution.getDateIn(), distribution.getDateOut()),
+            distribution.getQuantity()
+        ))
+        .collect(toList());
+  }
+
+  private List<PlanningDistribution> applyDeviations(
+      final String logisticCenterId,
+      final Workflow workflow,
+      final List<PlanningDistribution> planningDistribution,
+      final Instant viewDate
+  ) {
+    return getApplicableForecastDeviation(logisticCenterId, workflow, viewDate)
+        .map(deviation -> planningDistribution.stream()
+            .map(distribution -> applyDeviation(deviation, distribution))
+            .collect(toList())
+        ).orElse(planningDistribution);
+  }
+
+  private PlanningDistribution applyDeviation(final CurrentForecastDeviation deviation, final PlanningDistribution distribution) {
+    return DateUtils.isBetweenInclusive(deviation.getDateFrom(), distribution.getDateIn(), deviation.getDateTo())
+        ? distribution.newWithAdjustment(deviation.getValue())
+        : distribution;
+  }
+
   /**
    * Applies the newest forecast deviation corresponding of the specified warehouse to the received planning distribution.
    *
@@ -147,9 +190,9 @@ public class PlanningDistributionService {
     return getApplicableForecastDeviation(warehouseId, workflow, viewDate)
         .map(deviation -> planningDistribution.stream()
             .map(elem ->
-                isDateBetween(
+                DateUtils.isBetweenInclusive(
                     deviation.getDateFrom(),
-                    elem.getDateIn(),
+                    elem.getDateIn().toInstant(),
                     deviation.getDateTo()
                 )
                     ? PlanningDistributionViewImpl.fromWithQuantity(
@@ -239,5 +282,45 @@ public class PlanningDistributionService {
       }
     });
     return planning;
+  }
+
+  /**
+   * Gateway for forecasted units.
+   */
+  public interface PlannedUnitsGateway {
+    List<PlanningDistribution> getPlanningDistributions(
+        String logisticCenterId,
+        Workflow workflow,
+        Set<ProcessPath> processPaths,
+        Instant dateInFrom,
+        Instant dateInTo,
+        Instant dateOutFrom,
+        Instant dateOutTo,
+        Set<Grouper> groupBy,
+        Instant viewDate
+    );
+  }
+
+  @Value
+  public static class PlanningDistributionInput {
+    String logisticCenterId;
+
+    Workflow workflow;
+
+    Set<ProcessPath> processPaths;
+
+    Instant dateInFrom;
+
+    Instant dateInTo;
+
+    Instant dateOutFrom;
+
+    Instant dateOutTo;
+
+    Set<Grouper> groupBy;
+
+    boolean applyDeviation;
+
+    Instant viewDate;
   }
 }

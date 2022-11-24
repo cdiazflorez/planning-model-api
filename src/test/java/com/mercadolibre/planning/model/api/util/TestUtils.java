@@ -28,14 +28,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.TRANSFERS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_COSTS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -73,7 +71,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionViewImpl;
-import com.mercadolibre.planning.model.api.domain.usecase.suggestedwave.get.GetSuggestedWavesInput;
 import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
@@ -488,19 +485,6 @@ public final class TestUtils {
         .simulations(simulations)
         .abilityLevel(Set.of(1))
         .viewDate(A_DATE_UTC.toInstant())
-        .build();
-  }
-
-  public static GetSuggestedWavesInput mockGetSuggestedWavesInput() {
-    final ZonedDateTime now = getCurrentUtcDate().withFixedOffsetZone();
-
-    return GetSuggestedWavesInput.builder()
-        .warehouseId(WAREHOUSE_ID)
-        .workflow(FBM_WMS_OUTBOUND)
-        .dateFrom(now)
-        .backlog(500)
-        .dateTo(now.truncatedTo(HOURS).plusHours(2))
-        .applyDeviation(true)
         .build();
   }
 

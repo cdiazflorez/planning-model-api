@@ -167,20 +167,6 @@ public class PlanningDistributionService {
         : distribution;
   }
 
-  /**
-   * Applies the newest forecast deviation corresponding of the specified warehouse to the received planning distribution.
-   *
-   * @param warehouseId          logistic center id from which the deviation should be applied.
-   * @param planningDistribution forecasted backlog to be multiplied by the deviation.
-   * @return forecasted backlog with deviations applied.
-   */
-  public List<PlanningDistributionElemView> applyDeviation(
-      final String warehouseId,
-      final List<PlanningDistributionElemView> planningDistribution
-  ) {
-    return applyDeviation(warehouseId, FBM_WMS_OUTBOUND, planningDistribution, null);
-  }
-
   private List<PlanningDistributionElemView> applyDeviation(
       final String warehouseId,
       final Workflow workflow,

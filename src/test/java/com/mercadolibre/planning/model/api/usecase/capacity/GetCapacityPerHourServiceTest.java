@@ -73,7 +73,7 @@ public class GetCapacityPerHourServiceTest {
                     .metricUnit(UNITS_PER_HOUR)
                     .value(19)
                     .build()
-            ), List.of(60, 27)),
+            ), List.of(60, 30)),
         Arguments.of(
             FBM_WMS_OUTBOUND,
             List.of(
@@ -107,7 +107,7 @@ public class GetCapacityPerHourServiceTest {
                     .metricUnit(UNITS_PER_HOUR)
                     .value(24)
                     .build()
-            ), List.of(59, 13)),
+            ), List.of(60, 13)),
         Arguments.of(
             FBM_WMS_INBOUND,
             List.of(

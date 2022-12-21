@@ -74,11 +74,7 @@ public class GetCapacityPerHourService {
 
     // TODO: remove after FT no longer applies
     if (hasPickingCapacity) {
-      return (int) min(
-          capacityByProcess.getOrDefault(PICKING, 0L),
-          capacityByProcess.getOrDefault(PACKING, 0L)
-              + capacityByProcess.getOrDefault(PACKING_WALL, 0L)
-      );
+      return capacityByProcess.getOrDefault(PICKING, 0L).intValue();
     }
 
     return WorkflowCapacity.getCapacity(workflow, capacityByProcess);

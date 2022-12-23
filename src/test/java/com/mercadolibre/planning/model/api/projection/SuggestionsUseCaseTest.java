@@ -33,8 +33,10 @@ class SuggestionsUseCaseTest {
         Assertions.assertEquals(expectedSuggestions.getReason(), suggested.getReason());
     }
 
-    private boolean assertEqualsProcessPath(final List<BoundsByPPath> processPath, final List<BoundsByPPath> processPath1) {
-        final List<BoundsByPPath> equalsProcessPath = processPath.stream().filter(processPath1::contains).collect(Collectors.toList());
+    private boolean assertEqualsProcessPath(final List<BoundsByProcessPath> processPath, final List<BoundsByProcessPath> processPath1) {
+        final List<BoundsByProcessPath> equalsProcessPath = processPath.stream()
+                .filter(processPath1::contains)
+                .collect(Collectors.toList());
         return equalsProcessPath.size() == processPath.size();
     }
 
@@ -53,12 +55,12 @@ class SuggestionsUseCaseTest {
                 );
     }
 
-    private List<BacklogByPPathAndProcess> getListOfBacklog() {
+    private List<UnitsByProcessPathAndProcess> getListOfBacklog() {
         return List.of(
-                new BacklogByPPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT1530, 2000),
-                new BacklogByPPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT1530, 5000),
-                new BacklogByPPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT3, 2000),
-                new BacklogByPPathAndProcess(ProcessPath.TOT_MULTI_BATCH, ProcessName.WAVING, DATE_OUT1, 8000)
+                new UnitsByProcessPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT1530, 2000),
+                new UnitsByProcessPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT1530, 5000),
+                new UnitsByProcessPathAndProcess(ProcessPath.NON_TOT_MONO, ProcessName.WAVING, DATE_OUT3, 2000),
+                new UnitsByProcessPathAndProcess(ProcessPath.TOT_MULTI_BATCH, ProcessName.WAVING, DATE_OUT1, 8000)
 
         );
     }
@@ -68,8 +70,8 @@ class SuggestionsUseCaseTest {
                 new Suggestion(
                         VIEW_DATE1430,
                         List.of(
-                                new BoundsByPPath(ProcessPath.NON_TOT_MONO, 7000, 15000),
-                                new BoundsByPPath(ProcessPath.TOT_MULTI_BATCH, 8000, 15000)
+                                new BoundsByProcessPath(ProcessPath.NON_TOT_MONO, 7000, 15000),
+                                new BoundsByProcessPath(ProcessPath.TOT_MULTI_BATCH, 8000, 15000)
 
                         ),
                         TriggerName.SLA,

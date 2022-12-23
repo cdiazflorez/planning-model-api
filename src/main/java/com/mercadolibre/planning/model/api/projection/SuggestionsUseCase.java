@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -25,20 +24,28 @@ public class SuggestionsUseCase {
 
     public List<Suggestion> execute(
             final List<ProcessPathConfiguration> ctByProcessPath,
-            final List<BacklogByPPathAndProcess> backlogs,
+            final List<UnitsByProcessPathAndProcess> backlogs,
             final Instant viewDate
     ) {
-        final var configByPPath = ctByProcessPath.stream()
+        final var configByProcessPath = ctByProcessPath.stream()
                 .collect(Collectors.toMap(ProcessPathConfiguration::getProcessPath, Function.identity()));
 
         final var inRushPhaseBacklogByPPAndDateOut = backlogs.stream()
                 .filter(backlog -> backlog.getProcessName().equals(ProcessName.WAVING))
-                .filter(backlog -> shouldTriggerRushPhaseWave(backlog.getDateOut(), viewDate, configByPPath.get(backlog.getProcessPath())))
+                .filter(backlog -> shouldTriggerRushPhaseWave(
+                        backlog.getDateOut(),
+                        viewDate,
+                        configByProcessPath.get(backlog.getProcessPath())
+                ))
                 .collect(groupingBy(
-                        BacklogByPPathAndProcess::getProcessPath,
-                        groupingBy(BacklogByPPathAndProcess::getDateOut, reducing(0, BacklogByPPathAndProcess::getUnits, Integer::sum))));
+                        UnitsByProcessPathAndProcess::getProcessPath,
+                        groupingBy(
+                                UnitsByProcessPathAndProcess::getDateOut,
+                                reducing(0, UnitsByProcessPathAndProcess::getUnits, Integer::sum)
+                        )
+                ));
 
-        final List<BoundsByPPath> executedProcessPaths = inRushPhaseBacklogByPPAndDateOut.entrySet()
+        final List<BoundsByProcessPath> executedProcessPaths = inRushPhaseBacklogByPPAndDateOut.entrySet()
                 .stream()
                 .map(entry -> calculateBoundsByPPForClosenessSla(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
@@ -55,9 +62,12 @@ public class SuggestionsUseCase {
         return List.of(new Suggestion(viewDate, executedProcessPaths, TriggerName.SLA, expectedQuantities));
     }
 
-    private BoundsByPPath calculateBoundsByPPForClosenessSla(final ProcessPath processPath, final Map<Instant, Integer> backlogBySLA) {
+    private BoundsByProcessPath calculateBoundsByPPForClosenessSla(
+            final ProcessPath processPath,
+            final Map<Instant, Integer> backlogBySLA
+    ) {
         var lowerBound = backlogBySLA.values().stream().reduce(0, Integer::sum);
-        return new BoundsByPPath(processPath, lowerBound, UPPER_BOUND);
+        return new BoundsByProcessPath(processPath, lowerBound, UPPER_BOUND);
     }
 
     private boolean shouldTriggerRushPhaseWave(
@@ -74,12 +84,4 @@ public class SuggestionsUseCase {
         final long diffWithMin = Math.abs(ChronoUnit.MINUTES.between(executionDate, minCutOff));
         return diffWithMin <= GAP_IN_MINUTES || diffWithNormal <= GAP_IN_MINUTES;
     }
-
-}
-
-@Value
-class BoundsByPPath {
-      ProcessPath processPath;
-      int lowerBound;
-      int upperBound;
 }

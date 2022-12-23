@@ -9,7 +9,7 @@ import lombok.Value;
  * backlog grouped by process_path, by process_name and by date_out.
  */
 @Value
-public class BacklogByPPathAndProcess {
+public class UnitsByProcessPathAndProcess {
     ProcessPath processPath;
     ProcessName processName;
     Instant dateOut;

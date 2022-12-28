@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.deviation.request;
 
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
 import lombok.Value;
@@ -12,21 +13,21 @@ import java.time.ZonedDateTime;
 public class SaveDeviationRequest {
 
     @NotNull
-    private String warehouseId;
+    String warehouseId;
 
     @NotNull
-    private ZonedDateTime dateFrom;
+    ZonedDateTime dateFrom;
 
     @NotNull
-    private ZonedDateTime dateTo;
+    ZonedDateTime dateTo;
 
     @NotNull
-    private double value;
+    double value;
 
     @NotNull
-    private Long userId;
+    Long userId;
 
-    public SaveForecastDeviationInput toDeviationInput(final Workflow workflow) {
+    public SaveForecastDeviationInput toDeviationInput(final Workflow workflow, final DeviationType deviationType) {
         return  SaveForecastDeviationInput
                     .builder()
                     .warehouseId(warehouseId)
@@ -35,6 +36,7 @@ public class SaveDeviationRequest {
                     .value(value)
                     .userId(userId)
                     .workflow(workflow)
+                    .deviationType(deviationType)
                     .build();
     }
 }

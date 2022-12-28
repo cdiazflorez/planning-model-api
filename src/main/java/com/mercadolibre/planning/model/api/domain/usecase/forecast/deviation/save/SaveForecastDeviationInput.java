@@ -1,38 +1,42 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save;
 
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
+import java.time.ZonedDateTime;
 import lombok.Builder;
 import lombok.Value;
-
-import java.time.ZonedDateTime;
 
 @Builder
 @Value
 public class SaveForecastDeviationInput {
 
-    private String warehouseId;
+  private static final double TOTAL_PERCENTAGE = 0.01;
 
-    private ZonedDateTime dateFrom;
+  String warehouseId;
 
-    private ZonedDateTime dateTo;
+  ZonedDateTime dateFrom;
 
-    private double value;
+  ZonedDateTime dateTo;
 
-    private Long userId;
+  double value;
 
-    private Workflow workflow;
+  Long userId;
 
-    public CurrentForecastDeviation toCurrentForecastDeviation() {
-        return CurrentForecastDeviation
-                .builder()
-                .logisticCenterId(warehouseId)
-                .dateFrom(dateFrom)
-                .dateTo(dateTo)
-                .value(value * 0.01)
-                .isActive(true)
-                .userId(userId)
-                .workflow(workflow)
-                .build();
-    }
+  Workflow workflow;
+
+  DeviationType deviationType;
+
+  public CurrentForecastDeviation toCurrentForecastDeviation() {
+    return CurrentForecastDeviation
+        .builder()
+        .logisticCenterId(warehouseId)
+        .dateFrom(dateFrom)
+        .dateTo(dateTo)
+        .value(value * TOTAL_PERCENTAGE)
+        .isActive(true)
+        .userId(userId)
+        .workflow(workflow)
+        .build();
+  }
 }

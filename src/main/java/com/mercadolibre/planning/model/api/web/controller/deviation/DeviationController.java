@@ -67,7 +67,18 @@ public class DeviationController {
       @PathVariable final Workflow workflow,
       @RequestBody @Valid final DisableDeviationRequest request) {
 
-    disableDeviationUseCase.execute(request.toDisableDeviationInput(workflow));
+    disableDeviationUseCase.execute(request.toDisableDeviationInput(workflow, UNITS));
+    return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
+  }
+
+  @PostMapping("/{type}/disable")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeviationResponse> disableDeviation(
+      @PathVariable final Workflow workflow,
+      @PathVariable final DeviationType type,
+      @RequestBody @Valid final DisableDeviationRequest request) {
+
+    disableDeviationUseCase.execute(request.toDisableDeviationInput(workflow, type));
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 

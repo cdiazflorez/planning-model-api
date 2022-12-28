@@ -1,18 +1,5 @@
 package com.mercadolibre.planning.model.api.usecase;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
@@ -22,6 +9,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class DisableForecastDeviationUseCaseTest {
@@ -37,7 +37,7 @@ public class DisableForecastDeviationUseCaseTest {
     @Test
     public void testDisableForecastDeviationOk() {
         // GIVEN
-        final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
+        final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
 
         // WHEN
         when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND))

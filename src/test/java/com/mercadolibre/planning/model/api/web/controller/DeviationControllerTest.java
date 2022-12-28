@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
@@ -40,6 +41,8 @@ import org.springframework.util.LinkedMultiValueMap;
 public class DeviationControllerTest {
 
   private static final String URL = "/planning/model/workflows/{workflow}/deviations";
+
+  private static final String WAREHOUSE_LABEL = "warehouse_id";
 
   private static final String SAVE = "/save";
 
@@ -81,9 +84,9 @@ public class DeviationControllerTest {
 
   @DisplayName("Disable forecast deviation ")
   @Test
-  public void disableDeviationOk() throws Exception {
+  public void disableDeviationOutboundOk() throws Exception {
     // GIVEN
-    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput();
+    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
 
     when(disableDeviationUseCase.execute(input))
         .thenReturn(5);
@@ -92,9 +95,33 @@ public class DeviationControllerTest {
     final ResultActions result = mvc.perform(
         post(URL + "/disable", "fbm-wms-outbound")
             .contentType(APPLICATION_JSON)
-            .param("warehouse_id", WAREHOUSE_ID)
+            .param(WAREHOUSE_LABEL, WAREHOUSE_ID)
             .content(new JSONObject()
-                .put("warehouse_id", WAREHOUSE_ID)
+                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
+                .toString()
+            )
+    );
+
+    // THEN
+    result.andExpect(status().isOk());
+  }
+
+  @DisplayName("Disable deviation ")
+  @Test
+  public void disableDeviationOk() throws Exception {
+    // GIVEN
+    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_INBOUND, DeviationType.UNITS);
+
+
+    when(disableDeviationUseCase.execute(input))
+        .thenReturn(5);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + "/{type}/disable", "fbm-wms-outbound", "units")
+            .contentType(APPLICATION_JSON)
+            .content(new JSONObject()
+                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
                 .toString()
             )
     );
@@ -108,7 +135,7 @@ public class DeviationControllerTest {
   public void testGetDeviationOk() throws Exception {
     // GIVEN
     final LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap();
-    params.add("warehouse_id", WAREHOUSE_ID);
+    params.add(WAREHOUSE_LABEL, WAREHOUSE_ID);
     params.add("date", "2020-08-19T18:00:00Z");
 
     when(getForecastDeviationUseCase.execute(any(GetForecastDeviationInput.class)))

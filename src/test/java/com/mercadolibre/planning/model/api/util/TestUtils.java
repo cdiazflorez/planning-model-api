@@ -41,9 +41,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
@@ -105,13 +107,13 @@ import org.apache.commons.io.IOUtils;
 public final class TestUtils {
 
   public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
-                                                                  ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
-                                                               ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
-                                                                ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DEACTIVATE_DATE_FROM = ZonedDateTime.now();
 
@@ -432,8 +434,9 @@ public final class TestUtils {
         .build();
   }
 
-  public static DisableForecastDeviationInput mockDisableForecastDeviationInput() {
-    return new DisableForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
+  public static DisableForecastDeviationInput mockDisableForecastDeviationInput(final Workflow workflow,
+                                                                                final DeviationType deviationType) {
+    return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType);
   }
 
   public static GetHeadcountInput mockGetHeadcountEntityInput(final Source source) {

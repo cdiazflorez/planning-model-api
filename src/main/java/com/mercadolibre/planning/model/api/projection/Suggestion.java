@@ -8,7 +8,7 @@ import lombok.Value;
 @Value
 public class Suggestion {
     Instant date;
-    List<BoundsByProcessPath> processPath;
+    List<Wave> waves;
     TriggerName reason;
     List<UnitsByDateOut> expectedQuantities;
 }

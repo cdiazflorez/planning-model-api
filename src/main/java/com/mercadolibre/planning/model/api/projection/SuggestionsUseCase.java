@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,7 @@ public class SuggestionsUseCase {
                         )
                 ));
 
-        final List<BoundsByProcessPath> executedProcessPaths = inRushPhaseBacklogByPPAndDateOut.entrySet()
+        final List<Wave> executedProcessPaths = inRushPhaseBacklogByPPAndDateOut.entrySet()
                 .stream()
                 .map(entry -> calculateBoundsByPPForClosenessSla(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
@@ -62,12 +63,12 @@ public class SuggestionsUseCase {
         return List.of(new Suggestion(viewDate, executedProcessPaths, TriggerName.SLA, expectedQuantities));
     }
 
-    private BoundsByProcessPath calculateBoundsByPPForClosenessSla(
+    private Wave calculateBoundsByPPForClosenessSla(
             final ProcessPath processPath,
             final Map<Instant, Integer> backlogBySLA
     ) {
-        var lowerBound = backlogBySLA.values().stream().reduce(0, Integer::sum);
-        return new BoundsByProcessPath(processPath, lowerBound, UPPER_BOUND);
+        final int lowerBound = backlogBySLA.values().stream().reduce(0, Integer::sum);
+        return new Wave(processPath, lowerBound, UPPER_BOUND, new TreeSet<>(backlogBySLA.keySet()));
     }
 
     private boolean shouldTriggerRushPhaseWave(

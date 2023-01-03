@@ -4,7 +4,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,13 +30,13 @@ class SuggestionsUseCaseTest {
         Assertions.assertNotNull(suggestedWaves);
         Assertions.assertEquals(getExpectedSuggestionForClosenessSLA().size(), suggestedWaves.size());
         Assertions.assertTrue(assertEqualsQuantities(expectedSuggestions.getExpectedQuantities(), suggested.getExpectedQuantities()));
-        Assertions.assertTrue(assertEqualsProcessPath(expectedSuggestions.getProcessPath(), suggested.getProcessPath()));
+        Assertions.assertTrue(assertEqualsProcessPath(expectedSuggestions.getWaves(), suggested.getWaves()));
         Assertions.assertEquals(expectedSuggestions.getDate(), suggested.getDate());
         Assertions.assertEquals(expectedSuggestions.getReason(), suggested.getReason());
     }
 
-    private boolean assertEqualsProcessPath(final List<BoundsByProcessPath> processPath, final List<BoundsByProcessPath> processPath1) {
-        final List<BoundsByProcessPath> equalsProcessPath = processPath.stream()
+    private boolean assertEqualsProcessPath(final List<Wave> processPath, final List<Wave> processPath1) {
+        final List<Wave> equalsProcessPath = processPath.stream()
                 .filter(processPath1::contains)
                 .collect(Collectors.toList());
         return equalsProcessPath.size() == processPath.size();
@@ -70,8 +72,8 @@ class SuggestionsUseCaseTest {
                 new Suggestion(
                         VIEW_DATE1430,
                         List.of(
-                                new BoundsByProcessPath(ProcessPath.NON_TOT_MONO, 7000, 15000),
-                                new BoundsByProcessPath(ProcessPath.TOT_MULTI_BATCH, 8000, 15000)
+                                new Wave(ProcessPath.NON_TOT_MONO, 7000, 15000, new TreeSet<>(Collections.singleton(DATE_OUT1530))),
+                                new Wave(ProcessPath.TOT_MULTI_BATCH, 8000, 15000, new TreeSet<>(Collections.singleton(DATE_OUT1)))
 
                         ),
                         TriggerName.SLA,

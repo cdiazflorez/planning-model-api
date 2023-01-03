@@ -7,15 +7,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
-import com.mercadolibre.planning.model.api.projection.BoundsByProcessPath;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.Suggestion;
 import com.mercadolibre.planning.model.api.projection.SuggestionsUseCase;
 import com.mercadolibre.planning.model.api.projection.UnitsByDateOut;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
+import com.mercadolibre.planning.model.api.projection.Wave;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.request.SuggestionsWavesRequestDto;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,9 +79,18 @@ class SuggestionWavesControllerTest {
     }
 
     private List<Suggestion> getSuggestedWaves() {
-        var boundsByPP = new BoundsByProcessPath(ProcessPath.NON_TOT_MONO, 250, 15000);
+        var boundsByPP = new Wave(ProcessPath.NON_TOT_MONO, 250, 15000, new TreeSet<>(
+                Collections.singleton(Instant.parse("2022-12-16T20:00:00Z")))
+        );
         var unitsByDateOut = new UnitsByDateOut(Instant.parse("2022-12-16T20:00:00Z"), 250);
-        return List.of(new Suggestion(VIEW_DATE, List.of(boundsByPP), TriggerName.SLA, List.of(unitsByDateOut)));
+        return List.of(
+                new Suggestion(
+                        VIEW_DATE,
+                        List.of(boundsByPP),
+                        TriggerName.SLA,
+                        List.of(unitsByDateOut)
+                )
+        );
     }
 
 }

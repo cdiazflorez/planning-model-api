@@ -10,14 +10,14 @@ import javax.transaction.Transactional;
 
 @Service
 @AllArgsConstructor
-public class SaveForecastDeviationUseCase
-        implements UseCase<SaveForecastDeviationInput, DeviationResponse> {
+public class SaveDeviationUseCase
+        implements UseCase<SaveDeviationInput, DeviationResponse> {
 
     private final CurrentForecastDeviationRepository deviationRepository;
 
     @Override
     @Transactional
-    public DeviationResponse execute(final SaveForecastDeviationInput input) {
+    public DeviationResponse execute(final SaveDeviationInput input) {
 
         deviationRepository.disableDeviation(input.getWarehouseId(), input.getWorkflow());
 

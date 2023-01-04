@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentPlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -331,7 +332,7 @@ public class PlanningDistributionServiceTest {
         .thenReturn(
             List.of(new CurrentForecastDeviation(
                 1, input.getWarehouseId(), A_DATE_UTC, A_DATE_UTC, 1.0, true, 123L,
-                FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC
+                FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC, DeviationType.UNITS, null
             ))
         );
 

@@ -22,8 +22,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.dis
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationController;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
@@ -54,7 +54,7 @@ public class DeviationControllerTest {
   private MockMvc mvc;
 
   @MockBean
-  private SaveForecastDeviationUseCase saveDeviationUseCase;
+  private SaveDeviationUseCase saveDeviationUseCase;
 
   @MockBean
   private DisableForecastDeviationUseCase disableDeviationUseCase;
@@ -66,7 +66,7 @@ public class DeviationControllerTest {
   @Test
   public void saveDeviationOk() throws Exception {
     // GIVEN
-    final SaveForecastDeviationInput input = mockSaveForecastDeviationInput();
+    final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
     when(saveDeviationUseCase.execute(input))
         .thenReturn(new DeviationResponse(200));
@@ -162,7 +162,7 @@ public class DeviationControllerTest {
   @Test
   public void saveDeviationOutboundUnitOk() throws Exception {
     // GIVEN
-    final SaveForecastDeviationInput input = mockSaveForecastDeviationInput();
+    final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
     when(saveDeviationUseCase.execute(input))
         .thenReturn(new DeviationResponse(200));
@@ -182,7 +182,7 @@ public class DeviationControllerTest {
   @Test
   public void saveDeviationInboundUnitOk() throws Exception {
     // GIVEN
-    final SaveForecastDeviationInput input = SaveForecastDeviationInput
+    final SaveDeviationInput input = SaveDeviationInput
         .builder()
         .workflow(FBM_WMS_INBOUND)
         .dateFrom(DATE_IN)

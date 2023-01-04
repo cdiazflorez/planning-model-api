@@ -9,7 +9,7 @@ import lombok.Value;
 
 @Builder
 @Value
-public class SaveForecastDeviationInput {
+public class SaveDeviationInput {
 
   private static final double TOTAL_PERCENTAGE = 0.01;
 
@@ -37,6 +37,7 @@ public class SaveForecastDeviationInput {
         .isActive(true)
         .userId(userId)
         .workflow(workflow)
+        .type(deviationType)
         .build();
   }
 }

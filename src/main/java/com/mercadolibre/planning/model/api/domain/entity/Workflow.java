@@ -22,10 +22,10 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 public enum Workflow {
-  FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound),
-  FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity, Workflow::executeOutbound),
-  INBOUND(null, null),
-  INBOUND_TRANSFER(null, null);
+  FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound, "inbound"),
+  FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity, Workflow::executeOutbound, "outbound-orders"),
+  INBOUND_TRANSFER(null, null, "inbound-transfer"),
+  INBOUND(null, null, null);
 
   private static final Map<String, Workflow> LOOKUP = Arrays.stream(values()).collect(
       toMap(Workflow::toString, Function.identity())
@@ -35,6 +35,8 @@ public enum Workflow {
   private final Function<Map<ProcessName, Long>, Long> capacityCalculator;
 
   private final WorkflowExecutor executor;
+
+  private final String alias;
 
   private static <T, V> V executeInbound(final WorkflowService<T, V> service, final T params) {
     return service.executeInbound(params);
@@ -74,6 +76,15 @@ public enum Workflow {
    */
   public String getName() {
     return name().toLowerCase(Locale.ROOT);
+  }
+
+  /**
+   * Get alias of workflow.
+   *
+   * @return alias of workflow
+   */
+  public String getAlias() {
+    return alias;
   }
 
   /**

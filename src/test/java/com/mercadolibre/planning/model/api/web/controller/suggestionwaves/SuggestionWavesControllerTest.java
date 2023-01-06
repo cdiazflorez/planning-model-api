@@ -15,8 +15,10 @@ import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProce
 import com.mercadolibre.planning.model.api.projection.Wave;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.request.SuggestionsWavesRequestDto;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -30,10 +32,8 @@ import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(controllers = SuggestionWavesController.class)
 class SuggestionWavesControllerTest {
-
     public static final Instant VIEW_DATE = Instant.parse("2022-12-16T16:00:00Z");
     private static final String URL = "/flow/logistic_center/{logisticCenterId}/projections";
-
     @Autowired
     private MockMvc mvc;
 
@@ -44,7 +44,15 @@ class SuggestionWavesControllerTest {
     @Test
     public void testGetSuggestedWavesOk() throws Exception {
         // GIVEN
-        when(suggestionUseCase.execute(getCtByPP(), getBacklogs(), VIEW_DATE)).thenReturn(getSuggestedWaves());
+        when(
+                suggestionUseCase.execute(
+                        getCtByPP(),
+                        getBacklogs(),
+                        getRatios(),
+                        getBacklogsLimits(),
+                        VIEW_DATE
+                ))
+                .thenReturn(getSuggestedWaves());
 
         // WHEN
         final ResultActions resultActions = mvc.perform(
@@ -61,7 +69,22 @@ class SuggestionWavesControllerTest {
     }
 
     private SuggestionsWavesRequestDto getRequest() {
-        return new SuggestionsWavesRequestDto(VIEW_DATE, getCtByPP(), getBacklogs());
+        return new SuggestionsWavesRequestDto(VIEW_DATE, getCtByPP(), getBacklogs(), getRatios(), getBacklogsLimits());
+    }
+
+    private Map<ProcessPath, Map<Instant, Float>> getRatios() {
+        return Map.of(
+                ProcessPath.TOT_MONO, Map.of(VIEW_DATE, 0.5F),
+                ProcessPath.TOT_MULTI_BATCH, Map.of(VIEW_DATE, 0.25F),
+                ProcessPath.TOT_MULTI_ORDER, Map.of(VIEW_DATE, 0.25F));
+    }
+
+    private Map<ProcessName, Map<Instant, Integer>> getBacklogsLimits() {
+        return Map.of(
+                ProcessName.PICKING, Map.of(VIEW_DATE, 10000, VIEW_DATE.plus(5, ChronoUnit.HOURS), 50000),
+                ProcessName.PACKING, Map.of(VIEW_DATE, 2000),
+                ProcessName.BATCH_SORTER, Map.of(VIEW_DATE, 700)
+        );
     }
 
     private List<ProcessPathConfiguration> getCtByPP() {

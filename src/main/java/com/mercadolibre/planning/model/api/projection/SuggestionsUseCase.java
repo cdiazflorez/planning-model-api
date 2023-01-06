@@ -174,7 +174,7 @@ public class SuggestionsUseCase {
         ));
         processPathAndUnitsByProcessName.put(ProcessName.PICKING, pickingBounds);
 
-        for (ProcessNameToProcessPath processNameToProcessPath : ProcessNameToProcessPath.values()) {
+        for (ProcessNameToProcessPath processNameToProcessPath : ProcessNameToProcessPath.getTriggersProcess()) {
             final ProcessName process = ProcessName.of(processNameToProcessPath.getName()).orElseThrow();
             final ProcessName previousProcess = process.getPreviousProcesses();
             final Map<ProcessPath, Float> previousProcessContext = processPathAndUnitsByProcessName.get(previousProcess);
@@ -192,7 +192,7 @@ public class SuggestionsUseCase {
                             () -> new InvalidArgumentException("backlog limits were not received for process: " + process.getName())
                     );
 
-            final Map<ProcessPath, Float> quantityPreviousProcessPath = processNameToProcessPath.getPaths().stream()
+            final Map<ProcessPath, Float> quantityPreviousProcessPath = previousProcessContext.keySet().stream()
                     .collect(
                             toMap(
                                     Function.identity(),
@@ -209,6 +209,6 @@ public class SuggestionsUseCase {
                                 Map.Entry::getKey,
                                 Map.Entry::getValue,
                                 Float::min)
-                        );
+                );
     }
 }

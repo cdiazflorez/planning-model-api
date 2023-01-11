@@ -128,18 +128,18 @@ public class SuggestionsUseCase {
      * Builds a suggestion with the received parameters
      * Note that if the lowerBound is greater than the {@code upperBound} it will remain the same as the {@code upperBound}
      * @param processPath process path in which want to create the suggestion
-     * @param upperBound that will have the suggestion
+     * @param calculatedUpperBound that will have the suggestion
      * @param backlogBySLA with which the lowerBound will be calculated
      * @return a {@link Wave} with which the suggestion will be created
      */
     private Wave buildSuggestionForClosenessSla(
             final ProcessPath processPath,
-            final int upperBound,
+            final int calculatedUpperBound,
             final Map<Instant, Integer> backlogBySLA
     ) {
         final int sumOfUnits = backlogBySLA.values().stream().reduce(0, Integer::sum);
-        final int lowerBound = Math.min(sumOfUnits, upperBound);
-        return new Wave(processPath, lowerBound, upperBound, new TreeSet<>(backlogBySLA.keySet()));
+        final int upperBound = Math.max(sumOfUnits, calculatedUpperBound);
+        return new Wave(processPath, sumOfUnits, upperBound, new TreeSet<>(backlogBySLA.keySet()));
     }
 
     /**

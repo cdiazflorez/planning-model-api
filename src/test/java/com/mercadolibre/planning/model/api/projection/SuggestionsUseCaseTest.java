@@ -206,8 +206,8 @@ class SuggestionsUseCaseTest {
                 new Suggestion(
                         VIEW_DATE1400,
                         List.of(
-                                new Wave(ProcessPath.TOT_MULTI_BATCH, 35, 35, new TreeSet<>(Collections.singleton(DATE_OUT2))),
-                                new Wave(ProcessPath.TOT_MULTI_ORDER, 39, 39, new TreeSet<>(Collections.singleton(DATE_OUT1)))
+                                new Wave(ProcessPath.TOT_MULTI_BATCH, 200, 200, new TreeSet<>(Collections.singleton(DATE_OUT2))),
+                                new Wave(ProcessPath.TOT_MULTI_ORDER, 200, 200, new TreeSet<>(Collections.singleton(DATE_OUT1)))
 
                         ),
                         TriggerName.SLA,
@@ -225,7 +225,7 @@ class SuggestionsUseCaseTest {
                         VIEW_DATE1400,
                         List.of(
                                 new Wave(ProcessPath.TOT_MULTI_BATCH, 22, 35, new TreeSet<>(Collections.singleton(DATE_OUT2))),
-                                new Wave(ProcessPath.TOT_MULTI_ORDER, 0, 0, new TreeSet<>(Collections.singleton(DATE_OUT1)))
+                                new Wave(ProcessPath.TOT_MULTI_ORDER, 33, 33, new TreeSet<>(Collections.singleton(DATE_OUT1)))
 
                         ),
                         TriggerName.SLA,

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/flow/logistic_center/{logisticCenterId}/projections")
+@RequestMapping("/logistic_center/{logisticCenterId}/projections")
 public class SuggestionWavesController {
 
     private final SuggestionsUseCase suggestionUseCase;
@@ -35,4 +35,3 @@ public class SuggestionWavesController {
         return ResponseEntity.of(Optional.of(new SuggestionWavesDto(logisticCenterId, request.getViewDate(), suggestedWaves)));
     }
 }
-

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/fbm/flow/logistic_center/{logisticCenterId}/projections")
+@RequestMapping("/logistic_center/{logisticCenterId}/projections")
 public class SuggestionWavesController {
 
     private final SuggestionsUseCase suggestionUseCase;

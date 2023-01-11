@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.ResultActions;
 @WebMvcTest(controllers = SuggestionWavesController.class)
 class SuggestionWavesControllerTest {
     public static final Instant VIEW_DATE = Instant.parse("2022-12-16T16:00:00Z");
-    private static final String URL = "/fbm/flow/logistic_center/{logisticCenterId}/projections";
+    private static final String URL = "/logistic_center/{logisticCenterId}/projections";
     @Autowired
     private MockMvc mvc;
 

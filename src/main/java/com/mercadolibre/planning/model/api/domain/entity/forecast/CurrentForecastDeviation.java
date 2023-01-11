@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.entity.forecast;
 
+import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.ZonedDateTime;
 import javax.persistence.Column;
@@ -48,4 +50,10 @@ public class CurrentForecastDeviation {
 
   @UpdateTimestamp
   private ZonedDateTime lastUpdated;
+
+  @Enumerated(EnumType.STRING)
+  private DeviationType type;
+
+  @Enumerated(EnumType.STRING)
+  private Path path;
 }

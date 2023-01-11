@@ -28,6 +28,8 @@ public class SuggestionWavesController {
         List<Suggestion> suggestedWaves = suggestionUseCase.execute(
                 request.getProcessPathConfigurations(),
                 request.getBacklogs(),
+                request.getThroughputRatios(),
+                request.getBacklogLimits(),
                 request.getViewDate()
         );
         return ResponseEntity.of(Optional.of(new SuggestionWavesDto(logisticCenterId, request.getViewDate(), suggestedWaves)));

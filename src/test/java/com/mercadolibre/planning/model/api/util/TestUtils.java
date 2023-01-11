@@ -67,7 +67,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
@@ -422,8 +422,8 @@ public final class TestUtils {
         .build();
   }
 
-  public static SaveForecastDeviationInput mockSaveForecastDeviationInput() {
-    return SaveForecastDeviationInput
+  public static SaveDeviationInput mockSaveForecastDeviationInput() {
+    return SaveDeviationInput
         .builder()
         .workflow(FBM_WMS_OUTBOUND)
         .dateFrom(DATE_IN)

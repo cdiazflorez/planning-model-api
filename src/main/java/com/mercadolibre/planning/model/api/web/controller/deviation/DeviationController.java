@@ -7,7 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveForecastDeviationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeviationController {
 
   private static final long STATUS_OK = 200;
-  private final SaveForecastDeviationUseCase saveDeviationUseCase;
+  private final SaveDeviationUseCase saveDeviationUseCase;
   private final DisableForecastDeviationUseCase disableDeviationUseCase;
   private final GetForecastDeviationUseCase getForecastDeviationUseCase;
 

@@ -53,10 +53,12 @@ public class SuggestionsUseCase {
                                 Integer::sum
                         ));
 
+        final Instant operationHour = viewDate.truncatedTo(ChronoUnit.HOURS);
+
         final Map<ProcessName, Integer> backlogLimitsByProcess = backlogLimitsByHourOfOperationAndProcess.entrySet().stream()
                 .collect(toMap(
                         Map.Entry::getKey,
-                        entry -> entry.getValue().get(viewDate)
+                        entry -> entry.getValue().get(operationHour)
                 ));
 
         final Map<ProcessName, Integer> totalCapacityByProcessName = backlogLimitsByProcess.entrySet()
@@ -74,7 +76,7 @@ public class SuggestionsUseCase {
                 .collect(
                         toMap(
                                 Map.Entry::getKey,
-                                processPathMapEntry -> processPathMapEntry.getValue().get(viewDate)
+                                processPathMapEntry -> processPathMapEntry.getValue().get(operationHour)
                         )
                 );
 
@@ -192,12 +194,13 @@ public class SuggestionsUseCase {
                             () -> new InvalidArgumentException("backlog limits were not received for process: " + process.getName())
                     );
 
-            final Map<ProcessPath, Float> quantityPreviousProcessPath = previousProcessContext.keySet().stream()
+            final Map<ProcessPath, Float> quantityPreviousProcessPath = processNameToProcessPath.getPaths().stream()
                     .collect(
                             toMap(
                                     Function.identity(),
                                     processPath1 -> (previousProcessContext.get(processPath1) / total) * processPathAvailableCapacity)
                     );
+
             processPathAndUnitsByProcessName.put(process, quantityPreviousProcessPath);
         }
 

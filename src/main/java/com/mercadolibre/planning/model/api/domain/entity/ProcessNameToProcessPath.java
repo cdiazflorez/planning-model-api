@@ -42,6 +42,7 @@ public enum ProcessNameToProcessPath {
     public static List<ProcessNameToProcessPath> getTriggersProcess() {
         return Arrays.stream(ProcessNameToProcessPath.values())
                 .filter(processNameToProcessPath -> !processNameToProcessPath.getName().equals(ProcessName.WAVING.getName()))
+                .filter(processNameToProcessPath -> !processNameToProcessPath.getName().equals(ProcessName.PICKING.getName()))
                 .collect(Collectors.toUnmodifiableList());
     }
 

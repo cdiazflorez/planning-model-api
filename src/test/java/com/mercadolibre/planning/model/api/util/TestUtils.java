@@ -15,6 +15,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.B
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.TOTAL_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.ABSENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.BACKLOG_BOUNDS;
@@ -415,6 +416,20 @@ public final class TestUtils {
         .headcountProductivities(mockProductivities())
         .planningDistributions(mockPlanningDistributions())
         .processingDistributions(mockProcessingDistributions())
+        .polyvalentProductivities(mockPolyvalentProductivities())
+        .backlogLimits(mockBacklogLimits())
+        .metadata(mockMetadatas())
+        .userId(CALLER_ID)
+        .build();
+  }
+
+  public static CreateForecastInput mockCreateForecastInputWithTotalWorkersNsType() {
+    return CreateForecastInput.builder()
+        .workflow(FBM_WMS_OUTBOUND)
+        .headcountDistributions(mockHeadcounts())
+        .headcountProductivities(mockProductivities())
+        .planningDistributions(mockPlanningDistributions())
+        .processingDistributions(mockProcessingDistributionsWithTotalWorkersNsType())
         .polyvalentProductivities(mockPolyvalentProductivities())
         .backlogLimits(mockBacklogLimits())
         .metadata(mockMetadatas())
@@ -910,6 +925,38 @@ public final class TestUtils {
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 172),
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+            )),
+        new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            ProcessName.GLOBAL,
+            MAX_CAPACITY,
+            UNITS_PER_HOUR,
+            List.of(
+                new ProcessingDistributionDataRequest(DATE_IN, 1000),
+                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 1000)
+            ))
+    );
+  }
+
+  private static List<ProcessingDistributionRequest> mockProcessingDistributionsWithTotalWorkersNsType() {
+    return List.of(
+        new ProcessingDistributionRequest(
+            ProcessPath.TOT_MONO,
+            WAVING,
+            PERFORMED_PROCESSING,
+            UNITS,
+            List.of(
+                new ProcessingDistributionDataRequest(DATE_IN, 172),
+                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
+            )),
+        new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            PICKING,
+            TOTAL_WORKERS_NS,
+            WORKERS,
+            List.of(
+                new ProcessingDistributionDataRequest(DATE_IN, 10),
+                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 10)
             )),
         new ProcessingDistributionRequest(
             ProcessPath.GLOBAL,

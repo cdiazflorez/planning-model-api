@@ -3,18 +3,21 @@ package com.mercadolibre.planning.model.api.usecase;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCENTAGE;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.TOTAL_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.CALLER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInputWithTotalWorkersNsType;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +32,6 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetada
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
@@ -200,6 +202,36 @@ public class CreateForecastUseCaseTest {
   }
 
   @Test
+  @DisplayName("A forecast is created successfully")
+  public void createSaveWithTotalWorkersNsTypeOk() {
+    // GIVEN
+    final Forecast forecast = new Forecast();
+    forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setUserId(1234);
+
+    final Forecast savedForecast = new Forecast();
+    savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setId(1L);
+    savedForecast.setUserId(1234);
+
+    final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
+
+    when(forecastGateway.create(forecast, forecastMetadatas)).thenReturn(savedForecast);
+
+    final CreateForecastInput input = mockCreateForecastInputWithTotalWorkersNsType();
+
+    // WHEN
+    final CreateForecastOutput output = createForecastUseCase.execute(input);
+
+    // THEN
+    verify(processingDistributionGateway).create(
+        getProcessingDistsWithTotalWorkersNSType(savedForecast),
+        savedForecast.getId());
+
+    assertEquals(1L, output.getId());
+  }
+
+  @Test
   @DisplayName("An empty forecast is created successfully ")
   public void emptySaveOk() {
     // GIVEN
@@ -253,6 +285,17 @@ public class CreateForecastUseCaseTest {
     return List.of(
         new ProcessingDistribution(0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast),
         new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast),
+        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast),
+        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast)
+    );
+  }
+
+  private List<ProcessingDistribution> getProcessingDistsWithTotalWorkersNSType(final Forecast forecast) {
+    return List.of(
+        new ProcessingDistribution(0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast),
+        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast),
+        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, PICKING, 10, WORKERS, TOTAL_WORKERS_NS, forecast),
+        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, PICKING, 10, WORKERS, TOTAL_WORKERS_NS, forecast),
         new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast),
         new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast)
     );

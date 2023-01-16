@@ -122,8 +122,9 @@ class GetSlaProjectionUseCaseTest {
     when(getCycleTimeService.execute(new GetCycleTimeInput(WAREHOUSE_ID, List.of(etd))))
         .thenReturn(Map.of(etd, 45L));
 
+    final ZonedDateTime currentDate = getCurrentUtcDate();
     // WHEN
-    final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInput());
+    final List<CptProjectionOutput> result = getSlaProjectionUseCase.execute(getInput(currentDate));
 
     // THEN
     verify(plannedBacklogService).getExpectedBacklog(
@@ -131,6 +132,7 @@ class GetSlaProjectionUseCaseTest {
         FBM_WMS_OUTBOUND,
         DATE_FROM,
         DATE_TO,
+        currentDate,
         false
     );
 
@@ -167,7 +169,8 @@ class GetSlaProjectionUseCaseTest {
             new CapacityOutput(DATE_FROM.plusHours(1), null, 20)
         ));
 
-    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_INBOUND, DATE_FROM, DATE_TO, false))
+    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_INBOUND, DATE_FROM, DATE_TO,
+        parse("2020-01-10T12:00Z"), false))
         .thenReturn(List.of(
             new PlannedUnits(DATE_FROM, DATE_FROM.plusHours(1), 10)
         ));
@@ -199,7 +202,7 @@ class GetSlaProjectionUseCaseTest {
     verifyNoInteractions(getCycleTimeService);
   }
 
-  private GetSlaProjectionInput getInput() {
+  private GetSlaProjectionInput getInput(final ZonedDateTime currentDate) {
     return new GetSlaProjectionInput(
         FBM_WMS_OUTBOUND,
         WAREHOUSE_ID,
@@ -212,7 +215,7 @@ class GetSlaProjectionUseCaseTest {
         null,
         null,
         false,
-        getCurrentUtcDate()
+        currentDate
     );
   }
 
@@ -229,7 +232,7 @@ class GetSlaProjectionUseCaseTest {
         null,
         null,
         false,
-        parse("2020-01-02T10:00:00Z")
+        parse("2020-01-10T12:00:00Z")
     );
   }
 }

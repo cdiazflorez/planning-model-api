@@ -40,6 +40,7 @@ import com.mercadolibre.planning.model.api.util.DateUtils;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -57,9 +58,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @ExtendWith(MockitoExtension.class)
-public class GetDeferralProjectionUseCaseTest {
+class GetDeferralProjectionUseCaseTest {
 
   private static final String WAREHOUSE_ID = "ARBA01";
 
@@ -188,14 +188,14 @@ public class GetDeferralProjectionUseCaseTest {
   }
 
   @Test
-  public void testProjectionWhenDeferralsAreNotNecessary() {
+  void testProjectionWhenDeferralsAreNotNecessary() {
     //GIVEN
     final List<Backlog> backlogs = getNoDeferralBacklogs();
     final GetDeferralProjectionInput input = getInput(backlogs);
 
     mockSlas(input.getSlaFrom(), input.getSlaTo());
     mockCycleTimes();
-    mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
+    mockPlannedBacklog(input.getViewDate(), input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
     mockMaxCaps(input);
 
@@ -207,14 +207,14 @@ public class GetDeferralProjectionUseCaseTest {
   }
 
   @Test
-  public void testProjectionWhenDeferralsAreNecessary() {
+  void testProjectionWhenDeferralsAreNecessary() {
     //GIVEN
     final List<Backlog> backlogs = getDeferralBacklogs();
     final GetDeferralProjectionInput input = getInput(backlogs);
 
     mockSlas(input.getSlaFrom(), input.getSlaTo());
     mockCycleTimes();
-    mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
+    mockPlannedBacklog(input.getViewDate(), input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
     mockMaxCaps(input);
 
@@ -234,7 +234,7 @@ public class GetDeferralProjectionUseCaseTest {
   }
 
   @Test
-  public void testProjectionWhenAllCptsAreCurrentlyDeferred() {
+  void testProjectionWhenAllCptsAreCurrentlyDeferred() {
     //GIVEN
     final List<Backlog> backlogs = getDeferralBacklogs();
     final GetDeferralProjectionInput input = getInput(backlogs);
@@ -255,7 +255,7 @@ public class GetDeferralProjectionUseCaseTest {
 
     mockSlas(input.getSlaFrom(), input.getSlaTo());
     mockCycleTimes();
-    mockPlannedBacklog(input.getSlaFrom(), input.getSlaTo());
+    mockPlannedBacklog(input.getViewDate(), input.getSlaFrom(), input.getSlaTo());
     mockThroughput(input.getDateFrom(), input.getDateTo());
 
     //WHEN
@@ -273,7 +273,7 @@ public class GetDeferralProjectionUseCaseTest {
     assertDeferredResult(projectionResult.get(3), CPTS.get(3), secondDeferralsAt, 191, DeferralStatus.DEFERRED_CAP_MAX);
   }
 
-  private void mockPlannedBacklog(final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {
+  private void mockPlannedBacklog(final Instant viewDate, final ZonedDateTime dateFrom, final ZonedDateTime dateTo) {
     final var forecastByCpt = Map.of(
         CPTS.get(0), 100,
         CPTS.get(1), 200,
@@ -295,6 +295,7 @@ public class GetDeferralProjectionUseCaseTest {
             FBM_WMS_OUTBOUND,
             dateFrom,
             dateTo,
+            ZonedDateTime.ofInstant(viewDate, ZoneOffset.UTC),
             true
         )
     ).thenReturn(plannedUnits);

@@ -2,7 +2,6 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType.CPT;
 import static java.time.ZonedDateTime.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,6 +35,8 @@ class QueueProjectionServiceTest {
 
   private static final String WAREHOUSE_ID = "ARTW01";
 
+  private static final ZonedDateTime VIEW_DATE = parse("2022-05-10T10:15:00Z");
+
   private static final ZonedDateTime DATE_FROM = parse("2022-05-10T10:00:00Z");
 
   private static final ZonedDateTime DATE_TO = parse("2022-05-20T11:00:00Z");
@@ -59,7 +60,8 @@ class QueueProjectionServiceTest {
   void projectionSlaOk() {
 
     //GIVEN
-    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, false)).thenReturn(List.of());
+    when(plannedBacklogService.getExpectedBacklog(
+        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, VIEW_DATE, false)).thenReturn(List.of());
 
     when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
         .thenReturn(List.of(
@@ -95,7 +97,8 @@ class QueueProjectionServiceTest {
   void projectionSlaWithEmptyBacklogsOk() {
 
     //GIVEN
-    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, false)).thenReturn(List.of());
+    when(plannedBacklogService.getExpectedBacklog(
+        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, VIEW_DATE, false)).thenReturn(List.of());
 
     when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
         .thenReturn(List.of(
@@ -121,7 +124,7 @@ class QueueProjectionServiceTest {
             null,
             null,
             false,
-            getCurrentUtcDate()
+            VIEW_DATE
         )
     );
 
@@ -133,7 +136,8 @@ class QueueProjectionServiceTest {
   void projectionSlaWithUnitsConsumptionOk() {
 
     //GIVEN
-    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, false)).thenReturn(List.of());
+    when(plannedBacklogService.getExpectedBacklog(
+        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, VIEW_DATE, false)).thenReturn(List.of());
 
     when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
         .thenReturn(List.of(
@@ -169,7 +173,8 @@ class QueueProjectionServiceTest {
   void projectionWhenTooLargeBacklogOk() {
 
     //GIVEN
-    when(plannedBacklogService.getExpectedBacklog(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO, false)).thenReturn(List.of());
+    when(plannedBacklogService.getExpectedBacklog(
+        WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_FROM, DATE_TO,  VIEW_DATE, false)).thenReturn(List.of());
 
     when(getCapacityPerHourService.execute(eq(FBM_WMS_OUTBOUND), any(List.class)))
         .thenReturn(List.of(
@@ -205,7 +210,7 @@ class QueueProjectionServiceTest {
         null,
         null,
         false,
-        getCurrentUtcDate()
+        VIEW_DATE
     ));
 
     // THEN
@@ -233,7 +238,7 @@ class QueueProjectionServiceTest {
         null,
         null,
         false,
-        getCurrentUtcDate()
+        VIEW_DATE
     );
   }
 }

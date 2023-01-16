@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.capacity;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput.fromEntityOutputs;
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
@@ -32,7 +31,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseO
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -110,6 +108,7 @@ public class GetSlaProjectionUseCase {
         workflow,
         request.getDateFrom(),
         request.getDateTo(),
+        request.getViewDate(),
         request.isApplyDeviation()
     );
 

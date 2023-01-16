@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
 import static java.time.ZonedDateTime.now;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.util.Set.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -40,7 +41,7 @@ public class DisableForecastDeviationUseCaseTest {
         final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
 
         // WHEN
-        when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND))
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(WAREHOUSE_ID, of(FBM_WMS_OUTBOUND)))
                 .thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
 
         final List<CurrentForecastDeviation> toSave = mockCurrentForecastDeviation(false, now());
@@ -50,7 +51,8 @@ public class DisableForecastDeviationUseCaseTest {
         final int output = useCase.execute(input);
 
         // THEN
-        verify(deviationRepository).findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(
+            WAREHOUSE_ID, of(FBM_WMS_OUTBOUND));
         verify(deviationRepository).saveAll(any(List.class));
         assertEquals(deviationDisable, output);
     }

@@ -25,7 +25,7 @@ public enum Workflow {
   FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound, "inbound"),
   FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity, Workflow::executeOutbound, "outbound-orders"),
   INBOUND_TRANSFER(null, null, "inbound-transfer"),
-  INBOUND(null, null, null);
+  INBOUND(null, null, "inbound");
 
   private static final Map<String, Workflow> LOOKUP = Arrays.stream(values()).collect(
       toMap(Workflow::toString, Function.identity())

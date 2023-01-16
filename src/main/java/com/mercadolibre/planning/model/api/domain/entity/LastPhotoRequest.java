@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
-@EqualsAndHashCode(callSuper = true)
 @Value
+@EqualsAndHashCode(callSuper = true)
 public class LastPhotoRequest extends PhotoRequest {
   static final String PHOTO_DATE_TO = "photo_date_to";
 
@@ -24,7 +24,8 @@ public class LastPhotoRequest extends PhotoRequest {
                           final Instant dateInTo,
                           final Instant dateOutFrom,
                           final Instant dateOutTo,
-                          final List<BacklogGrouper> groupBy, Instant photoDateTo) {
+                          final List<BacklogGrouper> groupBy,
+                          final Instant photoDateTo) {
     super(workflows, logisticCenterId, steps, dateFrom, dateTo, dateInFrom, dateInTo, dateOutFrom, dateOutTo, groupBy);
     this.photoDateTo = photoDateTo;
   }
@@ -34,6 +35,7 @@ public class LastPhotoRequest extends PhotoRequest {
    *
    * @return params in a map
    */
+  @Override
   public Map<String, String> getQueryParamsPhoto() {
     final Map<String, String> params = new ConcurrentHashMap<>();
 

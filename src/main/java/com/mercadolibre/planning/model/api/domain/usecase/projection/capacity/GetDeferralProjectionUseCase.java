@@ -54,7 +54,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -244,11 +243,13 @@ public class GetDeferralProjectionUseCase {
   }
 
   private PlannedBacklogBySla getIncomingBacklog(final GetDeferralProjectionInput input) {
+    final var viewDate = ZonedDateTime.ofInstant(input.getViewDate(), ZoneOffset.UTC);
     final List<PlannedUnits> plannedBacklog = plannedBacklogService.getExpectedBacklog(
         input.getLogisticCenterId(),
         input.getWorkflow(),
         input.getSlaFrom(),
         input.getSlaTo(),
+        viewDate,
         input.isApplyDeviation()
     );
 

@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Comparator.comparing;
+import static java.util.Set.of;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -200,7 +200,7 @@ public class PlanningDistributionService {
       final Instant viewDate
   ) {
     return viewDate == null
-        ? currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(warehouseId, workflow)
+        ? currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(warehouseId, of(workflow))
         .stream()
         .max(comparing(CurrentForecastDeviation::getLastUpdated))
         : currentForecastDeviationRepository.findActiveDeviationAt(warehouseId, workflow.name(), viewDate)

@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.dis
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
+import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
@@ -17,6 +18,9 @@ import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ZonedDateTimeEditor;
 import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -36,8 +40,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class DeviationController {
 
   private static final long STATUS_OK = 200;
+
   private final SaveDeviationUseCase saveDeviationUseCase;
+
   private final DisableForecastDeviationUseCase disableDeviationUseCase;
+
   private final GetForecastDeviationUseCase getForecastDeviationUseCase;
 
   @PostMapping("/save")
@@ -82,6 +89,41 @@ public class DeviationController {
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 
+  @GetMapping("/active")
+  @Trace(dispatcher = true)
+  public ResponseEntity<List<GetForecastDeviationResponse>> getActiveDeviations(
+      @PathVariable final Workflow workflow,
+      @RequestParam final String warehouseId,
+      @RequestParam final List<Workflow> workflows,
+      @RequestParam final ZonedDateTime date
+  ) {
+    return ResponseEntity.ok(
+        workflows.stream()
+            .map(w -> getDeviationOrEmpty(warehouseId, w, date))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList())
+    );
+  }
+
+  private Optional<GetForecastDeviationResponse> getDeviationOrEmpty(
+      final String warehouseId,
+      final Workflow workflow,
+      final ZonedDateTime date
+  ) {
+    return getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, workflow, date))
+        .map(dev -> GetForecastDeviationResponse.builder()
+            .workflow(dev.getWorkflow())
+            .dateFrom(dev.getDateFrom())
+            .dateTo(dev.getDateTo())
+            .value(dev.getValue() / 100)
+            .metricUnit(dev.getMetricUnit())
+            .type(dev.getType())
+            .path(dev.getPath())
+            .build()
+        );
+  }
+
   @GetMapping
   @Trace(dispatcher = true)
   public ResponseEntity<GetForecastDeviationResponse> getDeviation(
@@ -90,7 +132,9 @@ public class DeviationController {
       @RequestParam final ZonedDateTime date) {
     return ResponseEntity.ok(
         getForecastDeviationUseCase.execute(
-            new GetForecastDeviationInput(warehouseId, workflow, date))
+                new GetForecastDeviationInput(warehouseId, workflow, date)
+            )
+            .orElseThrow(() -> new EntityNotFoundException("CurrentForecastDeviation", warehouseId))
     );
   }
 

@@ -175,6 +175,7 @@ public class QueueProjectionService {
         input.getWorkflow(),
         input.getDateFrom().truncatedTo(ChronoUnit.HOURS),
         input.getDateTo(),
+        input.getViewDate(),
         input.isApplyDeviation()
     );
     return upstreamForecast.stream()

@@ -13,6 +13,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.currentPlanning
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
+import static java.util.Set.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -89,7 +90,7 @@ public class PlanningDistributionServiceTest {
     return new PlanningDistributionInput(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        Set.of(TOT_MONO, NON_TOT_MONO),
+        of(TOT_MONO, NON_TOT_MONO),
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -328,7 +329,7 @@ public class PlanningDistributionServiceTest {
         mockForecastIds())
     ).thenReturn(planningDistributions());
 
-    when(currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrue(WAREHOUSE_ID, FBM_WMS_OUTBOUND))
+    when(currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(WAREHOUSE_ID, of(FBM_WMS_OUTBOUND)))
         .thenReturn(
             List.of(new CurrentForecastDeviation(
                 1, input.getWarehouseId(), A_DATE_UTC, A_DATE_UTC, 1.0, true, 123L,
@@ -401,7 +402,7 @@ public class PlanningDistributionServiceTest {
   @DisplayName("Get planning distribution by Process Path with deviations")
   void testGetPlanningDistributionByProcessPathWithDeviations() {
     // GIVEN
-    final var groupers = Set.of(DATE_IN, DATE_OUT, PROCESS_PATH);
+    final var groupers = of(DATE_IN, DATE_OUT, PROCESS_PATH);
 
     final var input = input(true, groupers);
 
@@ -417,7 +418,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        Set.of(TOT_MONO, NON_TOT_MONO),
+        of(TOT_MONO, NON_TOT_MONO),
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -459,7 +460,7 @@ public class PlanningDistributionServiceTest {
   @DisplayName("Get planning distribution by Process Path without deviations")
   void testGetPlanningDistributionByProcessPathWithoutDeviations() {
     // GIVEN
-    final var groupers = Set.of(DATE_IN, DATE_OUT, PROCESS_PATH);
+    final var groupers = of(DATE_IN, DATE_OUT, PROCESS_PATH);
 
     final var input = input(false, groupers);
 
@@ -475,7 +476,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        Set.of(TOT_MONO, NON_TOT_MONO),
+        of(TOT_MONO, NON_TOT_MONO),
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -510,7 +511,7 @@ public class PlanningDistributionServiceTest {
   @DisplayName("Get planning distribution only by Process Path")
   void testGetPlanningDistributionByProcessPathWithASubsetOfGroupers() {
     // GIVEN
-    final var groupers = Set.of(PROCESS_PATH);
+    final var groupers = of(PROCESS_PATH);
 
     final var input = input(false, groupers);
 
@@ -522,7 +523,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        Set.of(TOT_MONO, NON_TOT_MONO),
+        of(TOT_MONO, NON_TOT_MONO),
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,

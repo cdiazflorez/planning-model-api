@@ -34,6 +34,7 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationCon
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -146,12 +147,16 @@ class DeviationControllerTest {
     params.add("date", "2020-08-19T18:00:00Z");
 
     when(getForecastDeviationUseCase.execute(any(GetForecastDeviationInput.class)))
-        .thenReturn(GetForecastDeviationResponse.builder()
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(2.5)
-            .metricUnit(PERCENTAGE)
-            .build());
+        .thenReturn(
+            Optional.of(
+                GetForecastDeviationResponse.builder()
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_OUT)
+                    .value(2.5)
+                    .metricUnit(PERCENTAGE)
+                    .build()
+            )
+        );
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -244,22 +249,30 @@ class DeviationControllerTest {
     final var inboundTransferRequest = new GetForecastDeviationInput(WAREHOUSE_ID, INBOUND_TRANSFER, date);
 
     when(getForecastDeviationUseCase.execute(inboundRequest))
-        .thenReturn(GetForecastDeviationResponse.builder()
-            .workflow(INBOUND)
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(250)
-            .metricUnit(MetricUnit.UNITS)
-            .build());
+        .thenReturn(
+            Optional.of(
+                GetForecastDeviationResponse.builder()
+                    .workflow(INBOUND)
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_OUT)
+                    .value(250)
+                    .metricUnit(MetricUnit.UNITS)
+                    .build()
+            )
+        );
 
     when(getForecastDeviationUseCase.execute(inboundTransferRequest))
-        .thenReturn(GetForecastDeviationResponse.builder()
-            .workflow(INBOUND_TRANSFER)
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(300)
-            .metricUnit(MetricUnit.UNITS)
-            .build());
+        .thenReturn(
+            Optional.of(
+                GetForecastDeviationResponse.builder()
+                    .workflow(INBOUND_TRANSFER)
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_OUT)
+                    .value(300)
+                    .metricUnit(MetricUnit.UNITS)
+                    .build()
+            )
+        );
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -300,16 +313,20 @@ class DeviationControllerTest {
     final var inboundTransferRequest = new GetForecastDeviationInput(WAREHOUSE_ID, INBOUND_TRANSFER, date);
 
     when(getForecastDeviationUseCase.execute(inboundRequest))
-        .thenReturn(GetForecastDeviationResponse.builder()
-            .workflow(INBOUND)
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(250)
-            .metricUnit(MetricUnit.UNITS)
-            .build());
+        .thenReturn(
+            Optional.of(
+                GetForecastDeviationResponse.builder()
+                    .workflow(INBOUND)
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_OUT)
+                    .value(250)
+                    .metricUnit(MetricUnit.UNITS)
+                    .build()
+            )
+        );
 
     when(getForecastDeviationUseCase.execute(inboundTransferRequest))
-        .thenThrow(EntityNotFoundException.class);
+        .thenReturn(Optional.empty());
 
     // WHEN
     final ResultActions result = mvc.perform(

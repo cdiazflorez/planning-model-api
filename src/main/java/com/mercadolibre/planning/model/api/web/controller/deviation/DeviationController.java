@@ -111,23 +111,17 @@ public class DeviationController {
       final Workflow workflow,
       final ZonedDateTime date
   ) {
-    try {
-      return Optional.ofNullable(
-              getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, workflow, date))
-          )
-          .map(dev -> GetForecastDeviationResponse.builder()
-              .workflow(dev.getWorkflow())
-              .dateFrom(dev.getDateFrom())
-              .dateTo(dev.getDateTo())
-              .value(dev.getValue() / 100)
-              .metricUnit(dev.getMetricUnit())
-              .type(dev.getType())
-              .path(dev.getPath())
-              .build()
-          );
-    } catch (EntityNotFoundException e) {
-      return Optional.empty();
-    }
+    return getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, workflow, date))
+        .map(dev -> GetForecastDeviationResponse.builder()
+            .workflow(dev.getWorkflow())
+            .dateFrom(dev.getDateFrom())
+            .dateTo(dev.getDateTo())
+            .value(dev.getValue() / 100)
+            .metricUnit(dev.getMetricUnit())
+            .type(dev.getType())
+            .path(dev.getPath())
+            .build()
+        );
   }
 
   @GetMapping
@@ -138,7 +132,9 @@ public class DeviationController {
       @RequestParam final ZonedDateTime date) {
     return ResponseEntity.ok(
         getForecastDeviationUseCase.execute(
-            new GetForecastDeviationInput(warehouseId, workflow, date))
+                new GetForecastDeviationInput(warehouseId, workflow, date)
+            )
+            .orElseThrow(() -> new EntityNotFoundException("CurrentForecastDeviation", warehouseId))
     );
   }
 

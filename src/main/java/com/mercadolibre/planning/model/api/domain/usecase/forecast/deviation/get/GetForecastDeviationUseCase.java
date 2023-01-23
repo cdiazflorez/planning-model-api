@@ -5,9 +5,8 @@ import static java.lang.Math.round;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
-import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
-import java.util.function.Supplier;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +18,8 @@ public class GetForecastDeviationUseCase {
 
   private final CurrentForecastDeviationRepository deviationRepository;
 
-  public GetForecastDeviationResponse execute(final GetForecastDeviationInput input) {
-
-    final CurrentForecastDeviation deviation = deviationRepository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
-            input.getWarehouseId(),
-            input.getWorkflow(),
-            input.getDate().withFixedOffsetZone())
-        .orElseThrow(notFoundException(input.getWarehouseId()));
-
-    return deviation == null
-        ? null
-        : GetForecastDeviationResponse.builder()
+  private static GetForecastDeviationResponse toResponse(final CurrentForecastDeviation deviation) {
+    return GetForecastDeviationResponse.builder()
         .workflow(deviation.getWorkflow())
         .dateFrom(deviation.getDateFrom())
         .dateTo(deviation.getDateTo())
@@ -41,7 +30,14 @@ public class GetForecastDeviationUseCase {
         .build();
   }
 
-  private Supplier<EntityNotFoundException> notFoundException(final String warehouseId) {
-    return () -> new EntityNotFoundException("CurrentForecastDeviation", warehouseId);
+  public Optional<GetForecastDeviationResponse> execute(final GetForecastDeviationInput input) {
+    return deviationRepository
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+            input.getWarehouseId(),
+            input.getWorkflow(),
+            input.getDate().withFixedOffsetZone()
+        )
+        .map(GetForecastDeviationUseCase::toResponse);
   }
+
 }

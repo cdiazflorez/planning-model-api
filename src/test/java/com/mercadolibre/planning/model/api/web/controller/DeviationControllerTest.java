@@ -29,7 +29,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
-import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationController;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
@@ -56,7 +55,7 @@ class DeviationControllerTest {
 
   private static final String UNITS = "units";
 
-  private static final String URL_TYPE = "/planning/model/workflows/{workflow}/deviations/{type}";
+  private static final String URL_TYPE_SAVE = "/planning/model/workflows/{workflow}/deviations/save/{type}";
 
   @Autowired
   private MockMvc mvc;
@@ -126,7 +125,7 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL + "/{type}/disable", "fbm-wms-outbound", "units")
+        post(URL + "/disable/{type}", "fbm-wms-outbound", "units")
             .contentType(APPLICATION_JSON)
             .content(new JSONObject()
                 .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
@@ -181,7 +180,7 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL_TYPE + SAVE, "fbm-wms-outbound", UNITS)
+        post(URL_TYPE_SAVE, "fbm-wms-outbound", UNITS)
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_forecast_deviation.json"))
     );
@@ -209,7 +208,7 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL_TYPE + SAVE, "inbound", UNITS)
+        post(URL_TYPE_SAVE, "inbound", UNITS)
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_inbound_deviation_save_unit.json"))
     );
@@ -225,13 +224,13 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL_TYPE + SAVE, "inbound-transfer", null)
+        post(URL_TYPE_SAVE, "inbound-transfer", "error-type")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_inbound_deviation_save_unit.json"))
     );
 
     // THEN
-    result.andExpect(status().isNotFound());
+    result.andExpect(status().isInternalServerError());
   }
 
   @Test

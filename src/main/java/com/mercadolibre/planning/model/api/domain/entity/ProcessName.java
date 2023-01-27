@@ -28,6 +28,8 @@ public enum ProcessName {
     WALL_IN(BATCH_SORTER, true),
     PACKING_WALL(WALL_IN, true),
     EXPEDITION(PACKING, false),
+    HU_ASSEMBLY(null, false),
+    SALES_DISPATCH(null, false),
     GLOBAL(null, false);
 
     private final ProcessName previousProcesses;

@@ -5,17 +5,19 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.PERCE
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.TOTAL_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.ABSENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.BACKLOG_BOUNDS;
@@ -429,7 +431,7 @@ public final class TestUtils {
         .headcountDistributions(mockHeadcounts())
         .headcountProductivities(mockProductivities())
         .planningDistributions(mockPlanningDistributions())
-        .processingDistributions(mockProcessingDistributionsWithTotalWorkersNsType())
+        .processingDistributions(mockProcessingDistributionsWithActiveWorkersNsType())
         .polyvalentProductivities(mockPolyvalentProductivities())
         .backlogLimits(mockBacklogLimits())
         .metadata(mockMetadatas())
@@ -938,7 +940,7 @@ public final class TestUtils {
     );
   }
 
-  private static List<ProcessingDistributionRequest> mockProcessingDistributionsWithTotalWorkersNsType() {
+  private static List<ProcessingDistributionRequest> mockProcessingDistributionsWithActiveWorkersNsType() {
     return List.of(
         new ProcessingDistributionRequest(
             ProcessPath.TOT_MONO,
@@ -951,8 +953,17 @@ public final class TestUtils {
             )),
         new ProcessingDistributionRequest(
             ProcessPath.GLOBAL,
-            PICKING,
-            TOTAL_WORKERS_NS,
+            HU_ASSEMBLY,
+            ACTIVE_WORKERS_NS,
+            WORKERS,
+            List.of(
+                new ProcessingDistributionDataRequest(DATE_IN, 10),
+                new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 10)
+            )),
+        new ProcessingDistributionRequest(
+            ProcessPath.GLOBAL,
+            SALES_DISPATCH,
+            ACTIVE_WORKERS_NS,
             WORKERS,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 10),

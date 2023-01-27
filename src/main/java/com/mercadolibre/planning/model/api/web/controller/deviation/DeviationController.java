@@ -57,7 +57,7 @@ public class DeviationController {
     );
   }
 
-  @PostMapping("/{type}/save")
+  @PostMapping("save/{type}")
   @Trace(dispatcher = true)
   public ResponseEntity<DeviationResponse> saveDeviation(
       @PathVariable final Workflow workflow,
@@ -78,7 +78,7 @@ public class DeviationController {
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 
-  @PostMapping("/{type}/disable")
+  @PostMapping("disable/{type}")
   @Trace(dispatcher = true)
   public ResponseEntity<DeviationResponse> disableDeviation(
       @PathVariable final Workflow workflow,

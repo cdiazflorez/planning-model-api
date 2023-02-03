@@ -6,10 +6,16 @@ public enum Path {
   SPD,
   FTL,
   PRIVATE,
+  SUPPLIER,
   COLLECT,
-  TRANSFER_SHIPMENT;
+  PICKUP,
+  TRANSFER;
 
   public String getName() {
     return name().toLowerCase(Locale.ROOT);
+  }
+
+  public static Path from(final String value) {
+    return valueOf(value.toUpperCase(Locale.getDefault()));
   }
 }

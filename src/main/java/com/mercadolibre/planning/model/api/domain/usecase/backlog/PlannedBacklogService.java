@@ -1,33 +1,36 @@
 package com.mercadolibre.planning.model.api.domain.usecase.backlog;
 
-import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.DATE_IN;
-import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.DATE_OUT;
-import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.WORKFLOW;
+import static com.mercadolibre.planning.model.api.domain.entity.DeviationType.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 import static java.time.ZoneOffset.UTC;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
-import com.mercadolibre.planning.model.api.domain.entity.LastPhotoRequest;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.WorkflowService;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
-import com.mercadolibre.planning.model.api.gateway.BacklogGateway;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Collections;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Returns Planned Units for Inbound and Outbound
+ *
+ * <p>Inbound input are Scheduled Backlog.</p>
+ * <p>Outbound input are Planning distribution (forecast).</p>
+ */
 @Service
 @AllArgsConstructor
 public class PlannedBacklogService {
@@ -36,12 +39,12 @@ public class PlannedBacklogService {
 
   private final PlanningDistributionService planningDistributionService;
 
-  private final BacklogGateway backlogGateway;
+  private final InboundScheduledBacklogGateway inboundScheduledBacklogGateway;
 
   private final CurrentForecastDeviationRepository currentForecastDeviationRepository;
 
-  private static ZonedDateTime parseDate(final String date) {
-    return ZonedDateTime.parse(date).withZoneSameInstant(UTC);
+  private static ZonedDateTime parseDate(final Instant date) {
+    return date.atZone(UTC);
   }
 
   public List<PlannedUnits> getExpectedBacklog(final String warehouseId,
@@ -78,33 +81,45 @@ public class PlannedBacklogService {
     ZonedDateTime dateOut;
   }
 
+  @Value
+  public static class InboundScheduledBacklog {
+    String workflow;
+    Instant dateIn;
+    Instant dateOut;
+    Path path;
+    int total;
+    double accumulatedTotal;
+  }
+
+  /**
+   * Provides a gateway to return InboundScheduledBacklog.
+   *
+   * <p>Used to apply inbound deviations<p/>
+   */
+  public interface InboundScheduledBacklogGateway {
+
+    List<InboundScheduledBacklog> getScheduledBacklog(
+        String warehouseId,
+        Instant dateFrom,
+        Instant dateTo,
+        Instant viewDate
+    );
+
+  }
+
   private class Delegate implements WorkflowService<Request, List<PlannedUnits>> {
 
     @Override
     public List<PlannedUnits> executeInbound(final Request request) {
 
-      final Photo photo = backlogGateway.getLastPhoto(
-          new LastPhotoRequest(
-              List.of(INBOUND, INBOUND_TRANSFER),
-              request.warehouseId,
-              List.of("SCHEDULED"),
-              null,
-              null,
-              null,
-              null,
-              request.getDateOutFrom().toInstant(),
-              request.getDateOutTo().toInstant(),
-              List.of(DATE_IN, DATE_OUT, WORKFLOW),
-              request.getViewDate().toInstant()
-          )
+      final List<InboundScheduledBacklog> scheduledBacklogs = inboundScheduledBacklogGateway.getScheduledBacklog(
+          request.warehouseId,
+          request.getDateOutFrom().toInstant(),
+          request.getDateOutTo().toInstant(),
+          request.getViewDate().toInstant()
       );
 
-      if (photo == null) {
-        return Collections.emptyList();
-      }
-
       if (request.isApplyDeviation()) {
-        // WARNING: This only applies for deviations of type units
         final List<CurrentForecastDeviation> currentForecastDeviations =
             currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(
                 request.getWarehouseId(),
@@ -112,64 +127,99 @@ public class PlannedBacklogService {
             );
 
         if (currentForecastDeviations != null && !currentForecastDeviations.isEmpty()) {
-          return fromGroupsToPlannedUnits(applyDeviationInbound(photo, currentForecastDeviations));
+          //Deviations need to be applied in the same order they were created
+          final List<CurrentForecastDeviation> sortedDeviations = currentForecastDeviations.stream()
+              .sorted(Comparator.comparing(CurrentForecastDeviation::getDateCreated))
+              .collect(Collectors.toList());
+          return fromBacklogToPlannedUnits(getDeviatedBacklog(scheduledBacklogs, sortedDeviations));
         }
-
       }
-
-      return fromGroupsToPlannedUnits(photo.getGroups().stream());
+      return fromBacklogToPlannedUnits(scheduledBacklogs);
     }
 
-    private Stream<Photo.Group> applyDeviationInbound(final Photo photo, final List<CurrentForecastDeviation> currentForecastDeviations) {
-      return photo.groups.stream()
-          .map(group -> {
-                final var deviations = getApplicableDeviations(
-                    currentForecastDeviations, group.getKey().get(WORKFLOW.getName()), Instant.parse(group.getKey().get(DATE_IN.getName()))
-                );
-
-                final var deviation = deviations.stream()
-                    .map(dev -> dev.getValue() + DEVIATION_BASE)
-                    .reduce(1D, (x, y) -> x * y);
-
-                return new Photo.Group(
-                    group.getKey(), (int) Math.round(group.getTotal() * deviation), group.getAccumulatedTotal()
-                );
-              }
-          );
+    private List<InboundScheduledBacklog> getDeviatedBacklog(
+        final List<InboundScheduledBacklog> inboundScheduledBacklogs,
+        final List<CurrentForecastDeviation> currentForecastDeviations
+    ) {
+      AtomicReference<List<InboundScheduledBacklog>> backlogReference = new AtomicReference<>(inboundScheduledBacklogs);
+      currentForecastDeviations.forEach(dev -> backlogReference.set(backlogReference.get().stream()
+          .map(backlog -> applyInboundDeviation(dev, backlog))
+          .collect(Collectors.toList())));
+      return backlogReference.get();
     }
 
-    private List<CurrentForecastDeviation> getApplicableDeviations(
-        final List<CurrentForecastDeviation> deviations,
+    private InboundScheduledBacklog applyInboundDeviation(
+        final CurrentForecastDeviation deviation,
+        final InboundScheduledBacklog scheduledBacklog
+    ) {
+      if (isApplicableDeviation(deviation, scheduledBacklog.getWorkflow(), scheduledBacklog.getDateIn(), scheduledBacklog.getPath())) {
+        return deviation.getType().equals(UNITS)
+            ? applyUnitsDeviation(deviation.getValue(), scheduledBacklog)
+            : applyTimeDeviation(deviation.getValue(), scheduledBacklog);
+      }
+      return scheduledBacklog;
+    }
+
+    private InboundScheduledBacklog applyUnitsDeviation(final double deviationValue, final InboundScheduledBacklog backlog) {
+      final double deviationUnits = deviationValue + DEVIATION_BASE;
+      return new InboundScheduledBacklog(
+          backlog.workflow,
+          backlog.dateIn,
+          backlog.dateOut,
+          backlog.path,
+          (int) Math.round(backlog.getTotal() * deviationUnits),
+          backlog.accumulatedTotal
+      );
+    }
+
+    private InboundScheduledBacklog applyTimeDeviation(final double deviationValue, final InboundScheduledBacklog backlog) {
+      final Instant dateInDeviation = backlog.getDateIn().plus((int) deviationValue, ChronoUnit.MINUTES);
+      final Instant dateOutDeviation = backlog.getDateOut().plus((int) deviationValue, ChronoUnit.MINUTES);
+      return new InboundScheduledBacklog(
+          backlog.workflow,
+          dateInDeviation,
+          dateOutDeviation,
+          backlog.path,
+          backlog.getTotal(),
+          backlog.accumulatedTotal
+      );
+    }
+
+    private boolean isApplicableDeviation(
+        final CurrentForecastDeviation deviation,
         final String workflowName,
-        final Instant dateIn
+        final Instant dateIn,
+        final Path path
     ) {
 
       final var workflow = Workflow.of(workflowName).orElseThrow();
-
-      return deviations.stream().filter(
-          deviation -> deviation.getWorkflow().equals(workflow)
-              && DateUtils.isBetweenInclusive(deviation.getDateFrom(), dateIn, deviation.getDateTo())
-      ).collect(Collectors.toList());
+      if (workflow.equals(INBOUND)) {
+        return deviation.getWorkflow().equals(workflow)
+            && DateUtils.isBetweenInclusive(deviation.getDateFrom(), dateIn, deviation.getDateTo())
+            && (deviation.getType().equals(UNITS) || deviation.getPath().equals(path));
+      } else {
+        return deviation.getWorkflow().equals(workflow)
+            && DateUtils.isBetweenInclusive(deviation.getDateFrom(), dateIn, deviation.getDateTo());
+      }
     }
 
-    private List<PlannedUnits> fromGroupsToPlannedUnits(final Stream<Photo.Group> groups) {
-      return groups.collect(
+    private List<PlannedUnits> fromBacklogToPlannedUnits(final List<InboundScheduledBacklog> scheduledBacklogs) {
+      return scheduledBacklogs.stream().collect(
               Collectors.toMap(
-                  group -> new KeyGroupAux(
-                      parseDate(group.getKey().get(DATE_IN.getName())),
-                      parseDate(group.getKey().get(DATE_OUT.getName()))
+                  backlog -> new KeyGroupAux(
+                      parseDate(backlog.getDateIn()),
+                      parseDate(backlog.getDateOut())
                   ),
-                  group -> new PlannedUnits(
-                      parseDate(group.getKey().get(DATE_IN.getName())),
-                      parseDate(group.getKey().get(DATE_OUT.getName())),
-                      group.getTotal()
+                  backlog -> new PlannedUnits(
+                      parseDate(backlog.getDateIn()),
+                      parseDate(backlog.getDateOut()),
+                      backlog.getTotal()
                   ),
                   (plannedUnits1, plannedUnits2) -> new PlannedUnits(
                       plannedUnits1.getDateIn(),
                       plannedUnits1.getDateOut(),
                       plannedUnits1.getTotal() + plannedUnits2.getTotal()
                   )
-
               )
           ).values().stream().sorted(Comparator.comparing(PlannedUnits::getDateIn))
           .collect(Collectors.toList());

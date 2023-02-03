@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CurrentForecastDeviationRepository extends CrudRepository<CurrentForecastDeviation, Long> {
 
-  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(String logisticCenterId, Set<Workflow> workflows);
-
+  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(String logisticCenterId,
+                                                                                    Set<Workflow> workflows);
   Optional<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
       String logisticCenterId,
       Workflow workflow,

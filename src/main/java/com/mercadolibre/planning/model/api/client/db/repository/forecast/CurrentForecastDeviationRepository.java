@@ -5,7 +5,6 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecas
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,9 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CurrentForecastDeviationRepository extends CrudRepository<CurrentForecastDeviation, Long> {
 
-  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(String logisticCenterId,
-                                                                                    Set<Workflow> workflows);
-  Optional<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(String logisticCenterId, Set<Workflow> workflows);
+
+  List<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
       String logisticCenterId,
       Workflow workflow,
       ZonedDateTime dateTo

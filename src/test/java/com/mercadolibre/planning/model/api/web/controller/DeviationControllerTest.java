@@ -33,7 +33,8 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationCon
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import java.time.ZonedDateTime;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -147,7 +148,7 @@ class DeviationControllerTest {
 
     when(getForecastDeviationUseCase.execute(any(GetForecastDeviationInput.class)))
         .thenReturn(
-            Optional.of(
+            List.of(
                 GetForecastDeviationResponse.builder()
                     .dateFrom(DATE_IN)
                     .dateTo(DATE_OUT)
@@ -249,12 +250,12 @@ class DeviationControllerTest {
 
     when(getForecastDeviationUseCase.execute(inboundRequest))
         .thenReturn(
-            Optional.of(
+            List.of(
                 GetForecastDeviationResponse.builder()
                     .workflow(INBOUND)
                     .dateFrom(DATE_IN)
                     .dateTo(DATE_OUT)
-                    .value(250)
+                    .value(0.25)
                     .metricUnit(MetricUnit.UNITS)
                     .build()
             )
@@ -262,12 +263,12 @@ class DeviationControllerTest {
 
     when(getForecastDeviationUseCase.execute(inboundTransferRequest))
         .thenReturn(
-            Optional.of(
+            List.of(
                 GetForecastDeviationResponse.builder()
                     .workflow(INBOUND_TRANSFER)
                     .dateFrom(DATE_IN)
                     .dateTo(DATE_OUT)
-                    .value(300)
+                    .value(0.3)
                     .metricUnit(MetricUnit.UNITS)
                     .build()
             )
@@ -288,12 +289,12 @@ class DeviationControllerTest {
             jsonPath("$[0].workflow", is("inbound")),
             jsonPath("$[0].date_from", is("2020-08-19T18:00:00Z")),
             jsonPath("$[0].date_to", is("2020-08-20T15:30:00Z")),
-            jsonPath("$[0].value", is(2.5)),
+            jsonPath("$[0].value", is(0.25)),
 
             jsonPath("$[1].workflow", is("inbound-transfer")),
             jsonPath("$[1].date_from", is("2020-08-19T18:00:00Z")),
             jsonPath("$[1].date_to", is("2020-08-20T15:30:00Z")),
-            jsonPath("$[1].value", is(3.0))
+            jsonPath("$[1].value", is(0.3))
         );
   }
 
@@ -313,19 +314,19 @@ class DeviationControllerTest {
 
     when(getForecastDeviationUseCase.execute(inboundRequest))
         .thenReturn(
-            Optional.of(
+            List.of(
                 GetForecastDeviationResponse.builder()
                     .workflow(INBOUND)
                     .dateFrom(DATE_IN)
                     .dateTo(DATE_OUT)
-                    .value(250)
+                    .value(0.25)
                     .metricUnit(MetricUnit.UNITS)
                     .build()
             )
         );
 
     when(getForecastDeviationUseCase.execute(inboundTransferRequest))
-        .thenReturn(Optional.empty());
+        .thenReturn(Collections.emptyList());
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -341,7 +342,7 @@ class DeviationControllerTest {
             jsonPath("$[0].workflow", is("inbound")),
             jsonPath("$[0].date_from", is("2020-08-19T18:00:00Z")),
             jsonPath("$[0].date_to", is("2020-08-20T15:30:00Z")),
-            jsonPath("$[0].value", is(2.5))
+            jsonPath("$[0].value", is(0.25))
         );
   }
 

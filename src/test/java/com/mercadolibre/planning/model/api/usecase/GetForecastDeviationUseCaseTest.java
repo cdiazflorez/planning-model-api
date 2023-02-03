@@ -7,8 +7,8 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviation;
-import static java.util.Optional.ofNullable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +17,8 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecas
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,26 +41,25 @@ class GetForecastDeviationUseCaseTest {
     final GetForecastDeviationInput input =
         new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
-    final Optional<CurrentForecastDeviation> currentForecastDeviation =
-        ofNullable(mockCurrentForecastDeviation());
+    final CurrentForecastDeviation currentForecastDeviation = mockCurrentForecastDeviation();
 
     when(deviationRepository
         .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
             input.getWarehouseId(),
             input.getWorkflow(),
             A_DATE_UTC.withFixedOffsetZone()))
-        .thenReturn(currentForecastDeviation);
+        .thenReturn(List.of(currentForecastDeviation));
 
     // WHEN
-    final Optional<GetForecastDeviationResponse> result = useCase.execute(input);
+    final List<GetForecastDeviationResponse> result = useCase.execute(input);
 
     // THEN
-    assertTrue(result.isPresent());
+    assertFalse(result.isEmpty());
 
-    final var output = result.get();
+    final var output = result.get(0);
     assertEquals(DATE_IN, output.getDateFrom());
     assertEquals(DATE_OUT, output.getDateTo());
-    assertEquals(2.5, output.getValue());
+    assertEquals(0.025, output.getValue());
     assertEquals(PERCENTAGE, output.getMetricUnit());
   }
 
@@ -74,7 +74,7 @@ class GetForecastDeviationUseCaseTest {
             input.getWarehouseId(),
             input.getWorkflow(),
             A_DATE_UTC.withFixedOffsetZone()))
-        .thenReturn(Optional.empty());
+        .thenReturn(Collections.emptyList());
 
     // WHEN
     final var result = useCase.execute(input);

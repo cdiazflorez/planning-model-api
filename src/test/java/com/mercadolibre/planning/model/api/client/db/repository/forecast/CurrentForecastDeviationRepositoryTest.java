@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
-import java.util.Optional;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,15 +49,15 @@ class CurrentForecastDeviationRepositoryTest {
     entityManager.flush();
 
     // WHEN
-    final Optional<CurrentForecastDeviation> optDeviation = repository
+    final List<CurrentForecastDeviation> optDeviation = repository
         .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
             WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1)
         );
 
     // THEN
-    assertTrue(optDeviation.isPresent());
+    assertFalse(optDeviation.isEmpty());
 
-    final CurrentForecastDeviation deviation = optDeviation.get();
+    final CurrentForecastDeviation deviation = optDeviation.get(0);
     assertEquals(WAREHOUSE_ID, deviation.getLogisticCenterId());
     assertEquals(DATE_IN, deviation.getDateFrom());
     assertEquals(DATE_OUT, deviation.getDateTo());
@@ -69,13 +69,13 @@ class CurrentForecastDeviationRepositoryTest {
   @DisplayName("Find currentForecastDeviation when no deviation exists for a warehouseId")
   void findByLogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
     // WHEN
-    final Optional<CurrentForecastDeviation> optDeviation = repository
+    final List<CurrentForecastDeviation> optDeviation = repository
         .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
             WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC
         );
 
     // THEN
-    assertFalse(optDeviation.isPresent());
+    assertTrue(optDeviation.isEmpty());
   }
 
   @ParameterizedTest

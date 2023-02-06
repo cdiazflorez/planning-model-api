@@ -11,6 +11,6 @@ public class PathTest {
     assertEquals(Path.FTL.getName(), "ftl");
     assertEquals(Path.PRIVATE.getName(), "private");
     assertEquals(Path.SPD.getName(), "spd");
-    assertEquals(Path.TRANSFER_SHIPMENT.getName(), "transfer_shipment");
+    assertEquals(Path.TRANSFER.getName(), "transfer");
   }
 }

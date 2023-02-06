@@ -10,7 +10,8 @@ public enum BacklogGrouper {
   DATE_OUT,
   STEP,
   STATUS,
-  WORKFLOW;
+  WORKFLOW,
+  PATH;
 
   @JsonCreator
   public String getName() {

@@ -9,7 +9,8 @@ public enum Path {
   SUPPLIER,
   COLLECT,
   PICKUP,
-  TRANSFER;
+  TRANSFER,
+  GLOBAL;
 
   public String getName() {
     return name().toLowerCase(Locale.ROOT);

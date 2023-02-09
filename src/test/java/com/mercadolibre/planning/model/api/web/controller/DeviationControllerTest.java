@@ -33,6 +33,7 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationCon
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Collections;
 import java.util.List;
 import org.json.JSONObject;
@@ -76,7 +77,7 @@ class DeviationControllerTest {
     // GIVEN
     final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN
@@ -176,7 +177,7 @@ class DeviationControllerTest {
     // GIVEN
     final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN
@@ -204,7 +205,7 @@ class DeviationControllerTest {
         .warehouseId(WAREHOUSE_ID)
         .build();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN

@@ -57,7 +57,7 @@ public class DeviationController {
       @PathVariable final Workflow workflow,
       @RequestBody @Valid final SaveDeviationRequest request) {
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, UNITS))
+        saveDeviationUseCase.execute(List.of(request.toDeviationInput(workflow, UNITS)))
     );
   }
 
@@ -68,7 +68,7 @@ public class DeviationController {
       @PathVariable final DeviationType type,
       @RequestBody @Valid final SaveDeviationRequest request) {
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, type))
+        saveDeviationUseCase.execute(List.of(request.toDeviationInput(workflow, type)))
     );
   }
 

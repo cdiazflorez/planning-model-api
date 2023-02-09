@@ -24,8 +24,8 @@ import lombok.Getter;
 public enum Workflow {
   FBM_WMS_INBOUND(Workflow::calculateInboundCapacity, Workflow::executeInbound, "inbound"),
   FBM_WMS_OUTBOUND(Workflow::calculateOutboundCapacity, Workflow::executeOutbound, "outbound-orders"),
-  INBOUND_TRANSFER(null, null, "inbound-transfer"),
-  INBOUND(null, null, "inbound");
+  INBOUND_TRANSFER(null, Workflow::executeInbound, "inbound-transfer"),
+  INBOUND(null, Workflow::executeInbound, "inbound");
 
   private static final Map<String, Workflow> LOOKUP = Arrays.stream(values()).collect(
       toMap(Workflow::toString, Function.identity())

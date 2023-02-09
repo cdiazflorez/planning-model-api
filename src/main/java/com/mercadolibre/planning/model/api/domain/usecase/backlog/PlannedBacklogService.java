@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.backlog;
 
 import static com.mercadolibre.planning.model.api.domain.entity.DeviationType.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 import static java.time.ZoneOffset.UTC;
@@ -59,6 +60,23 @@ public class PlannedBacklogService {
     );
   }
 
+  /**
+   * Provides a gateway to return InboundScheduledBacklog.
+   *
+   * <p>Used to apply inbound deviations<p/>
+   */
+  public interface InboundScheduledBacklogGateway {
+
+    List<InboundScheduledBacklog> getScheduledBacklog(
+        String warehouseId,
+        List<Workflow> workflows,
+        Instant dateFrom,
+        Instant dateTo,
+        Instant viewDate
+    );
+
+  }
+
   @Value
   private static class Request {
     String warehouseId;
@@ -91,29 +109,17 @@ public class PlannedBacklogService {
     double accumulatedTotal;
   }
 
-  /**
-   * Provides a gateway to return InboundScheduledBacklog.
-   *
-   * <p>Used to apply inbound deviations<p/>
-   */
-  public interface InboundScheduledBacklogGateway {
-
-    List<InboundScheduledBacklog> getScheduledBacklog(
-        String warehouseId,
-        Instant dateFrom,
-        Instant dateTo,
-        Instant viewDate
-    );
-
-  }
-
   private class Delegate implements WorkflowService<Request, List<PlannedUnits>> {
 
     @Override
     public List<PlannedUnits> executeInbound(final Request request) {
 
+      final List<Workflow> workflows = request.getWorkflow().equals(FBM_WMS_INBOUND) ? List.of(INBOUND, INBOUND_TRANSFER)
+          : List.of(request.getWorkflow());
+
       final List<InboundScheduledBacklog> scheduledBacklogs = inboundScheduledBacklogGateway.getScheduledBacklog(
-          request.warehouseId,
+          request.getWarehouseId(),
+          workflows,
           request.getDateOutFrom().toInstant(),
           request.getDateOutTo().toInstant(),
           request.getViewDate().toInstant()
@@ -123,7 +129,7 @@ public class PlannedBacklogService {
         final List<CurrentForecastDeviation> currentForecastDeviations =
             currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(
                 request.getWarehouseId(),
-                Set.of(INBOUND, INBOUND_TRANSFER)
+                Set.copyOf(workflows)
             );
 
         if (currentForecastDeviations != null && !currentForecastDeviations.isEmpty()) {

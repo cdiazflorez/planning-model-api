@@ -38,6 +38,8 @@ public class GetPlanningDistributionRequest {
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private Instant viewDate;
 
+  private Workflow workflow;
+
   public GetPlanningDistributionInput toGetPlanningDistInput(final Workflow workflow) {
     return GetPlanningDistributionInput.builder()
         .warehouseId(warehouseId)

@@ -4,10 +4,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.D
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.DATE_OUT;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.PATH;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.WORKFLOW;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 
 import com.mercadolibre.planning.model.api.domain.entity.LastPhotoRequest;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.Photo;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklogService;
 import com.mercadolibre.planning.model.api.gateway.BacklogGateway;
@@ -32,13 +31,15 @@ public class InboundScheduledBacklogAdapter implements PlannedBacklogService.Inb
   @Override
   public List<PlannedBacklogService.InboundScheduledBacklog> getScheduledBacklog(
       final String warehouseId,
+      final List<Workflow> workflows,
       final Instant dateFrom,
       final Instant dateTo,
       final Instant viewDate
   ) {
+
     final Photo photo = backlogGateway.getLastPhoto(
         new LastPhotoRequest(
-            List.of(INBOUND, INBOUND_TRANSFER),
+            workflows,
             warehouseId,
             List.of("SCHEDULED"),
             null,

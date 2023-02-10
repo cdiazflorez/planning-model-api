@@ -12,7 +12,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
-import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationAllRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
@@ -70,20 +69,6 @@ public class DeviationController {
       @RequestBody @Valid final SaveDeviationRequest request) {
     return ResponseEntity.ok(
         saveDeviationUseCase.execute(List.of(request.toDeviationInput(workflow, type)))
-    );
-  }
-
-
-  @PostMapping("/save/all")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> saveAll(
-      @PathVariable final Workflow workflow,
-      @RequestBody @Valid final List<SaveDeviationAllRequest> request) {
-
-    final var input = request.stream().map(SaveDeviationAllRequest::toDeviationInput).collect(Collectors.toList());
-
-    return ResponseEntity.ok(
-        saveDeviationUseCase.execute(input)
     );
   }
 

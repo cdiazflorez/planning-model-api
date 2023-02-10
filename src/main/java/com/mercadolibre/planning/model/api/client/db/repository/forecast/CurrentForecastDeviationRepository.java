@@ -1,7 +1,5 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
-import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
@@ -35,15 +33,10 @@ public interface CurrentForecastDeviationRepository extends CrudRepository<Curre
       + "WHERE  "
       + "   cfd.workflow =:workflow "
       + "   AND cfd.logisticCenterId =:logistic_center_id "
-      + "   AND cfd.type =:type"
-      + "   AND (cfd.path in :path OR cfd.path IS NULL )"
       + "   AND cfd.isActive = true ")
   void disableDeviation(
       @Param("logistic_center_id") String logisticCenterId,
-      @Param("workflow") Workflow workflow,
-      @Param("type") DeviationType type,
-      @Param("path") List<Path> path
-  );
+      @Param("workflow") Workflow workflow);
 
   @Query(value =
       "SELECT * "

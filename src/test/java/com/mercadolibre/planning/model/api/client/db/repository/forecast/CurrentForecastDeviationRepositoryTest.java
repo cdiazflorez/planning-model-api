@@ -1,22 +1,18 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
-import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviation;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockListOfCurrentForecastDeviations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,31 +63,6 @@ class CurrentForecastDeviationRepositoryTest {
     assertEquals(DATE_OUT, deviation.getDateTo());
     assertEquals(0.025, deviation.getValue());
     assertEquals("FBM_WMS_OUTBOUND", deviation.getWorkflow().name());
-  }
-
-  @Test
-  void whenSaveNewAdjustmentWithNullPathDisableJustAdjustmentByPath() {
-    // GIVEN
-    final List<CurrentForecastDeviation> currentForecastDeviation = mockListOfCurrentForecastDeviations();
-    currentForecastDeviation.forEach(a -> entityManager.persist(a));
-    entityManager.flush();
-    final CurrentForecastDeviation newEntityToPersist = CurrentForecastDeviation.builder()
-        .isActive(Boolean.TRUE)
-        .workflow(FBM_WMS_INBOUND)
-        .logisticCenterId(WAREHOUSE_ID)
-        .type(DeviationType.UNITS)
-        .build();
-    // WHEN
-    repository.disableDeviation(WAREHOUSE_ID, FBM_WMS_INBOUND, DeviationType.UNITS, null);
-    entityManager.persistAndFlush(newEntityToPersist);
-    // THEN
-    var current = repository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(WAREHOUSE_ID, Set.of(FBM_WMS_INBOUND));
-    for (int i = 0; i < 2; i++) {
-      assertEquals(current.get(i).getType(), currentForecastDeviation.get(i).getType());
-      assertEquals(current.get(i).getLogisticCenterId(), currentForecastDeviation.get(i).getLogisticCenterId());
-      assertEquals(current.get(i).getWorkflow(), currentForecastDeviation.get(i).getWorkflow());
-      assertEquals(current.get(i).getPath(), currentForecastDeviation.get(i).getPath());
-    }
   }
 
   @Test

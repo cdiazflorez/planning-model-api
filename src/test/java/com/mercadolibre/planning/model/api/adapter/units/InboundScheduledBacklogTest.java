@@ -8,9 +8,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.domain.entity.Path;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.Photo;
 import com.mercadolibre.planning.model.api.gateway.BacklogGateway;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.Test;
@@ -40,6 +42,7 @@ class InboundScheduledBacklogTest {
     //When
     final var result = backlogAdapter.getScheduledBacklog(
         "SOME_WAREHOUSE",
+        List.of(Workflow.FBM_WMS_INBOUND),
         Instant.now(),
         Instant.now(),
         Instant.now()
@@ -54,6 +57,7 @@ class InboundScheduledBacklogTest {
     //When
     final var result = backlogAdapter.getScheduledBacklog(
         "SOME_WAREHOUSE",
+        List.of(Workflow.FBM_WMS_INBOUND),
         Instant.now(),
         Instant.now(),
         Instant.now()
@@ -74,7 +78,7 @@ class InboundScheduledBacklogTest {
     assertEquals(Instant.parse("2020-01-03T16:00:00Z"), second.getDateOut());
     assertEquals(Path.FTL, second.getPath());
   }
-  
+
   private static Photo getPhotoToTest() {
     return new Photo(
         Instant.now(),

@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 /** Entity that contains the packing backlogs ratios. */
 @Data
@@ -38,9 +39,16 @@ public class Ratios {
   private Instant date;
 
   @Column(name = "`value`")
-  private int value;
+  private double value;
 
-  @Column
+  @CreationTimestamp
   private Instant createdAt;
 
+  public Ratios(Workflow workflow, String logisticCenterId, String type, Instant date, double value) {
+    this.workflow = workflow;
+    this.logisticCenterId = logisticCenterId;
+    this.type = type;
+    this.date = date;
+    this.value = value;
+  }
 }

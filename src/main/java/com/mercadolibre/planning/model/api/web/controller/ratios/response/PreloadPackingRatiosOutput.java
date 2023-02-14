@@ -9,6 +9,6 @@ public class PreloadPackingRatiosOutput {
 
   String logisticCenterId;
 
-  boolean isRatioSaved;
+  int ratiosSaved;
 
 }

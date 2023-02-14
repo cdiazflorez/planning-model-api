@@ -1,8 +1,10 @@
 package com.mercadolibre.planning.model.api.domain.usecase.backlog;
 
+import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.AREA;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.DATE_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.DATE_OUT;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.PATH;
+import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.STEP;
 import static com.mercadolibre.planning.model.api.domain.entity.BacklogGrouper.WORKFLOW;
 
 import com.mercadolibre.planning.model.api.domain.entity.Path;
@@ -55,6 +57,14 @@ public class Photo {
 
     public Optional<String> getWorkflow() {
       return Optional.ofNullable(key.get(WORKFLOW.getName()));
+    }
+
+    public Optional<String> getArea() {
+      return Optional.ofNullable(key.get(AREA.getName()));
+    }
+
+    public Optional<String> getStep() {
+      return Optional.ofNullable(key.get(STEP.getName()));
     }
   }
 

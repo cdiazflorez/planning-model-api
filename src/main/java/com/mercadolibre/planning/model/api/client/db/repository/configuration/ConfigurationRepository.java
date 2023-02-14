@@ -18,4 +18,7 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, Co
     List<Configuration> findByWarehouseId(
             @Param("logistic_center_id") String logisticCenterId
     );
+
+    @Query("SELECT distinct cfg.logisticCenterId FROM Configuration cfg")
+    List<String> findConfiguratedLogisticCenter();
 }

@@ -11,8 +11,6 @@ import lombok.Value;
 @Value
 public class SaveDeviationInput {
 
-  private static final double TOTAL_PERCENTAGE = 0.01;
-
   String warehouseId;
 
   ZonedDateTime dateFrom;
@@ -33,7 +31,7 @@ public class SaveDeviationInput {
         .logisticCenterId(warehouseId)
         .dateFrom(dateFrom)
         .dateTo(dateTo)
-        .value(value * TOTAL_PERCENTAGE)
+        .value(value)
         .isActive(true)
         .userId(userId)
         .workflow(workflow)

@@ -97,7 +97,7 @@ public class SaveDeviationUseCaseTest {
         .workflow(workflow)
         .dateFrom(Instant.now().atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
         .dateTo(Instant.now().plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
-        .value(10.0)
+        .value(0.1)
         .userId(1234L)
         .warehouseId("ARTW01")
         .deviationType(UNITS)

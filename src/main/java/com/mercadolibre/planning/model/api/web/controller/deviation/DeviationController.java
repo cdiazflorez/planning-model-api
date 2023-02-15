@@ -56,19 +56,26 @@ public class DeviationController {
   public ResponseEntity<DeviationResponse> saveForecastDeviation(
       @PathVariable final Workflow workflow,
       @RequestBody @Valid final SaveDeviationRequest request) {
+
+    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
+
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, UNITS))
+        saveDeviationUseCase.execute(saveDeviationRequest.toDeviationInput(workflow, UNITS))
     );
   }
 
+  @Deprecated
   @PostMapping("save/{type}")
   @Trace(dispatcher = true)
   public ResponseEntity<DeviationResponse> saveDeviation(
       @PathVariable final Workflow workflow,
       @PathVariable final DeviationType type,
       @RequestBody @Valid final SaveDeviationRequest request) {
+
+    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
+
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, type))
+        saveDeviationUseCase.execute(saveDeviationRequest.toDeviationInput(workflow, type))
     );
   }
 
@@ -103,9 +110,9 @@ public class DeviationController {
   ) {
     final List<GetForecastDeviationResponse> forecastAdjustments =
         workflows.stream()
-        .map(a -> getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, a, date)))
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+            .map(a -> getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, a, date)))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     return ResponseEntity.ok(forecastAdjustments);
   }
 
@@ -140,5 +147,17 @@ public class DeviationController {
     dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
     dataBinder.registerCustomEditor(ZonedDateTime.class, new ZonedDateTimeEditor());
     dataBinder.registerCustomEditor(DeviationType.class, new DeviationTypeEditor());
+  }
+
+  private SaveDeviationRequest saveDeviationRequestWithValuePercentage(final SaveDeviationRequest request) {
+    final double total_percentage = 0.01;
+
+    return new SaveDeviationRequest(
+        request.getWarehouseId(),
+        request.getDateFrom(),
+        request.getDateTo(),
+        request.getValue() * total_percentage,
+        request.getUserId()
+    );
   }
 }

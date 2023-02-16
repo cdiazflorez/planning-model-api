@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mercadolibre.planning.model.api.domain.usecase.ratios.GetPackingWallRatiosUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.ratios.GetPackingWallRatiosService;
 import com.mercadolibre.planning.model.api.web.controller.ratios.RatiosController;
-import com.mercadolibre.planning.model.api.web.controller.ratios.response.GetPackingWallRatiosOutput;
+import com.mercadolibre.planning.model.api.web.controller.ratios.response.PackingRatio;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -35,12 +35,12 @@ class RatiosControllerTest {
   private MockMvc mvc;
 
   @MockBean
-  private GetPackingWallRatiosUseCase getPackingWallRatiosUseCase;
+  private GetPackingWallRatiosService getPackingWallRatiosUseCase;
 
   @Test
   void testRequest() throws Exception {
     when(getPackingWallRatiosUseCase.execute(anyString(), any(), any()))
-        .thenReturn(Map.of(Instant.parse(DATE_FROM), new GetPackingWallRatiosOutput(0.5, 0.5)));
+        .thenReturn(Map.of(Instant.parse(DATE_FROM), new PackingRatio(0.5, 0.5)));
 
     final ResultActions result = mvc.perform(
         get(URL + "/packing_wall")

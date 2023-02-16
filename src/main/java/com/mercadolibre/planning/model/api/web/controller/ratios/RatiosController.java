@@ -1,7 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.ratios;
 
-import com.mercadolibre.planning.model.api.domain.usecase.ratios.GetPackingWallRatiosUseCase;
-import com.mercadolibre.planning.model.api.web.controller.ratios.response.GetPackingWallRatiosOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.ratios.GetPackingWallRatiosService;
+import com.mercadolibre.planning.model.api.web.controller.ratios.response.PackingRatio;
 import java.time.Instant;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class RatiosController {
 
-  private final GetPackingWallRatiosUseCase getPackingWallRatiosUseCase;
+  private final GetPackingWallRatiosService getPackingWallRatiosUseCase;
 
   @GetMapping("/packing_wall")
-  public ResponseEntity<Map<Instant, GetPackingWallRatiosOutput>> getPackingWallRatios(
+  public ResponseEntity<Map<Instant, PackingRatio>> getPackingWallRatios(
       @RequestParam final String logisticCenterId,
       @RequestParam final Instant dateFrom,
       @RequestParam final Instant dateTo

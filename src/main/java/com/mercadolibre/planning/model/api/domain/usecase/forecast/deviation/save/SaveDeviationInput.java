@@ -1,17 +1,17 @@
 package com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save;
 
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.ZonedDateTime;
+import java.util.List;
 import lombok.Builder;
 import lombok.Value;
 
 @Builder
 @Value
 public class SaveDeviationInput {
-
-  private static final double TOTAL_PERCENTAGE = 0.01;
 
   String warehouseId;
 
@@ -27,13 +27,15 @@ public class SaveDeviationInput {
 
   DeviationType deviationType;
 
+  List<Path> paths;
+
   public CurrentForecastDeviation toCurrentForecastDeviation() {
     return CurrentForecastDeviation
         .builder()
         .logisticCenterId(warehouseId)
         .dateFrom(dateFrom)
         .dateTo(dateTo)
-        .value(value * TOTAL_PERCENTAGE)
+        .value(value)
         .isActive(true)
         .userId(userId)
         .workflow(workflow)

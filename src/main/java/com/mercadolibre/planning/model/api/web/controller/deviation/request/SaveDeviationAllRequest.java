@@ -9,11 +9,20 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Value;
 
+//TODO: Temporal class, should be use SaveDeviationRequest for all save deviation
 @Value
-public class SaveDeviationRequest {
+public class SaveDeviationAllRequest {
+  @NotNull
+  String logisticCenterId;
 
   @NotNull
-  String warehouseId;
+  Workflow workflow;
+
+  @NotNull
+  List<Path> affectedShipmentTypes;
+
+  @NotNull
+  DeviationType type;
 
   @NotNull
   ZonedDateTime dateFrom;
@@ -25,21 +34,19 @@ public class SaveDeviationRequest {
   double value;
 
   @NotNull
-  Long userId;
+  long userId;
 
-  List<Path> paths;
-
-  public SaveDeviationInput toDeviationInput(final Workflow workflow, final DeviationType deviationType) {
+  public SaveDeviationInput toDeviationInput() {
     return SaveDeviationInput
         .builder()
-        .warehouseId(warehouseId)
+        .warehouseId(logisticCenterId)
         .dateFrom(dateFrom)
         .dateTo(dateTo)
         .value(value)
         .userId(userId)
-        .paths(paths)
         .workflow(workflow)
-        .deviationType(deviationType)
+        .deviationType(type)
+        .paths(affectedShipmentTypes)
         .build();
   }
 }

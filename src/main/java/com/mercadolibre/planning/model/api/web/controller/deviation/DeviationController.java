@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
+import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationAllRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
@@ -56,19 +57,40 @@ public class DeviationController {
   public ResponseEntity<DeviationResponse> saveForecastDeviation(
       @PathVariable final Workflow workflow,
       @RequestBody @Valid final SaveDeviationRequest request) {
+
+    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
+
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, UNITS))
+        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, UNITS)))
     );
   }
 
+  @Deprecated
   @PostMapping("save/{type}")
   @Trace(dispatcher = true)
   public ResponseEntity<DeviationResponse> saveDeviation(
       @PathVariable final Workflow workflow,
       @PathVariable final DeviationType type,
       @RequestBody @Valid final SaveDeviationRequest request) {
+
+    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
+
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(request.toDeviationInput(workflow, type))
+        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, type)))
+    );
+  }
+
+
+  @PostMapping("/save/all")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeviationResponse> saveAll(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final List<SaveDeviationAllRequest> request) {
+
+    final var input = request.stream().map(SaveDeviationAllRequest::toDeviationInput).collect(Collectors.toList());
+
+    return ResponseEntity.ok(
+        saveDeviationUseCase.execute(input)
     );
   }
 
@@ -103,9 +125,9 @@ public class DeviationController {
   ) {
     final List<GetForecastDeviationResponse> forecastAdjustments =
         workflows.stream()
-        .map(a -> getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, a, date)))
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+            .map(a -> getForecastDeviationUseCase.execute(new GetForecastDeviationInput(warehouseId, a, date)))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     return ResponseEntity.ok(forecastAdjustments);
   }
 
@@ -140,5 +162,18 @@ public class DeviationController {
     dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
     dataBinder.registerCustomEditor(ZonedDateTime.class, new ZonedDateTimeEditor());
     dataBinder.registerCustomEditor(DeviationType.class, new DeviationTypeEditor());
+  }
+
+  private SaveDeviationRequest saveDeviationRequestWithValuePercentage(final SaveDeviationRequest request) {
+    final double total_percentage = 0.01;
+
+    return new SaveDeviationRequest(
+        request.getWarehouseId(),
+        request.getDateFrom(),
+        request.getDateTo(),
+        request.getValue() * total_percentage,
+        request.getUserId(),
+        request.getPaths()
+    );
   }
 }

@@ -7,10 +7,12 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSaveForecastDeviationInput;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get.GetForecastDeviationInput;
@@ -33,7 +36,6 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationCon
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +55,8 @@ class DeviationControllerTest {
   private static final String WAREHOUSE_LABEL = "warehouse_id";
 
   private static final String SAVE = "/save";
+
+  private static final String SAVE_ALL = "/save/all";
 
   private static final String UNITS = "units";
 
@@ -76,7 +80,7 @@ class DeviationControllerTest {
     // GIVEN
     final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN
@@ -84,6 +88,49 @@ class DeviationControllerTest {
         post(URL + SAVE, "fbm-wms-outbound")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_forecast_deviation.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isOk());
+  }
+
+  @DisplayName("Save all ok")
+  @Test
+  void saveAllOk() throws Exception {
+    // GIVEN
+    final List<SaveDeviationInput> inputs = List.of(
+        SaveDeviationInput
+            .builder()
+            .warehouseId(WAREHOUSE_ID)
+            .workflow(INBOUND)
+            .deviationType(DeviationType.UNITS)
+            .dateFrom(DATE_IN)
+            .dateTo(DATE_OUT)
+            .value(0.1)
+            .userId(USER_ID)
+            .paths(List.of(Path.SPD, Path.COLLECT))
+            .build(),
+        SaveDeviationInput
+            .builder()
+            .warehouseId(WAREHOUSE_ID)
+            .workflow(INBOUND_TRANSFER)
+            .deviationType(DeviationType.UNITS)
+            .dateFrom(DATE_IN)
+            .dateTo(DATE_OUT)
+            .value(0.1)
+            .userId(USER_ID)
+            .paths(emptyList())
+            .build()
+    );
+
+    when(saveDeviationUseCase.execute(inputs))
+        .thenReturn(new DeviationResponse(200));
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + SAVE_ALL, "inbound")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("post_save_all_deviation.json"))
     );
 
     // THEN
@@ -176,7 +223,7 @@ class DeviationControllerTest {
     // GIVEN
     final SaveDeviationInput input = mockSaveForecastDeviationInput();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN
@@ -204,7 +251,7 @@ class DeviationControllerTest {
         .warehouseId(WAREHOUSE_ID)
         .build();
 
-    when(saveDeviationUseCase.execute(input))
+    when(saveDeviationUseCase.execute(List.of(input)))
         .thenReturn(new DeviationResponse(200));
 
     // WHEN
@@ -326,7 +373,7 @@ class DeviationControllerTest {
         );
 
     when(getForecastDeviationUseCase.execute(inboundTransferRequest))
-        .thenReturn(Collections.emptyList());
+        .thenReturn(emptyList());
 
     // WHEN
     final ResultActions result = mvc.perform(

@@ -1,0 +1,23 @@
+[
+  {
+    "logistic_center_id": "ARBA01",
+    "workflow": "inbound",
+    "affected_shipment_types": ["spd", "collect"],
+    "type": "units",
+    "date_from": "2020-08-19T18:00:00Z",
+    "date_to": "2020-08-20T15:30:00Z",
+    "value": 0.1,
+    "user_id": 1234
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "workflow": "inbound-transfer",
+    "affected_shipment_types": [],
+    "date_from": "2020-08-19T18:00:00Z",
+    "date_to": "2020-08-20T15:30:00Z",
+    "type": "units",
+    "value": 0.1,
+    "user_id": 1234
+  }
+]
+

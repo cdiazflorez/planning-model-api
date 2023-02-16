@@ -18,6 +18,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.B
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.ABSENCES;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.BACKLOG_BOUNDS;
@@ -1211,6 +1212,33 @@ public final class TestUtils {
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(true)
         .build();
+  }
+
+  public static List<CurrentForecastDeviation> mockListOfCurrentForecastDeviations() {
+    return List.of(
+        CurrentForecastDeviation
+            .builder()
+            .workflow(FBM_WMS_INBOUND)
+            .dateFrom(DATE_IN)
+            .dateTo(DATE_OUT)
+            .value(0.025)
+            .userId(USER_ID)
+            .logisticCenterId(WAREHOUSE_ID)
+            .isActive(true)
+            .type(DeviationType.MINUTES)
+            .build(),
+        CurrentForecastDeviation
+            .builder()
+            .workflow(FBM_WMS_INBOUND)
+            .dateFrom(DATE_IN)
+            .dateTo(DATE_OUT)
+            .value(0.025)
+            .userId(USER_ID)
+            .type(DeviationType.UNITS)
+            .logisticCenterId(WAREHOUSE_ID)
+            .isActive(true)
+            .build()
+    );
   }
 
   public static List<Long> mockForecastIds() {

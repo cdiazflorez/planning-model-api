@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
+import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationAllRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
@@ -60,7 +61,7 @@ public class DeviationController {
     final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
 
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(saveDeviationRequest.toDeviationInput(workflow, UNITS))
+        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, UNITS)))
     );
   }
 
@@ -75,7 +76,21 @@ public class DeviationController {
     final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
 
     return ResponseEntity.ok(
-        saveDeviationUseCase.execute(saveDeviationRequest.toDeviationInput(workflow, type))
+        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, type)))
+    );
+  }
+
+
+  @PostMapping("/save/all")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeviationResponse> saveAll(
+      @PathVariable final Workflow workflow,
+      @RequestBody @Valid final List<SaveDeviationAllRequest> request) {
+
+    final var input = request.stream().map(SaveDeviationAllRequest::toDeviationInput).collect(Collectors.toList());
+
+    return ResponseEntity.ok(
+        saveDeviationUseCase.execute(input)
     );
   }
 
@@ -157,7 +172,8 @@ public class DeviationController {
         request.getDateFrom(),
         request.getDateTo(),
         request.getValue() * total_percentage,
-        request.getUserId()
+        request.getUserId(),
+        request.getPaths()
     );
   }
 }

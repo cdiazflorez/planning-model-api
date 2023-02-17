@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.client.db.repository.configuration.ConfigurationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.ratios.RatiosRepository;
 import com.mercadolibre.planning.model.api.domain.entity.PhotoRequest;
-import com.mercadolibre.planning.model.api.domain.entity.ratios.Ratios;
+import com.mercadolibre.planning.model.api.domain.entity.ratios.Ratio;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.Photo;
 import com.mercadolibre.planning.model.api.domain.usecase.ratios.PreloadPackingWallRatiosUseCase;
 import com.mercadolibre.planning.model.api.gateway.BacklogGateway;
@@ -75,7 +75,7 @@ class PreloadPackingWallRatiosUseCaseTest {
   private RatiosRepository ratiosRepository;
 
   @Captor
-  private ArgumentCaptor<List<Ratios>> ratiosCaptor;
+  private ArgumentCaptor<List<Ratio>> ratiosCaptor;
 
   @Test
   void testSaveLastHourRatiosSuccessfullyMultipleWarehouses() {
@@ -88,8 +88,8 @@ class PreloadPackingWallRatiosUseCaseTest {
 
     assertEquals(2, ratiosCaptor.getAllValues().size());
 
-    final List<Ratios> firstWarehouse = ratiosCaptor.getAllValues().get(0);
-    final List<Ratios> secondWarehouse = ratiosCaptor.getAllValues().get(1);
+    final List<Ratio> firstWarehouse = ratiosCaptor.getAllValues().get(0);
+    final List<Ratio> secondWarehouse = ratiosCaptor.getAllValues().get(1);
 
     assertEquals(1, firstWarehouse.size());
     final var firstWarehouseRatio = firstWarehouse.get(0);
@@ -114,22 +114,22 @@ class PreloadPackingWallRatiosUseCaseTest {
     preloadPackingWallRatiosUseCase.execute(MULTIPLE_HOURS.get(0), MULTIPLE_HOURS.get(6));
     verify(ratiosRepository, times(1)).saveAll(argThat(
         ratios -> {
-          List<Ratios> ratiosList = StreamSupport.stream(ratios.spliterator(), false)
-              .sorted(Comparator.comparing(Ratios::getDate))
+          List<Ratio> ratioList = StreamSupport.stream(ratios.spliterator(), false)
+              .sorted(Comparator.comparing(Ratio::getDate))
               .collect(Collectors.toList());
-          assertEquals(MULTIPLE_HOURS.get(0), ratiosList.get(0).getDate());
-          assertEquals(MULTIPLE_HOURS.get(1), ratiosList.get(1).getDate());
-          assertEquals(MULTIPLE_HOURS.get(2), ratiosList.get(2).getDate());
-          assertEquals(MULTIPLE_HOURS.get(3), ratiosList.get(3).getDate());
-          assertEquals(MULTIPLE_HOURS.get(4), ratiosList.get(4).getDate());
-          assertEquals(MULTIPLE_HOURS.get(5), ratiosList.get(5).getDate());
-          assertEquals(0.625, ratiosList.get(0).getValue());
-          assertEquals(0.2, ratiosList.get(1).getValue());
-          assertEquals(0.1, ratiosList.get(2).getValue());
-          assertEquals(1.0, ratiosList.get(3).getValue());
-          assertEquals(0.75, ratiosList.get(4).getValue());
-          assertEquals(0.5, ratiosList.get(5).getValue());
-          return 6 == ratiosList.size();
+          assertEquals(MULTIPLE_HOURS.get(0), ratioList.get(0).getDate());
+          assertEquals(MULTIPLE_HOURS.get(1), ratioList.get(1).getDate());
+          assertEquals(MULTIPLE_HOURS.get(2), ratioList.get(2).getDate());
+          assertEquals(MULTIPLE_HOURS.get(3), ratioList.get(3).getDate());
+          assertEquals(MULTIPLE_HOURS.get(4), ratioList.get(4).getDate());
+          assertEquals(MULTIPLE_HOURS.get(5), ratioList.get(5).getDate());
+          assertEquals(0.625, ratioList.get(0).getValue());
+          assertEquals(0.2, ratioList.get(1).getValue());
+          assertEquals(0.1, ratioList.get(2).getValue());
+          assertEquals(1.0, ratioList.get(3).getValue());
+          assertEquals(0.75, ratioList.get(4).getValue());
+          assertEquals(0.5, ratioList.get(5).getValue());
+          return 6 == ratioList.size();
         }
     ));
   }
@@ -141,10 +141,10 @@ class PreloadPackingWallRatiosUseCaseTest {
     preloadPackingWallRatiosUseCase.execute(LAST_HOUR.get(0), LAST_HOUR.get(1));
     verify(ratiosRepository, times(1)).saveAll(argThat(
         ratios -> {
-          final List<Ratios> ratiosList = StreamSupport.stream(ratios.spliterator(), false)
-              .sorted(Comparator.comparing(Ratios::getDate))
+          final List<Ratio> ratioList = StreamSupport.stream(ratios.spliterator(), false)
+              .sorted(Comparator.comparing(Ratio::getDate))
               .collect(Collectors.toList());
-          return ratiosList.isEmpty();
+          return ratioList.isEmpty();
         }
     ));
   }

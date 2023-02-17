@@ -16,10 +16,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 /** Entity that contains the packing backlogs ratios. */
 @Data
-@Entity
+@Entity(name = "ratios")
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ratios {
+public class Ratio {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +44,7 @@ public class Ratios {
   @CreationTimestamp
   private Instant createdAt;
 
-  public Ratios(Workflow workflow, String logisticCenterId, String type, Instant date, double value) {
+  public Ratio(Workflow workflow, String logisticCenterId, String type, Instant date, double value) {
     this.workflow = workflow;
     this.logisticCenterId = logisticCenterId;
     this.type = type;

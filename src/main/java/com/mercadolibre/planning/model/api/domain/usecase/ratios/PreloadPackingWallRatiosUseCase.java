@@ -13,7 +13,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.configuration.Co
 import com.mercadolibre.planning.model.api.client.db.repository.ratios.RatiosRepository;
 import com.mercadolibre.planning.model.api.domain.entity.PhotoRequest;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.ratios.Ratios;
+import com.mercadolibre.planning.model.api.domain.entity.ratios.Ratio;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.Photo;
 import com.mercadolibre.planning.model.api.gateway.BacklogGateway;
 import com.mercadolibre.planning.model.api.web.controller.ratios.response.PreloadPackingRatiosOutput;
@@ -86,9 +86,9 @@ public class PreloadPackingWallRatiosUseCase {
   private PreloadPackingRatiosOutput calculateRatiosByLogisticCenter(String logisticCenterId, Instant dateFrom, Instant dateTo) {
     final List<ProcessedUnitsAtHourAndProcess> processedUnits = getProcessedUnitsPerHourByProcess(logisticCenterId, dateFrom, dateTo);
     final Map<Instant, RatioGroup> ratioGroupByDate = transformProcessedUnitsIntoRatioGroups(processedUnits);
-    final List<Ratios> ratios = ratioGroupByDate.entrySet()
+    final List<Ratio> ratios = ratioGroupByDate.entrySet()
         .stream()
-        .map(ratioGroup -> new Ratios(
+        .map(ratioGroup -> new Ratio(
             FBM_WMS_OUTBOUND,
             logisticCenterId,
             PW_RATIOS_TYPE,
@@ -96,7 +96,7 @@ public class PreloadPackingWallRatiosUseCase {
             calculateRatio(ratioGroup.getValue().getPackingWallUnits(), ratioGroup.getValue().getPackingToteUnits())
         )).collect(Collectors.toList());
     try {
-      final List<Ratios> savedRatios = ratiosRepository.saveAll(ratios);
+      final List<Ratio> savedRatios = ratiosRepository.saveAll(ratios);
       return new PreloadPackingRatiosOutput(logisticCenterId, savedRatios.size());
     } catch (Exception e) {
       log.error(e.getMessage());

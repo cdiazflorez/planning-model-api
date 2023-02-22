@@ -1,0 +1,15 @@
+[
+  {
+    "logistic_center_id": "ARBA01",
+    "workflow": "inbound",
+    "affected_shipment_types": ["spd", "collect"],
+    "type": "units"
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "workflow": "inbound-transfer",
+    "affected_shipment_types": [],
+    "type": "units"
+  }
+]
+

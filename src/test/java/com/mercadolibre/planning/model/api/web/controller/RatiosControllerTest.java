@@ -29,7 +29,7 @@ class RatiosControllerTest {
 
   private static final String ARTW01 = "ARTW01";
 
-  private static final String URL = "/planning/model/ratios";
+  private static final String URL = "/logistic_center/{logisticCenterId}/ratios";
 
   @Autowired
   private MockMvc mvc;
@@ -43,9 +43,8 @@ class RatiosControllerTest {
         .thenReturn(Map.of(Instant.parse(DATE_FROM), new PackingRatio(0.5, 0.5)));
 
     final ResultActions result = mvc.perform(
-        get(URL + "/packing_wall")
+        get(URL + "/packing_wall", ARTW01)
             .contentType(APPLICATION_JSON)
-            .param("logistic_center_id", ARTW01)
             .param("date_from", DATE_FROM)
             .param("date_to", DATE_TO)
     );
@@ -56,7 +55,7 @@ class RatiosControllerTest {
   @Test
   void testWithDateFromGreaterThanDateTo() throws Exception {
     final ResultActions result = mvc.perform(
-        get(URL + "/packing_wall")
+        get(URL + "/packing_wall", ARTW01)
             .contentType(APPLICATION_JSON)
             .param("logistic_center_id", ARTW01)
             .param("date_from", DATE_TO)

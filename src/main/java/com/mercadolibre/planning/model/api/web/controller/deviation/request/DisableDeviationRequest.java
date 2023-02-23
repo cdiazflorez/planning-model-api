@@ -14,6 +14,6 @@ public class DisableDeviationRequest {
 
 
     public DisableForecastDeviationInput toDisableDeviationInput(final Workflow workflow, final DeviationType deviationType) {
-        return new DisableForecastDeviationInput(warehouseId, workflow, deviationType);
+        return new DisableForecastDeviationInput(warehouseId, workflow, deviationType, null);
     }
 }

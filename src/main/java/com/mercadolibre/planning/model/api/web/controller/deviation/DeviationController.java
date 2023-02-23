@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.get
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisableDeviationRequest;
+import com.mercadolibre.planning.model.api.web.controller.deviation.request.DisabledDeviationAdjustmentsRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationAllRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
@@ -100,7 +101,7 @@ public class DeviationController {
       @PathVariable final Workflow workflow,
       @RequestBody @Valid final DisableDeviationRequest request) {
 
-    disableDeviationUseCase.execute(request.toDisableDeviationInput(workflow, UNITS));
+    disableDeviationUseCase.execute(List.of(request.toDisableDeviationInput(workflow, UNITS)));
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 
@@ -111,7 +112,22 @@ public class DeviationController {
       @PathVariable final DeviationType type,
       @RequestBody @Valid final DisableDeviationRequest request) {
 
-    disableDeviationUseCase.execute(request.toDisableDeviationInput(workflow, type));
+    disableDeviationUseCase.execute(List.of(request.toDisableDeviationInput(workflow, type)));
+    return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
+  }
+
+  @PostMapping("/disable/all")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeviationResponse> disableActiveForecastAdjustments(
+      @PathVariable final Workflow workflow,
+      @RequestParam final String logisticCenterId,
+      @RequestBody final List<DisabledDeviationAdjustmentsRequest> request) {
+
+    final var disableForecastDeviations = request.stream().map(adjustmentRequest ->
+        adjustmentRequest.toDisableDeviationInput(logisticCenterId)).collect(Collectors.toUnmodifiableList());
+
+    disableDeviationUseCase.execute(disableForecastDeviations);
+
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 

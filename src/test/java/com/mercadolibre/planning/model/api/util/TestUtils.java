@@ -37,6 +37,8 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -454,7 +457,13 @@ public final class TestUtils {
 
   public static DisableForecastDeviationInput mockDisableForecastDeviationInput(final Workflow workflow,
                                                                                 final DeviationType deviationType) {
-    return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType);
+    return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType, null);
+  }
+
+  public static DisableForecastDeviationInput mockDisableForecastDeviationInputWithAllArgs(final Workflow workflow,
+                                                                                final DeviationType deviationType,
+                                                                                           final List<Path> affectedShipmentTypes) {
+    return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType, affectedShipmentTypes);
   }
 
   public static GetHeadcountInput mockGetHeadcountEntityInput(final Source source) {
@@ -1211,6 +1220,38 @@ public final class TestUtils {
         .userId(USER_ID)
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(true)
+        .build();
+  }
+
+  public static CurrentForecastDeviation mockCurrentForecastDeviationWithPath(final Path path) {
+    return CurrentForecastDeviation.builder()
+        .logisticCenterId(WAREHOUSE_ID)
+        .workflow(FBM_WMS_INBOUND)
+        .isActive(TRUE)
+        .value(0.1)
+        .path(path)
+        .type(DeviationType.UNITS)
+        .dateFrom(A_DATE_UTC)
+        .dateTo(A_DATE_UTC.plus(1, DAYS))
+        .dateCreated(A_DATE_UTC)
+        .lastUpdated(A_DATE_UTC)
+        .userId(131206L)
+        .build();
+  }
+
+  public static CurrentForecastDeviation mockCurrentForecastDeviationWithPathAndNotActive(final Path path) {
+    return CurrentForecastDeviation.builder()
+        .logisticCenterId(WAREHOUSE_ID)
+        .workflow(FBM_WMS_INBOUND)
+        .isActive(FALSE)
+        .value(0.1)
+        .path(path)
+        .type(DeviationType.UNITS)
+        .dateFrom(A_DATE_UTC)
+        .dateTo(A_DATE_UTC.plus(1, DAYS))
+        .dateCreated(A_DATE_UTC)
+        .lastUpdated(A_DATE_UTC)
+        .userId(131206L)
         .build();
   }
 

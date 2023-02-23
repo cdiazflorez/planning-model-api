@@ -9,13 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/planning/model/ratios")
+@RequestMapping("/logistic_center/{logisticCenterId}/ratios")
 @Slf4j
 public class RatiosController {
 
@@ -23,7 +24,7 @@ public class RatiosController {
 
   @GetMapping("/packing_wall")
   public ResponseEntity<Map<Instant, PackingRatio>> getPackingWallRatios(
-      @RequestParam final String logisticCenterId,
+      @PathVariable final String logisticCenterId,
       @RequestParam final Instant dateFrom,
       @RequestParam final Instant dateTo
   ) {

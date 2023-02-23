@@ -54,13 +54,18 @@ class DeviationControllerTest {
 
   private static final String WAREHOUSE_LABEL = "warehouse_id";
 
+  private static final String LOGISTIC_CENTER_LABEL = "logistic_center_id";
+
   private static final String SAVE = "/save";
 
   private static final String SAVE_ALL = "/save/all";
 
+  private static final String DISABLE_ALL = "/disable/all";
+
   private static final String UNITS = "units";
 
   private static final String URL_TYPE_SAVE = "/planning/model/workflows/{workflow}/deviations/save/{type}";
+  private static final String INBOUND_WORKFLOW = "inbound";
 
   @Autowired
   private MockMvc mvc;
@@ -88,6 +93,38 @@ class DeviationControllerTest {
         post(URL + SAVE, "fbm-wms-outbound")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_forecast_deviation.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isOk());
+  }
+
+  @DisplayName("Disable all ok")
+  @Test
+  void disableAllOk() throws Exception {
+    // GIVEN
+    final List<DisableForecastDeviationInput> inputs = List.of(
+        new DisableForecastDeviationInput(
+            WAREHOUSE_ID,
+            INBOUND,
+            DeviationType.UNITS,
+            List.of(Path.SPD, Path.COLLECT)),
+        new DisableForecastDeviationInput(
+            WAREHOUSE_ID,
+            INBOUND_TRANSFER,
+            DeviationType.UNITS,
+            List.of())
+    );
+
+    when(disableDeviationUseCase.execute(inputs))
+        .thenReturn(200);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + DISABLE_ALL, INBOUND_WORKFLOW)
+            .contentType(APPLICATION_JSON)
+            .param(LOGISTIC_CENTER_LABEL, WAREHOUSE_ID)
+            .content(getResourceAsString("post_disable_all_deviation.json"))
     );
 
     // THEN
@@ -128,7 +165,7 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL + SAVE_ALL, "inbound")
+        post(URL + SAVE_ALL, INBOUND_WORKFLOW)
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_save_all_deviation.json"))
     );
@@ -143,7 +180,7 @@ class DeviationControllerTest {
     // GIVEN
     final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
 
-    when(disableDeviationUseCase.execute(input))
+    when(disableDeviationUseCase.execute(List.of(input)))
         .thenReturn(5);
 
     // WHEN
@@ -168,7 +205,7 @@ class DeviationControllerTest {
     final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_INBOUND, DeviationType.UNITS);
 
 
-    when(disableDeviationUseCase.execute(input))
+    when(disableDeviationUseCase.execute(List.of(input)))
         .thenReturn(5);
 
     // WHEN
@@ -256,7 +293,7 @@ class DeviationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL_TYPE_SAVE, "inbound", UNITS)
+        post(URL_TYPE_SAVE, INBOUND_WORKFLOW, UNITS)
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("post_inbound_deviation_save_unit.json"))
     );
@@ -333,7 +370,7 @@ class DeviationControllerTest {
         .andExpectAll(
             jsonPath("$.length()", is(2)),
 
-            jsonPath("$[0].workflow", is("inbound")),
+            jsonPath("$[0].workflow", is(INBOUND_WORKFLOW)),
             jsonPath("$[0].date_from", is("2020-08-19T18:00:00Z")),
             jsonPath("$[0].date_to", is("2020-08-20T15:30:00Z")),
             jsonPath("$[0].value", is(0.25)),
@@ -386,7 +423,7 @@ class DeviationControllerTest {
     result.andExpect(status().isOk())
         .andExpectAll(
             jsonPath("$.length()", is(1)),
-            jsonPath("$[0].workflow", is("inbound")),
+            jsonPath("$[0].workflow", is(INBOUND_WORKFLOW)),
             jsonPath("$[0].date_from", is("2020-08-19T18:00:00Z")),
             jsonPath("$[0].date_to", is("2020-08-20T15:30:00Z")),
             jsonPath("$[0].value", is(0.25))

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.util.DateUtils.fromDate;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
@@ -131,7 +131,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
         .map(processingTypes -> processingTypes.stream()
             .map(ProcessingType::name)
             .collect(toSet()))
-        .orElse(Set.of(ProcessingType.ACTIVE_WORKERS.name()));
+        .orElse(Set.of(EFFECTIVE_WORKERS.name()));
 
     final var processes = input.getProcessName()
         .stream()
@@ -177,7 +177,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
                     quantityByDate.getDate().withFixedOffsetZone(),
                     ProcessPath.GLOBAL,
                     simulation.getProcessName(),
-                    entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
+                    entity.getType() == HEADCOUNT ? EFFECTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
                     entity.getType().getMetricUnit(),
                     SIMULATION,
                     quantityByDate.getQuantity()))))

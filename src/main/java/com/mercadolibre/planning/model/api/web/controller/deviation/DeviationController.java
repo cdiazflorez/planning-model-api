@@ -53,34 +53,6 @@ public class DeviationController {
 
   private final GetForecastDeviationUseCase getForecastDeviationUseCase;
 
-  @PostMapping("/save")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> saveForecastDeviation(
-      @PathVariable final Workflow workflow,
-      @RequestBody @Valid final SaveDeviationRequest request) {
-
-    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
-
-    return ResponseEntity.ok(
-        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, UNITS)))
-    );
-  }
-
-  @Deprecated
-  @PostMapping("save/{type}")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> saveDeviation(
-      @PathVariable final Workflow workflow,
-      @PathVariable final DeviationType type,
-      @RequestBody @Valid final SaveDeviationRequest request) {
-
-    final SaveDeviationRequest saveDeviationRequest = saveDeviationRequestWithValuePercentage(request);
-
-    return ResponseEntity.ok(
-        saveDeviationUseCase.execute(List.of(saveDeviationRequest.toDeviationInput(workflow, type)))
-    );
-  }
-
 
   @PostMapping("/save/all")
   @Trace(dispatcher = true)
@@ -93,27 +65,6 @@ public class DeviationController {
     return ResponseEntity.ok(
         saveDeviationUseCase.execute(input)
     );
-  }
-
-  @PostMapping("/disable")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> disableForecastDeviation(
-      @PathVariable final Workflow workflow,
-      @RequestBody @Valid final DisableDeviationRequest request) {
-
-    disableDeviationUseCase.execute(List.of(request.toDisableDeviationInput(workflow, UNITS)));
-    return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
-  }
-
-  @PostMapping("disable/{type}")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> disableDeviation(
-      @PathVariable final Workflow workflow,
-      @PathVariable final DeviationType type,
-      @RequestBody @Valid final DisableDeviationRequest request) {
-
-    disableDeviationUseCase.execute(List.of(request.toDisableDeviationInput(workflow, type)));
-    return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
 
   @PostMapping("/disable/all")

@@ -25,7 +25,7 @@ import java.util.Set;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -88,7 +88,7 @@ public class SearchEntitiesUseCaseTest {
                 .dateTo(A_DATE_UTC.plusHours(12))
                 .processName(List.of(PICKING, PACKING))
                 .entityFilters(Map.of(
-                        HEADCOUNT, Map.of("processing_type", List.of("active_workers")),
+                        HEADCOUNT, Map.of("processing_type", List.of("effective_workers")),
                         PRODUCTIVITY, Map.of("ability_level", List.of("1"))
                         ))
                 .build();
@@ -101,7 +101,7 @@ public class SearchEntitiesUseCaseTest {
                         .dateFrom(A_DATE_UTC)
                         .dateTo(A_DATE_UTC.plusHours(12))
                         .processName(List.of(PICKING, PACKING))
-                        .processingType(Set.of(ACTIVE_WORKERS))
+                        .processingType(Set.of(EFFECTIVE_WORKERS))
                         .entityType(HEADCOUNT)
                         .build();
 

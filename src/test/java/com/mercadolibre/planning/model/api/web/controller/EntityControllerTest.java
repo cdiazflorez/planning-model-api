@@ -2,7 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.ABILITY_LEVEL;
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.PROCESSING_TYPE;
@@ -321,7 +321,7 @@ public class EntityControllerTest {
             .processName(List.of(PICKING, PACKING))
             .entityFilters(Map.of(
                 HEADCOUNT, Map.of(
-                    PROCESSING_TYPE.toJson(), List.of(ACTIVE_WORKERS.toJson())
+                    PROCESSING_TYPE.toJson(), List.of(EFFECTIVE_WORKERS.toJson())
                 ),
                 PRODUCTIVITY, Map.of(ABILITY_LEVEL.toJson(), List.of("1"))
             ))

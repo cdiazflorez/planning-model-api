@@ -6,7 +6,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -68,7 +68,7 @@ class GetHeadcountEntityUseCaseTest {
   @DisplayName("Get headcount entity when source is forecast")
   void testGetHeadcountOk() {
     // GIVEN
-    final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST, Set.of(ACTIVE_WORKERS, ProcessingType.WORKERS), null);
+    final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST, Set.of(EFFECTIVE_WORKERS, ProcessingType.WORKERS), null);
     final List<Long> forecastIds = List.of(1L);
 
     when(getForecastUseCase.execute(GetForecastInput.builder()
@@ -81,7 +81,7 @@ class GetHeadcountEntityUseCaseTest {
     ).thenReturn(forecastIds);
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
-        Set.of(ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
         List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),
@@ -115,7 +115,7 @@ class GetHeadcountEntityUseCaseTest {
   void testGetHeadcountWithUnsavedSimulationOk() {
     // GIVEN
     final GetHeadcountInput input = mockGetHeadcountEntityInput(null,
-        Set.of(ACTIVE_WORKERS, ProcessingType.WORKERS),
+        Set.of(EFFECTIVE_WORKERS, ProcessingType.WORKERS),
         List.of(new Simulation(
                 PICKING,
                 List.of(new SimulationEntity(
@@ -148,7 +148,7 @@ class GetHeadcountEntityUseCaseTest {
         FBM_WMS_OUTBOUND.name(),
         Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
-        Set.of(ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
         input.getDateFrom(),
         input.getDateTo(),
         A_DATE_UTC.toInstant()
@@ -158,7 +158,7 @@ class GetHeadcountEntityUseCaseTest {
     ));
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
-        Set.of(ACTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
         List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),
@@ -255,7 +255,7 @@ class GetHeadcountEntityUseCaseTest {
             FBM_WMS_OUTBOUND.name(),
             Set.of(ProcessPath.GLOBAL.name()),
             Set.of(PICKING.name(), PACKING.name()),
-            Set.of(ACTIVE_WORKERS.name()),
+            Set.of(EFFECTIVE_WORKERS.name()),
             input.getDateFrom(),
             input.getDateTo(),
             A_DATE_UTC.toInstant()
@@ -281,7 +281,7 @@ class GetHeadcountEntityUseCaseTest {
     final GetHeadcountInput input = mockGetHeadcountEntityInput(
         List.of(TOT_MONO, NON_TOT_MONO),
         SIMULATION,
-        Set.of(ACTIVE_WORKERS),
+        Set.of(EFFECTIVE_WORKERS),
         List.of()
     );
     final List<Long> forecastIds = singletonList(1L);
@@ -296,7 +296,7 @@ class GetHeadcountEntityUseCaseTest {
     ).thenReturn(forecastIds);
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
-        Set.of(ACTIVE_WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name()),
         List.of(TOT_MONO.toString(), NON_TOT_MONO.toString()),
         input.getProcessNamesAsString(),
         input.getDateFrom(),
@@ -309,7 +309,7 @@ class GetHeadcountEntityUseCaseTest {
             FBM_WMS_OUTBOUND.name(),
             Set.of(TOT_MONO.toString(), NON_TOT_MONO.toString()),
             Set.of(PICKING.name(), PACKING.name()),
-            Set.of(ACTIVE_WORKERS.name()),
+            Set.of(EFFECTIVE_WORKERS.name()),
             input.getDateFrom(),
             input.getDateTo(),
             A_DATE_UTC.toInstant()
@@ -340,7 +340,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             100,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             2,
             Date.from(A_DATE_UTC.plusHours(1).toInstant()),
@@ -348,7 +348,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             120,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             3,
             Date.from(A_DATE_UTC.plusHours(2).toInstant()),
@@ -356,7 +356,7 @@ class GetHeadcountEntityUseCaseTest {
             PACKING,
             120,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS)
+            EFFECTIVE_WORKERS)
     );
   }
 
@@ -369,7 +369,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             100,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             2,
             Date.from(A_DATE_UTC.plusHours(1).toInstant()),
@@ -377,7 +377,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             125,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             3,
             Date.from(A_DATE_UTC.plusHours(2).toInstant()),
@@ -385,7 +385,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             150,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             1,
             Date.from(A_DATE_UTC.toInstant()),
@@ -393,7 +393,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             230,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             2,
             Date.from(A_DATE_UTC.plusHours(1).toInstant()),
@@ -401,7 +401,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             260,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS),
+            EFFECTIVE_WORKERS),
         new ProcessingDistributionViewImpl(
             3,
             Date.from(A_DATE_UTC.plusHours(2).toInstant()),
@@ -409,7 +409,7 @@ class GetHeadcountEntityUseCaseTest {
             PICKING,
             280,
             MetricUnit.WORKERS,
-            ACTIVE_WORKERS)
+            EFFECTIVE_WORKERS)
     );
   }
 
@@ -417,7 +417,7 @@ class GetHeadcountEntityUseCaseTest {
     return List.of(
         CurrentProcessingDistribution.builder()
             .date(A_DATE_UTC)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .quantity(20)
             .isActive(true)
             .quantityMetricUnit(MetricUnit.WORKERS)
@@ -426,7 +426,7 @@ class GetHeadcountEntityUseCaseTest {
             .build(),
         CurrentProcessingDistribution.builder()
             .date(A_DATE_UTC.plusHours(1))
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .quantity(20)
             .isActive(true)
             .quantityMetricUnit(MetricUnit.WORKERS)
@@ -440,7 +440,7 @@ class GetHeadcountEntityUseCaseTest {
     return List.of(
         CurrentProcessingDistribution.builder()
             .date(A_DATE_UTC.plusHours(1))
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .quantity(40)
             .isActive(true)
             .quantityMetricUnit(MetricUnit.WORKERS)
@@ -449,7 +449,7 @@ class GetHeadcountEntityUseCaseTest {
             .build(),
         CurrentProcessingDistribution.builder()
             .date(A_DATE_UTC.plusHours(1))
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .quantity(60)
             .isActive(true)
             .quantityMetricUnit(MetricUnit.WORKERS)

@@ -40,16 +40,16 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 public class SearchEntitiesUseCaseTest {

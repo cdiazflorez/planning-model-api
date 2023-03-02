@@ -294,14 +294,30 @@ public class CreateForecastUseCaseTest {
 
   private List<ProcessingDistribution> getProcessingDistsWithTotalWorkersNSType(final Forecast forecast) {
     return List.of(
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast)
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast
+        )
     );
   }
 

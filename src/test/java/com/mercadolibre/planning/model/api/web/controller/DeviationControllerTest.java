@@ -79,26 +79,6 @@ class DeviationControllerTest {
   @MockBean
   private GetForecastDeviationUseCase getForecastDeviationUseCase;
 
-  @DisplayName("Save forecast deviation ")
-  @Test
-  void saveDeviationOk() throws Exception {
-    // GIVEN
-    final SaveDeviationInput input = mockSaveForecastDeviationInput();
-
-    when(saveDeviationUseCase.execute(List.of(input)))
-        .thenReturn(new DeviationResponse(200));
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + SAVE, "fbm-wms-outbound")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_forecast_deviation.json"))
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
   @DisplayName("Disable all ok")
   @Test
   void disableAllOk() throws Exception {
@@ -174,54 +154,6 @@ class DeviationControllerTest {
     result.andExpect(status().isOk());
   }
 
-  @DisplayName("Disable forecast deviation ")
-  @Test
-  void disableDeviationOutboundOk() throws Exception {
-    // GIVEN
-    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
-
-    when(disableDeviationUseCase.execute(List.of(input)))
-        .thenReturn(5);
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + "/disable", "fbm-wms-outbound")
-            .contentType(APPLICATION_JSON)
-            .param(WAREHOUSE_LABEL, WAREHOUSE_ID)
-            .content(new JSONObject()
-                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
-                .toString()
-            )
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
-  @DisplayName("Disable deviation ")
-  @Test
-  void disableDeviationOk() throws Exception {
-    // GIVEN
-    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_INBOUND, DeviationType.UNITS);
-
-
-    when(disableDeviationUseCase.execute(List.of(input)))
-        .thenReturn(5);
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + "/disable/{type}", "fbm-wms-outbound", "units")
-            .contentType(APPLICATION_JSON)
-            .content(new JSONObject()
-                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
-                .toString()
-            )
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
   @DisplayName("Get forecast deviation ")
   @Test
   void testGetDeviationOk() throws Exception {
@@ -252,70 +184,6 @@ class DeviationControllerTest {
     // THEN
     result.andExpect(status().isOk())
         .andExpect(content().json(getResourceAsString("get_deviation_response.json")));
-  }
-
-  @DisplayName("Save outbound deviation type unit")
-  @Test
-  void saveDeviationOutboundUnitOk() throws Exception {
-    // GIVEN
-    final SaveDeviationInput input = mockSaveForecastDeviationInput();
-
-    when(saveDeviationUseCase.execute(List.of(input)))
-        .thenReturn(new DeviationResponse(200));
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL_TYPE_SAVE, "fbm-wms-outbound", UNITS)
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_forecast_deviation.json"))
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
-  @DisplayName("Save inbound deviation type unit")
-  @Test
-  void saveDeviationInboundUnitOk() throws Exception {
-    // GIVEN
-    final SaveDeviationInput input = SaveDeviationInput
-        .builder()
-        .workflow(FBM_WMS_INBOUND)
-        .dateFrom(DATE_IN)
-        .dateTo(DATE_OUT)
-        .value(600)
-        .userId(1234L)
-        .warehouseId(WAREHOUSE_ID)
-        .build();
-
-    when(saveDeviationUseCase.execute(List.of(input)))
-        .thenReturn(new DeviationResponse(200));
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL_TYPE_SAVE, INBOUND_WORKFLOW, UNITS)
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_inbound_deviation_save_unit.json"))
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
-
-  @DisplayName("Save inbound deviation type unit path error deviation type")
-  @Test
-  void saveDeviationInboundUnitPathError() throws Exception {
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL_TYPE_SAVE, "inbound-transfer", "error-type")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_inbound_deviation_save_unit.json"))
-    );
-
-    // THEN
-    result.andExpect(status().isInternalServerError());
   }
 
   @Test
@@ -430,4 +298,91 @@ class DeviationControllerTest {
         );
   }
 
+  @DisplayName("Save forecast deviation /save is not found")
+  @Test
+  void saveDeviationNotFound() throws Exception {
+    // GIVEN
+    final SaveDeviationInput input = mockSaveForecastDeviationInput();
+
+    when(saveDeviationUseCase.execute(List.of(input)))
+        .thenReturn(new DeviationResponse(200));
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + SAVE, "fbm-wms-outbound")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("post_forecast_deviation.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isNotFound());
+  }
+
+  @DisplayName("Save outbound deviation type unit not found")
+  @Test
+  void saveDeviationTypeNotFound() throws Exception {
+    // GIVEN
+    final SaveDeviationInput input = mockSaveForecastDeviationInput();
+
+    when(saveDeviationUseCase.execute(List.of(input)))
+        .thenReturn(new DeviationResponse(200));
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL_TYPE_SAVE, "fbm-wms-outbound", UNITS)
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("post_forecast_deviation.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isNotFound());
+  }
+
+  @DisplayName("Disable forecast deviation /disable is not found")
+  @Test
+  void disableDeviationOutboundNotFound() throws Exception {
+    // GIVEN
+    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
+
+    when(disableDeviationUseCase.execute(List.of(input)))
+        .thenReturn(5);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + "/disable", "fbm-wms-outbound")
+            .contentType(APPLICATION_JSON)
+            .param(WAREHOUSE_LABEL, WAREHOUSE_ID)
+            .content(new JSONObject()
+                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
+                .toString()
+            )
+    );
+
+    // THEN
+    result.andExpect(status().isNotFound());
+  }
+
+  @DisplayName("Disable deviation /disable/{type} not found ")
+  @Test
+  void disableDeviationTypeNotFound() throws Exception {
+    // GIVEN
+    final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_INBOUND, DeviationType.UNITS);
+
+
+    when(disableDeviationUseCase.execute(List.of(input)))
+        .thenReturn(5);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + "/disable/{type}", "fbm-wms-outbound", "units")
+            .contentType(APPLICATION_JSON)
+            .content(new JSONObject()
+                .put(WAREHOUSE_LABEL, WAREHOUSE_ID)
+                .toString()
+            )
+    );
+
+    // THEN
+    result.andExpect(status().isNotFound());
+  }
 }

@@ -98,7 +98,7 @@ public class EntityControllerTest {
             .param("warehouse_id", "ARBA01")
             .param("source", "forecast")
             .param("process_name", "picking,packing")
-            .param("processing_type", "active_workers,workers")
+            .param("processing_type", "effective_workers,active_workers")
             .param("date_from", A_DATE_UTC.toString())
             .param("date_to", A_DATE_UTC.plusDays(2).toString())
     );

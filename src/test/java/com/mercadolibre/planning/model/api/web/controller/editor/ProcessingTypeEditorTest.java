@@ -1,19 +1,19 @@
 package com.mercadolibre.planning.model.api.web.controller.editor;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static java.lang.String.format;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static java.lang.String.format;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ProcessingTypeEditorTest {
 
@@ -23,12 +23,12 @@ public class ProcessingTypeEditorTest {
     @DisplayName("setAsText should work")
     public void testGetOk() {
         // WHEN
-        editor.setAsText(ProcessingType.WORKERS.name());
+        editor.setAsText(ACTIVE_WORKERS.name());
 
         // THEN
         assertAll(
                 () -> assertEquals(ProcessingType.class, editor.getValue().getClass()),
-                () -> assertEquals(ProcessingType.WORKERS, editor.getValue())
+                () -> assertEquals(ACTIVE_WORKERS, editor.getValue())
         );
     }
 

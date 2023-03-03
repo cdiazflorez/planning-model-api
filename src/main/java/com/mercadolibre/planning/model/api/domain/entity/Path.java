@@ -5,6 +5,7 @@ import java.util.Locale;
 public enum Path {
   SPD,
   FTL,
+  FTLP,
   PRIVATE,
   SUPPLIER,
   COLLECT,

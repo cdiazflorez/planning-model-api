@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.client.db.repository.current;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_FROM;
@@ -123,7 +123,7 @@ class CurrentProcessingDistributionRepositoryTest {
         FBM_WMS_OUTBOUND,
         PACKING,
         singletonList(A_DATE_UTC),
-        ACTIVE_WORKERS,
+        EFFECTIVE_WORKERS,
         USER_ID,
         WORKERS
     );
@@ -181,7 +181,7 @@ class CurrentProcessingDistributionRepositoryTest {
         FBM_WMS_OUTBOUND.name(),
         Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
-        Set.of(ACTIVE_WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name()),
         DATE_FROM,
         DATE_TO,
         VIEW_DATE
@@ -203,7 +203,7 @@ class CurrentProcessingDistributionRepositoryTest {
         FBM_WMS_OUTBOUND.name(),
         Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
-        Set.of(ACTIVE_WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name()),
         DATE_FROM,
         DATE_TO,
         VIEW_DATE

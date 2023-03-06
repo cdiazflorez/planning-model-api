@@ -10,7 +10,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS_NS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -294,14 +294,30 @@ public class CreateForecastUseCaseTest {
 
   private List<ProcessingDistribution> getProcessingDistsWithTotalWorkersNSType(final Forecast forecast) {
     return List.of(
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, ACTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, ACTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, ACTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, ACTIVE_WORKERS_NS, forecast),
-        new ProcessingDistribution(0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast),
-        new ProcessingDistribution(0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast)
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, HU_ASSEMBLY, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, SALES_DISPATCH, 10, WORKERS, EFFECTIVE_WORKERS_NS, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast
+        ),
+        new ProcessingDistribution(
+                0, DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast
+        )
     );
   }
 

@@ -15,7 +15,7 @@
   "entity_filters": {
     "headcount": {
       "processing_type": [
-        "active_workers"
+        "effective_workers"
       ]
     },
     "productivity": {

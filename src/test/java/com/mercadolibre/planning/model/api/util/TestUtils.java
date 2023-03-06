@@ -11,10 +11,10 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
@@ -37,7 +37,6 @@ import static com.mercadolibre.planning.model.api.web.controller.entity.EntityTy
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Arrays.asList;
@@ -46,7 +45,6 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.mercadolibre.planning.model.api.client.db.repository.forecast.ForecastMetadataView;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -75,12 +73,10 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastMetadataInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionViewImpl;
-import com.mercadolibre.planning.model.api.usecase.ForecastMetadataViewImpl;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
@@ -135,8 +131,6 @@ public final class TestUtils {
   public static final String PLANNING_METADATA_VALUE = "Mercado envíos";
 
   public static final String WAREHOUSE_ID = "ARBA01";
-
-  public static final long HOUR_IN_MINUTES = 60L;
 
   public static final String LOGISTIC_CENTER_ID = "ARBA01";
 
@@ -326,7 +320,7 @@ public final class TestUtils {
         .processName(PACKING)
         .quantity(value)
         .quantityMetricUnit(WORKERS)
-        .type(ACTIVE_WORKERS)
+        .type(EFFECTIVE_WORKERS)
         .workflow(FBM_WMS_OUTBOUND)
         .logisticCenterId(WAREHOUSE_ID)
         .build();
@@ -340,7 +334,7 @@ public final class TestUtils {
             .processName(PACKING)
             .quantity(10)
             .quantityMetricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
             .build(),
@@ -350,7 +344,7 @@ public final class TestUtils {
             .processName(PACKING)
             .quantity(10)
             .quantityMetricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
             .build(),
@@ -360,7 +354,7 @@ public final class TestUtils {
             .processName(PACKING)
             .quantity(10)
             .quantityMetricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
             .build()
@@ -544,28 +538,6 @@ public final class TestUtils {
         .dateInTo(dateInTo)
         .dateInFrom(dateInFrom)
         .build();
-  }
-
-  public static GetForecastMetadataInput mockForecastMetadataInput() {
-    return GetForecastMetadataInput.builder()
-        .forecastIds(List.of(1L))
-        .dateFrom(DATE_IN)
-        .dateTo(DATE_OUT)
-        .build();
-  }
-
-  public static List<ForecastMetadataView> mockForecastByWarehouseId() {
-    return List.of(
-        new ForecastMetadataViewImpl(
-            "mono_order_distribution",
-            "20"),
-        new ForecastMetadataViewImpl(
-            "multi_order_distribution",
-            "20"),
-        new ForecastMetadataViewImpl(
-            "multi_batch_distribution",
-            "60")
-    );
   }
 
   public static List<EntityOutput> mockHeadcountEntityOutput() {
@@ -964,7 +936,7 @@ public final class TestUtils {
         new ProcessingDistributionRequest(
             ProcessPath.GLOBAL,
             HU_ASSEMBLY,
-            ACTIVE_WORKERS_NS,
+            EFFECTIVE_WORKERS_NS,
             WORKERS,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 10),
@@ -973,7 +945,7 @@ public final class TestUtils {
         new ProcessingDistributionRequest(
             ProcessPath.GLOBAL,
             SALES_DISPATCH,
-            ACTIVE_WORKERS_NS,
+            EFFECTIVE_WORKERS_NS,
             WORKERS,
             List.of(
                 new ProcessingDistributionDataRequest(DATE_IN, 10),
@@ -1228,22 +1200,6 @@ public final class TestUtils {
         .logisticCenterId(WAREHOUSE_ID)
         .workflow(FBM_WMS_INBOUND)
         .isActive(TRUE)
-        .value(0.1)
-        .path(path)
-        .type(DeviationType.UNITS)
-        .dateFrom(A_DATE_UTC)
-        .dateTo(A_DATE_UTC.plus(1, DAYS))
-        .dateCreated(A_DATE_UTC)
-        .lastUpdated(A_DATE_UTC)
-        .userId(131206L)
-        .build();
-  }
-
-  public static CurrentForecastDeviation mockCurrentForecastDeviationWithPathAndNotActive(final Path path) {
-    return CurrentForecastDeviation.builder()
-        .logisticCenterId(WAREHOUSE_ID)
-        .workflow(FBM_WMS_INBOUND)
-        .isActive(FALSE)
         .value(0.1)
         .path(path)
         .type(DeviationType.UNITS)

@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.PolyvalenteProductivityUtils.calculatePolyvalentProductivityRatioByProcessPath;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameDateAndSource;
@@ -13,7 +15,6 @@ import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
@@ -68,6 +69,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
   public List<EntityOutput> execute(final GetEntityInput input) {
     List<EntityOutput> allThroughputs = new ArrayList<>();
 
+    //TODO Eliminar cuando ya se esta usando la V2 del agendamiento que contiene los Reps sistemicos de Receiving
     // Esto es temporal hasta que agreguen la columna de Reps Sistemicos de Receiving al forecast
     if (input.getProcessName().contains(ProcessName.RECEIVING)) {
       allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
@@ -271,7 +273,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
         .processPaths(input.getProcessPaths())
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
-        .processingType(Set.of(ProcessingType.ACTIVE_WORKERS))
+        .processingType(Set.of(ACTIVE_WORKERS, EFFECTIVE_WORKERS))
         .viewDate(input.getViewDate())
         .build();
   }

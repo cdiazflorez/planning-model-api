@@ -1,12 +1,12 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static java.util.Arrays.fill;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import java.time.ZonedDateTime;
@@ -38,7 +38,7 @@ class ProcessingDistributionJpaRepositoryTest {
         .processName(ProcessName.PICKING)
         .quantity(10)
         .quantityMetricUnit(MetricUnit.UNITS)
-        .type(ProcessingType.ACTIVE_WORKERS)
+        .type(EFFECTIVE_WORKERS)
         .build();
 
     final ProcessingDistribution[] entities = new ProcessingDistribution[950];

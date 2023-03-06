@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.simulation.activate;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
@@ -86,7 +86,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                     entity.getValues().stream()
                         .map(QuantityByDate::getDate)
                         .collect(toList()),
-                    entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
+                    entity.getType() == HEADCOUNT ? EFFECTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
                     userId,
                     entity.getType() == HEADCOUNT ? WORKERS : UNITS_PER_HOUR
                 )
@@ -173,7 +173,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                                     .logisticCenterId(input.getWarehouseId())
                                     .quantityMetricUnit(entity.getType() == HEADCOUNT ? WORKERS : UNITS_PER_HOUR)
                                     .userId(input.getUserId())
-                                    .type(entity.getType() == HEADCOUNT ? ACTIVE_WORKERS : ProcessingType.MAX_CAPACITY)
+                                    .type(entity.getType() == HEADCOUNT ? EFFECTIVE_WORKERS : ProcessingType.MAX_CAPACITY)
                                     .isActive(true)
                                     .build()
                     ))
@@ -279,7 +279,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
                         .logisticCenterId(input.getWarehouseId())
                         .quantityMetricUnit(WORKERS)
                         .userId(input.getUserId())
-                        .type(ACTIVE_WORKERS)
+                        .type(EFFECTIVE_WORKERS)
                         .isActive(true)
                         .build()
                 );

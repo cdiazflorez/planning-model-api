@@ -8,6 +8,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECE
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetHeadcountEntityInput;
@@ -203,7 +204,7 @@ class GetThroughputUseCaseTest {
             .dateFrom(input.getDateFrom())
             .dateTo(input.getDateTo())
             .processName(input.getProcessName())
-            .processingType(Set.of(ACTIVE_WORKERS))
+            .processingType(Set.of(ACTIVE_WORKERS, EFFECTIVE_WORKERS))
             .build()))
         .thenReturn(mockHeadcountEntityOutput());
 
@@ -406,7 +407,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(30)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build(),
         EntityOutput.builder()
@@ -415,7 +416,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(30.5)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build(),
         EntityOutput.builder()
@@ -424,7 +425,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(33)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(SIMULATION)
             .build(),
         EntityOutput.builder()
@@ -433,7 +434,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(35)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build(),
         EntityOutput.builder()
@@ -442,7 +443,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(30)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build(),
         EntityOutput.builder()
@@ -451,7 +452,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(45.5)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build(),
         EntityOutput.builder()
@@ -460,7 +461,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(43)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(SIMULATION)
             .build(),
         EntityOutput.builder()
@@ -469,7 +470,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .quantity(35)
             .metricUnit(WORKERS)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
             .build()
     );

@@ -1,31 +1,8 @@
 package com.mercadolibre.planning.model.api.usecase.entities;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntitiesStrategy;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
-import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -51,6 +28,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntitiesStrategy;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.input.SearchEntitiesInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class SearchEntitiesUseCaseTest {
@@ -88,7 +87,7 @@ public class SearchEntitiesUseCaseTest {
                 .dateTo(A_DATE_UTC.plusHours(12))
                 .processName(List.of(PICKING, PACKING))
                 .entityFilters(Map.of(
-                        HEADCOUNT, Map.of("processing_type", List.of("active_workers")),
+                        HEADCOUNT, Map.of("processing_type", List.of("effective_workers")),
                         PRODUCTIVITY, Map.of("ability_level", List.of("1"))
                         ))
                 .build();
@@ -101,7 +100,7 @@ public class SearchEntitiesUseCaseTest {
                         .dateFrom(A_DATE_UTC)
                         .dateTo(A_DATE_UTC.plusHours(12))
                         .processName(List.of(PICKING, PACKING))
-                        .processingType(Set.of(ACTIVE_WORKERS))
+                        .processingType(Set.of(EFFECTIVE_WORKERS))
                         .entityType(HEADCOUNT)
                         .build();
 

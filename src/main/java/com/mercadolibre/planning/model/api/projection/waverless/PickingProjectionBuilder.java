@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
+import static com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.utils.OrderedBacklogByDateUtils.calculateProjectedEndDate;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
@@ -7,9 +8,11 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
+import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessContext;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
+import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.OrderedBacklogByDateMerger;
@@ -22,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +53,8 @@ public final class PickingProjectionBuilder {
     }
 
     final List<Processor> processors = processPaths.stream()
-        .map(pp -> new SimpleProcess(pp.toString()))
+        .map(PickingProjectionBuilder::processorName)
+        .map(SimpleProcess::new)
         .collect(Collectors.toList());
 
     return new ParallelProcess(PICKING_PROCESS, processors);
@@ -66,6 +71,80 @@ public final class PickingProjectionBuilder {
     contexts.putAll(buildSimpleProcessContexts(currentBacklog, throughput));
 
     return new ContextsHolder(contexts);
+  }
+
+  /**
+   * SLA projection for Picking by Process Path.
+   *
+   * @param processor graph that will be executed.
+   * @param contexts parameters of the processes that belong to the graph that will be executed.
+   * @param waves upstream backlog to feed the first process by ingestion date, process path and sla
+   * @param inflectionPoints points in time for which the projection will be evaluated
+   * @param processPaths that compose the graph, for which a result is required
+   * @param slas SLAs to query the graph
+   * @return projected end date by process path and sla
+   */
+  public static Map<ProcessPath, Map<Instant, Instant>> projectSla(
+      final Processor processor,
+      final ContextsHolder contexts,
+      final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves,
+      final List<Instant> inflectionPoints,
+      final List<ProcessPath> processPaths,
+      final List<Instant> slas
+  ) {
+    final var updatedContexts = processor.accept(
+        contexts, asPiecewiseUpstream(waves), inflectionPoints
+    );
+
+    return processPaths.stream()
+        .collect(
+            toMap(
+                Function.identity(),
+                path -> calculateProjectedEndDate(
+                    updatedContexts, processorName(path), slas
+                )
+            )
+        );
+  }
+
+  private static PiecewiseUpstream asPiecewiseUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
+    return new PiecewiseUpstream(
+        waves.entrySet().stream()
+            .collect(
+                toMap(
+                    Map.Entry::getKey,
+                    entry -> asOrderedBacklogByProcessPath(entry.getValue())
+                )
+            )
+    );
+  }
+
+  private static OrderedBacklogByProcessPath asOrderedBacklogByProcessPath(final Map<ProcessPath, Map<Instant, Long>> waves) {
+    return new OrderedBacklogByProcessPath(
+        waves.entrySet().stream()
+            .collect(
+                toMap(
+                    Map.Entry::getKey,
+                    entry -> new OrderedBacklogByDate(
+                        asQuantityByDate(entry.getValue())
+                    )
+                )
+            )
+    );
+  }
+
+  private static Map<Instant, Quantity> asQuantityByDate(final Map<Instant, Long> quantities) {
+    return quantities.entrySet().stream()
+        .collect(
+            toMap(
+                Map.Entry::getKey,
+                entry2 -> new Quantity(entry2.getValue())
+            )
+        );
+  }
+
+  private static String processorName(final ProcessPath path) {
+    return path.toString();
   }
 
   private static ParallelProcess.Context.Assistant buildParallelAssistant(final Set<ProcessPath> processPaths) {
@@ -86,7 +165,7 @@ public final class PickingProjectionBuilder {
                     .stream()
                     .collect(toMap(
                         Map.Entry::getKey,
-                        inner -> new OrderedBacklogByDate.Quantity(inner.getValue())
+                        inner -> new Quantity(inner.getValue())
                     ))
             )
         ));
@@ -103,4 +182,5 @@ public final class PickingProjectionBuilder {
             )
         );
   }
+
 }

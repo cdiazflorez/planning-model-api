@@ -6,7 +6,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOB
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -103,10 +103,10 @@ public class ActivateSimulationUseCaseTest {
     when(processPathHeadcountShareService.getHeadcountShareByProcessPath(anyString(), any(), anySet(), any(), any(), any()))
             .thenReturn(processPathHeadcountResponse);
 
-    when(currentProcessingRepository.saveAll(any(List.class)))
+    when(currentProcessingRepository.saveAll(anyList()))
         .thenReturn(mockCurrentDistribution());
 
-    when(currentProductivityRepository.saveAll(any(List.class)))
+    when(currentProductivityRepository.saveAll(anyList()))
         .thenReturn(mockCurrentProductivity());
 
     // WHEN
@@ -115,7 +115,7 @@ public class ActivateSimulationUseCaseTest {
     // THEN
     verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
         workflow, PICKING, List.of(DATE_12, DATE_13),
-        ACTIVE_WORKERS, USER_ID, WORKERS);
+        EFFECTIVE_WORKERS, USER_ID, WORKERS);
 
     verify(currentProductivityRepository).deactivateProductivity(input.getWarehouseId(),
         workflow, PACKING, singletonList(DATE_12), UNITS_PER_HOUR, USER_ID, 1);
@@ -211,7 +211,7 @@ public class ActivateSimulationUseCaseTest {
                     workflow,
                     processName,
                     List.of(DATE_12, DATE_13),
-                    ACTIVE_WORKERS,
+                    EFFECTIVE_WORKERS,
                     USER_ID,
                     WORKERS
             ));
@@ -251,7 +251,7 @@ public class ActivateSimulationUseCaseTest {
             .quantity(30)
             .quantityMetricUnit(WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .isActive(true)
             .build(),
         CurrentProcessingDistribution.builder()
@@ -261,7 +261,7 @@ public class ActivateSimulationUseCaseTest {
             .quantity(25)
             .quantityMetricUnit(WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .isActive(true)
             .build()
     );
@@ -284,7 +284,7 @@ public class ActivateSimulationUseCaseTest {
             .quantity(quantity * ratio)
             .quantityMetricUnit(WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
-            .type(ACTIVE_WORKERS)
+            .type(EFFECTIVE_WORKERS)
             .isActive(true)
             .build();
   }

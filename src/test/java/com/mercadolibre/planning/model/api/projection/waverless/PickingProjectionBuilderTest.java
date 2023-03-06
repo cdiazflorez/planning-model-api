@@ -5,10 +5,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.process.ParallelProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -91,8 +90,8 @@ class PickingProjectionBuilderTest {
   }
 
   @Test
-  @DisplayName("when running a projection then graph and contexts must be compatible")
-  void testSimpleProjection() {
+  @DisplayName("when running a sla projection then return projected end date by process path and sla")
+  void testSlaProjection() {
     // GIVEN
     final var currentBacklog = Map.of(
         TOT_MONO, Map.of(DATE_OUT_1, 100, DATE_OUT_2, 200),
@@ -110,35 +109,35 @@ class PickingProjectionBuilderTest {
 
     final var graph = PickingProjectionBuilder.buildGraph(processPaths);
 
-    final var wave = Map.of(
-        DATE_1,
-        new OrderedBacklogByProcessPath(
-            Map.of(
-                TOT_MONO, new OrderedBacklogByDate(Map.of(DATE_OUT_1, new OrderedBacklogByDate.Quantity(100)))
-            )
-        ),
-        DATE_2,
-        new OrderedBacklogByProcessPath(
-            Map.of(
-                TOT_MONO, new OrderedBacklogByDate(Map.of(DATE_OUT_1, new OrderedBacklogByDate.Quantity(100)))
-            )
-        )
+    final var waves = Map.of(
+        DATE_1, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L)),
+        DATE_2, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L))
     );
 
-    final var upstream = new PiecewiseUpstream(wave);
-
     // WHEN
-    final var result = graph.accept(holder, upstream, List.of(DATE_1, DATE_2));
+    final var projectedEndDates = PickingProjectionBuilder.projectSla(
+        graph,
+        holder,
+        waves,
+        List.of(DATE_1, DATE_2),
+        processPaths,
+        List.of(DATE_OUT_1, DATE_OUT_2)
+    );
 
     // THEN
-    assertNotNull(result);
+    assertNotNull(projectedEndDates);
 
-    final var totMonoContext = (SimpleProcess.Context) result.getProcessContextByProcessName(TOT_MONO.toString());
+    // [100 (current) + 100 (wave)] / 300 (tph) * 60 (min) = 40 min
+    final Instant expectedDateOut1Result = Instant.parse("2023-02-17T10:40:00Z");
+    final var totMonoProjections = projectedEndDates.get(TOT_MONO);
+    assertNotNull(totMonoProjections);
+    assertEquals(expectedDateOut1Result, totMonoProjections.get(DATE_OUT_1));
+    assertNull(totMonoProjections.get(DATE_OUT_2));
 
-    assertEquals(1, totMonoContext.getProcessedBacklog().size());
-    final var processedBacklog = totMonoContext.getProcessedBacklog().get(0);
-    assertEquals(DATE_1, processedBacklog.getStartDate());
-    assertEquals(DATE_2, processedBacklog.getEndDate());
-    assertEquals(300, processedBacklog.getBacklog().total());
+    final Instant expectedDateOut2Result = Instant.parse("2023-02-17T10:20:00Z");
+    final var nonTotMonoProjections = projectedEndDates.get(NON_TOT_MONO);
+    assertNotNull(nonTotMonoProjections);
+    assertEquals(expectedDateOut2Result, nonTotMonoProjections.get(DATE_OUT_1));
+    assertNull(nonTotMonoProjections.get(DATE_OUT_2));
   }
 }

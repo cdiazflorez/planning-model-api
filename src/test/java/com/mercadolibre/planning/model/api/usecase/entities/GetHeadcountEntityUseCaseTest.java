@@ -6,6 +6,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
@@ -26,7 +27,6 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Process
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.ProcessingDistributionView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
@@ -68,7 +68,7 @@ class GetHeadcountEntityUseCaseTest {
   @DisplayName("Get headcount entity when source is forecast")
   void testGetHeadcountOk() {
     // GIVEN
-    final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST, Set.of(EFFECTIVE_WORKERS, ProcessingType.WORKERS), null);
+    final GetHeadcountInput input = mockGetHeadcountEntityInput(FORECAST, Set.of(EFFECTIVE_WORKERS, ACTIVE_WORKERS), null);
     final List<Long> forecastIds = List.of(1L);
 
     when(getForecastUseCase.execute(GetForecastInput.builder()
@@ -81,7 +81,7 @@ class GetHeadcountEntityUseCaseTest {
     ).thenReturn(forecastIds);
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
-        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ACTIVE_WORKERS.name()),
         List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),
@@ -115,7 +115,7 @@ class GetHeadcountEntityUseCaseTest {
   void testGetHeadcountWithUnsavedSimulationOk() {
     // GIVEN
     final GetHeadcountInput input = mockGetHeadcountEntityInput(null,
-        Set.of(EFFECTIVE_WORKERS, ProcessingType.WORKERS),
+        Set.of(EFFECTIVE_WORKERS, ACTIVE_WORKERS),
         List.of(new Simulation(
                 PICKING,
                 List.of(new SimulationEntity(
@@ -148,7 +148,7 @@ class GetHeadcountEntityUseCaseTest {
         FBM_WMS_OUTBOUND.name(),
         Set.of(ProcessPath.GLOBAL.name()),
         Set.of(PICKING.name(), PACKING.name()),
-        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ACTIVE_WORKERS.name()),
         input.getDateFrom(),
         input.getDateTo(),
         A_DATE_UTC.toInstant()
@@ -158,7 +158,7 @@ class GetHeadcountEntityUseCaseTest {
     ));
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
-        Set.of(EFFECTIVE_WORKERS.name(), ProcessingType.WORKERS.name()),
+        Set.of(EFFECTIVE_WORKERS.name(), ACTIVE_WORKERS.name()),
         List.of(ProcessPath.GLOBAL.toString()),
         List.of(PICKING.name(), PACKING.name()),
         A_DATE_UTC, A_DATE_UTC.plusDays(2),

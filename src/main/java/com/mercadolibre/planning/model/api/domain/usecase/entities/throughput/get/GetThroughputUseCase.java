@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.PolyvalenteProductivityUtils.calculatePolyvalentProductivityRatioByProcessPath;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameAndDate;
@@ -273,7 +272,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
         .processPaths(input.getProcessPaths())
         .processName(input.getProcessName())
         .simulations(input.getSimulations())
-        .processingType(Set.of(ACTIVE_WORKERS, EFFECTIVE_WORKERS))
+        .processingType(Set.of(EFFECTIVE_WORKERS))
         .viewDate(input.getViewDate())
         .build();
   }

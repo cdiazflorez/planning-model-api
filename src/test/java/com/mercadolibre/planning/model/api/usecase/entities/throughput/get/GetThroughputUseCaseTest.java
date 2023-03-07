@@ -7,7 +7,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.ACTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
@@ -29,7 +28,6 @@ import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -204,7 +202,7 @@ class GetThroughputUseCaseTest {
             .dateFrom(input.getDateFrom())
             .dateTo(input.getDateTo())
             .processName(input.getProcessName())
-            .processingType(Set.of(ACTIVE_WORKERS, EFFECTIVE_WORKERS))
+            .processingType(Set.of(EFFECTIVE_WORKERS))
             .build()))
         .thenReturn(mockHeadcountEntityOutput());
 

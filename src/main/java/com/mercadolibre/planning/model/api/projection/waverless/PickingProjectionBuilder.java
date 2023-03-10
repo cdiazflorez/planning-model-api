@@ -11,6 +11,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.Delegate
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessContext;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
+import com.mercadolibre.flow.projection.tools.services.entities.context.UnprocessedBacklogState;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
@@ -19,6 +20,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogby
 import com.mercadolibre.flow.projection.tools.services.entities.process.ParallelProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
 import java.util.HashMap;
@@ -27,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.Value;
 
 /**
  * Builds graph and context for projections that only consider picking by Process Path.
@@ -76,12 +80,12 @@ public final class PickingProjectionBuilder {
   /**
    * SLA projection for Picking by Process Path.
    *
-   * @param processor graph that will be executed.
-   * @param contexts parameters of the processes that belong to the graph that will be executed.
-   * @param waves upstream backlog to feed the first process by ingestion date, process path and sla
+   * @param processor        graph that will be executed.
+   * @param contexts         parameters of the processes that belong to the graph that will be executed.
+   * @param waves            upstream backlog to feed the first process by ingestion date, process path and sla
    * @param inflectionPoints points in time for which the projection will be evaluated
-   * @param processPaths that compose the graph, for which a result is required
-   * @param slas SLAs to query the graph
+   * @param processPaths     that compose the graph, for which a result is required
+   * @param slas             SLAs to query the graph
    * @return projected end date by process path and sla
    */
   public static Map<ProcessPath, Map<Instant, Instant>> projectSla(
@@ -133,18 +137,34 @@ public final class PickingProjectionBuilder {
     );
   }
 
-  private static Map<Instant, Quantity> asQuantityByDate(final Map<Instant, Long> quantities) {
+  private static Map<Instant, OrderedBacklogByDate.Quantity> asQuantityByDate(final Map<Instant, Long> quantities) {
     return quantities.entrySet().stream()
         .collect(
             toMap(
                 Map.Entry::getKey,
-                entry2 -> new Quantity(entry2.getValue())
+                entry2 -> new OrderedBacklogByDate.Quantity(entry2.getValue())
             )
         );
   }
 
   private static String processorName(final ProcessPath path) {
     return path.toString();
+  }
+
+
+  public static List<BacklogProjected> backlogProjection(
+      final Processor process,
+      final ContextsHolder contexts,
+      final PiecewiseUpstream upstream,
+      final List<Instant> inflectionPoints,
+      final Set<ProcessPath> processPaths) {
+
+    final var processedContexts = process.accept(contexts, upstream, inflectionPoints);
+
+    return processPaths.stream().flatMap(processPath ->
+            ((SimpleProcess.Context) processedContexts.getProcessContextByProcessName(processorName(processPath))).getUnprocessedBacklog()
+                .stream().flatMap(unprocessedBacklogState -> generateBacklogProjected(unprocessedBacklogState, processPath)))
+        .collect(Collectors.toList());
   }
 
   private static ParallelProcess.Context.Assistant buildParallelAssistant(final Set<ProcessPath> processPaths) {
@@ -183,4 +203,28 @@ public final class PickingProjectionBuilder {
         );
   }
 
+  private static Stream<BacklogProjected> generateBacklogProjected(
+      final UnprocessedBacklogState unprocessedBacklogState, final ProcessPath processPath) {
+
+    var backlogByDateOuts = (OrderedBacklogByDate) unprocessedBacklogState.getBacklog();
+
+    return backlogByDateOuts.getBacklogs().entrySet().stream().map(
+        backlogByDateOut -> new BacklogProjected(
+            unprocessedBacklogState.getAvailableAt(),
+            processPath,
+            ProcessName.PICKING,
+            backlogByDateOut.getKey(),
+            backlogByDateOut.getValue().total()
+        )
+    );
+  }
+
+  @Value
+  public static class BacklogProjected {
+    Instant date;
+    ProcessPath processPath;
+    ProcessName process;
+    Instant cpt;
+    Long units;
+  }
 }

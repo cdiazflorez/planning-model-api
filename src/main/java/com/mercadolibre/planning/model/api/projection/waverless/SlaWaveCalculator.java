@@ -44,6 +44,7 @@ public final class SlaWaveCalculator {
    * @param throughput        throughput by Process Path and Hour.
    * @param pendingBacklog    forecasted backlog by Process Path.
    * @param minCycleTimes     minimum cycle time configuration by Process Path. It must contain all Process Paths.
+   * @param waves             existing waves
    * @return next wave configuration, if found.
    */
   public static Optional<Wave> projectNextWave(
@@ -51,7 +52,8 @@ public final class SlaWaveCalculator {
       final Map<Instant, List<CurrentBacklog>> projectedBacklogs,
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
       final PendingBacklog pendingBacklog,
-      final Map<ProcessPath, Integer> minCycleTimes
+      final Map<ProcessPath, Integer> minCycleTimes,
+      final List<Wave> waves
   ) {
     final var slas = pendingBacklog.calculateSlasByProcessPath();
 
@@ -73,7 +75,7 @@ public final class SlaWaveCalculator {
     Optional<Map<ProcessPath, Map<Instant, Long>>> previousWavedBacklog = Optional.empty();
     Instant lastInflectionPoint = inflectionPoints.get(0);
     for (Instant inflectionPoint : inflectionPoints) {
-      final var backlogToWave = pendingBacklog.availableBacklogAt(inflectionPoint, processPaths);
+      final var backlogToWave = pendingBacklog.availableBacklogAt(inflectionPoint, processPaths, waves);
 
       final var expiredSlas = calculateExpiredSlasWithWavedBacklog(inflectionPoint, simulationContext, backlogToWave);
 

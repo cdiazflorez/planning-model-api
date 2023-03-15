@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Value;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -133,9 +135,7 @@ class SlaWaveCalculatorTest {
     );
   }
 
-  @Test
-  void testWithOnlyOnSla() {
-    // GIVEN
+  private static RequestTest generateRequestTest(final List<Wave> waves) {
     final Map<Instant, List<CurrentBacklog>> currentBacklog = emptyMap();
 
     final Map<ProcessPath, List<AvailableBacklog>> readyToWave = Map.of(
@@ -148,13 +148,29 @@ class SlaWaveCalculatorTest {
 
     final PendingBacklog pending = new PendingBacklog(readyToWave, forecast);
 
-    // WHEN
-    var result = SlaWaveCalculator.projectNextWave(
+    return new RequestTest(
         INFLECTION_POINTS,
         currentBacklog,
         THROUGHPUT,
         pending,
-        minCycleTimes
+        minCycleTimes,
+        waves
+    );
+  }
+
+  @Test
+  void testWithOnlyOnSla() {
+    // GIVEN
+    final RequestTest requestTest = generateRequestTest(emptyList());
+
+    // WHEN
+    var result = SlaWaveCalculator.projectNextWave(
+        requestTest.getInflectionPoints(),
+        requestTest.getProjectedBacklogs(),
+        requestTest.getThroughput(),
+        requestTest.getPendingBacklog(),
+        requestTest.getMinCycleTimes(),
+        emptyList()
     );
 
     // THEN
@@ -168,6 +184,40 @@ class SlaWaveCalculatorTest {
     final var units = wave.getConfiguration();
     assertEquals(1, units.size());
     assertEquals(110L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
+  }
+
+  @Test
+  void testWithSlaAndWaves() {
+    // GIVEN
+    final RequestTest requestTest = generateRequestTest(emptyList());
+
+    var result = SlaWaveCalculator.projectNextWave(
+        requestTest.getInflectionPoints(),
+        requestTest.getProjectedBacklogs(),
+        requestTest.getThroughput(),
+        requestTest.getPendingBacklog(),
+        requestTest.getMinCycleTimes(),
+        List.of(new Wave(
+            FIRST_INFLECTION_POINT,
+            Map.of(
+                TOT_MONO,
+                new Wave.WaveConfiguration(
+                    110,
+                    90000000,
+                    Map.of(SLA_1, 10L)
+                )
+            )
+        ))
+    );
+
+    // THEN
+    assertTrue(result.isPresent());
+
+    final var wave = result.get();
+
+    final var units = wave.getConfiguration();
+    assertEquals(1, units.size());
+    assertEquals(100L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
   }
 
   @ParameterizedTest
@@ -189,7 +239,8 @@ class SlaWaveCalculatorTest {
         currentBacklog,
         THROUGHPUT,
         pending,
-        minCycleTimes
+        minCycleTimes,
+        emptyList()
     );
 
     // THEN
@@ -205,5 +256,15 @@ class SlaWaveCalculatorTest {
     assertEquals(expectedUnits.get(SLA_1), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
     assertEquals(expectedUnits.get(SLA_2), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
     assertFalse(units.get(TOT_MONO).getWavedUnitsByCpt().containsKey(SLA_3));
+  }
+
+  @Value
+  private static class RequestTest {
+    List<Instant> inflectionPoints;
+    Map<Instant, List<SlaWaveCalculator.CurrentBacklog>> projectedBacklogs;
+    Map<ProcessPath, Map<Instant, Integer>> throughput;
+    PendingBacklog pendingBacklog;
+    Map<ProcessPath, Integer> minCycleTimes;
+    List<Wave> waves;
   }
 }

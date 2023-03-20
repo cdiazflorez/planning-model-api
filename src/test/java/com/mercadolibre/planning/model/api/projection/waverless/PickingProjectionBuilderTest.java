@@ -33,6 +33,8 @@ class PickingProjectionBuilderTest {
 
   private static final Instant DATE_2 = Instant.parse("2023-02-17T11:00:00Z");
 
+  private static final Instant DATE_3 = Instant.parse("2023-02-17T12:00:00Z");
+
   private static final Instant DATE_OUT_1 = Instant.parse("2023-02-17T12:00:00Z");
 
   private static final Instant DATE_OUT_2 = Instant.parse("2023-02-17T13:00:00Z");
@@ -187,7 +189,7 @@ class PickingProjectionBuilderTest {
     }
   }
 
-  Processor graphMock() {
+  private Processor graphMock() {
     final List<Processor> processors = PROCESS_PATHS.stream()
         .map(pp -> new SimpleProcess(pp.toString()))
         .collect(Collectors.toList());
@@ -195,45 +197,45 @@ class PickingProjectionBuilderTest {
     return new ParallelProcess(PICKING_PROCESS, processors);
   }
 
-  List<PickingProjectionBuilder.BacklogProjected> expectedBacklogProjection() {
+  private List<PickingProjectionBuilder.BacklogProjected> expectedBacklogProjection() {
     return List.of(
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_1,
+            DATE_2,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
             0L
         ),
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_1,
+            DATE_2,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             50L
         ),
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_1,
+            DATE_2,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
             0L
         ),
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_1,
+            DATE_2,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             100L
         ),
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_2,
+            DATE_3,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             25L
         ),
         new PickingProjectionBuilder.BacklogProjected(
-            DATE_2,
+            DATE_3,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,

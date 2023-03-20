@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.SlaWaveCalculator.CurrentBacklog;
 import java.time.Instant;
@@ -131,7 +132,7 @@ class SlaWaveCalculatorTest {
                 new AvailableBacklog(inflectionPoint(0), SLA_2, 60D)
             )
         ),
-        Map.of(SLA_1, 5L, SLA_2, 135L)
+        Map.of(SLA_1, 5L, SLA_2, 140L)
     );
   }
 
@@ -176,7 +177,7 @@ class SlaWaveCalculatorTest {
     // THEN
     assertTrue(result.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:05:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T00:10:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getDate());
@@ -199,6 +200,7 @@ class SlaWaveCalculatorTest {
         requestTest.getMinCycleTimes(),
         List.of(new Wave(
             FIRST_INFLECTION_POINT,
+            TriggerName.SLA,
             Map.of(
                 TOT_MONO,
                 new Wave.WaveConfiguration(
@@ -246,7 +248,7 @@ class SlaWaveCalculatorTest {
     // THEN
     assertTrue(result.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:25:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getDate());
@@ -261,10 +263,15 @@ class SlaWaveCalculatorTest {
   @Value
   private static class RequestTest {
     List<Instant> inflectionPoints;
+
     Map<Instant, List<SlaWaveCalculator.CurrentBacklog>> projectedBacklogs;
+
     Map<ProcessPath, Map<Instant, Integer>> throughput;
+
     PendingBacklog pendingBacklog;
+
     Map<ProcessPath, Integer> minCycleTimes;
+
     List<Wave> waves;
   }
 }

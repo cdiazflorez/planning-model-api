@@ -1,9 +1,11 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
+import static com.mercadolibre.planning.model.api.domain.entity.TriggerName.SLA;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildContextHolder;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildGraph;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.projectSla;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -74,15 +76,16 @@ public final class SlaWaveCalculator {
 
     Optional<Map<ProcessPath, Map<Instant, Long>>> previousWavedBacklog = Optional.empty();
     Instant lastInflectionPoint = inflectionPoints.get(0);
-    for (Instant inflectionPoint : inflectionPoints) {
-      final var backlogToWave = pendingBacklog.availableBacklogAt(inflectionPoint, processPaths, waves);
+    final List<Instant> inflectionPointsToProject = inflectionPoints.subList(0, inflectionPoints.size() - 1);
+    for (Instant inflectionPoint : inflectionPointsToProject) {
+      final var backlogToWave = backlogToWave(inflectionPoint, pendingBacklog, waves, processPaths, deadlines);
 
-      final var expiredSlas = calculateExpiredSlasWithWavedBacklog(inflectionPoint, simulationContext, backlogToWave);
+      final var expiredSlas = calculateSlaExpirationWithWaveSimulation(inflectionPoint, simulationContext, backlogToWave);
 
       if (!expiredSlas.isEmpty()) {
         final var wavedBacklog = previousWavedBacklog.orElse(backlogToWave);
 
-        return Optional.of(buildWave(lastInflectionPoint, wavedBacklog, expiredSlas));
+        return Optional.of(buildWaveFromExpiredSlas(lastInflectionPoint, wavedBacklog, expiredSlas));
       }
 
       previousWavedBacklog = Optional.of(backlogToWave);
@@ -92,7 +95,37 @@ public final class SlaWaveCalculator {
     return Optional.empty();
   }
 
-  private static Map<ProcessPath, List<Instant>> calculateExpiredSlasWithWavedBacklog(
+  private static Map<ProcessPath, Map<Instant, Long>> backlogToWave(
+      final Instant date,
+      final PendingBacklog pending,
+      final List<Wave> waves,
+      final List<ProcessPath> processPaths,
+      final Map<ProcessPath, Map<Instant, Instant>> deadlines
+  ) {
+    final var availableBacklog = pending.availableBacklogAt(date, processPaths, waves);
+
+    return filterExpiredBacklogFromAvailableBacklog(date, availableBacklog, deadlines);
+  }
+
+  private static Map<ProcessPath, Map<Instant, Long>> filterExpiredBacklogFromAvailableBacklog(
+      final Instant date,
+      final Map<ProcessPath, Map<Instant, Long>> availableBacklog,
+      final Map<ProcessPath, Map<Instant, Instant>> deadlines
+  ) {
+    return availableBacklog.entrySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue().entrySet()
+                    .stream()
+                    .filter(cpt -> date.isBefore(deadlines.get(entry.getKey()).get(cpt.getKey())))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            )
+        );
+  }
+
+  private static Map<ProcessPath, List<Instant>> calculateSlaExpirationWithWaveSimulation(
       final Instant inflectionPoint,
       final SimulationContext context,
       final Map<ProcessPath, Map<Instant, Long>> backlogToWave
@@ -110,7 +143,7 @@ public final class SlaWaveCalculator {
     final var slas = slasInWave(backlogToWave);
     final var projectedEndDates = projectSla(context.getGraph(), holder, wave, ips, context.getProcessPaths(), slas);
 
-    return verifySla(projectedEndDates, context.getDeadlines());
+    return filterWavedSlasWithProjectedEndDateAfterDeadline(projectedEndDates, context.getDeadlines(), backlogToWave);
   }
 
   private static List<Instant> inflectionPointsGreaterOrEqual(final Instant target, final List<Instant> candidates) {
@@ -129,12 +162,12 @@ public final class SlaWaveCalculator {
         .collect(Collectors.toList());
   }
 
-  private static Wave buildWave(
+  private static Wave buildWaveFromExpiredSlas(
       final Instant waveDate,
       final Map<ProcessPath, Map<Instant, Long>> wavedBacklog,
       final Map<ProcessPath, List<Instant>> expiredSlas
   ) {
-    final var expiredBacklog = expiredBacklog(expiredSlas, wavedBacklog);
+    final var expiredBacklog = calculateUnitsToWaveBySlaAndProcessPath(expiredSlas, wavedBacklog);
 
     final var configurations = expiredBacklog.keySet()
         .stream()
@@ -148,7 +181,7 @@ public final class SlaWaveCalculator {
         ));
 
 
-    return new Wave(waveDate, configurations);
+    return new Wave(waveDate, SLA, configurations);
   }
 
   private static Map<ProcessPath, Map<Instant, Integer>> asBacklogs(
@@ -185,15 +218,20 @@ public final class SlaWaveCalculator {
         );
   }
 
-  private static Map<ProcessPath, List<Instant>> verifySla(
+  private static Map<ProcessPath, List<Instant>> filterWavedSlasWithProjectedEndDateAfterDeadline(
       final Map<ProcessPath, Map<Instant, Instant>> projections,
-      final Map<ProcessPath, Map<Instant, Instant>> deadlines
+      final Map<ProcessPath, Map<Instant, Instant>> deadlines,
+      final Map<ProcessPath, Map<Instant, Long>> backlogToWave
   ) {
     final var results = projections.keySet()
         .stream()
         .collect(Collectors.toMap(
                 Function.identity(),
-                pp -> expiredSlas(projections.get(pp), deadlines.get(pp))
+                pp -> filterWavedSlasWithProjectedEndDateAfterDeadline(
+                    projections.get(pp),
+                    deadlines.get(pp),
+                    backlogToWave.getOrDefault(pp, emptyMap()).keySet()
+                )
             )
         );
 
@@ -203,14 +241,15 @@ public final class SlaWaveCalculator {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private static List<Instant> expiredSlas(
+  private static List<Instant> filterWavedSlasWithProjectedEndDateAfterDeadline(
       final Map<Instant, Instant> projections,
-      final Map<Instant, Instant> deadlines
+      final Map<Instant, Instant> deadlines,
+      final Set<Instant> wavedSlas
   ) {
     final var maxExpiredSla = projections.keySet()
         .stream()
         .filter(sla -> Optional.ofNullable(projections.get(sla))
-            .map(endDate -> endDate.isAfter(deadlines.get(sla)) || endDate.equals(deadlines.get(sla)))
+            .map(endDate -> endDate.isAfter(deadlines.get(sla)))
             .orElse(false)
         )
         .max(Comparator.naturalOrder());
@@ -219,11 +258,12 @@ public final class SlaWaveCalculator {
         deadlines.keySet()
             .stream()
             .filter(sla -> sla.isBefore(max) || sla.equals(max))
+            .filter(wavedSlas::contains)
             .collect(Collectors.toList())
     ).orElse(emptyList());
   }
 
-  private static Map<ProcessPath, Map<Instant, Long>> expiredBacklog(
+  private static Map<ProcessPath, Map<Instant, Long>> calculateUnitsToWaveBySlaAndProcessPath(
       final Map<ProcessPath, List<Instant>> expiredSlas,
       final Map<ProcessPath, Map<Instant, Long>> wave
   ) {

@@ -204,13 +204,14 @@ public final class PickingProjectionBuilder {
   }
 
   private static Stream<BacklogProjected> generateBacklogProjected(
-      final UnprocessedBacklogState unprocessedBacklogState, final ProcessPath processPath) {
-
+      final UnprocessedBacklogState unprocessedBacklogState,
+      final ProcessPath processPath
+  ) {
     var backlogByDateOuts = (OrderedBacklogByDate) unprocessedBacklogState.getBacklog();
 
     return backlogByDateOuts.getBacklogs().entrySet().stream().map(
         backlogByDateOut -> new BacklogProjected(
-            unprocessedBacklogState.getAvailableAt(),
+            unprocessedBacklogState.getEndDate(),
             processPath,
             ProcessName.PICKING,
             backlogByDateOut.getKey(),
@@ -222,9 +223,13 @@ public final class PickingProjectionBuilder {
   @Value
   public static class BacklogProjected {
     Instant date;
+
     ProcessPath processPath;
+
     ProcessName process;
+
     Instant cpt;
+
     Long units;
   }
 }

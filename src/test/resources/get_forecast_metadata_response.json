@@ -1,0 +1,50 @@
+[
+  {
+    "key": "week",
+    "value": "11-2023"
+  },
+  {
+    "key": "warehouse_id",
+    "value": "ARTW01"
+  },
+  {
+    "key": "version",
+    "value": "2.0"
+  },
+  {
+    "key": "units_per_order_ratio",
+    "value": "3.96"
+  },
+  {
+    "key": "outbound_wall_in_productivity",
+    "value": "100"
+  },
+  {
+    "key": "outbound_picking_productivity",
+    "value": "80"
+  },
+  {
+    "key": "outbound_packing_wall_productivity",
+    "value": "90"
+  },
+  {
+    "key": "outbound_packing_productivity",
+    "value": "100"
+  },
+  {
+    "key": "outbound_batch_sorter_productivity",
+    "value": "100"
+  },
+  {
+    "key": "multi_order_distribution",
+    "value": "26"
+  },
+  {
+    "key": "multi_batch_distribution",
+    "value": "32"
+  },
+  {
+    "key": "mono_order_distribution",
+    "value": "42"
+  }
+]

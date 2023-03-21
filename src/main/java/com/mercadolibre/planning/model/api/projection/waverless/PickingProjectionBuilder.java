@@ -111,7 +111,7 @@ public final class PickingProjectionBuilder {
         );
   }
 
-  private static PiecewiseUpstream asPiecewiseUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
+  public static PiecewiseUpstream asPiecewiseUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
     return new PiecewiseUpstream(
         waves.entrySet().stream()
             .collect(
@@ -152,7 +152,7 @@ public final class PickingProjectionBuilder {
   }
 
 
-  public static List<BacklogProjected> backlogProjection(
+  public static List<ProcessPathBacklog> backlogProjection(
       final Processor process,
       final ContextsHolder contexts,
       final PiecewiseUpstream upstream,
@@ -203,14 +203,14 @@ public final class PickingProjectionBuilder {
         );
   }
 
-  private static Stream<BacklogProjected> generateBacklogProjected(
+  private static Stream<ProcessPathBacklog> generateBacklogProjected(
       final UnprocessedBacklogState unprocessedBacklogState,
       final ProcessPath processPath
   ) {
     var backlogByDateOuts = (OrderedBacklogByDate) unprocessedBacklogState.getBacklog();
 
     return backlogByDateOuts.getBacklogs().entrySet().stream().map(
-        backlogByDateOut -> new BacklogProjected(
+        backlogByDateOut -> new ProcessPathBacklog(
             unprocessedBacklogState.getEndDate(),
             processPath,
             ProcessName.PICKING,
@@ -221,7 +221,7 @@ public final class PickingProjectionBuilder {
   }
 
   @Value
-  public static class BacklogProjected {
+  public static class ProcessPathBacklog {
     Instant date;
 
     ProcessPath processPath;

@@ -184,7 +184,7 @@ class PickingProjectionBuilderTest {
 
     assertEquals(expectedBacklog.size(), backlogProjections.size());
 
-    for (PickingProjectionBuilder.BacklogProjected backlog : backlogProjections) {
+    for (PickingProjectionBuilder.ProcessPathBacklog backlog : backlogProjections) {
       assertTrue(expectedBacklog.stream().anyMatch(expected -> expected.equals(backlog)));
     }
   }
@@ -197,44 +197,44 @@ class PickingProjectionBuilderTest {
     return new ParallelProcess(PICKING_PROCESS, processors);
   }
 
-  private List<PickingProjectionBuilder.BacklogProjected> expectedBacklogProjection() {
+  private List<PickingProjectionBuilder.ProcessPathBacklog> expectedBacklogProjection() {
     return List.of(
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_2,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
             0L
         ),
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_2,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             50L
         ),
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_2,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
             0L
         ),
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_2,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             100L
         ),
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_3,
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
             25L
         ),
-        new PickingProjectionBuilder.BacklogProjected(
+        new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_3,
             NON_TOT_MONO,
             ProcessName.PICKING,

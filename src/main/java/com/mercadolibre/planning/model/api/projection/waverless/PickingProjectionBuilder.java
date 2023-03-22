@@ -101,14 +101,18 @@ public final class PickingProjectionBuilder {
     );
 
     return processPaths.stream()
-        .collect(
-            toMap(
-                Function.identity(),
-                path -> calculateProjectedEndDate(
-                    updatedContexts, processorName(path), slas
-                )
-            )
-        );
+        .collect(toMap(Function.identity(), path -> getProjectedEndDate(path, updatedContexts, slas)));
+  }
+
+  private static Map<Instant, Instant> getProjectedEndDate(
+      final ProcessPath processPath,
+      final ContextsHolder holder,
+      final List<Instant> slas
+  ) {
+    final var key = processorName(processPath);
+    final var processPathContext = holder.getProcessContextByProcessName(key);
+
+    return calculateProjectedEndDate(new ContextsHolder(Map.of(key, processPathContext)), key, slas);
   }
 
   public static PiecewiseUpstream asPiecewiseUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
@@ -232,4 +236,5 @@ public final class PickingProjectionBuilder {
 
     Long units;
   }
+
 }

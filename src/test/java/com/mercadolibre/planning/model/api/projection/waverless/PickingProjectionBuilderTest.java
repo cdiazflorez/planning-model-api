@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.projection.waverless;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.util.DateUtils.generateInflectionPoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -128,12 +129,14 @@ class PickingProjectionBuilderTest {
         DATE_2, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L))
     );
 
+    final var inflectionPoints = generateInflectionPoints(DATE_1, DATE_2, 5);
+
     // WHEN
     final var projectedEndDates = PickingProjectionBuilder.projectSla(
         graph,
         holder,
         waves,
-        List.of(DATE_1, DATE_2),
+        inflectionPoints,
         processPaths,
         List.of(DATE_OUT_1, DATE_OUT_2)
     );
@@ -141,18 +144,17 @@ class PickingProjectionBuilderTest {
     // THEN
     assertNotNull(projectedEndDates);
 
-    // [100 (current) + 100 (wave)] / 300 (tph) * 60 (min) = 40 min
-    final Instant expectedDateOut1Result = Instant.parse("2023-02-17T10:40:00Z");
     final var totMonoProjections = projectedEndDates.get(TOT_MONO);
     assertNotNull(totMonoProjections);
-    assertEquals(expectedDateOut1Result, totMonoProjections.get(DATE_OUT_1));
+
+    assertEquals(Instant.parse("2023-02-17T10:56:36Z"), totMonoProjections.get(DATE_OUT_1));
     assertNull(totMonoProjections.get(DATE_OUT_2));
 
-    final Instant expectedDateOut2Result = Instant.parse("2023-02-17T10:20:00Z");
     final var nonTotMonoProjections = projectedEndDates.get(NON_TOT_MONO);
     assertNotNull(nonTotMonoProjections);
-    assertEquals(expectedDateOut2Result, nonTotMonoProjections.get(DATE_OUT_1));
-    assertNull(nonTotMonoProjections.get(DATE_OUT_2));
+
+    assertEquals(Instant.parse("2023-02-17T10:20:00Z"), nonTotMonoProjections.get(DATE_OUT_1));
+    assertEquals(Instant.parse("2023-02-17T10:50:00Z"), nonTotMonoProjections.get(DATE_OUT_2));
   }
 
   @Test

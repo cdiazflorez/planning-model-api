@@ -246,13 +246,12 @@ public final class SlaWaveCalculator {
       final Map<Instant, Instant> deadlines,
       final Set<Instant> wavedSlas
   ) {
-    final var maxExpiredSla = projections.keySet()
-        .stream()
-        .filter(sla -> Optional.ofNullable(projections.get(sla))
-            .map(endDate -> endDate.isAfter(deadlines.get(sla)))
-            .orElse(false)
-        )
-        .max(Comparator.naturalOrder());
+    final var maxExpiredSla = wavedSlas.stream()
+            .filter(sla -> Optional.ofNullable(projections.get(sla))
+                .map(endDate -> endDate.isAfter(deadlines.get(sla)))
+                .orElse(false)
+            )
+            .max(Comparator.naturalOrder());
 
     return maxExpiredSla.map(max ->
         deadlines.keySet()

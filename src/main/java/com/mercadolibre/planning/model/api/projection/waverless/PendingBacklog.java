@@ -112,8 +112,10 @@ public class PendingBacklog {
   }
 
   public Map<ProcessPath, Map<Instant, Long>> availableBacklogAt(
-      final Instant inflectionPoint, final List<ProcessPath> processPaths, final List<Wave> waves) {
-
+      final Instant inflectionPoint,
+      final List<ProcessPath> processPaths,
+      final List<Wave> waves
+  ) {
     final var wavesByProcessPath = reduceWavesByProcessPath(waves);
 
     return processPaths.stream()
@@ -130,8 +132,12 @@ public class PendingBacklog {
   }
 
   public Map<ProcessPath, Set<Instant>> calculateSlasByProcessPath() {
-    return readyToWave.keySet()
-        .stream()
+    final var processPaths = Stream.concat(
+        readyToWave.keySet().stream(),
+        forecast.keySet().stream()
+    ).collect(Collectors.toSet());
+
+    return processPaths.stream()
         .collect(toMap(
             Function.identity(),
             pp -> slasFromBacklogs(

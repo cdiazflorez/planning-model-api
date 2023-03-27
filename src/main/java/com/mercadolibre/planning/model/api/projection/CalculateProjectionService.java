@@ -29,6 +29,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.exception.UnsupportedWorkflowException;
 import com.mercadolibre.planning.model.api.projection.dto.ProjectionRequest;
 import com.mercadolibre.planning.model.api.projection.dto.ProjectionResult;
+import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,11 +44,13 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class CalculateProjectionService {
 
+  private static final int INFLECTION_WINDOW_SIZE_IN_MINUTES = 5;
+
   private static final long BACKLOG_ZERO = 0;
 
-  private static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
-
   private static final OrderedBacklogByDate EMPTY_BACKLOG = new OrderedBacklogByDate(emptyMap());
+
+  private static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
 
   private static final String PACKING_PROCESS_GROUP = "packing_group";
 
@@ -65,7 +68,11 @@ public class CalculateProjectionService {
    */
   public List<ProjectionResult> execute(final Workflow workflow, final ProjectionRequest projectionRequest) {
 
-    final var inflectionPoints = ProjectionUtils.generateInflectionPoints(projectionRequest.getDateFrom(), projectionRequest.getDateTo());
+    final var inflectionPoints = DateUtils.generateInflectionPoints(
+        projectionRequest.getDateFrom(),
+        projectionRequest.getDateTo(),
+        INFLECTION_WINDOW_SIZE_IN_MINUTES
+    );
 
     final var ratios = ProjectionUtils.ratiosAsDistributions(projectionRequest.getRatioByHour(), inflectionPoints);
 

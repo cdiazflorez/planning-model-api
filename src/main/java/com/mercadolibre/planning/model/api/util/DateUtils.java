@@ -4,17 +4,21 @@ import static java.lang.String.format;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.iterate;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.WeekFields;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -94,6 +98,23 @@ public final class DateUtils {
 
     return Stream.of(first, middle, last)
         .flatMap(Function.identity());
+  }
+
+  public static List<Instant> generateInflectionPoints(final Instant dateFrom, final Instant dateTo, final int windowSize) {
+    final Instant firstInflectionPoint = dateFrom.truncatedTo(MINUTES);
+    final int currentMinute = LocalDateTime.ofInstant(firstInflectionPoint, UTC).getMinute();
+    final int minutesToSecondInflectionPoint = windowSize - (currentMinute % windowSize);
+    final Instant secondInflectionPoint = firstInflectionPoint.plus(minutesToSecondInflectionPoint, MINUTES);
+
+    final List<Instant> inflectionPoints = new ArrayList<>();
+    inflectionPoints.add(firstInflectionPoint);
+    Instant date = secondInflectionPoint;
+
+    while (date.isBefore(dateTo) || date.equals(dateTo)) {
+      inflectionPoints.add(date);
+      date = date.plus(windowSize, MINUTES);
+    }
+    return inflectionPoints;
   }
 
   public static String getActualForecastWeek(final ZonedDateTime dateTime) {

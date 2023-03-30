@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
@@ -14,7 +15,7 @@ final class WavesBySlaUtil {
 
   static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-06T00:00:00Z");
 
-  static final Instant LAST_INFLECTION_POINT = Instant.parse("2023-03-06T03:55:00Z");
+  static final Instant LAST_INFLECTION_POINT = Instant.parse("2023-03-06T06:00:00Z");
 
   static final List<Instant> INFLECTION_POINTS = Stream.iterate(FIRST_INFLECTION_POINT, date -> date.plus(5, ChronoUnit.MINUTES))
       .limit((ChronoUnit.MINUTES.between(FIRST_INFLECTION_POINT, LAST_INFLECTION_POINT) / 5) + 1)
@@ -27,7 +28,8 @@ final class WavesBySlaUtil {
           Instant.parse("2023-03-06T02:00:00Z"), 60,
           Instant.parse("2023-03-06T03:00:00Z"), 60,
           Instant.parse("2023-03-06T04:00:00Z"), 60,
-          Instant.parse("2023-03-06T05:00:00Z"), 60
+          Instant.parse("2023-03-06T05:00:00Z"), 60,
+          Instant.parse("2023-03-06T06:00:00Z"), 16000
       )
   );
 
@@ -37,7 +39,7 @@ final class WavesBySlaUtil {
 
   static final Instant SLA_3 = Instant.parse("2023-03-06T05:00:00Z");
 
-  static final Map<ProcessPath, Integer> MIN_CYCLE_TIMES = Map.of(TOT_MONO, 60);
+  static final Map<ProcessPath, Integer> MIN_CYCLE_TIMES = Map.of(TOT_MONO, 60, TOT_MULTI_BATCH, 60);
 
   private WavesBySlaUtil() {
   }

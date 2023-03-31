@@ -81,11 +81,11 @@ public final class SlaWaveCalculator {
       final var backlogToWave = backlogToWave(inflectionPoint, pendingBacklog, waves, processPaths, deadlines);
 
       final var expiredSlas = calculateSlaExpirationWithWaveSimulation(inflectionPoint, simulationContext, backlogToWave);
+      final var wavedBacklog = previousWavedBacklog.orElse(backlogToWave);
 
-      if (!expiredSlas.isEmpty()) {
-        final var wavedBacklog = previousWavedBacklog.orElse(backlogToWave);
-
-        return Optional.of(buildWaveFromExpiredSlas(lastInflectionPoint, wavedBacklog, expiredSlas));
+      final var wave = buildWaveFromExpiredSlas(lastInflectionPoint, wavedBacklog, expiredSlas);
+      if (wave.isPresent()) {
+        return wave;
       }
 
       previousWavedBacklog = Optional.of(backlogToWave);
@@ -162,26 +162,30 @@ public final class SlaWaveCalculator {
         .collect(Collectors.toList());
   }
 
-  private static Wave buildWaveFromExpiredSlas(
+  private static Optional<Wave> buildWaveFromExpiredSlas(
       final Instant waveDate,
       final Map<ProcessPath, Map<Instant, Long>> wavedBacklog,
       final Map<ProcessPath, List<Instant>> expiredSlas
   ) {
     final var expiredBacklog = calculateUnitsToWaveBySlaAndProcessPath(expiredSlas, wavedBacklog);
 
+    final Map<ProcessPath, Long> lowerBounds = expiredBacklog.entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().values().stream().reduce(0L, Long::sum)));
+
     final var configurations = expiredBacklog.keySet()
         .stream()
+        .filter(pp -> lowerBounds.get(pp) > 0)
         .collect(Collectors.toMap(
             Function.identity(),
-            pp -> new Wave.WaveConfiguration(
-                expiredBacklog.get(pp).values().stream().reduce(0L, Long::sum),
-                Long.MAX_VALUE,
-                expiredBacklog.get(pp)
-            )
+            pp -> new Wave.WaveConfiguration(lowerBounds.get(pp), Long.MAX_VALUE, expiredBacklog.get(pp))
         ));
 
+    if (configurations.isEmpty()) {
+      return Optional.empty();
+    }
 
-    return new Wave(waveDate, SLA, configurations);
+    return Optional.of(new Wave(waveDate, SLA, configurations));
   }
 
   private static Map<ProcessPath, Map<Instant, Integer>> asBacklogs(
@@ -247,11 +251,11 @@ public final class SlaWaveCalculator {
       final Set<Instant> wavedSlas
   ) {
     final var maxExpiredSla = wavedSlas.stream()
-            .filter(sla -> Optional.ofNullable(projections.get(sla))
-                .map(endDate -> endDate.isAfter(deadlines.get(sla)))
-                .orElse(false)
-            )
-            .max(Comparator.naturalOrder());
+        .filter(sla -> Optional.ofNullable(projections.get(sla))
+            .map(endDate -> endDate.isAfter(deadlines.get(sla)))
+            .orElse(false)
+        )
+        .max(Comparator.naturalOrder());
 
     return maxExpiredSla.map(max ->
         deadlines.keySet()
@@ -274,7 +278,7 @@ public final class SlaWaveCalculator {
                 .stream()
                 .collect(Collectors.toMap(
                     Function.identity(),
-                    sla -> wave.get(pp).get(sla)
+                    sla -> wave.get(pp).getOrDefault(sla, 0L)
                 ))
         ));
   }

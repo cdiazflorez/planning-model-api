@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.generateInflectionPoints;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
@@ -55,7 +56,7 @@ public final class WavesCalculator {
           inflectionPoints,
           waves,
           pendingBacklog,
-          currentBacklog.get(ProcessName.PICKING),
+          currentBacklog.getOrDefault(ProcessName.PICKING, emptyMap()),
           throughput,
           minCycleTimesByPP
       );

@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.FIRST_INFLECTION_POINT;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.INFLECTION_POINTS;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.MIN_CYCLE_TIMES;
@@ -24,12 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.Value;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class SlaWaveCalculatorTest {
+
+  private static final Instant FORECAST_DATE_IN = Instant.parse("2023-03-06T02:00:00Z");
 
   private static List<CurrentBacklog> projectedBacklog(final int sla1, final int sla2) {
     return List.of(
@@ -134,6 +138,21 @@ class SlaWaveCalculatorTest {
     );
   }
 
+  private static Stream<Arguments> forecastArguments() {
+    return Stream.of(
+        Arguments.of(
+            Map.of(
+                TOT_MONO, List.of(new AvailableBacklog(FORECAST_DATE_IN, SLA_2, 1200D))
+            )
+        ),
+        Arguments.of(
+            Map.of(
+                TOT_MULTI_BATCH, List.of(new AvailableBacklog(FORECAST_DATE_IN, SLA_2, 1200D))
+            )
+        )
+    );
+  }
+
   @Test
   void testWithOnlyOnSla() {
     // GIVEN
@@ -195,6 +214,43 @@ class SlaWaveCalculatorTest {
     final var units = wave.getConfiguration();
     assertEquals(1, units.size());
     assertEquals(100L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
+  }
+
+  @ParameterizedTest
+  @MethodSource("forecastArguments")
+  @DisplayName("forecasted backlog can not be waved before its date_in")
+  void testWithoutCurrentBacklogAndWithForecastedBacklog(
+      final Map<ProcessPath, List<AvailableBacklog>> forecast
+  ) {
+    // GIVEN
+    final var readyToWave = Map.of(
+        TOT_MONO, List.of(
+            new AvailableBacklog(SLA_1, SLA_3, 10D)
+        )
+    );
+
+    final PendingBacklog pending = new PendingBacklog(readyToWave, forecast);
+
+    final var throughput = Map.of(
+        TOT_MONO, THROUGHPUT.get(TOT_MONO),
+        TOT_MULTI_BATCH, THROUGHPUT.get(TOT_MONO)
+    );
+
+    // WHEN
+    var result = SlaWaveCalculator.projectNextWave(
+        INFLECTION_POINTS,
+        emptyMap(),
+        throughput,
+        pending,
+        MIN_CYCLE_TIMES,
+        emptyList()
+    );
+
+    // THEN
+    assertTrue(result.isPresent());
+
+    final var wave = result.get();
+    assertTrue(wave.getDate().isAfter(FORECAST_DATE_IN));
   }
 
   @ParameterizedTest

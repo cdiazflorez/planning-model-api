@@ -71,7 +71,7 @@ public final class PickingProjectionBuilder {
     final var processPaths = throughput.keySet();
 
     final Map<String, ProcessContext> contexts = new HashMap<>();
-    contexts.put(PICKING_PROCESS, new ParallelProcess.Context(buildParallelAssistant(processPaths), emptyList()));
+    contexts.put(PICKING_PROCESS, new ParallelProcess.Context(buildParallelAssistant(processPaths)));
     contexts.putAll(buildSimpleProcessContexts(currentBacklog, throughput));
 
     return new ContextsHolder(contexts);
@@ -121,34 +121,10 @@ public final class PickingProjectionBuilder {
             .collect(
                 toMap(
                     Map.Entry::getKey,
-                    entry -> asOrderedBacklogByProcessPath(entry.getValue())
+                    entry -> OrderedBacklogByProcessPath.from(entry.getValue())
                 )
             )
     );
-  }
-
-  private static OrderedBacklogByProcessPath asOrderedBacklogByProcessPath(final Map<ProcessPath, Map<Instant, Long>> waves) {
-    return new OrderedBacklogByProcessPath(
-        waves.entrySet().stream()
-            .collect(
-                toMap(
-                    Map.Entry::getKey,
-                    entry -> new OrderedBacklogByDate(
-                        asQuantityByDate(entry.getValue())
-                    )
-                )
-            )
-    );
-  }
-
-  private static Map<Instant, OrderedBacklogByDate.Quantity> asQuantityByDate(final Map<Instant, Long> quantities) {
-    return quantities.entrySet().stream()
-        .collect(
-            toMap(
-                Map.Entry::getKey,
-                entry2 -> new OrderedBacklogByDate.Quantity(entry2.getValue())
-            )
-        );
   }
 
   private static String processorName(final ProcessPath path) {

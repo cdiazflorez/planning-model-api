@@ -193,13 +193,47 @@ final class BacklogProjection {
         .build();
   }
 
+  /**
+   * Método que obtiene el String name de un ProcessName.
+   *
+   * @param process Nombre del proceso de tipo ProcessName
+   * @return Nombre del proceso de tipo String
+   */
+  private static String processorName(final ProcessName process) {
+    return process.getName();
+  }
+
+  /**
+   * Obtiene la lista de UnprocessedBacklogs mapeados en objetos de tipo BacklogQuantityAtInflectionPoint.
+   *
+   * @param graph Objeto que tiene la secuencia de cómo se deben procesar los backlogs
+   * @param holder Objeto que tiene el contexto de los Backlogs de los cuales se requiere obtener los UnprocessedBacklogs
+   * @param upstream Objeto con el cual se obtienen los UnprocessedBacklogs según cálculo entre los inflectionPoints
+   * @param inflectionPoints Lista de Inflection de los cuales se requiere obtener los UnprocessedBacklogs
+   * @param processes Lista de Procesos de los cuales se requiere obtener los UnprocessedBacklogs
+   * @return Lista de UnprocessedBacklogs
+   */
   // WIP
-  static ContextsHolder project(
+  static List<BacklogQuantityAtInflectionPoint> project(
       final Processor graph,
       final ContextsHolder holder,
       final PiecewiseUpstream upstream,
-      final List<Instant> inflectionPoints
+      final List<Instant> inflectionPoints,
+      final Set<ProcessName> processes
   ) {
-    return graph.accept(holder, upstream, inflectionPoints);
+    final var processedContexts = graph.accept(holder, upstream, inflectionPoints);
+
+    return processes.stream()
+        .flatMap(processName ->
+            ((SimpleProcess.Context) processedContexts.getProcessContextByProcessName(processorName(processName))).getUnprocessedBacklog()
+                .stream()
+                .map(unprocessedBacklogState -> new BacklogQuantityAtInflectionPoint(
+                    unprocessedBacklogState.getEndDate(),
+                    processName,
+                    unprocessedBacklogState.getBacklog().total())
+                )
+        )
+        .collect(Collectors.toList());
   }
+
 }

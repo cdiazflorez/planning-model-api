@@ -14,23 +14,22 @@ import static com.mercadolibre.planning.model.api.projection.waverless.idleness.
 import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.project;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
-import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessedBacklogState;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -58,32 +57,20 @@ class BacklogProjectionTest {
     );
   }
 
-  private static void assertBacklogTotals(final ContextsHolder holder, final ProcessName process, final List<Long> totals) {
-    final var context = holder.getProcessContextByProcessName(process.getName());
-    final var processedBacklog = context.getProcessedBacklog();
+  private static void assertUnprocessedBacklogs(
+      final List<BacklogQuantityAtInflectionPoint> listBacklogs, final ProcessName process, final List<Long> totals) {
 
-    assertEquals(totals.size(), processedBacklog.size());
+    final List<BacklogQuantityAtInflectionPoint> listUnprocessedBacklog = listBacklogs.stream()
+        .filter(backlog -> Objects.equals(backlog.getProcessName(), process))
+        .collect(Collectors.toList());
+
+    assertEquals(totals.size(), listUnprocessedBacklog.size());
 
     for (int i = 0; i < totals.size(); i++) {
-      assertEquals(totals.get(i), processedBacklog.get(i).getBacklog().total());
+      assertEquals(totals.get(i), listUnprocessedBacklog.get(i).getQuantity());
     }
   }
 
-  private static void assertPickingProcessedBacklog(
-      final ProcessedBacklogState processedBacklog,
-      final ProcessPath processPath,
-      final Long expected
-  ) {
-    final var actual = Optional.of(processedBacklog)
-        .map(ProcessedBacklogState::getBacklog)
-        .map(OrderedBacklogByProcessPath.class::cast)
-        .map(OrderedBacklogByProcessPath::getBacklogs)
-        .map(b -> b.get(processPath))
-        .map(Backlog::total)
-        .orElse(0L);
-
-    assertEquals(expected, actual);
-  }
 
   @Test
   @DisplayName("on backlog projection, then backlog must flow through processes")
@@ -122,78 +109,24 @@ class BacklogProjectionTest {
 
     final List<Instant> inflectionPoints = Arrays.asList(DATES);
 
-    // WHEN
-    final var backlogs = project(graph, holder, upstream, inflectionPoints);
+    final Set<ProcessName> processes = new HashSet<>(Arrays.asList(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL));
+
+    final List<BacklogQuantityAtInflectionPoint> listUnprocessedBacklog = project(graph, holder, upstream, inflectionPoints, processes);
 
     // THEN
-    assertNotNull(backlogs);
+    assertNotNull(listUnprocessedBacklog);
+    assertFalse(listUnprocessedBacklog.isEmpty());
 
-    // values should be 1000, 1000, 750 but differ because of rounding errors
-    assertBacklogTotals(backlogs, PICKING, List.of(998L, 999L, 753L, 0L, 0L, 0L));
-    assertBacklogTotals(backlogs, PACKING, List.of(250L, 500L, 750L, 0L, 100L, 1000L));
-    assertBacklogTotals(backlogs, BATCH_SORTER, List.of(500L, 500L, 500L, 500L, 100L, 0L));
-    assertBacklogTotals(backlogs, WALL_IN, List.of(0L, 0L, 0L, 0L, 1000L, 1000L));
-    assertBacklogTotals(backlogs, PACKING_WALL, List.of(0L, 0L, 0L, 0L, 0L, 500L));
-  }
-
-  @Test
-  @DisplayName("on backlog projection, then picking backlog must be split based on process path distribution")
-  void testBacklogProjectionPickingDownstream() {
-    // GIVEN
-    final PiecewiseUpstream upstream = new PiecewiseUpstream(
-        Map.of(
-            DATES[1], new OrderedBacklogByProcessPath(
-                Map.of(TOT_MULTI_BATCH, new OrderedBacklogByDate(Map.of(DATES[0], new Quantity(1002L))))
-            ),
-            DATES[2], new OrderedBacklogByProcessPath(
-                Map.of(TOT_MULTI_BATCH, new OrderedBacklogByDate(Map.of(DATES[0], new Quantity(1000L))))
-            ),
-            DATES[3], new OrderedBacklogByProcessPath(
-                Map.of(TOT_MULTI_BATCH, new OrderedBacklogByDate(Map.of(DATES[0], new Quantity(1000L))))
-            )
-        )
-    );
-
-    final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklogs = Map.of(
-        PICKING, Map.of(
-            TOT_MONO, Map.of(DATES[0], 1000L, DATES[1], 1000L),
-            NON_TOT_MONO, Map.of(DATES[0], 1000L)
-
-        )
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> throughput = Map.of(
-        PICKING, throughput(1000, 1000, 1000, 1000, 1000, 1000),
-        PACKING, throughput(1000, 1000, 1000, 1000, 1000, 1000),
-        BATCH_SORTER, throughput(1000, 1000, 1000, 1000, 1000, 1000),
-        WALL_IN, throughput(1000, 1000, 1000, 1000, 1000, 1000),
-        PACKING_WALL, throughput(1000, 1000, 1000, 1000, 1000, 1000)
-    );
-
-    final ContextsHolder holder = buildContexts(currentBacklogs, throughput);
-
-    final Processor graph = buildGraph();
-
-    final List<Instant> inflectionPoints = Arrays.asList(DATES);
-
-    // WHEN
-    final var backlogs = project(graph, holder, upstream, inflectionPoints);
-
-    // THEN
-    assertNotNull(backlogs);
-
-    final var pickingProcessedBacklog = backlogs.getProcessContextByProcessName(PICKING.getName()).getProcessedBacklog();
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(0), TOT_MONO, 666L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(0), NON_TOT_MONO, 333L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(0), TOT_MULTI_BATCH, 0L);
-
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(1), TOT_MONO, 444L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(1), NON_TOT_MONO, 222L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(1), TOT_MULTI_BATCH, 333L);
-
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(2), TOT_MONO, 296L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(2), NON_TOT_MONO, 148L);
-    assertPickingProcessedBacklog(pickingProcessedBacklog.get(2), TOT_MULTI_BATCH, 555L);
+    // PICKING: 1752, 753, 0, 0, 0, 0
+    assertUnprocessedBacklogs(listUnprocessedBacklog, PICKING, List.of(1752L, 753L, 0L, 0L, 0L, 0L));
+    // PACKING: 1350, 1667, 1734, 2350, 2250, 1250
+    assertUnprocessedBacklogs(listUnprocessedBacklog, PACKING, List.of(1350L, 1667L, 1734L, 2350L, 2250L, 1250L));
+    // BATCH_SORTER: 1100, 781, 463, 100, 0, 0
+    assertUnprocessedBacklogs(listUnprocessedBacklog, BATCH_SORTER, List.of(1100L, 781L, 463L, 100L, 0L, 0L));
+    // WALL_IN: 0, 500, 1000, 1500, 1000, 100
+    assertUnprocessedBacklogs(listUnprocessedBacklog, WALL_IN, List.of(0L, 500L, 1000L, 1500L, 1000L, 100L));
+    // PACKING_WALL: 0, 0, 0, 0, 0, 500
+    assertUnprocessedBacklogs(listUnprocessedBacklog, PACKING_WALL, List.of(0L, 0L, 0L, 0L, 0L, 500L));
   }
 
 }

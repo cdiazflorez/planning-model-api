@@ -12,6 +12,7 @@ import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProce
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +34,14 @@ public final class WavesCalculator {
       final List<ProcessPathConfiguration> configurations,
       final List<UnitsByProcessPathAndProcess> backlogs,
       final List<ForecastedUnitsByProcessPath> forecast,
-      final Map<ProcessPath, Map<Instant, Integer>> throughput
+      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
+      final BacklogLimits backlogLimits,
+      final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves
   ) {
-    final Instant projectionDateTo = throughput.values()
-        .stream()
-        .map(Map::keySet)
-        .flatMap(Set::stream)
-        .max(Comparator.naturalOrder())
-        .orElseThrow();
-    final List<Instant> inflectionPoints = generateInflectionPoints(executionDate, projectionDateTo, INFLECTION_WINDOW_SIZE_IN_MINUTES);
+    final List<Instant> inflectionPoints = calculateInflectionPoints(executionDate, throughput);
 
     final PendingBacklog pendingBacklog = asPendingBacklog(executionDate, backlogs, forecast);
+
     final Map<ProcessName, Map<ProcessPath, Map<Instant, Integer>>> currentBacklog = asCurrentBacklogs(backlogs);
 
     final Map<ProcessPath, Integer> minCycleTimesByPP = configurations.stream()
@@ -65,6 +63,22 @@ public final class WavesCalculator {
       nextWaveHasBeenProjected = wave.isPresent();
     }
     return waves;
+  }
+
+  private static List<Instant> calculateInflectionPoints(
+      final Instant executionDate,
+      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput
+  ) {
+    final Instant projectionDateTo = throughput.values()
+        .stream()
+        .map(Map::values)
+        .flatMap(Collection::stream)
+        .map(Map::keySet)
+        .flatMap(Set::stream)
+        .max(Comparator.naturalOrder())
+        .orElseThrow();
+
+    return generateInflectionPoints(executionDate, projectionDateTo, INFLECTION_WINDOW_SIZE_IN_MINUTES);
   }
 
   private static PendingBacklog asPendingBacklog(

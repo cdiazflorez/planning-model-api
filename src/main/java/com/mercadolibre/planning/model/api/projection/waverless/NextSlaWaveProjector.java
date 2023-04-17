@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.projection.waverless;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.asPiecewiseUpstream;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.backlogProjection;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildContextHolder;
+import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +51,7 @@ public final class NextSlaWaveProjector {
       final List<Wave> waves,
       final PendingBacklog pendingBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
-      final Map<ProcessPath, Map<Instant, Integer>> throughput,
+      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final Map<ProcessPath, Integer> minCycleTimes
   ) {
     final var nextWaveCandidateInflectionPoints = slaProjectionInflectionPoints(inflectionPoints, waves);
@@ -57,13 +59,15 @@ public final class NextSlaWaveProjector {
       return Optional.empty();
     }
 
-    final var projectedBacklogs = calculateBacklogStates(inflectionPoints, currentBacklog, throughput, waves);
+    final Map<ProcessPath, Map<Instant, Integer>> pickingThroughput = getPickingThroughputByProcessPath(throughput);
+
+    final var projectedBacklogs = calculateBacklogStates(inflectionPoints, currentBacklog, pickingThroughput, waves);
 
     return calculateNextWaveWithBacklog(
         nextWaveCandidateInflectionPoints,
         waves,
         projectedBacklogs,
-        throughput,
+        pickingThroughput,
         pendingBacklog,
         minCycleTimes
     );
@@ -81,6 +85,20 @@ public final class NextSlaWaveProjector {
         .orElse(inflectionPoints);
   }
 
+  private static Map<ProcessPath, Map<Instant, Integer>> getPickingThroughputByProcessPath(
+      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput
+  ) {
+    return throughput.keySet()
+        .stream()
+        .filter(pp -> pp != ProcessPath.GLOBAL)
+        .collect(
+            Collectors.toMap(
+                Function.identity(),
+                pp -> throughput.get(pp).getOrDefault(ProcessName.PICKING, emptyMap())
+            )
+        );
+  }
+
   private static Optional<Wave> calculateNextWaveWithBacklog(
       final List<Instant> inflectionPoints,
       final List<Wave> waves,
@@ -90,9 +108,9 @@ public final class NextSlaWaveProjector {
       final Map<ProcessPath, Integer> minCycleTimes
   ) {
     final var backlogProjection = projectedBacklogs.collect(Collectors.groupingBy(
-            ProcessPathBacklog::getDate,
-            Collectors.mapping(NextSlaWaveProjector::toCurrentBacklog, Collectors.toList())
-        ));
+        ProcessPathBacklog::getDate,
+        Collectors.mapping(NextSlaWaveProjector::toCurrentBacklog, Collectors.toList())
+    ));
 
     return SlaWaveCalculator.projectNextWave(
         inflectionPoints,

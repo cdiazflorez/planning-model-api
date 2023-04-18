@@ -5,10 +5,11 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.FIRST_INFLECTION_POINT;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.INFLECTION_POINTS;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.MIN_CYCLE_TIMES;
+import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.PICKING_THROUGHPUT;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_1;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_2;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_3;
-import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.TPH;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.inflectionPoint;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -131,7 +132,7 @@ class SlaWaveCalculatorTest {
     return new RequestTest(
         INFLECTION_POINTS,
         currentBacklog,
-        THROUGHPUT,
+        PICKING_THROUGHPUT,
         pending,
         MIN_CYCLE_TIMES,
         waves
@@ -232,8 +233,8 @@ class SlaWaveCalculatorTest {
     final PendingBacklog pending = new PendingBacklog(readyToWave, forecast);
 
     final var throughput = Map.of(
-        TOT_MONO, THROUGHPUT.get(TOT_MONO),
-        TOT_MULTI_BATCH, THROUGHPUT.get(TOT_MONO)
+        TOT_MONO, TPH,
+        TOT_MULTI_BATCH, TPH
     );
 
     // WHEN
@@ -268,7 +269,7 @@ class SlaWaveCalculatorTest {
     var result = SlaWaveCalculator.projectNextWave(
         INFLECTION_POINTS,
         currentBacklog,
-        THROUGHPUT,
+        PICKING_THROUGHPUT,
         pending,
         MIN_CYCLE_TIMES,
         emptyList()

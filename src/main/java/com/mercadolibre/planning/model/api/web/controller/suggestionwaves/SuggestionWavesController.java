@@ -26,17 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/logistic_center/{logisticCenterId}/projections")
 public class SuggestionWavesController {
 
-  private static Map<ProcessPath, Map<Instant, Integer>> asIntThroughput(final Map<ProcessPath, Map<Instant, Float>> throughput) {
-    return throughput.entrySet()
-        .stream()
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            entry -> entry.getValue().entrySet()
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, tph -> tph.getValue().intValue()))
-        ));
-  }
-
   private static WaveConfigurationDto toWave(final ProcessPath processPath, final WaveConfiguration configuration) {
     return new WaveConfigurationDto(
         processPath,
@@ -71,7 +60,9 @@ public class SuggestionWavesController {
         request.getProcessPathConfigurations(),
         request.getBacklogs(),
         request.getForecast(),
-        asIntThroughput(request.getThroughput())
+        request.getIntThroughput(),
+        request.getBacklogLimits(),
+        request.getPrecalculatedWavesAsEntities()
     );
     return ResponseEntity.ok(mapToDto(logisticCenterId, request.getViewDate(), waves));
   }

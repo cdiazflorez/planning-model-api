@@ -4,7 +4,11 @@ public final class MathUtil {
 
   private MathUtil() {}
 
-  public static Double safeDiv(final Double numerator, final Double denominator) {
-    return denominator.equals(0D) ? 0D : numerator / denominator;
+  public static double safeDiv(final double numerator, final double denominator) {
+    return denominator == 0D ? 0D : numerator / denominator;
+  }
+
+  public static float safeDiv(final float numerator, final float denominator) {
+    return denominator == 0F ? 0F : numerator / denominator;
   }
 }

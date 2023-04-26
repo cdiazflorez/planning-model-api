@@ -24,6 +24,10 @@ public final class WavesBySlaUtil {
 
   public static final Instant SLA_3 = Instant.parse("2023-03-06T05:00:00Z");
 
+  public static final List<Instant> INFLECTION_POINTS = Stream.iterate(FIRST_INFLECTION_POINT, date -> date.plus(5, ChronoUnit.MINUTES))
+      .limit(ChronoUnit.MINUTES.between(FIRST_INFLECTION_POINT, LAST_INFLECTION_POINT) / 5)
+      .collect(Collectors.toList());
+
   public static final Map<Instant, Integer> TPH = Map.of(
       Instant.parse("2023-03-06T00:00:00Z"), 60,
       Instant.parse("2023-03-06T01:00:00Z"), 60,
@@ -32,10 +36,6 @@ public final class WavesBySlaUtil {
       Instant.parse("2023-03-06T04:00:00Z"), 60,
       Instant.parse("2023-03-06T05:00:00Z"), 60
   );
-
-  static final List<Instant> INFLECTION_POINTS = Stream.iterate(FIRST_INFLECTION_POINT, date -> date.plus(5, ChronoUnit.MINUTES))
-      .limit((ChronoUnit.MINUTES.between(FIRST_INFLECTION_POINT, LAST_INFLECTION_POINT) / 5) + 1)
-      .collect(Collectors.toList());
 
   static final Map<ProcessPath, Integer> MIN_CYCLE_TIMES = Map.of(TOT_MONO, 60, TOT_MULTI_BATCH, 60);
 

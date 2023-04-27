@@ -74,7 +74,8 @@ public final class UpperBoundsCalculator {
       final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
       final Map<ProcessName, Map<Instant, Integer>> throughputByProcess,
       final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath,
-      final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits
+      final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits,
+      final Map<ProcessPath, Integer> lowerBounds
   ) {
     final var processPaths = new ArrayList<>(pickingThroughputByProcessPath.keySet());
 
@@ -84,7 +85,8 @@ public final class UpperBoundsCalculator {
         waveExecutionDate,
         projectedBacklog,
         pickingThroughputByProcessPath,
-        backlogUpperLimits
+        backlogUpperLimits,
+        lowerBounds
     );
 
     for (int i = 0; i < MAX_OPTIMIZATION_STEPS; i++) {
@@ -120,7 +122,8 @@ public final class UpperBoundsCalculator {
       final Instant waveExecutionDate,
       final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath,
-      final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits
+      final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits,
+      final Map<ProcessPath, Integer> lowerBounds
   ) {
     final var waveExecutionHour = waveExecutionDate.truncatedTo(HOURS);
 
@@ -129,7 +132,8 @@ public final class UpperBoundsCalculator {
     return InitialWaveStrategy.matchThroughputRatio(
         waveExecutionDate,
         bufferSize,
-        pickingThroughputByProcessPath
+        pickingThroughputByProcessPath,
+        lowerBounds
     );
   }
 

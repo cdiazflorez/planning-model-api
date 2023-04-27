@@ -26,7 +26,8 @@ final class InitialWaveStrategy {
   static WaveDistribution matchThroughputRatio(
       final Instant waveExecutionDate,
       final long bufferSize,
-      final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath
+      final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath,
+      final Map<ProcessPath, Integer> lowerBounds
   ) {
     final var waveExecutionHour = waveExecutionDate.truncatedTo(HOURS);
     final var waveExecutionHourThroughput = getWaveExecutionHourThroughput(waveExecutionHour, pickingThroughputByProcessPath);
@@ -41,11 +42,11 @@ final class InitialWaveStrategy {
         .collect(
             toMap(
                 Map.Entry::getKey,
-                entry -> unitsToWave(bufferSize, entry.getValue(), totalThroughput)
+                entry -> unitsToWave(bufferSize, lowerBounds.get(entry.getKey()), entry.getValue(), totalThroughput)
             )
         );
 
-    return new WaveDistribution(distribution);
+    return new WaveDistribution(distribution, lowerBounds);
   }
 
   private static Map<ProcessPath, Integer> getWaveExecutionHourThroughput(
@@ -63,10 +64,17 @@ final class InitialWaveStrategy {
         );
   }
 
-  private static int unitsToWave(final long bufferSize, final int processPathThroughput, final float totalThroughput) {
-    return totalThroughput == 0
+  private static int unitsToWave(
+      final long bufferSize,
+      final int lowerBound,
+      final int processPathThroughput,
+      final float totalThroughput
+  ) {
+    final var units = totalThroughput == 0
         ? 0
         : Math.round(bufferSize * (processPathThroughput / totalThroughput));
+
+    return Math.max(units, lowerBound);
   }
 
 }

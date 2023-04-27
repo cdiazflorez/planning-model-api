@@ -30,6 +30,8 @@ public class WaveDistribution {
 
   Map<ProcessPath, Integer> distribution;
 
+  Map<ProcessPath, Integer> lowerBounds;
+
   private static Map<ProcessPath, Map<Instant, Long>> waveableBacklog(
       final Instant waveDate,
       final List<Wave> previousWaves,
@@ -99,7 +101,7 @@ public class WaveDistribution {
             toMap(
                 Function.identity(),
                 pp -> Math.max(
-                    0,
+                    lowerBounds.get(pp),
                     Math.min(
                         distribution.get(pp) + unitsDiff.getOrDefault(pp, 0),
                         maxWaveableUnits.get(pp)
@@ -108,6 +110,6 @@ public class WaveDistribution {
             )
         );
 
-    return new WaveDistribution(adjustedDistribution);
+    return new WaveDistribution(adjustedDistribution, lowerBounds);
   }
 }

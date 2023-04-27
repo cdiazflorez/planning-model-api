@@ -88,6 +88,12 @@ class UpperBoundsCalculatorTest {
       TOT_MULTI_BATCH, TPH
   );
 
+  private static final Map<ProcessPath, Integer> LOWER_BOUNDS = Map.of(
+      TOT_MONO, 0,
+      NON_TOT_MONO, 0,
+      TOT_MULTI_BATCH, 0
+  );
+
   private static Map<Instant, Integer> tph(int val) {
     return Map.of(
         Instant.parse("2023-03-06T00:00:00Z"), val,
@@ -129,7 +135,8 @@ class UpperBoundsCalculatorTest {
         PROJECTED_BACKLOG,
         THROUGHPUT,
         PICKING_THROUGHPUT,
-        limits
+        limits,
+        LOWER_BOUNDS
     );
 
     // THEN
@@ -164,7 +171,8 @@ class UpperBoundsCalculatorTest {
         PROJECTED_BACKLOG,
         THROUGHPUT,
         PICKING_THROUGHPUT,
-        limits
+        limits,
+        LOWER_BOUNDS
     );
 
     // THEN
@@ -207,7 +215,8 @@ class UpperBoundsCalculatorTest {
         PROJECTED_BACKLOG,
         THROUGHPUT,
         PICKING_THROUGHPUT,
-        limits
+        limits,
+        LOWER_BOUNDS
     );
 
     // THEN
@@ -250,7 +259,8 @@ class UpperBoundsCalculatorTest {
         PROJECTED_BACKLOG,
         THROUGHPUT,
         PICKING_THROUGHPUT,
-        limits
+        limits,
+        LOWER_BOUNDS
     );
 
     // THEN
@@ -263,7 +273,7 @@ class UpperBoundsCalculatorTest {
   }
 
   @Test
-  @DisplayName("on trigger projection without available buffer in packing and packing wall then wave size must be zero")
+  @DisplayName("on trigger projection without available buffer in packing and packing wall then wave size must equal the lower bound")
   void testFullyCappedByPacking() {
     // GIVEN
     final var limits = Map.of(
@@ -283,6 +293,12 @@ class UpperBoundsCalculatorTest {
         Collections.emptyMap()
     );
 
+    final var lowerBounds = Map.of(
+        TOT_MONO, 200,
+        NON_TOT_MONO, 100,
+        TOT_MULTI_BATCH, 50
+    );
+
     // WHEN
     final var result = UpperBoundsCalculator.calculate(
         WAVE_EXECUTION_DATE,
@@ -293,15 +309,16 @@ class UpperBoundsCalculatorTest {
         PROJECTED_BACKLOG,
         THROUGHPUT,
         PICKING_THROUGHPUT,
-        limits
+        limits,
+        lowerBounds
     );
 
     // THEN
     assertNotNull(result);
     assertEquals(3, result.size());
 
-    assertEquals(0, result.get(TOT_MONO));
-    assertEquals(0, result.get(NON_TOT_MONO));
+    assertEquals(200, result.get(TOT_MONO));
+    assertEquals(100, result.get(NON_TOT_MONO));
     assertEquals(1000, result.get(TOT_MULTI_BATCH));
   }
 

@@ -216,10 +216,10 @@ class NextIdlenessWaveProjectorTest {
     assertEquals(TriggerName.IDLENESS, wave.getReason());
 
     final var confs = wave.getConfiguration();
-    assertEquals(1049, confs.get(TOT_MONO).getUpperBound());
+    assertEquals(928, confs.get(TOT_MONO).getUpperBound());
     assertEquals(240, confs.get(TOT_MONO).getLowerBound());
 
-    assertEquals(1049, confs.get(NON_TOT_MONO).getUpperBound());
+    assertEquals(928, confs.get(NON_TOT_MONO).getUpperBound());
     assertEquals(240, confs.get(NON_TOT_MONO).getLowerBound());
 
     assertEquals(240, confs.get(TOT_MULTI_BATCH).getUpperBound());

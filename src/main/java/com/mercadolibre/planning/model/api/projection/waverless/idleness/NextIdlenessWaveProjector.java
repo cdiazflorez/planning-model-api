@@ -123,6 +123,8 @@ public final class NextIdlenessWaveProjector {
     final var globalThroughput = throughputByProcessPath.get(ProcessPath.GLOBAL);
     final var pickingThroughput = getPickingThroughputByProcessPath(throughputByProcessPath);
 
+    final var lowerBounds = LowerBoundCalculator.lowerBounds(WAVE_LOWER_BOUND_IN_MINUTES, waveExecutionDate, throughputByProcessPath);
+
     final var upperBounds = UpperBoundsCalculator.calculate(
         waveExecutionDate,
         inflectionPoints,
@@ -132,10 +134,9 @@ public final class NextIdlenessWaveProjector {
         projectedBacklog,
         globalThroughput,
         pickingThroughput,
-        backlogUpperLimits
+        backlogUpperLimits,
+        lowerBounds
     );
-
-    final var lowerBounds = LowerBoundCalculator.lowerBounds(WAVE_LOWER_BOUND_IN_MINUTES, waveExecutionDate, throughputByProcessPath);
 
     final var wavedUnitsByCptAndProcessPath = UnitsByCptCalculator.calculateBacklogToWave(
         waveExecutionDate,

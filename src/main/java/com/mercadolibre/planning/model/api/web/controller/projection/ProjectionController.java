@@ -48,7 +48,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.LongVariable"})
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/workflows/{workflow}/projections")

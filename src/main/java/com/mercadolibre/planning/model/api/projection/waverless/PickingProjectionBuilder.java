@@ -65,7 +65,7 @@ public final class PickingProjectionBuilder {
   }
 
   public static ContextsHolder buildContextHolder(
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> throughput
   ) {
     final var processPaths = throughput.keySet();
@@ -97,7 +97,7 @@ public final class PickingProjectionBuilder {
       final List<Instant> slas
   ) {
     final var updatedContexts = processor.accept(
-        contexts, asPiecewiseUpstream(waves), inflectionPoints
+        contexts, ProjectionUtils.asPiecewiseUpstream(waves), inflectionPoints
     );
 
     return processPaths.stream()
@@ -113,18 +113,6 @@ public final class PickingProjectionBuilder {
     final var processPathContext = holder.getProcessContextByProcessName(key);
 
     return calculateProjectedEndDate(new ContextsHolder(Map.of(key, processPathContext)), key, slas);
-  }
-
-  public static PiecewiseUpstream asPiecewiseUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
-    return new PiecewiseUpstream(
-        waves.entrySet().stream()
-            .collect(
-                toMap(
-                    Map.Entry::getKey,
-                    entry -> OrderedBacklogByProcessPath.from(entry.getValue())
-                )
-            )
-    );
   }
 
   private static String processorName(final ProcessPath path) {
@@ -152,7 +140,7 @@ public final class PickingProjectionBuilder {
   }
 
   private static Map<String, ProcessContext> buildSimpleProcessContexts(
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> throughput
   ) {
     final var orderedBacklogByProcessPath = currentBacklog.entrySet()

@@ -18,6 +18,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.Delegate
 import com.mercadolibre.flow.projection.tools.services.entities.context.Merger;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
+import com.mercadolibre.flow.projection.tools.services.entities.context.UnprocessedBacklogState;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class BacklogProjection {
 
@@ -211,10 +213,9 @@ final class BacklogProjection {
    * @param upstream         Objeto con el cual se obtienen los UnprocessedBacklogs según cálculo entre los inflectionPoints
    * @param inflectionPoints Lista de Inflection de los cuales se requiere obtener los UnprocessedBacklogs
    * @param processes        Lista de Procesos de los cuales se requiere obtener los UnprocessedBacklogs
-   * @return Lista de UnprocessedBacklogs
+   * @return Backlog total por proceso en cada instante.
    */
-  // WIP
-  static List<BacklogQuantityAtInflectionPoint> project(
+  static Map<ProcessName, Map<Instant, Long>> project(
       final Processor graph,
       final ContextsHolder holder,
       final PiecewiseUpstream upstream,
@@ -224,16 +225,18 @@ final class BacklogProjection {
     final var processedContexts = graph.accept(holder, upstream, inflectionPoints);
 
     return processes.stream()
-        .flatMap(processName ->
-            ((SimpleProcess.Context) processedContexts.getProcessContextByProcessName(processorName(processName))).getUnprocessedBacklog()
-                .stream()
-                .map(unprocessedBacklogState -> new BacklogQuantityAtInflectionPoint(
-                    unprocessedBacklogState.getEndDate(),
-                    processName,
-                    unprocessedBacklogState.getBacklog().total())
-                )
-        )
-        .collect(Collectors.toList());
+        .collect(
+            toMap(
+                Function.identity(),
+                process -> Stream.of(process)
+                    .map(BacklogProjection::processorName)
+                    .map(processedContexts::getProcessContextByProcessName)
+                    .map(SimpleProcess.Context.class::cast)
+                    .map(SimpleProcess.Context::getUnprocessedBacklog)
+                    .flatMap(List::stream)
+                    .collect(toMap(UnprocessedBacklogState::getEndDate, ubs -> ubs.getBacklog().total()))
+            )
+        );
   }
 
 }

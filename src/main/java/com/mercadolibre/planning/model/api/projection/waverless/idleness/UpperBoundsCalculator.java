@@ -5,40 +5,33 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
-import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.asPiecewiseUpstream;
 import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildContexts;
 import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildGraph;
 import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.project;
 import static com.mercadolibre.planning.model.api.util.MathUtil.safeDiv;
 import static java.time.temporal.ChronoUnit.HOURS;
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessNameToProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public final class UpperBoundsCalculator {
 
   private static final int MAX_OPTIMIZATION_STEPS = 50;
-
-  private static final long INFLECTION_POINT_WINDOW_SIZE = 5L;
 
   private static final Set<ProcessName> PROCESSES = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
@@ -78,7 +71,7 @@ public final class UpperBoundsCalculator {
       final List<Wave> previousWaves,
       final PendingBacklog pendingBacklog,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
-      final List<BacklogQuantityAtInflectionPoint> projectedBacklog,
+      final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
       final Map<ProcessName, Map<Instant, Integer>> throughputByProcess,
       final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath,
       final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits
@@ -125,31 +118,19 @@ public final class UpperBoundsCalculator {
 
   private static WaveDistribution calculateInitialWaveDistribution(
       final Instant waveExecutionDate,
-      final List<BacklogQuantityAtInflectionPoint> projectedBacklog,
+      final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> pickingThroughputByProcessPath,
       final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits
   ) {
-    final var projectionsByDate = groupProjectionsByDate(projectedBacklog);
-
     final var waveExecutionHour = waveExecutionDate.truncatedTo(HOURS);
 
-    final var bufferSize = backlogUpperLimits.get(PICKING).get(waveExecutionHour) - projectionsByDate.get(PICKING).get(waveExecutionDate);
+    final var bufferSize = backlogUpperLimits.get(PICKING).get(waveExecutionHour) - projectedBacklog.get(PICKING).get(waveExecutionDate);
 
     return InitialWaveStrategy.matchThroughputRatio(
         waveExecutionDate,
         bufferSize,
         pickingThroughputByProcessPath
     );
-  }
-
-  private static Map<ProcessName, Map<Instant, Long>> groupProjectionsByDate(final List<BacklogQuantityAtInflectionPoint> projections) {
-    return projections.stream()
-        .collect(
-            groupingBy(
-                BacklogQuantityAtInflectionPoint::getProcessName,
-                toMap(BacklogQuantityAtInflectionPoint::getInflectionPoint, BacklogQuantityAtInflectionPoint::getQuantity, Long::sum)
-            )
-        );
   }
 
   private static Map<ProcessPath, Integer> calculateMaxWaveableUnits(
@@ -195,12 +176,20 @@ public final class UpperBoundsCalculator {
     final var allWaves = new ArrayList<>(previousWaves);
     allWaves.add(candidateWave);
 
-    final var projection = getBacklogProjection(inflectionPoints, allWaves, currentBacklog, throughput);
-    final var filteredProjections = projection.stream()
-        .filter(bp -> bp.getInflectionPoint().isAfter(waveExecutionDate) || bp.getInflectionPoint().equals(waveExecutionDate))
-        .collect(Collectors.toList());
+    final var projections = getBacklogProjection(inflectionPoints, allWaves, currentBacklog, throughput);
 
-    return groupProjectionsByDate(filteredProjections);
+    return projections.entrySet()
+        .stream()
+        .collect(
+            toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue()
+                    .entrySet()
+                    .stream()
+                    .filter(bp -> bp.getKey().isAfter(waveExecutionDate) || bp.getKey().equals(waveExecutionDate))
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue))
+            )
+        );
   }
 
   private static Map<ProcessPath, Integer> diffByProcessPath(
@@ -303,7 +292,7 @@ public final class UpperBoundsCalculator {
         .orElse(0);
   }
 
-  private static List<BacklogQuantityAtInflectionPoint> getBacklogProjection(
+  private static Map<ProcessName, Map<Instant, Long>> getBacklogProjection(
       final List<Instant> inflectionPoints,
       final List<Wave> waves,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
@@ -311,33 +300,10 @@ public final class UpperBoundsCalculator {
   ) {
     final var graph = buildGraph();
     final var contexts = buildContexts(currentBacklog, throughput);
-    final var upstream = toPiecewiseUpstream(waves);
+    final var upstream = ProjectionUtils.toPiecewiseUpstream(waves);
 
     return project(graph, contexts, upstream, inflectionPoints, PROCESSES);
   }
-
-  private static PiecewiseUpstream toPiecewiseUpstream(final List<Wave> waves) {
-    final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> wavesByDate = waves.stream()
-        .collect(toMap(
-            Wave::getDate,
-            wave -> wave.getConfiguration().entrySet()
-                .stream()
-                .collect(toMap(
-                    Map.Entry::getKey,
-                    entry -> entry.getValue().getWavedUnitsByCpt()
-                ))
-        ));
-
-    final var emptyWave = Map.of(ProcessPath.TOT_MONO, Map.of(Instant.now(), 0L));
-
-    // TODO: replace this when updating lib upstream backlog to an interface
-    final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> fixedWaves = new HashMap<>();
-    wavesByDate.forEach((date, wave) -> fixedWaves.put(date.plus(INFLECTION_POINT_WINDOW_SIZE, ChronoUnit.MINUTES), emptyWave));
-    fixedWaves.putAll(wavesByDate);
-
-    return asPiecewiseUpstream(fixedWaves);
-  }
-
 
   private static int totalAdjustedUnits(final Map<ProcessPath, Integer> unitsDiff) {
     return unitsDiff.values()

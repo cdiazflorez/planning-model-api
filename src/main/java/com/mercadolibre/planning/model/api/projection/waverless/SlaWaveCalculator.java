@@ -188,7 +188,7 @@ public final class SlaWaveCalculator {
     return Optional.of(new Wave(waveDate, SLA, configurations));
   }
 
-  private static Map<ProcessPath, Map<Instant, Integer>> asBacklogs(
+  private static Map<ProcessPath, Map<Instant, Long>> asBacklogs(
       final Instant inflectionPoint,
       final Map<Instant, List<CurrentBacklog>> currentBacklogs
   ) {
@@ -290,7 +290,7 @@ public final class SlaWaveCalculator {
 
     Instant cpt;
 
-    Integer units;
+    Long units;
   }
 
   /**

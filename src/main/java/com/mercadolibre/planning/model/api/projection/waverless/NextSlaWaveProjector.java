@@ -1,21 +1,17 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
-import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.asPiecewiseUpstream;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.backlogProjection;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildContextHolder;
 import static java.util.Collections.emptyMap;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.ProcessPathBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.SlaWaveCalculator.CurrentBacklog;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,8 +22,6 @@ import java.util.stream.Stream;
 public final class NextSlaWaveProjector {
 
   private static final int MIN_INFLECTION_POINTS_TO_PROJECT = 2;
-
-  private static final long INFLECTION_POINT_WINDOW_SIZE = 5L;
 
   private NextSlaWaveProjector() {
   }
@@ -50,7 +44,7 @@ public final class NextSlaWaveProjector {
       final List<Instant> inflectionPoints,
       final List<Wave> waves,
       final PendingBacklog pendingBacklog,
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final Map<ProcessPath, Integer> minCycleTimes
   ) {
@@ -123,12 +117,12 @@ public final class NextSlaWaveProjector {
   }
 
   private static CurrentBacklog toCurrentBacklog(final ProcessPathBacklog projection) {
-    return new CurrentBacklog(projection.getProcessPath(), projection.getCpt(), projection.getUnits().intValue());
+    return new CurrentBacklog(projection.getProcessPath(), projection.getCpt(), projection.getUnits());
   }
 
   private static Stream<ProcessPathBacklog> calculateBacklogStates(
       final List<Instant> inflectionPoints,
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
       final List<Wave> waves
   ) {
@@ -143,7 +137,7 @@ public final class NextSlaWaveProjector {
 
   private static Stream<ProcessPathBacklog> mapCurrentBacklogState(
       final Instant currentInflectionPoint,
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog
   ) {
     return currentBacklog.keySet()
         .stream()
@@ -154,7 +148,7 @@ public final class NextSlaWaveProjector {
                     pp,
                     ProcessName.PICKING,
                     entry.getKey(),
-                    entry.getValue().longValue()
+                    entry.getValue()
                 )
             )
         );
@@ -164,35 +158,13 @@ public final class NextSlaWaveProjector {
       final Processor graph,
       final Instant currentInflectionPoint,
       final List<Instant> inflectionPoints,
-      final Map<ProcessPath, Map<Instant, Integer>> currentBacklog,
+      final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
       final List<Wave> waves
   ) {
     final var contextsHolder = buildContextHolder(currentBacklog, throughput);
-    final var upstream = toPiecewiseUpstream(waves);
+    final var upstream = ProjectionUtils.toPiecewiseUpstream(waves);
     return backlogProjection(graph, contextsHolder, upstream, inflectionPoints, throughput.keySet()).stream()
         .filter(projection -> !projection.getDate().equals(currentInflectionPoint));
   }
-
-  private static PiecewiseUpstream toPiecewiseUpstream(final List<Wave> waves) {
-    final var wavesByDate = waves.stream()
-        .collect(Collectors.toMap(
-            Wave::getDate,
-            wave -> wave.getConfiguration().entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                    Map.Entry::getKey,
-                    entry -> entry.getValue().getWavedUnitsByCpt()
-                ))
-        ));
-
-    final var emptyWave = Map.of(ProcessPath.TOT_MONO, Map.of(Instant.now(), 0L));
-
-    // TODO: replace this when updating lib upstream backlog to an interface
-    final var fixedWaves = new HashMap<>(wavesByDate);
-    wavesByDate.forEach((date, wave) -> fixedWaves.put(date.plus(INFLECTION_POINT_WINDOW_SIZE, ChronoUnit.MINUTES), emptyWave));
-
-    return asPiecewiseUpstream(fixedWaves);
-  }
-
 }

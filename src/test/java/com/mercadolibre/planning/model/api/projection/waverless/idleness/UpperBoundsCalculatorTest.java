@@ -40,8 +40,8 @@ class UpperBoundsCalculatorTest {
 
   private static final Map<Instant, Integer> ZERO_LIMITS = tph(0);
 
-  private static final List<BacklogQuantityAtInflectionPoint> PROJECTED_BACKLOG = List.of(
-      new BacklogQuantityAtInflectionPoint(WAVE_EXECUTION_DATE, PICKING, 1500L)
+  private static final Map<ProcessName, Map<Instant, Long>> PROJECTED_BACKLOG = Map.of(
+      PICKING, Map.of(WAVE_EXECUTION_DATE, 1500L)
   );
 
   private static final PendingBacklog PENDING_BACKLOG = new PendingBacklog(

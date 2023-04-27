@@ -72,8 +72,8 @@ class PickingProjectionBuilderTest {
   void testContextHolderBuilding() {
     // GIVEN
     final var currentBacklog = Map.of(
-        TOT_MONO, Map.of(DATE_OUT_1, 100, DATE_OUT_2, 200),
-        NON_TOT_MONO, Map.of(DATE_OUT_1, 200, DATE_OUT_2, 300)
+        TOT_MONO, Map.of(DATE_OUT_1, 100L, DATE_OUT_2, 200L),
+        NON_TOT_MONO, Map.of(DATE_OUT_1, 200L, DATE_OUT_2, 300L)
     );
 
     final var throughput = Map.of(
@@ -109,8 +109,8 @@ class PickingProjectionBuilderTest {
   void testSlaProjection() {
     // GIVEN
     final var currentBacklog = Map.of(
-        TOT_MONO, Map.of(DATE_OUT_1, 100, DATE_OUT_2, 200),
-        NON_TOT_MONO, Map.of(DATE_OUT_1, 200, DATE_OUT_2, 300)
+        TOT_MONO, Map.of(DATE_OUT_1, 100L, DATE_OUT_2, 200L),
+        NON_TOT_MONO, Map.of(DATE_OUT_1, 200L, DATE_OUT_2, 300L)
     );
 
     final var throughput = Map.of(
@@ -162,8 +162,8 @@ class PickingProjectionBuilderTest {
   void testBacklogProjection() {
     // GIVEN
     final var currentBacklog = Map.of(
-        TOT_MONO, Map.of(DATE_OUT_1, 200, DATE_OUT_2, 100),
-        NON_TOT_MONO, Map.of(DATE_OUT_1, 300, DATE_OUT_2, 400)
+        TOT_MONO, Map.of(DATE_OUT_1, 200L, DATE_OUT_2, 100L),
+        NON_TOT_MONO, Map.of(DATE_OUT_1, 300L, DATE_OUT_2, 400L)
     );
 
     final var throughput = Map.of(

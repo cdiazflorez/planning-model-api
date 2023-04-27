@@ -6,5 +6,5 @@ import lombok.Value;
 
 @Value
 public class PrecalculatedWave {
-  Map<Instant, Integer> unitsBySla;
+  Map<Instant, Long> unitsBySla;
 }

@@ -52,7 +52,7 @@ class WaveCalculatorTest {
 
     // THEN
     assertNotNull(result);
-    assertEquals(6, result.size());
+    assertEquals(7, result.size());
   }
 
   @Test

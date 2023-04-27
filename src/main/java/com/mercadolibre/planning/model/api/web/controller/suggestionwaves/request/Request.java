@@ -66,7 +66,7 @@ public class Request {
 
   @Data
   public static class PrecalculatedWaveDto {
-    Map<Instant, Integer> unitsBySla;
+    Map<Instant, Long> unitsBySla;
   }
 
 }

@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test;
 
 class NextSlaWaveProjectorTest {
 
-  private static final Map<ProcessPath, Map<Instant, Integer>> CURRENT_BACKLOG = Map.of(
-      TOT_MONO, Map.of(SLA_1, 17, SLA_2, 0)
+  private static final Map<ProcessPath, Map<Instant, Long>> CURRENT_BACKLOG = Map.of(
+      TOT_MONO, Map.of(SLA_1, 17L, SLA_2, 0L)
   );
 
   private static final Map<ProcessPath, List<PendingBacklog.AvailableBacklog>> READY_TO_WAVE = Map.of(

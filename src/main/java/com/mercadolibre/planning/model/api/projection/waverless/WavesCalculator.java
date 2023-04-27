@@ -42,7 +42,7 @@ public final class WavesCalculator {
 
     final PendingBacklog pendingBacklog = asPendingBacklog(executionDate, backlogs, forecast);
 
-    final Map<ProcessName, Map<ProcessPath, Map<Instant, Integer>>> currentBacklog = asCurrentBacklogs(backlogs);
+    final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog = asCurrentBacklogs(backlogs);
 
     final Map<ProcessPath, Integer> minCycleTimesByPP = configurations.stream()
         .collect(toMap(ProcessPathConfiguration::getProcessPath, ProcessPathConfiguration::getMinCycleTime));
@@ -109,18 +109,19 @@ public final class WavesCalculator {
     return new PendingBacklog(currentBacklogs, forecastedBacklog);
   }
 
-  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Integer>>> asCurrentBacklogs(
+  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> asCurrentBacklogs(
       final List<UnitsByProcessPathAndProcess> backlogs
   ) {
     return backlogs.stream()
+        .filter(backlog -> backlog.getProcessName() != ProcessName.WAVING)
         .collect(groupingBy(
                 UnitsByProcessPathAndProcess::getProcessName,
                 groupingBy(
                     UnitsByProcessPathAndProcess::getProcessPath,
                     toMap(
                         UnitsByProcessPathAndProcess::getDateOut,
-                        UnitsByProcessPathAndProcess::getUnits,
-                        Integer::sum
+                        backlog -> (long) backlog.getUnits(),
+                        Long::sum
                     )
                 )
             )

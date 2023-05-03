@@ -1,104 +1,85 @@
 {
   "logistic_center_id": "ARTW01",
-  "execution_date": "2023-03-06T00:00:00Z",
+  "execution_date": "2023-03-29T00:00:00Z",
   "suggestions": [
     {
-      "date": "2023-03-06T00:30:00Z",
+      "date": "2023-03-29T01:20:00Z",
       "waves": [
         {
+          "process_path": "non_tot_mono",
+          "lower_bound": 600,
+          "upper_bound": 2699,
+          "sla_dates": [
+            "2023-03-29T06:00:00Z"
+          ]
+        },
+        {
+          "process_path": "tot_multi_batch",
+          "lower_bound": 600,
+          "upper_bound": 2699,
+          "sla_dates": [
+            "2023-03-29T06:00:00Z"
+          ]
+        },
+        {
           "process_path": "tot_mono",
-          "lower_bound": 140,
+          "lower_bound": 600,
+          "upper_bound": 2699,
+          "sla_dates": [
+            "2023-03-06T02:00:00Z",
+            "2023-03-29T06:00:00Z"
+          ]
+        }
+      ],
+      "reason": "IDLENESS"
+    },
+    {
+      "date": "2023-03-29T01:45:00Z",
+      "waves": [
+        {
+          "process_path": "non_tot_mono",
+          "lower_bound": 3801,
           "upper_bound": -1,
           "sla_dates": [
-            "2023-03-06T02:00:00Z"
+            "2023-03-29T06:00:00Z"
+          ]
+        },
+        {
+          "process_path": "tot_multi_batch",
+          "lower_bound": 3801,
+          "upper_bound": -1,
+          "sla_dates": [
+            "2023-03-29T06:00:00Z"
           ]
         }
       ],
       "reason": "SLA"
     },
     {
-      "date": "2023-03-06T00:35:00Z",
+      "date": "2023-03-29T05:40:00Z",
       "waves": [
         {
+          "process_path": "non_tot_mono",
+          "lower_bound": 600,
+          "upper_bound": 600,
+          "sla_dates": []
+        },
+        {
+          "process_path": "tot_multi_batch",
+          "lower_bound": 600,
+          "upper_bound": 600,
+          "sla_dates": []
+        },
+        {
           "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
+          "lower_bound": 600,
+          "upper_bound": 3861,
           "sla_dates": [
-            "2023-03-06T02:00:00Z"
+            "2023-03-29T06:00:00Z"
           ]
         }
       ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-06T00:40:00Z",
-      "waves": [
-        {
-          "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-06T02:00:00Z"
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-06T00:45:00Z",
-      "waves": [
-        {
-          "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-06T02:00:00Z"
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-06T00:50:00Z",
-      "waves": [
-        {
-          "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-06T02:00:00Z"
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-06T00:55:00Z",
-      "waves": [
-        {
-          "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-06T02:00:00Z"
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-06T01:00:00Z",
-      "waves": [
-        {
-          "process_path": "tot_mono",
-          "lower_bound": 5,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-06T02:00:00Z"
-          ]
-        }
-      ],
-      "reason": "SLA"
+      "reason": "IDLENESS"
     }
   ]
 }

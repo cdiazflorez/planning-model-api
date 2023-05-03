@@ -27,7 +27,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public final class NextIdlenessWaveProjector {
 
   public static final int WAVE_LOWER_BOUND_IN_MINUTES = 30;
@@ -67,23 +69,44 @@ public final class NextIdlenessWaveProjector {
     final var pickingBacklogs = backlogsStates.get(PICKING);
     final var waveDate = calculateWaveDate(pickingLowerLimits, pickingBacklogs);
 
-    return waveDate.map(date ->
-        new Wave(
-            date,
-            IDLENESS,
-            getConfigurations(
+    return waveDate.filter(date -> isAfterPreviousWavesByIdleness(date, previousWaves))
+        .map(date ->
+            new Wave(
                 date,
-                inflectionPoints,
-                previousWaves,
-                pendingBacklog,
-                backlogs,
-                backlogsStates,
-                throughput,
-                backlogLimits.getUpper(),
-                precalculatedWaves
+                IDLENESS,
+                getConfigurations(
+                    date,
+                    inflectionPoints,
+                    previousWaves,
+                    pendingBacklog,
+                    backlogs,
+                    backlogsStates,
+                    throughput,
+                    backlogLimits.getUpper(),
+                    precalculatedWaves
+                )
             )
-        )
-    );
+        );
+  }
+
+  private static boolean isAfterPreviousWavesByIdleness(final Instant waveDate, final List<Wave> previousWaves) {
+    final var maxWaveDate = previousWaves.stream()
+        .filter(wave -> wave.getReason() == IDLENESS)
+        .map(Wave::getDate)
+        .max(Comparator.naturalOrder());
+
+    if (maxWaveDate.isEmpty()) {
+      return true;
+    }
+
+    final var previousWaveDate = maxWaveDate.get();
+    final var isAfter = waveDate.isAfter(previousWaveDate);
+
+    if (!isAfter) {
+      log.error("calculated idleness wave date is not after the previous one. new: {}, previous: {}", waveDate, previousWaveDate);
+    }
+
+    return isAfter;
   }
 
   private static Map<ProcessName, Map<Instant, Long>> calculateBacklogStates(

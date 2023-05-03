@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.NextIdlenessWaveProjector;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +51,7 @@ public final class WavesCalculator {
     final List<Wave> waves = new ArrayList<>();
     boolean nextWaveHasBeenProjected = true;
     while (waves.size() < MAX_WAVES_TO_PROJECT && nextWaveHasBeenProjected) {
-      final Optional<Wave> wave = NextSlaWaveProjector.nextWave(
+      final Optional<Wave> bySla = NextSlaWaveProjector.nextWave(
           inflectionPoints,
           waves,
           pendingBacklog,
@@ -58,6 +59,22 @@ public final class WavesCalculator {
           throughput,
           minCycleTimesByPP
       );
+
+      final Optional<Wave> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
+          inflectionPoints,
+          pendingBacklog,
+          currentBacklog,
+          throughput,
+          backlogLimits,
+          precalculatedWaves,
+          waves
+      );
+
+      final var wave = bySla.map(
+          sla -> byIdleness.map(
+              idl -> idl.getDate().isBefore(sla.getDate()) ? byIdleness : bySla
+          ).orElse(bySla)
+      ).orElse(byIdleness);
 
       wave.ifPresent(waves::add);
       nextWaveHasBeenProjected = wave.isPresent();
@@ -88,7 +105,7 @@ public final class WavesCalculator {
   ) {
 
     final var currentBacklogs = backlogs.stream()
-        .filter(backlog -> ProcessName.WAVING.equals(backlog.getProcessName()))
+        .filter(backlog -> backlog.getProcessName() == ProcessName.WAVING)
         .collect(groupingBy(
             UnitsByProcessPathAndProcess::getProcessPath,
             Collectors.mapping(

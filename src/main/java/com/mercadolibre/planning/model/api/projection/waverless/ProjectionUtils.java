@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
+import static java.util.stream.Collectors.flatMapping;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
@@ -21,15 +23,26 @@ public final class ProjectionUtils {
 
   public static PiecewiseUpstream toPiecewiseUpstream(final List<Wave> waves) {
     final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> wavesByDate = waves.stream()
-        .collect(toMap(
-            Wave::getDate,
-            wave -> wave.getConfiguration().entrySet()
-                .stream()
-                .collect(toMap(
-                    Map.Entry::getKey,
-                    entry -> entry.getValue().getWavedUnitsByCpt()
-                ))
-        ));
+        .collect(
+            groupingBy(
+                Wave::getDate,
+                flatMapping(
+                    wave -> wave.getConfiguration()
+                        .entrySet()
+                        .stream(),
+                    groupingBy(
+                        Map.Entry::getKey,
+                        flatMapping(
+                            entry -> entry.getValue()
+                                .getWavedUnitsByCpt()
+                                .entrySet()
+                                .stream(),
+                            toMap(Map.Entry::getKey, Map.Entry::getValue, Long::sum)
+                        )
+                    )
+                )
+            )
+        );
 
     // TODO: replace this when updating lib upstream backlog to an interface
     final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> fixedWaves = new HashMap<>();

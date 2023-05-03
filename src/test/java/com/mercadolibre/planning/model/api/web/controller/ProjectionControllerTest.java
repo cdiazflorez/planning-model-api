@@ -260,7 +260,6 @@ class ProjectionControllerTest {
     result.andExpect(status().isOk());
   }
 
-
   private void mockDeferralProjection(final Instant etd, final Instant projectedTime) {
     final var results = List.of(
         new DeferralProjectionOutput(

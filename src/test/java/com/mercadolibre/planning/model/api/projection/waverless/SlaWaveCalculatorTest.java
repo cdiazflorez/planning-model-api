@@ -36,7 +36,7 @@ class SlaWaveCalculatorTest {
 
   private static final Instant FORECAST_DATE_IN = Instant.parse("2023-03-06T02:00:00Z");
 
-  private static List<CurrentBacklog> projectedBacklog(final int sla1, final int sla2) {
+  private static List<CurrentBacklog> projectedBacklog(final long sla1, final long sla2) {
     return List.of(
         new CurrentBacklog(TOT_MONO, SLA_1, sla1),
         new CurrentBacklog(TOT_MONO, SLA_2, sla2)
@@ -69,14 +69,14 @@ class SlaWaveCalculatorTest {
   private static Arguments argumentsForTestWithMultipleCascadingSlasWithInitialBacklog() {
     return Arguments.of(
         Map.of(
-            inflectionPoint(0), projectedBacklog(17, 30),
-            inflectionPoint(1), projectedBacklog(15, 30),
-            inflectionPoint(2), projectedBacklog(13, 30),
-            inflectionPoint(3), projectedBacklog(11, 30),
-            inflectionPoint(4), projectedBacklog(9, 30),
-            inflectionPoint(5), projectedBacklog(7, 30),
-            inflectionPoint(6), projectedBacklog(5, 30),
-            inflectionPoint(7), projectedBacklog(2, 30)
+            inflectionPoint(0), projectedBacklog(17L, 30L),
+            inflectionPoint(1), projectedBacklog(15L, 30L),
+            inflectionPoint(2), projectedBacklog(13L, 30L),
+            inflectionPoint(3), projectedBacklog(11L, 30L),
+            inflectionPoint(4), projectedBacklog(9L, 30L),
+            inflectionPoint(5), projectedBacklog(7L, 30L),
+            inflectionPoint(6), projectedBacklog(5L, 30L),
+            inflectionPoint(7), projectedBacklog(2L, 30L)
         ),
         Map.of(
             TOT_MONO, List.of(
@@ -93,14 +93,14 @@ class SlaWaveCalculatorTest {
   private static Arguments argumentsForTestWithMultipleCascadingSlasWithInitialBacklogAndForecast() {
     return Arguments.of(
         Map.of(
-            inflectionPoint(0), projectedBacklog(17, 0),
-            inflectionPoint(1), projectedBacklog(15, 0),
-            inflectionPoint(2), projectedBacklog(13, 0),
-            inflectionPoint(3), projectedBacklog(11, 0),
-            inflectionPoint(4), projectedBacklog(9, 0),
-            inflectionPoint(5), projectedBacklog(7, 0),
-            inflectionPoint(6), projectedBacklog(5, 0),
-            inflectionPoint(7), projectedBacklog(2, 0)
+            inflectionPoint(0), projectedBacklog(17L, 0L),
+            inflectionPoint(1), projectedBacklog(15L, 0L),
+            inflectionPoint(2), projectedBacklog(13L, 0L),
+            inflectionPoint(3), projectedBacklog(11L, 0L),
+            inflectionPoint(4), projectedBacklog(9L, 0L),
+            inflectionPoint(5), projectedBacklog(7L, 0L),
+            inflectionPoint(6), projectedBacklog(5L, 0L),
+            inflectionPoint(7), projectedBacklog(2L, 0L)
         ),
         Map.of(
             TOT_MONO, List.of(

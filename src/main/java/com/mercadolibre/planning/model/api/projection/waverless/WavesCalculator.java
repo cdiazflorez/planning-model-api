@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.NextIdlenessWaveProjector;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +43,7 @@ public final class WavesCalculator {
 
     final PendingBacklog pendingBacklog = asPendingBacklog(executionDate, backlogs, forecast);
 
-    final Map<ProcessName, Map<ProcessPath, Map<Instant, Integer>>> currentBacklog = asCurrentBacklogs(backlogs);
+    final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog = asCurrentBacklogs(backlogs);
 
     final Map<ProcessPath, Integer> minCycleTimesByPP = configurations.stream()
         .collect(toMap(ProcessPathConfiguration::getProcessPath, ProcessPathConfiguration::getMinCycleTime));
@@ -50,7 +51,7 @@ public final class WavesCalculator {
     final List<Wave> waves = new ArrayList<>();
     boolean nextWaveHasBeenProjected = true;
     while (waves.size() < MAX_WAVES_TO_PROJECT && nextWaveHasBeenProjected) {
-      final Optional<Wave> wave = NextSlaWaveProjector.nextWave(
+      final Optional<Wave> bySla = NextSlaWaveProjector.nextWave(
           inflectionPoints,
           waves,
           pendingBacklog,
@@ -58,6 +59,22 @@ public final class WavesCalculator {
           throughput,
           minCycleTimesByPP
       );
+
+      final Optional<Wave> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
+          inflectionPoints,
+          pendingBacklog,
+          currentBacklog,
+          throughput,
+          backlogLimits,
+          precalculatedWaves,
+          waves
+      );
+
+      final var wave = bySla.map(
+          sla -> byIdleness.map(
+              idl -> idl.getDate().isBefore(sla.getDate()) ? byIdleness : bySla
+          ).orElse(bySla)
+      ).orElse(byIdleness);
 
       wave.ifPresent(waves::add);
       nextWaveHasBeenProjected = wave.isPresent();
@@ -88,7 +105,7 @@ public final class WavesCalculator {
   ) {
 
     final var currentBacklogs = backlogs.stream()
-        .filter(backlog -> ProcessName.WAVING.equals(backlog.getProcessName()))
+        .filter(backlog -> backlog.getProcessName() == ProcessName.WAVING)
         .collect(groupingBy(
             UnitsByProcessPathAndProcess::getProcessPath,
             Collectors.mapping(
@@ -109,18 +126,19 @@ public final class WavesCalculator {
     return new PendingBacklog(currentBacklogs, forecastedBacklog);
   }
 
-  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Integer>>> asCurrentBacklogs(
+  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> asCurrentBacklogs(
       final List<UnitsByProcessPathAndProcess> backlogs
   ) {
     return backlogs.stream()
+        .filter(backlog -> backlog.getProcessName() != ProcessName.WAVING)
         .collect(groupingBy(
                 UnitsByProcessPathAndProcess::getProcessName,
                 groupingBy(
                     UnitsByProcessPathAndProcess::getProcessPath,
                     toMap(
                         UnitsByProcessPathAndProcess::getDateOut,
-                        UnitsByProcessPathAndProcess::getUnits,
-                        Integer::sum
+                        backlog -> (long) backlog.getUnits(),
+                        Long::sum
                     )
                 )
             )

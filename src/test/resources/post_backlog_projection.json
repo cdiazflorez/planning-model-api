@@ -1,0 +1,37 @@
+{
+    "backlog": {
+        "process": [{
+            "name": "PICKING",
+            "process_path": [{
+                "name": "tot_mono",
+                "quantity": [{
+                    "date_out": "2023-04-10T10:00:00Z",
+                    "total": 50
+                }]
+            }]
+        }]
+    },
+    "planned_unit": {
+        "process_path": [{
+            "name": "tot_mono",
+            "quantity": [{
+                "date_in": "2023-04-10T10:00:00Z",
+                "date_out": "2023-04-10T10:00:00Z",
+                "total": 50
+            }]
+        }]
+    },
+    "throughput": [{
+        "operation_hour": "2023-04-10T10:00:00Z",
+        "processes": [{
+            "name": "PICKING",
+            "process_path": [{
+                "name": "tot_mono",
+                "total": 50
+            }]
+        }]
+    }],
+    "date_from": "2023-04-10T10:00:00Z",
+    "date_to": "2023-04-10T15:00:00Z",
+    "workflow": "fbm-wms-outbound"
+}

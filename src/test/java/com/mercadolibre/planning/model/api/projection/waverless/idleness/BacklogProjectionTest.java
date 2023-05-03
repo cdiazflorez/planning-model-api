@@ -24,12 +24,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -57,20 +54,16 @@ class BacklogProjectionTest {
     );
   }
 
-  private static void assertUnprocessedBacklogs(
-      final List<BacklogQuantityAtInflectionPoint> listBacklogs, final ProcessName process, final List<Long> totals) {
-
-    final List<BacklogQuantityAtInflectionPoint> listUnprocessedBacklog = listBacklogs.stream()
-        .filter(backlog -> Objects.equals(backlog.getProcessName(), process))
-        .collect(Collectors.toList());
-
-    assertEquals(totals.size(), listUnprocessedBacklog.size());
-
-    for (int i = 0; i < totals.size(); i++) {
-      assertEquals(totals.get(i), listUnprocessedBacklog.get(i).getQuantity());
-    }
+  private static Map<Instant, Long> expectedBacklogs(long d0, long d1, long d2, long d3, long d4, long d5) {
+    return Map.of(
+        DATES[1], d0,
+        DATES[2], d1,
+        DATES[3], d2,
+        DATES[4], d3,
+        DATES[5], d4,
+        DATES[6], d5
+    );
   }
-
 
   @Test
   @DisplayName("on backlog projection, then backlog must flow through processes")
@@ -109,24 +102,19 @@ class BacklogProjectionTest {
 
     final List<Instant> inflectionPoints = Arrays.asList(DATES);
 
-    final Set<ProcessName> processes = new HashSet<>(Arrays.asList(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL));
+    final Set<ProcessName> processes = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
-    final List<BacklogQuantityAtInflectionPoint> listUnprocessedBacklog = project(graph, holder, upstream, inflectionPoints, processes);
+    // WHEN
+    final var projectedBacklogs = project(graph, holder, upstream, inflectionPoints, processes);
 
     // THEN
-    assertNotNull(listUnprocessedBacklog);
-    assertFalse(listUnprocessedBacklog.isEmpty());
+    assertNotNull(projectedBacklogs);
+    assertFalse(projectedBacklogs.isEmpty());
 
-    // PICKING: 1752, 753, 0, 0, 0, 0
-    assertUnprocessedBacklogs(listUnprocessedBacklog, PICKING, List.of(1752L, 753L, 0L, 0L, 0L, 0L));
-    // PACKING: 1350, 1667, 1734, 2350, 2250, 1250
-    assertUnprocessedBacklogs(listUnprocessedBacklog, PACKING, List.of(1350L, 1667L, 1734L, 2350L, 2250L, 1250L));
-    // BATCH_SORTER: 1100, 781, 463, 100, 0, 0
-    assertUnprocessedBacklogs(listUnprocessedBacklog, BATCH_SORTER, List.of(1100L, 781L, 463L, 100L, 0L, 0L));
-    // WALL_IN: 0, 500, 1000, 1500, 1000, 100
-    assertUnprocessedBacklogs(listUnprocessedBacklog, WALL_IN, List.of(0L, 500L, 1000L, 1500L, 1000L, 100L));
-    // PACKING_WALL: 0, 0, 0, 0, 0, 500
-    assertUnprocessedBacklogs(listUnprocessedBacklog, PACKING_WALL, List.of(0L, 0L, 0L, 0L, 0L, 500L));
+    assertEquals(expectedBacklogs(1752L, 753L, 0L, 0L, 0L, 0L), projectedBacklogs.get(PICKING));
+    assertEquals(expectedBacklogs(1350L, 1667L, 1734L, 2350L, 2250L, 1250L), projectedBacklogs.get(PACKING));
+    assertEquals(expectedBacklogs(1100L, 781L, 463L, 100L, 0L, 0L), projectedBacklogs.get(BATCH_SORTER));
+    assertEquals(expectedBacklogs(0L, 500L, 1000L, 1500L, 1000L, 100L), projectedBacklogs.get(WALL_IN));
+    assertEquals(expectedBacklogs(0L, 0L, 0L, 0L, 0L, 500L), projectedBacklogs.get(PACKING_WALL));
   }
-
 }

@@ -58,6 +58,7 @@ public class Request {
     if (precalculatedWaves == null) {
       return Collections.emptyMap();
     }
+
     return precalculatedWaves.entrySet()
         .stream()
         .collect(Collectors.toMap(Map.Entry::getKey, entry -> asPrecalculatedWaveEntity(entry.getValue())));
@@ -65,7 +66,7 @@ public class Request {
 
   @Data
   public static class PrecalculatedWaveDto {
-    Map<Instant, Integer> unitsBySla;
+    Map<Instant, Long> unitsBySla;
   }
 
 }

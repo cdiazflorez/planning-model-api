@@ -9,6 +9,5 @@ import lombok.Value;
 public class Process {
 
     ProcessName name;
-    @JsonProperty("process_path")
-    List<ProcessPathRequest> processPath;
+    int total;
 }

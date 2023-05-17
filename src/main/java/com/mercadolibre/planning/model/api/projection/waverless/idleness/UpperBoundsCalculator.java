@@ -16,9 +16,11 @@ import static java.util.stream.Collectors.toSet;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessNameToProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -65,6 +67,7 @@ public final class UpperBoundsCalculator {
    * @param backlogUpperLimits             max backlog by process and date.
    * @return max backlog to wave by Process Path.
    */
+  @Trace
   static Map<ProcessPath, Integer> calculate(
       final Instant waveExecutionDate,
       final List<Instant> inflectionPoints,
@@ -104,17 +107,21 @@ public final class UpperBoundsCalculator {
       );
 
       if (totalAdjustedUnits(adjustment) == 0) {
+        ExecutionMetrics.UPSTREAM_ITERATIONS.count(i);
         return waveDistribution.getDistribution();
       }
 
       final var adjustedWaveDistribution = waveDistribution.applyAdjustment(adjustment, maxWaveableUnits);
 
       if (adjustedWaveDistribution.equals(waveDistribution)) {
+        ExecutionMetrics.UPSTREAM_ITERATIONS.count(i);
         return waveDistribution.getDistribution();
       }
 
       waveDistribution = adjustedWaveDistribution;
     }
+
+    ExecutionMetrics.UPSTREAM_ITERATIONS.count(MAX_OPTIMIZATION_STEPS);
     return waveDistribution.getDistribution();
   }
 

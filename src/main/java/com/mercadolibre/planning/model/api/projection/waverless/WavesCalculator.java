@@ -11,6 +11,7 @@ import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.idleness.NextIdlenessWaveProjector;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +31,7 @@ public final class WavesCalculator {
   private WavesCalculator() {
   }
 
+  @Trace
   public static List<Wave> waves(
       final Instant executionDate,
       final List<ProcessPathConfiguration> configurations,

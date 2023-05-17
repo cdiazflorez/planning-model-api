@@ -15,17 +15,22 @@ import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
 import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
+import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class NextIdlenessWaveProjectorTest {
 
@@ -66,6 +71,8 @@ class NextIdlenessWaveProjectorTest {
       )
   );
 
+  private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
+
   private static Map<Instant, Integer> throughput(int v1, int v2, int v3, int v4, int v5, int v6) {
     return Map.of(
         DATES[0], v1,
@@ -76,6 +83,16 @@ class NextIdlenessWaveProjectorTest {
         DATES[5], v6,
         DATES[6], 1000
     );
+  }
+
+  @BeforeEach
+  public void setUp() {
+    wrapper = mockStatic(ExecutionMetrics.DataDogMetricsWrapper.class);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wrapper.close();
   }
 
   @Test

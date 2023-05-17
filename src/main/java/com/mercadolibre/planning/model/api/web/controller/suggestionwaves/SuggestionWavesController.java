@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.reques
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaveConfigurationDto;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaveDto;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaverlessResponse;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +51,11 @@ public class SuggestionWavesController {
     return new WaverlessResponse(logisticCenterId, viewDate, suggestions);
   }
 
+  @Trace(dispatcher = true)
   @PostMapping("/waves")
   public ResponseEntity<WaverlessResponse> getSuggestions(
       @PathVariable final String logisticCenterId,
-      final @RequestBody Request request
+      @RequestBody final Request request
   ) {
     final var waves = WavesCalculator.waves(
         request.getViewDate(),

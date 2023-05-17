@@ -9,6 +9,7 @@ import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public final class SlaWaveCalculator {
    * @param waves             existing waves
    * @return next wave configuration, if found.
    */
+  @Trace
   public static Optional<Wave> projectNextWave(
       final List<Instant> inflectionPoints,
       final Map<Instant, List<CurrentBacklog>> projectedBacklogs,
@@ -85,6 +87,7 @@ public final class SlaWaveCalculator {
 
       final var wave = buildWaveFromExpiredSlas(lastInflectionPoint, wavedBacklog, expiredSlas);
       if (wave.isPresent()) {
+        ExecutionMetrics.SLA_DATE_ITERATIONS.count(inflectionPointsToProject.indexOf(inflectionPoint));
         return wave;
       }
 
@@ -92,6 +95,7 @@ public final class SlaWaveCalculator {
       lastInflectionPoint = inflectionPoint;
     }
 
+    ExecutionMetrics.SLA_DATE_ITERATIONS.count(inflectionPointsToProject.size());
     return Optional.empty();
   }
 

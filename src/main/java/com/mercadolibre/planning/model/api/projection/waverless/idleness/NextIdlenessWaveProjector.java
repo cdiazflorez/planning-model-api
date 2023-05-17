@@ -18,6 +18,7 @@ import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
 import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -54,6 +55,7 @@ public final class NextIdlenessWaveProjector {
    * @param previousWaves      previously calculated waves.
    * @return if found, a wave for idleness.
    */
+  @Trace
   public static Optional<Wave> calculateNextWave(
       final List<Instant> inflectionPoints,
       final PendingBacklog pendingBacklog,

@@ -11,9 +11,11 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.TPH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
 import com.mercadolibre.planning.model.api.util.DateUtils;
@@ -21,8 +23,11 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class UpperBoundsCalculatorTest {
 
@@ -94,6 +99,8 @@ class UpperBoundsCalculatorTest {
       TOT_MULTI_BATCH, 0
   );
 
+  private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
+
   private static Map<Instant, Integer> tph(int val) {
     return Map.of(
         Instant.parse("2023-03-06T00:00:00Z"), val,
@@ -111,6 +118,16 @@ class UpperBoundsCalculatorTest {
 
   private static Map<Instant, Long> backlog(final long quantity) {
     return Map.of(WAVE_EXECUTION_DATE, quantity);
+  }
+
+  @BeforeEach
+  public void setUp() {
+    wrapper = mockStatic(ExecutionMetrics.DataDogMetricsWrapper.class);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wrapper.close();
   }
 
   @Test

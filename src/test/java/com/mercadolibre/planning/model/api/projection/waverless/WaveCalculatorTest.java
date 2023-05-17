@@ -15,6 +15,7 @@ import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySl
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
@@ -23,7 +24,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class WaveCalculatorTest {
   private static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-29T00:00:00Z");
@@ -48,6 +52,8 @@ class WaveCalculatorTest {
       new ProcessPathConfiguration(TOT_MULTI_BATCH, 120, 100, 60)
   );
 
+  private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
+
   private static Map<Instant, Integer> throughput(int v1, int v2, int v3, int v4, int v5, int v6) {
     return Map.of(
         DATES[0], v1,
@@ -58,6 +64,16 @@ class WaveCalculatorTest {
         DATES[5], v6,
         DATES[6], 1000
     );
+  }
+
+  @BeforeEach
+  public void setUp() {
+    wrapper = mockStatic(ExecutionMetrics.DataDogMetricsWrapper.class);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wrapper.close();
   }
 
   @Test

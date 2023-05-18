@@ -13,6 +13,7 @@ import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySl
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
@@ -20,8 +21,11 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class NextSlaWaveProjectorTest {
 
@@ -42,6 +46,18 @@ class NextSlaWaveProjectorTest {
           new PendingBacklog.AvailableBacklog(inflectionPoint(0), SLA_2, 60D)
       )
   );
+
+  private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
+
+  @BeforeEach
+  public void setUp() {
+    wrapper = mockStatic(ExecutionMetrics.DataDogMetricsWrapper.class);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wrapper.close();
+  }
 
   @Test
   void testNextWave() {

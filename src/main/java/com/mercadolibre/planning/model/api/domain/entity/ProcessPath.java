@@ -12,6 +12,7 @@ import java.util.function.Function;
 public enum ProcessPath {
   GLOBAL,
   TOT_MONO,
+  TOT_SINGLE_SKU,
   TOT_MULTI_BATCH,
   TOT_MULTI_ORDER,
   PP_DEFAULT_MONO,

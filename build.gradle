@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'distribution'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.6.6'
+    id 'org.springframework.boot' version '2.7.11'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -40,6 +40,8 @@ dependencies {
     implementation 'com.newrelic.agent.java:newrelic-api'
     implementation 'commons-io:commons-io:2.6'
     implementation 'com.fury:furyutils'
+    implementation 'com.mercadolibre.metrics:metrics-core'
+    implementation 'com.mercadolibre.metrics:datadog-metric-wrapper'
     constraints {
         implementation('commons-io:commons-io:2.7') {
             because 'previous versions have a vulnerability CFWPM-57'
@@ -57,14 +59,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.github.ben-manes.caffeine:caffeine'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     compileOnly 'org.springframework:spring-context-support'
 
-    runtimeOnly 'mysql:mysql-connector-java'
-    runtimeOnly 'com.h2database:h2:2.1.214'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.33'
+
+    if (project.hasProperty('env') && project.getProperty('env') == 'dev') {
+        developmentOnly 'com.h2database:h2'
+    }
 
     // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
     testImplementation 'com.mercadolibre.restclient:meli-restclient-core:0.5.4:tests' // TODO omitir versión
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.mockito:mockito-inline'

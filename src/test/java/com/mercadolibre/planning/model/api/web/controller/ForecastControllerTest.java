@@ -98,7 +98,7 @@ public class ForecastControllerTest {
         );
 
         // THEN
-        result.andExpect(status().isInternalServerError());
+        result.andExpect(status().isBadRequest());
     }
 
     private static Stream<Arguments> workflowValues() {

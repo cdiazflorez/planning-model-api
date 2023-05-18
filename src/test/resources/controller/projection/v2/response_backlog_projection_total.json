@@ -1,0 +1,48 @@
+[
+  {
+    "date": "2023-05-12T00:00:00Z",
+    "sla": [
+      {
+        "date_out": "2023-05-12T02:00:00Z",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity": 300
+          }
+        ]
+      },
+      {
+        "date_out": "2023-05-12T03:00:00Z",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity": 500
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "date": "2023-05-12T01:00:00Z",
+    "sla": [
+      {
+        "date_out": "2023-05-12T02:00:00Z",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity": 100
+          }
+        ]
+      },
+      {
+        "date_out": "2023-05-12T03:00:00Z",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity": 400
+          }
+        ]
+      }
+    ]
+  }
+]

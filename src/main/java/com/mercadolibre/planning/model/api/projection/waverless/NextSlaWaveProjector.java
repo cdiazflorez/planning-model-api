@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.ProcessPathBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.SlaWaveCalculator.CurrentBacklog;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ public final class NextSlaWaveProjector {
    * @param minCycleTimes    minimum cycle time configuration by Process Path. It must contain all Process Paths.
    * @return next wave configuration, if found.
    */
+  @Trace
   public static Optional<Wave> nextWave(
       final List<Instant> inflectionPoints,
       final List<Wave> waves,

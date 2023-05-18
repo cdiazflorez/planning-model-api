@@ -16,6 +16,7 @@ import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
@@ -26,15 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.Value;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockedStatic;
 
 class SlaWaveCalculatorTest {
 
   private static final Instant FORECAST_DATE_IN = Instant.parse("2023-03-06T02:00:00Z");
+
+  private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
 
   private static List<CurrentBacklog> projectedBacklog(final long sla1, final long sla2) {
     return List.of(
@@ -180,6 +186,16 @@ class SlaWaveCalculatorTest {
     final var units = wave.getConfiguration();
     assertEquals(1, units.size());
     assertEquals(110L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
+  }
+
+  @BeforeEach
+  public void setUp() {
+    wrapper = mockStatic(ExecutionMetrics.DataDogMetricsWrapper.class);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wrapper.close();
   }
 
   @Test

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -195,4 +196,19 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
     }
 
+    @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
+    public ResponseEntity<ErrorResponse> handleBadRequestException(
+        final Exception exception,
+        final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            exception.getMessage()
+        );
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error(exception.getMessage(), exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    }
 }

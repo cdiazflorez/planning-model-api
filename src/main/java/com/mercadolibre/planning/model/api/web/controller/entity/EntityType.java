@@ -1,21 +1,19 @@
 package com.mercadolibre.planning.model.api.web.controller.entity;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.ORDERS;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
+import static java.util.stream.Collectors.toMap;
+
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKERS;
-
-import static java.util.stream.Collectors.toMap;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
@@ -25,8 +23,10 @@ public enum EntityType {
     THROUGHPUT(UNITS_PER_HOUR),
     REMAINING_PROCESSING(UNITS),
     PERFORMED_PROCESSING(UNITS),
-    BACKLOG_LOWER_LIMIT(MINUTES),
-    BACKLOG_UPPER_LIMIT(MINUTES),
+    BACKLOG_LOWER_LIMIT(UNITS),
+    BACKLOG_UPPER_LIMIT(UNITS),
+    BACKLOG_LOWER_LIMIT_SHIPPING(ORDERS),
+    BACKLOG_UPPER_LIMIT_SHIPPING(ORDERS),
     MAX_CAPACITY(UNITS_PER_HOUR);
 
     private final MetricUnit metricUnit;

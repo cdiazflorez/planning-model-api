@@ -15,6 +15,7 @@ public enum MetricUnit {
     PERCENTAGE,
     UNITS,
     UNITS_PER_HOUR,
+    ORDERS,
     WORKERS;
 
     private static final Map<String, MetricUnit> LOOKUP = Arrays.stream(values()).collect(

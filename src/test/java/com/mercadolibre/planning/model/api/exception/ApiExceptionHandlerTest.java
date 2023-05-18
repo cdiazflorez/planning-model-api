@@ -67,6 +67,7 @@ public class ApiExceptionHandlerTest {
                 "Value invalid is invalid, instead it should be one of"
                         + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
                         + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT,"
+                        + " BACKLOG_LOWER_LIMIT_SHIPPING, BACKLOG_UPPER_LIMIT_SHIPPING,"
                         + " MAX_CAPACITY]",
                 "invalid_entity_type");
 

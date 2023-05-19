@@ -1,11 +1,10 @@
-package com.mercadolibre.planning.model.api.projection.waverless.idleness;
+package com.mercadolibre.planning.model.api.projection.backlogmanager;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogConsume;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Consumer;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.util.MathUtil;
 import java.time.Instant;
 import java.util.Map;

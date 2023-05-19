@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.LongUnaryOperator;

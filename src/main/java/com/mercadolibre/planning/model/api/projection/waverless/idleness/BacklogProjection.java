@@ -31,7 +31,9 @@ import com.mercadolibre.flow.projection.tools.services.entities.process.SimplePr
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;

@@ -14,7 +14,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Splitter;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.waverless;
+package com.mercadolibre.planning.model.api.projection.backlogmanager;
 
 import static java.util.Collections.emptyMap;
 
@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import lombok.Value;
 
 @Value
-class ProcessPathSplitter implements Splitter {
+public class ProcessPathSplitter implements Splitter {
 
   private static final PiecewiseUpstream DEFAULT_UPSTREAM = new PiecewiseUpstream(emptyMap());
 

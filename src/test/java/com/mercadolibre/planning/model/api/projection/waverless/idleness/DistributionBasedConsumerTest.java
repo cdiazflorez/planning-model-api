@@ -9,7 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

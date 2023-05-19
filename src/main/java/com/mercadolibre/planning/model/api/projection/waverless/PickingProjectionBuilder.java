@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import static com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.utils.OrderedBacklogByDateUtils.calculateProjectedEndDate;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -22,6 +21,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.process.Processo
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathSplitter;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;

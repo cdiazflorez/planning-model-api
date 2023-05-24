@@ -308,12 +308,12 @@ class NextIdlenessWaveProjectorTest {
 
     final var confs = wave.getConfiguration();
     assertEquals(2433, confs.get(TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(TOT_MONO).getLowerBound());
+    assertEquals(1573, confs.get(TOT_MONO).getLowerBound());
 
     assertEquals(2433, confs.get(NON_TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(NON_TOT_MONO).getLowerBound());
+    assertEquals(1573, confs.get(NON_TOT_MONO).getLowerBound());
 
     assertEquals(2433, confs.get(TOT_MULTI_BATCH).getUpperBound());
-    assertEquals(240, confs.get(TOT_MULTI_BATCH).getLowerBound());
+    assertEquals(1573, confs.get(TOT_MULTI_BATCH).getLowerBound());
   }
 }

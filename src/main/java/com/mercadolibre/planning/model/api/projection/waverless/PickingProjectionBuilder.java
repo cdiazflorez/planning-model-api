@@ -7,10 +7,10 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessContext;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
 import com.mercadolibre.flow.projection.tools.services.entities.context.UnprocessedBacklogState;
+import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
@@ -97,7 +97,7 @@ public final class PickingProjectionBuilder {
       final List<Instant> slas
   ) {
     final var updatedContexts = processor.accept(
-        contexts, ProjectionUtils.asPiecewiseUpstream(waves), inflectionPoints
+        contexts, ProjectionUtils.asUpstream(waves), inflectionPoints
     );
 
     return processPaths.stream()
@@ -123,7 +123,7 @@ public final class PickingProjectionBuilder {
   public static List<ProcessPathBacklog> backlogProjection(
       final Processor process,
       final ContextsHolder contexts,
-      final PiecewiseUpstream upstream,
+      final Upstream upstream,
       final List<Instant> inflectionPoints,
       final Set<ProcessPath> processPaths) {
 

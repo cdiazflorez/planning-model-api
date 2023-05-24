@@ -222,7 +222,7 @@ public final class NextIdlenessWaveProjector {
 
     final var processes = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
-    final var upstream = ProjectionUtils.toPiecewiseUpstream(previousWaves);
+    final var upstream = ProjectionUtils.asUpstream(previousWaves);
 
     return BacklogProjection.project(graph, contexts, upstream, inflectionPoints, processes);
   }

@@ -3,8 +3,9 @@ package com.mercadolibre.planning.model.api.projection.backlogmanager;
 import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Splitter;
+import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
+import com.mercadolibre.flow.projection.tools.services.entities.context.UpstreamAtInflectionPoint;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
 import java.util.Map;
@@ -16,7 +17,7 @@ import lombok.Value;
 @Value
 public class ProcessPathSplitter implements Splitter {
 
-  private static final PiecewiseUpstream DEFAULT_UPSTREAM = new PiecewiseUpstream(emptyMap());
+  private static final UpstreamAtInflectionPoint DEFAULT_UPSTREAM = new UpstreamAtInflectionPoint(emptyMap());
 
   Set<ProcessPath> processPaths;
 
@@ -36,12 +37,13 @@ public class ProcessPathSplitter implements Splitter {
    *
    * <p>If a process path is missing in the backlogToSplit it will be filled with an empty representation to avoid NPEs.
    *
-   * @param backlogToSplit an amount of {@link Backlog} that must be divided
+   * @param upstream an amount of {@link Backlog} that must be divided
    * @return backlog by process path and instant
    */
   @Override
-  public Map<String, PiecewiseUpstream> split(final PiecewiseUpstream backlogToSplit) {
-    final var backlog = backlogToSplit.getUpstreamByPiece()
+  public Map<String, Upstream> split(final Upstream upstream) {
+    final var piecewiseUpstream = (UpstreamAtInflectionPoint) upstream;
+    final var backlog = piecewiseUpstream.getUpstreamByPiece()
         .entrySet()
         .stream()
         .flatMap(u -> mapOrderedBacklogToTuple(u.getKey(), u.getValue()))
@@ -50,7 +52,7 @@ public class ProcessPathSplitter implements Splitter {
                 Tuple::getProcessPath,
                 Collectors.collectingAndThen(
                     Collectors.toMap(Tuple::getDate, Tuple::getBacklog),
-                    PiecewiseUpstream::new
+                    UpstreamAtInflectionPoint::new
                 )
             )
         );

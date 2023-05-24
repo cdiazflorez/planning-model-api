@@ -22,22 +22,34 @@
   ],
   "backlogs": [
     {
-      "process_path": "tot_mono",
-      "process_name": "waving",
-      "date_out": "2023-03-29T06:00:00Z",
-      "units": 6500
-    },
-    {
       "process_path": "non_tot_mono",
       "process_name": "waving",
-      "date_out": "2023-03-29T06:00:00Z",
-      "units": 6500
+      "date_out": "2023-03-29T03:00:00Z",
+      "units": 800
     },
     {
       "process_path": "tot_multi_batch",
       "process_name": "waving",
-      "date_out": "2023-03-29T06:00:00Z",
-      "units": 6500
+      "date_out": "2023-03-29T03:00:00Z",
+      "units": 200
+    },
+    {
+      "process_path": "tot_mono",
+      "process_name": "waving",
+      "date_out": "2023-03-29T05:00:00Z",
+      "units": 2200
+    },
+    {
+      "process_path": "non_tot_mono",
+      "process_name": "waving",
+      "date_out": "2023-03-29T05:00:00Z",
+      "units": 2200
+    },
+    {
+      "process_path": "tot_multi_batch",
+      "process_name": "waving",
+      "date_out": "2023-03-29T05:00:00Z",
+      "units": 2200
     },
     {
       "process_path": "tot_mono",
@@ -91,9 +103,9 @@
   "forecast": [
     {
       "process_path": "tot_mono",
-      "date_in": "2023-03-06T00:00:00Z",
-      "date_out": "2023-03-06T02:00:00Z",
-      "total": 60
+      "date_in": "2023-03-06T03:00:00Z",
+      "date_out": "2023-03-06T04:00:00Z",
+      "total": 1360
     }
   ],
   "throughput": {

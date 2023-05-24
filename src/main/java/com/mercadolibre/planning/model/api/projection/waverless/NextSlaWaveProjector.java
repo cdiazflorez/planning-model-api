@@ -165,7 +165,7 @@ public final class NextSlaWaveProjector {
       final List<Wave> waves
   ) {
     final var contextsHolder = buildContextHolder(currentBacklog, throughput);
-    final var upstream = ProjectionUtils.toPiecewiseUpstream(waves);
+    final var upstream = ProjectionUtils.asUpstream(waves);
     return backlogProjection(graph, contextsHolder, upstream, inflectionPoints, throughput.keySet()).stream()
         .filter(projection -> !projection.getDate().equals(currentInflectionPoint));
   }

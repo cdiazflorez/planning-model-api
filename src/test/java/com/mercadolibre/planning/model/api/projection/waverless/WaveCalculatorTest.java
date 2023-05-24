@@ -11,10 +11,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_2;
-import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.inflectionPoint;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mockStatic;
 
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
@@ -23,7 +21,6 @@ import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProce
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +40,7 @@ class WaveCalculatorTest {
   };
 
   private static final List<ForecastedUnitsByProcessPath> FORECAST = List.of(
-      new ForecastedUnitsByProcessPath(TOT_MONO, inflectionPoint(0), SLA_2, 60)
+      new ForecastedUnitsByProcessPath(TOT_MONO, DATES[3], SLA_2, 1360)
   );
 
   private static final List<ProcessPathConfiguration> CONFIGURATIONS = List.of(
@@ -80,9 +77,11 @@ class WaveCalculatorTest {
   void testCalculateBothTypeOfWaves() {
     // GIVEN
     final var backlog = List.of(
-        new UnitsByProcessPathAndProcess(TOT_MONO, WAVING, DATES[6], 6500),
-        new UnitsByProcessPathAndProcess(NON_TOT_MONO, WAVING, DATES[6], 6500),
-        new UnitsByProcessPathAndProcess(TOT_MULTI_BATCH, WAVING, DATES[6], 6500),
+        new UnitsByProcessPathAndProcess(NON_TOT_MONO, WAVING, DATES[3], 800),
+        new UnitsByProcessPathAndProcess(TOT_MULTI_BATCH, WAVING, DATES[3], 200),
+        new UnitsByProcessPathAndProcess(TOT_MONO, WAVING, DATES[5], 2200),
+        new UnitsByProcessPathAndProcess(NON_TOT_MONO, WAVING, DATES[5], 2200),
+        new UnitsByProcessPathAndProcess(TOT_MULTI_BATCH, WAVING, DATES[5], 2200),
 
         new UnitsByProcessPathAndProcess(TOT_MONO, PICKING, DATES[0], 2500),
         new UnitsByProcessPathAndProcess(NON_TOT_MONO, PICKING, DATES[0], 1500),
@@ -139,66 +138,33 @@ class WaveCalculatorTest {
     );
 
     // THEN
-    assertEquals(3, result.size());
+    assertEquals(5, result.size());
 
     // first wave
     final var firstWave = result.get(0);
     final var firstWaveExpectedDate = Instant.parse("2023-03-29T01:20:00Z");
     assertEquals(firstWaveExpectedDate, firstWave.getDate());
-    assertEquals(TriggerName.IDLENESS, firstWave.getReason());
+    assertEquals(TriggerName.SLA, firstWave.getReason());
 
-    final var firstWaveTotMonoConf = firstWave.getConfiguration().get(TOT_MONO);
-    assertEquals(600L, firstWaveTotMonoConf.getLowerBound());
-    assertEquals(2699L, firstWaveTotMonoConf.getUpperBound());
-
-    final var firstWaveNonTotMonoConf = firstWave.getConfiguration().get(NON_TOT_MONO);
-    assertEquals(600L, firstWaveNonTotMonoConf.getLowerBound());
-    assertEquals(2699L, firstWaveNonTotMonoConf.getUpperBound());
-
-    final var firstWaveTotMultiBatchConf = firstWave.getConfiguration().get(TOT_MULTI_BATCH);
-    assertEquals(600L, firstWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(2699L, firstWaveTotMultiBatchConf.getUpperBound());
+    final var firstWaveTotMonoConf = firstWave.getConfiguration().get(NON_TOT_MONO);
+    assertEquals(800L, firstWaveTotMonoConf.getLowerBound());
 
     // second wave
     final var secondWave = result.get(1);
-    final var secondWaveExpectedDate = Instant.parse("2023-03-29T01:45:00Z");
+    final var secondWaveExpectedDate = Instant.parse("2023-03-29T01:35:00Z");
     assertEquals(secondWaveExpectedDate, secondWave.getDate());
-    assertEquals(TriggerName.SLA, secondWave.getReason());
+    assertEquals(TriggerName.IDLENESS, secondWave.getReason());
 
-    // 2500 - 2100 = 400 + 6500 = 6900 -->
     final var secondWaveTotMonoConf = secondWave.getConfiguration().get(TOT_MONO);
-    assertNull(secondWaveTotMonoConf);
+    assertEquals(600L, secondWaveTotMonoConf.getLowerBound());
+    assertEquals(2200L, secondWaveTotMonoConf.getUpperBound());
 
     final var secondWaveNonTotMonoConf = secondWave.getConfiguration().get(NON_TOT_MONO);
-
-    // 6500 - 2699 = 3801
-    // tph(2023-03-29T01:45:00Z, 2023-03-29T05:00:00Z) = 1200 * 3.25 = 3900
-    assertEquals(3801L, secondWaveNonTotMonoConf.getLowerBound());
-    assertEquals(Set.of(DATES[6]), secondWaveNonTotMonoConf.getWavedUnitsByCpt().keySet());
+    assertEquals(600L, secondWaveNonTotMonoConf.getLowerBound());
+    assertEquals(2200L, secondWaveNonTotMonoConf.getUpperBound());
 
     final var secondWaveTotMultiBatchConf = secondWave.getConfiguration().get(TOT_MULTI_BATCH);
-
-    // 6500 - 2699 = 3801
-    // tph(2023-03-29T01:45:00Z, 2023-03-29T05:00:00Z) = 1200 * 3.25 = 3900
-    assertEquals(3801L, secondWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(Set.of(DATES[6]), secondWaveTotMultiBatchConf.getWavedUnitsByCpt().keySet());
-
-    // third wave
-    final var thirdWave = result.get(2);
-    final var thirdWaveExpectedDate = Instant.parse("2023-03-29T05:40:00Z");
-    assertEquals(thirdWaveExpectedDate, thirdWave.getDate());
-    assertEquals(TriggerName.IDLENESS, thirdWave.getReason());
-
-    final var thirdWaveTotMonoConf = thirdWave.getConfiguration().get(TOT_MONO);
-    assertEquals(566L, thirdWaveTotMonoConf.getLowerBound());
-    assertEquals(819L, thirdWaveTotMonoConf.getUpperBound());
-
-    final var thirdWaveNonTotMonoConf = thirdWave.getConfiguration().get(NON_TOT_MONO);
-    assertEquals(566L, thirdWaveNonTotMonoConf.getLowerBound());
-    assertEquals(566L, thirdWaveNonTotMonoConf.getUpperBound());
-
-    final var thirdWaveTotMultiBatchConf = thirdWave.getConfiguration().get(TOT_MULTI_BATCH);
-    assertEquals(566L, thirdWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(566L, thirdWaveTotMultiBatchConf.getUpperBound());
+    assertEquals(600L, secondWaveTotMultiBatchConf.getLowerBound());
+    assertEquals(2400L, secondWaveTotMultiBatchConf.getUpperBound());
   }
 }

@@ -311,7 +311,7 @@ public final class UpperBoundsCalculator {
   ) {
     final var graph = buildGraph();
     final var contexts = buildContexts(currentBacklog, throughput);
-    final var upstream = ProjectionUtils.toPiecewiseUpstream(waves);
+    final var upstream = ProjectionUtils.asUpstream(waves);
 
     return project(graph, contexts, upstream, inflectionPoints, PROCESSES);
   }

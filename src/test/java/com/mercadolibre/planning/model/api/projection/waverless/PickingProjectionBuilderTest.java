@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
+import com.mercadolibre.flow.projection.tools.services.entities.context.UpstreamAtInflectionPoint;
 import com.mercadolibre.flow.projection.tools.services.entities.process.ParallelProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
@@ -125,8 +125,7 @@ class PickingProjectionBuilderTest {
     final var graph = PickingProjectionBuilder.buildGraph(processPaths);
 
     final var waves = Map.of(
-        DATE_1, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L)),
-        DATE_2, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L))
+        DATE_1, Map.of(TOT_MONO, Map.of(DATE_OUT_1, 100L))
     );
 
     final var inflectionPoints = generateInflectionPoints(DATE_1, DATE_2, 5);
@@ -147,7 +146,7 @@ class PickingProjectionBuilderTest {
     final var totMonoProjections = projectedEndDates.get(TOT_MONO);
     assertNotNull(totMonoProjections);
 
-    assertEquals(Instant.parse("2023-02-17T10:56:36Z"), totMonoProjections.get(DATE_OUT_1));
+    assertEquals(Instant.parse("2023-02-17T10:40:00Z"), totMonoProjections.get(DATE_OUT_1));
     assertNull(totMonoProjections.get(DATE_OUT_2));
 
     final var nonTotMonoProjections = projectedEndDates.get(NON_TOT_MONO);
@@ -171,7 +170,7 @@ class PickingProjectionBuilderTest {
         NON_TOT_MONO, Map.of(DATE_1, 600, DATE_2, 50)
     );
 
-    final var upstream = new PiecewiseUpstream(Collections.emptyMap());
+    final var upstream = new UpstreamAtInflectionPoint(Collections.emptyMap());
 
     final var holder = PickingProjectionBuilder.buildContextHolder(currentBacklog, throughput);
 

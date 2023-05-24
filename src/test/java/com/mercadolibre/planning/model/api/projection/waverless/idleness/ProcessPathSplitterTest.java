@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
+import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import java.time.Instant;
@@ -27,7 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 class ProcessPathSplitterTest {
 
-  private static long totalUnitsByProcess(final Map<String, PiecewiseUpstream> upstream, final String process) {
+  private static long totalUnitsByProcess(final Map<String, Upstream> upstream, final String process) {
     return upstream.get(process)
         .calculateUpstreamUnitsForInterval(FIRST_INFLECTION_POINT, LAST_INFLECTION_POINT)
         .orElseThrow()

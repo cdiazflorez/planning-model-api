@@ -10,7 +10,8 @@ import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogby
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.OrderedBacklogByDateMerger;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
 import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

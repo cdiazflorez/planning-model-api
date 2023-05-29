@@ -136,10 +136,8 @@ public final class SlaWaveCalculator {
   ) {
     final var backlog = asBacklogs(inflectionPoint, context.getProjectedBacklogs());
 
-    // TODO: replace this when updating lib upstream backlog to an interface
     final var wave = Map.of(
-        inflectionPoint, backlogToWave,
-        inflectionPoint.plus(5, ChronoUnit.MINUTES), backlogToWave
+        inflectionPoint, backlogToWave
     );
 
     final var ips = inflectionPointsGreaterOrEqual(inflectionPoint, context.getInflectionPoints());

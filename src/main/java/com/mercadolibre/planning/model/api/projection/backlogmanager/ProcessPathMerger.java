@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.waverless.idleness;
+package com.mercadolibre.planning.model.api.projection.backlogmanager;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
@@ -8,7 +8,6 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Merger;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

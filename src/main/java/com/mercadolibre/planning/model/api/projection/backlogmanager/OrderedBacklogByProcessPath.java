@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.waverless;
+package com.mercadolibre.planning.model.api.projection.backlogmanager;
 
 import static java.util.stream.Collectors.toMap;
 

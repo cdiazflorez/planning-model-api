@@ -1,158 +1,122 @@
 package com.mercadolibre.planning.model.api.projection.waverless.idleness;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
+import static java.time.Instant.parse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
 import java.util.Map;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class LowerBoundCalculatorTest {
 
-  private static final String HOUR_3 = "2023-04-12T03:00:00Z";
+  private static final Instant HOUR_2 = parse("2023-04-12T02:00:00Z");
 
-  private static final String HOUR_4 = "2023-04-12T04:00:00Z";
+  private static final Instant HOUR_3 = parse("2023-04-12T03:00:00Z");
 
-  private static final String HOUR_5 = "2023-04-12T05:00:00Z";
+  private static final Instant HOUR_4 = parse("2023-04-12T04:00:00Z");
 
-  private static Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> getThroughputByProcessPath() {
-    final Map<Instant, Integer> mapTphCurrentAndNext = Map.of(
-        Instant.parse(HOUR_3), 100,
-        Instant.parse(HOUR_4), 200,
-        Instant.parse("2023-04-12T07:00:00Z"), 80,
-        Instant.parse("2023-04-12T09:00:00Z"), 100
-    );
+  private static final Instant HOUR_5 = parse("2023-04-12T05:00:00Z");
 
-    final Map<Instant, Integer> mapTphOnlyCurrent = Map.of(
-        Instant.parse(HOUR_3), 100,
-        Instant.parse("2023-04-12T07:00:00Z"), 80
-    );
+  private static final Map<Instant, Integer> MOCK_USELESS_THROUGHPUT = Map.of(
+      HOUR_2, 15000,
+      HOUR_3, 15000,
+      HOUR_4, 15000,
+      HOUR_5, 15000
+  );
 
-    final Map<Instant, Integer> mapTphOnlyNext = Map.of(
-        Instant.parse(HOUR_4), 200,
-        Instant.parse("2023-04-12T09:00:00Z"), 100
-    );
+  private static final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> THROUGHPUT = Map.of(
+      GLOBAL, Map.of(
+          PICKING, MOCK_USELESS_THROUGHPUT,
+          PACKING, MOCK_USELESS_THROUGHPUT
+      ),
+      TOT_MONO, Map.of(
+          PICKING, Map.of(
+              HOUR_2, 300,
+              HOUR_3, 500,
+              HOUR_4, 800,
+              HOUR_5, 60
+          ),
+          PACKING, MOCK_USELESS_THROUGHPUT
+      ),
+      NON_TOT_MONO, Map.of(
+          PICKING, Map.of(
+              HOUR_2, 77,
+              HOUR_3, 33,
+              HOUR_4, 45,
+              HOUR_5, 11
+          ),
+          PACKING, MOCK_USELESS_THROUGHPUT
+      ),
+      TOT_MULTI_ORDER, Map.of(
+          PICKING, Map.of(
+              HOUR_2, 24,
+              HOUR_3, 19,
+              HOUR_4, 150,
+              HOUR_5, 300
+          ),
+          PACKING, MOCK_USELESS_THROUGHPUT
+      ),
+      TOT_MULTI_BATCH, Map.of(
+          PICKING, Map.of(
+              HOUR_2, 1000,
+              HOUR_3, 0,
+              HOUR_4, 0,
+              HOUR_5, 112
+          ),
+          PACKING, MOCK_USELESS_THROUGHPUT
+      )
+  );
 
-    final Map<Instant, Integer> mapTphWithoutCurrentOrNext = Map.of(
-        Instant.parse("2023-04-12T07:00:00Z"), 80,
-        Instant.parse("2023-04-12T09:00:00Z"), 100
-    );
-
-
-    final Map<ProcessName, Map<Instant, Integer>> mapForTotMono = Map.of(
-        ProcessName.PICKING, mapTphCurrentAndNext,
-        ProcessName.PACKING, mapTphCurrentAndNext
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapForNonTotMono = Map.of(
-        ProcessName.PICKING, mapTphWithoutCurrentOrNext,
-        ProcessName.PACKING, mapTphCurrentAndNext
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapForTotMultiOrder = Map.of(
-        ProcessName.PICKING, mapTphOnlyCurrent,
-        ProcessName.PACKING, mapTphCurrentAndNext
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapForTotMultiBatch = Map.of(
-        ProcessName.PICKING, mapTphOnlyNext,
-        ProcessName.PACKING, mapTphCurrentAndNext
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapForBulky = Map.of(
-        ProcessName.PACKING, mapTphCurrentAndNext
-    );
-
-
+  private static Map<ProcessPath, Integer> expected(int totMono, int nonTotMono, int totMultiOrder, int totMultiBatch) {
     return Map.of(
-        ProcessPath.TOT_MONO, mapForTotMono,
-        ProcessPath.NON_TOT_MONO, mapForNonTotMono,
-        ProcessPath.TOT_MULTI_ORDER, mapForTotMultiOrder,
-        ProcessPath.TOT_MULTI_BATCH, mapForTotMultiBatch,
-        ProcessPath.GLOBAL, mapForTotMono,
-        ProcessPath.BULKY, mapForBulky
+        TOT_MONO, totMono,
+        NON_TOT_MONO, nonTotMono,
+        TOT_MULTI_ORDER, totMultiOrder,
+        TOT_MULTI_BATCH, totMultiBatch
     );
   }
 
-  @Test
-  void testLowerBounds() {
-    Map<ProcessPath, Integer> lowerBoundsInCurrentAndNextHour =
-        LowerBoundCalculator.lowerBounds(30, Instant.parse("2023-04-12T03:50:00Z"), getThroughputByProcessPath());
-    Map<ProcessPath, Integer> lowerBoundsInCurrentHour =
-        LowerBoundCalculator.lowerBounds(30, Instant.parse("2023-04-12T03:10:00Z"), getThroughputByProcessPath());
+  static Stream<Arguments> parameters() {
+    return Stream.of(
+        arguments(named("minutes of the same hour", "2023-04-12T03:10:00Z"), 30, 0, expected(250, 16, 9, 0)),
+        arguments(named("minutes of two hours", "2023-04-12T03:45:00Z"), 30, 0, expected(325, 19, 41, 0)),
+        arguments(named("minutes of three hours", "2023-04-12T02:10:00Z"), 180, 0, expected(1560, 143, 239, 851)),
+        arguments(named("exactly one hour", "2023-04-12T03:00:00Z"), 60, 0, expected(500, 33, 19, 0)),
+        arguments(named("minutes out of bound", "2023-04-12T05:45:00Z"), 30, 0, expected(15, 2, 75, 28)),
 
-    Assertions.assertEquals(82, lowerBoundsInCurrentAndNextHour.get(ProcessPath.TOT_MONO));
-    Assertions.assertEquals(0, lowerBoundsInCurrentAndNextHour.get(ProcessPath.NON_TOT_MONO));
-    Assertions.assertEquals(16, lowerBoundsInCurrentAndNextHour.get(ProcessPath.TOT_MULTI_ORDER));
-    Assertions.assertEquals(66, lowerBoundsInCurrentAndNextHour.get(ProcessPath.TOT_MULTI_BATCH));
-    Assertions.assertEquals(0, lowerBoundsInCurrentAndNextHour.get(ProcessPath.BULKY));
-    Assertions.assertFalse(lowerBoundsInCurrentAndNextHour.containsKey(ProcessPath.GLOBAL));
-
-    Assertions.assertEquals(50, lowerBoundsInCurrentHour.get(ProcessPath.TOT_MONO));
-    Assertions.assertEquals(0, lowerBoundsInCurrentHour.get(ProcessPath.NON_TOT_MONO));
-    Assertions.assertEquals(50, lowerBoundsInCurrentHour.get(ProcessPath.TOT_MULTI_ORDER));
-    Assertions.assertEquals(0, lowerBoundsInCurrentHour.get(ProcessPath.TOT_MULTI_BATCH));
-    Assertions.assertEquals(0, lowerBoundsInCurrentHour.get(ProcessPath.BULKY));
-    Assertions.assertFalse(lowerBoundsInCurrentHour.containsKey(ProcessPath.GLOBAL));
+        arguments(named("minutes of the same hour", "2023-04-12T03:10:00Z"), 30, 30, expected(277, 17, 10, 0)),
+        arguments(named("minutes of two hours", "2023-04-12T03:45:00Z"), 30, 40, expected(361, 21, 42, 0)),
+        arguments(named("minutes of three hours", "2023-04-12T02:10:00Z"), 180, 50, expected(1570, 145, 239, 886)),
+        arguments(named("exactly one hour", "2023-04-12T03:00:00Z"), 60, 60, expected(554, 36, 21, 0)),
+        arguments(named("minutes out of bound", "2023-04-12T05:45:00Z"), 30, 70, expected(23, 3, 118, 44))
+    );
   }
 
-  @Test
-  void testLowerBoundsBetweenSeveralHours() {
-    final Map<Instant, Integer> mapTph1 = Map.of(
-        Instant.parse(HOUR_3), 100,
-        Instant.parse(HOUR_4), 200,
-        Instant.parse(HOUR_5), 80,
-        Instant.parse("2023-04-12T06:00:00Z"), 100
-    );
+  @ParameterizedTest
+  @MethodSource("parameters")
+  void test(final String waveDate, final int minutes, final int units, final Map<ProcessPath, Integer> expected) {
+    // GIVEN
+    final var date = parse(waveDate);
 
-    final Map<Instant, Integer> mapTph2 = Map.of(
-        Instant.parse(HOUR_3), 100,
-        Instant.parse(HOUR_5), 80,
-        Instant.parse("2023-04-12T06:00:00Z"), 100
-    );
+    // WHEN
+    final var actual = LowerBoundCalculator.lowerBounds(minutes, units, date, THROUGHPUT);
 
-    final Map<ProcessName, Map<Instant, Integer>> mapProcessName1 = Map.of(
-        ProcessName.PICKING, mapTph1
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapProcessName2 = Map.of(
-        ProcessName.PICKING, mapTph2
-    );
-
-    final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> mapByProcessPath = Map.of(
-        ProcessPath.TOT_MONO, mapProcessName1,
-        ProcessPath.NON_TOT_MONO, mapProcessName2
-    );
-
-    Map<ProcessPath, Integer> lowerBoundsBetweenSeveralHours =
-        LowerBoundCalculator.lowerBounds(90, Instant.parse("2023-04-12T03:50:00Z"), mapByProcessPath);
-
-    Assertions.assertEquals(242, lowerBoundsBetweenSeveralHours.get(ProcessPath.TOT_MONO));
-    Assertions.assertEquals(42, lowerBoundsBetweenSeveralHours.get(ProcessPath.NON_TOT_MONO));
-  }
-
-  @Test
-  void testLowerBoundsExactToEndHour() {
-    final Map<Instant, Integer> mapTph1 = Map.of(
-        Instant.parse(HOUR_3), 100,
-        Instant.parse(HOUR_4), 200
-    );
-
-    final Map<ProcessName, Map<Instant, Integer>> mapProcessName1 = Map.of(
-        ProcessName.PICKING, mapTph1
-    );
-
-    final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> mapByProcessPath = Map.of(
-        ProcessPath.TOT_MONO, mapProcessName1
-    );
-
-    Map<ProcessPath, Integer> lowerBoundsExactToEndHour1 =
-        LowerBoundCalculator.lowerBounds(30, Instant.parse("2023-04-12T03:30:00Z"), mapByProcessPath);
-    Map<ProcessPath, Integer> lowerBoundsExactToEndHour2 =
-        LowerBoundCalculator.lowerBounds(60, Instant.parse(HOUR_4), mapByProcessPath);
-
-    Assertions.assertEquals(50, lowerBoundsExactToEndHour1.get(ProcessPath.TOT_MONO));
-    Assertions.assertEquals(200, lowerBoundsExactToEndHour2.get(ProcessPath.TOT_MONO));
+    // THEN
+    assertEquals(expected, actual);
   }
 
 }

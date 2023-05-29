@@ -16,9 +16,9 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogH
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Merger;
-import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
 import com.mercadolibre.flow.projection.tools.services.entities.context.UnprocessedBacklogState;
+import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
@@ -31,7 +31,9 @@ import com.mercadolibre.flow.projection.tools.services.entities.process.SimplePr
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -218,7 +220,7 @@ final class BacklogProjection {
   static Map<ProcessName, Map<Instant, Long>> project(
       final Processor graph,
       final ContextsHolder holder,
-      final PiecewiseUpstream upstream,
+      final Upstream upstream,
       final List<Instant> inflectionPoints,
       final Set<ProcessName> processes
   ) {

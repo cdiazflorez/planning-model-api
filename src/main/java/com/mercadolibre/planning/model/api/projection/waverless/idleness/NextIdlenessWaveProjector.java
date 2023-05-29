@@ -20,6 +20,7 @@ import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,7 +86,7 @@ public final class NextIdlenessWaveProjector {
                     backlogs,
                     backlogsStates,
                     throughput,
-                    backlogLimits.getUpper(),
+                    backlogLimits,
                     precalculatedWaves
                 )
             )
@@ -142,13 +144,18 @@ public final class NextIdlenessWaveProjector {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
       final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughputByProcessPath,
-      final Map<ProcessName, Map<Instant, Integer>> backlogUpperLimits,
+      final BacklogLimits backlogLimits,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves
   ) {
     final var globalThroughput = throughputByProcessPath.get(ProcessPath.GLOBAL);
     final var pickingThroughput = getPickingThroughputByProcessPath(throughputByProcessPath);
 
-    final var lowerBounds = LowerBoundCalculator.lowerBounds(WAVE_LOWER_BOUND_IN_MINUTES, waveExecutionDate, throughputByProcessPath);
+    final var lowerBounds = calculateLowerBounds(
+        waveExecutionDate,
+        projectedBacklog,
+        throughputByProcessPath,
+        backlogLimits.getLower().get(PICKING)
+    );
 
     final var upperBounds = UpperBoundsCalculator.calculate(
         waveExecutionDate,
@@ -159,7 +166,7 @@ public final class NextIdlenessWaveProjector {
         projectedBacklog,
         globalThroughput,
         pickingThroughput,
-        backlogUpperLimits,
+        backlogLimits.getUpper(),
         lowerBounds
     );
 
@@ -222,7 +229,7 @@ public final class NextIdlenessWaveProjector {
 
     final var processes = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
-    final var upstream = ProjectionUtils.toPiecewiseUpstream(previousWaves);
+    final var upstream = ProjectionUtils.asUpstream(previousWaves);
 
     return BacklogProjection.project(graph, contexts, upstream, inflectionPoints, processes);
   }
@@ -231,17 +238,52 @@ public final class NextIdlenessWaveProjector {
       final Map<Instant, Integer> pickingLowerLimits,
       final Map<Instant, Long> pickingBacklogs
   ) {
+    final var minWaveDate = pickingBacklogs.keySet()
+        .stream()
+        .min(Comparator.naturalOrder())
+        .orElseThrow();
+
     final var idlenessDate = pickingBacklogs.entrySet()
         .stream()
         .filter(backlog -> backlog.getValue() < pickingLowerLimits.get(backlog.getKey().truncatedTo(HOURS)))
-        .min(Map.Entry.comparingByKey())
-        .map(Map.Entry::getKey);
+        .map(Map.Entry::getKey)
+        .filter(date -> date.isAfter(minWaveDate))
+        .min(Comparator.naturalOrder());
 
     return idlenessDate.map(id -> pickingBacklogs.keySet()
         .stream()
         .filter(date -> date.isBefore(id))
         .max(Comparator.naturalOrder())
-        .orElse(id)
+        .orElse(minWaveDate)
+    );
+  }
+
+  private static Map<ProcessPath, Integer> calculateLowerBounds(
+      final Instant waveExecutionDate,
+      final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
+      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughputByProcessPath,
+      final Map<Instant, Integer> pickingLowerLimits
+  ) {
+    final var waveExecutionHour = waveExecutionDate.truncatedTo(HOURS);
+    final var maxLowerLimitLookupDate = waveExecutionDate.plus(WAVE_LOWER_BOUND_IN_MINUTES, ChronoUnit.MINUTES)
+        .truncatedTo(HOURS);
+
+    final var maxLowerLimitInRange = LongStream.rangeClosed(0L, HOURS.between(waveExecutionHour, maxLowerLimitLookupDate))
+        .mapToObj(shift -> waveExecutionHour.plus(shift, HOURS))
+        .map(date -> pickingLowerLimits.getOrDefault(date, 0))
+        .max(Integer::compare)
+        .orElse(0);
+
+    final var backlog = projectedBacklog.get(PICKING)
+        .get(waveExecutionDate);
+
+    final var unitsToReachLowerLimit = (int) Math.max(maxLowerLimitInRange - backlog, 0);
+
+    return LowerBoundCalculator.lowerBounds(
+        WAVE_LOWER_BOUND_IN_MINUTES,
+        unitsToReachLowerLimit,
+        waveExecutionDate,
+        throughputByProcessPath
     );
   }
 

@@ -13,8 +13,9 @@ import static com.mercadolibre.planning.model.api.projection.waverless.idleness.
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Splitter;
+import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.OrderedBacklogByProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -40,12 +41,13 @@ public class ProcessPathSplitter implements Splitter {
    * any projection that uses OrderedBacklogByProcessPath as the main representation for Pickings' backlog can use this splitter
    * independently of the representation of the following Processes.
    *
-   * @param backlogToSplit an amount of {@link Backlog} that must be divided
+   * @param upstream an amount of {@link Backlog} that must be divided
    * @return PiecewiseUpstream for packing and consolidation.
    */
   @Override
-  public Map<String, PiecewiseUpstream> split(final PiecewiseUpstream backlogToSplit) {
-    final var backlog = backlogToSplit.getUpstreamByPiece();
+  public Map<String, Upstream> split(final Upstream upstream) {
+    final var upstreamByPiece = (PiecewiseUpstream) upstream;
+    final var backlog = upstreamByPiece.getUpstreamByPiece();
 
     return Map.of(
         PACKING.getName(), new PiecewiseUpstream(splitByProcessPath(backlog, PACKING_TOTE_PROCESS_PATH)),

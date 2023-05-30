@@ -13,6 +13,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.currentPlanning
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
+import static java.util.Collections.emptySet;
 import static java.util.Set.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,6 +27,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
@@ -86,11 +88,11 @@ public class PlanningDistributionServiceTest {
   @InjectMocks
   private PlanningDistributionService planningDistributionService;
 
-  private static PlanningDistributionInput input(final boolean applyDeviation, final Set<Grouper> groupers) {
+  private static PlanningDistributionInput input(final boolean applyDeviation, final Set<Grouper> groupers, final Set<ProcessPath> processPaths) {
     return new PlanningDistributionInput(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        of(TOT_MONO, NON_TOT_MONO),
+        processPaths,
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -403,8 +405,9 @@ public class PlanningDistributionServiceTest {
   void testGetPlanningDistributionByProcessPathWithDeviations() {
     // GIVEN
     final var groupers = of(DATE_IN, DATE_OUT, PROCESS_PATH);
+    final var processPaths = of(TOT_MONO, NON_TOT_MONO);
 
-    final var input = input(true, groupers);
+    final var input = input(true, groupers, processPaths);
 
     final var distributions = List.of(
         new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
@@ -418,7 +421,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        of(TOT_MONO, NON_TOT_MONO),
+        processPaths,
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -461,8 +464,9 @@ public class PlanningDistributionServiceTest {
   void testGetPlanningDistributionByProcessPathWithoutDeviations() {
     // GIVEN
     final var groupers = of(DATE_IN, DATE_OUT, PROCESS_PATH);
+    final var processPaths = of(TOT_MONO, NON_TOT_MONO);
 
-    final var input = input(false, groupers);
+    final var input = input(false, groupers, processPaths);
 
     final var distributions = List.of(
         new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
@@ -476,7 +480,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        of(TOT_MONO, NON_TOT_MONO),
+        processPaths,
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -512,8 +516,9 @@ public class PlanningDistributionServiceTest {
   void testGetPlanningDistributionByProcessPathWithASubsetOfGroupers() {
     // GIVEN
     final var groupers = of(PROCESS_PATH);
+    final var processPaths = of(TOT_MONO, NON_TOT_MONO);
 
-    final var input = input(false, groupers);
+    final var input = input(false, groupers, processPaths);
 
     final var distributions = List.of(
         new PlanningDistribution(1L, null, null, TOT_MONO, 810),
@@ -523,7 +528,7 @@ public class PlanningDistributionServiceTest {
     when(repository.getPlanningDistributions(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,
-        of(TOT_MONO, NON_TOT_MONO),
+        processPaths,
         DATE_IN_1,
         DATE_IN_3,
         DATE_OUT_1,
@@ -549,6 +554,59 @@ public class PlanningDistributionServiceTest {
     verifyNoInteractions(planningDistRepository);
     verifyNoInteractions(currentPlanningDistRepository);
     verifyNoInteractions(currentForecastDeviationRepository);
+  }
+
+  @Test
+  @DisplayName("Get planning distribution by Date In with deviations")
+  void testGetPlanningDistributionByDateInWithDeviations() {
+    // GIVEN
+    final var groupers = of(DATE_IN);
+
+    final var input = input(true, groupers, null);
+
+    final var distributions = List.of(
+        new PlanningDistribution(1L, DATE_IN_1, null, null, 33.5),
+        new PlanningDistribution(1L, DATE_IN_2, null, null, 44.5),
+        new PlanningDistribution(1L, DATE_IN_3, null, null, 30.0)
+    );
+
+    when(repository.getPlanningDistributions(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND,
+        emptySet(),
+        DATE_IN_1,
+        DATE_IN_3,
+        DATE_OUT_1,
+        DATE_OUT_3,
+        groupers,
+        A_DATE_UTC.toInstant()
+    )).thenReturn(distributions);
+
+    when(currentForecastDeviationRepository.findActiveDeviationAt(WAREHOUSE_ID, FBM_WMS_OUTBOUND.name(), input.getViewDate()))
+        .thenReturn(List.of(CurrentForecastDeviation.builder()
+                                .dateFrom(ZonedDateTime.ofInstant(DATE_IN_2, ZoneOffset.UTC))
+                                .dateTo(ZonedDateTime.ofInstant(DATE_IN_3, ZoneOffset.UTC))
+                                .value(0.5)
+                                .build())
+        );
+
+    // WHEN
+    final var actual = planningDistributionService.getPlanningDistribution(input);
+
+    // THEN
+    assertNotNull(actual);
+
+    final var expected = List.of(
+        new PlanningDistributionOutput(new GroupKey(null, DATE_IN_1, null), 33.5),
+        new PlanningDistributionOutput(new GroupKey(null, DATE_IN_2, null), 66.75),
+        new PlanningDistributionOutput(new GroupKey(null, DATE_IN_3, null), 45.0)
+    );
+
+    assertEquals(expected, actual);
+
+    verifyNoInteractions(getForecastUseCase);
+    verifyNoInteractions(planningDistRepository);
+    verifyNoInteractions(currentPlanningDistRepository);
   }
 
 }

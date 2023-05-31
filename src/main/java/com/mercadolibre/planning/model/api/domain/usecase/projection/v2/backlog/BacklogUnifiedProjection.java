@@ -45,8 +45,7 @@ public class BacklogUnifiedProjection {
   private Map<Instant, Map<Instant, Map<ProcessPath, Long>>> extractProjectionBacklog(final ContextsHolder processedContext) {
     final var backlogState = processedContext.getProcessContextByProcessName().values().stream()
         .map(SimpleProcess.Context.class::cast)
-        .map(SimpleProcess.Context::getUnprocessedBacklog)
-        .flatMap(List::stream);
+        .flatMap(process -> process.getUnprocessedBacklog().stream());
 
     final var backlogNoProcessed = toBacklogByDateProcessPathAndDateOut(backlogState);
 

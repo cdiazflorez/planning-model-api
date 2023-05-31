@@ -7,6 +7,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Throughput {
-  private Instant date;
-  private Integer quantity;
+  private final Instant date;
+  private final Integer quantity;
 }

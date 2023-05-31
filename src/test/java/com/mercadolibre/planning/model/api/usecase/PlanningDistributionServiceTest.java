@@ -88,7 +88,9 @@ public class PlanningDistributionServiceTest {
   @InjectMocks
   private PlanningDistributionService planningDistributionService;
 
-  private static PlanningDistributionInput input(final boolean applyDeviation, final Set<Grouper> groupers, final Set<ProcessPath> processPaths) {
+  private static PlanningDistributionInput input(final boolean applyDeviation,
+                                                 final Set<Grouper> groupers,
+                                                 final Set<ProcessPath> processPaths) {
     return new PlanningDistributionInput(
         WAREHOUSE_ID,
         FBM_WMS_OUTBOUND,

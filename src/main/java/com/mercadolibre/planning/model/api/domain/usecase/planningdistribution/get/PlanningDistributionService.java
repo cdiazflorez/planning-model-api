@@ -24,7 +24,6 @@ import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

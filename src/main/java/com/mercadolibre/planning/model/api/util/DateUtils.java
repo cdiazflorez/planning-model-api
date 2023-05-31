@@ -134,4 +134,15 @@ public final class DateUtils {
 
     return x.isEmpty() ? y : y.isEmpty() ? x : x.get().isBefore(y.get()) ? x : y;
   }
+
+  /**
+   * Is on the hour.
+   * Verify if the hour terminate in 00 minutes and 00 seconds.
+   *
+   * @param date date to verify
+   * @return true, if is on the hour else false
+   */
+  public static boolean isOnTheHour(final Instant date) {
+    return date.equals(date.truncatedTo(ChronoUnit.HOURS));
+  }
 }

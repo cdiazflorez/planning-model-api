@@ -1,12 +1,11 @@
 package com.mercadolibre.planning.model.api.projection.dto.request.total;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
-import lombok.AllArgsConstructor;
+import lombok.Value;
 
-@AllArgsConstructor
-public class Quantity{
-  @JsonProperty("date_out")
+@Value
+public class Quantity {
+  Instant dateIn;
   Instant dateOut;
   int quantity;
 }

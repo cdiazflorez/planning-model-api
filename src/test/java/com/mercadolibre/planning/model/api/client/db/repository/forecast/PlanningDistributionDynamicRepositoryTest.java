@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.PROCESS_PATH;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -15,7 +16,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,16 +47,17 @@ public class PlanningDistributionDynamicRepositoryTest {
   @Autowired
   private PlanningDistributionDynamicRepository planningDistributionDynamicRepository;
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideProcessPathsArguments")
   @Sql({SQL})
-  void testGetPlanningDistributionGroupByDateIn() {
+  void testGetPlanningDistributionGroupByDateIn(final Set<ProcessPath> processPaths) {
     //WHEN
     final var result = planningDistributionDynamicRepository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
         DATE_IN_FROM,
         DATE_IN_TO,
         DATE_OUT_FROM,
         DATE_OUT_TO,
-        Set.of(ProcessPath.values()),
+        processPaths,
         Set.of(Grouper.DATE_IN),
         Set.of(1L, 2L, 3L)
     );
@@ -166,5 +172,12 @@ public class PlanningDistributionDynamicRepositoryTest {
       assertEquals(expected.get(i).getProcessPath(), actual.get(i).getProcessPath());
       assertEquals(expected.get(i).getQuantity(), actual.get(i).getQuantity());
     }
+  }
+
+  private static Stream<Arguments> provideProcessPathsArguments() {
+    return Stream.of(
+        Arguments.of(Set.of(ProcessPath.values())),
+        Arguments.of(emptySet())
+    );
   }
 }

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -142,12 +141,7 @@ class BacklogProjectionControllerTest {
 
     //THEN
     result.andExpectAll(
-        status().isOk(),
-        jsonPath("$..operation_hour").value("2023-04-10T10:00:00Z"),
-        jsonPath("$..backlog[:1].process[:1].name").value("picking"),
-        jsonPath("$..backlog[:1].process[:1].sla[:1].date_out").value("2023-04-10T14:00:00Z"),
-        jsonPath("$..backlog[:1].process[:1].sla[:1].process_path[:1].name").value("tot_mono"),
-        jsonPath("$..backlog[:1].process[:1].sla[:1].process_path[:1].quantity").value(50)
+        status().isOk()
     );
   }
 

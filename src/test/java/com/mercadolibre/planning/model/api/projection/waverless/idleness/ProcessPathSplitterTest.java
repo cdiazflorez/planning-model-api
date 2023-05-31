@@ -4,11 +4,11 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.CONSOLIDATION_PROCESS_GROUP;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.FIRST_INFLECTION_POINT;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.LAST_INFLECTION_POINT;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_1;
 import static com.mercadolibre.planning.model.api.projection.waverless.WavesBySlaUtil.SLA_2;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.CONSOLIDATION_PROCESS_GROUP;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

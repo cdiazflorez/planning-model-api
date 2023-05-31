@@ -159,12 +159,12 @@ class BacklogProjectionTest {
 
     final var expected = Map.of(
         PICKING, Map.of(
-            DATE_FROM, 500L,
-            DATE_FROM.plus(1, ChronoUnit.HOURS), 100L
+            DATE_FROM, 500,
+            DATE_FROM.plus(1, ChronoUnit.HOURS), 100
         ),
         WAVING, Map.of(
-            DATE_FROM, 500L,
-            DATE_FROM.plus(1, ChronoUnit.HOURS), 100L
+            DATE_FROM, 500,
+            DATE_FROM.plus(1, ChronoUnit.HOURS), 100
         )
     );
 

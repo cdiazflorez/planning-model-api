@@ -9,6 +9,9 @@ import lombok.Value;
 public class Sla {
     @JsonProperty("date_out")
     Instant dateOut;
+
+    int quantity;
+
     @JsonProperty("process_path")
     List<ProcessPathResponse> processPath;
 }

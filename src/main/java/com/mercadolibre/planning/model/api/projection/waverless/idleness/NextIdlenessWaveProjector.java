@@ -13,6 +13,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
@@ -225,7 +226,7 @@ public final class NextIdlenessWaveProjector {
     final var tph = throughput.get(ProcessPath.GLOBAL);
 
     final var graph = BacklogProjection.buildGraph();
-    final var contexts = BacklogProjection.buildContexts(backlogs, tph);
+    final var contexts = BacklogProjection.buildContexts(backlogs, tph).build();
 
     final var processes = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 

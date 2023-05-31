@@ -3,7 +3,7 @@ package com.mercadolibre.planning.model.api.projection.dto.request;
 import static java.util.stream.Collectors.flatMapping;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.summingLong;
+import static java.util.stream.Collectors.summingInt;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,14 +57,14 @@ public class BacklogProjection {
             ));
     }
 
-    public Map<ProcessName, Map<Instant, Long>> mapThroughput() {
+    public Map<ProcessName, Map<Instant, Integer>> mapThroughput() {
       return this.throughput.stream().flatMap(tph -> tph.getQuantityByProcessName().stream()
               .map(quantityByProcessName -> new AbstractMap.SimpleEntry<>(tph.getOperationHour(), quantityByProcessName)))
           .collect(groupingBy(
               a -> a.getValue().getName(),
               groupingBy(
                   AbstractMap.SimpleEntry::getKey,
-                  summingLong(entry -> (long) entry.getValue().getTotal())
+                  summingInt(entry -> entry.getValue().getTotal())
               )
           ));
     }

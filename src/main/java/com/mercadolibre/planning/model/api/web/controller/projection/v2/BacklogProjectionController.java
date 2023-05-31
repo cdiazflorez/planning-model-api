@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.projection.v2;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -14,8 +14,10 @@ import com.mercadolibre.planning.model.api.projection.dto.response.ProcessPathRe
 import com.mercadolibre.planning.model.api.projection.dto.response.Sla;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.BacklogProjectionTotalResponse;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.SlaTotal;
+import com.mercadolibre.planning.model.api.projection.shipping.ShippingProjection;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,6 +41,38 @@ public class BacklogProjectionController {
 
   private final BacklogUnifiedProjection backlogUnifiedProjection;
 
+  public static List<BacklogProjectionResponse> mapToBacklogProjectionResponses(
+      final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionMap
+  ) {
+    return projectionMap.entrySet().stream()
+        .map(mapEntry -> new BacklogProjectionResponse(mapEntry.getKey(), mapToBacklogs(mapEntry.getValue())))
+        .collect(toList());
+  }
+
+  /**
+   * From a map representing the amount of backlog per sla, create a list of objects of type Backlog
+   * @param quantityByDateOutAndProcess quantity of backlog by date out
+   * @return a List of {@link Backlog}
+   */
+  private static List<Backlog> mapToBacklogs(final Map<ProcessName, Map<Instant, Integer>> quantityByDateOutAndProcess) {
+    var processes = quantityByDateOutAndProcess.entrySet().stream()
+        .map(processMapEntry -> mapToProcess(processMapEntry.getKey(), processMapEntry.getValue()))
+        .collect(toList());
+    return List.of(new Backlog(processes));
+  }
+
+  /**
+   * From a map representing the amount of backlog per date out, create a list of objects of type process
+   * @param quantityByDateOut quantity of backlog by date out
+   * @return a List of {@link Process}
+   */
+  private static Process mapToProcess(final ProcessName processName, final Map<Instant, Integer> quantityByDateOut) {
+    var slas = quantityByDateOut.entrySet().stream()
+        .map(instantIntegerEntry -> new Sla(instantIntegerEntry.getKey(), instantIntegerEntry.getValue(), Collections.emptyList()))
+        .collect(toList());
+    return new Process(processName, slas);
+  }
+
   /**
    * Method that handles the POST request for /backlog. Performs a projection calculation
    * and returns a list of ProjectionBacklogResponse objects.
@@ -54,34 +88,14 @@ public class BacklogProjectionController {
       @PathVariable final String logisticCenterId,
       @RequestBody final BacklogProjection backlogProjection) {
 
-    final Instant dateOut = Instant.parse("2023-04-10T14:00:00Z");
-    final Instant operationHour = Instant.parse("2023-04-10T10:00:00Z");
-
-    final BacklogProjectionResponse backlogProjectionResponse = new BacklogProjectionResponse(
-        operationHour,
-        List.of(
-            new Backlog(
-                List.of(
-                    new Process(
-                        ProcessName.PICKING,
-                        List.of(
-                            new Sla(
-                                dateOut,
-                                List.of(
-                                    new ProcessPathResponse(
-                                        TOT_MONO,
-                                        50
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
+    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionResult = ShippingProjection.calculateShippingProjection(
+        backlogProjection.getDateFrom(),
+        backlogProjection.getDateTo(),
+        backlogProjection.mapBacklogs(),
+        backlogProjection.mapForecast(),
+        backlogProjection.mapThroughput()
     );
-
-    return ResponseEntity.ok(List.of(backlogProjectionResponse));
+    return ResponseEntity.ok(mapToBacklogProjectionResponses(projectionResult));
   }
 
   /**

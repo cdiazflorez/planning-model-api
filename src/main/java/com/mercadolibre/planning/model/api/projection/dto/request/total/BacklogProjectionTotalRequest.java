@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.dto.request.total;
 
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
-import com.mercadolibre.planning.model.api.projection.dto.request.Throughput;
 import java.time.Instant;
 import java.util.List;
 import javax.validation.constraints.NotNull;

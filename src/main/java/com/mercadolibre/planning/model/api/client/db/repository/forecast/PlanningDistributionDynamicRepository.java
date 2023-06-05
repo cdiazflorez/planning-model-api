@@ -35,7 +35,7 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
       final Set<Grouper> groupers,
       final Set<Long> forecastIds) {
 
-    final Query query = buildQuery(groupers, dateInFrom, dateOutFrom);
+    final Query query = buildQuery(groupers, dateInFrom, dateOutFrom, processPaths);
 
     final var resultQuery = parametersQuery(query, forecastIds, processPaths, dateInFrom, dateInTo, dateOutFrom, dateOutTo)
         .getResultList();
@@ -45,7 +45,8 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
 
   private Query buildQuery(final Set<Grouper> groupers,
                            final Instant dateInFrom,
-                           final Instant dateOutFrom) {
+                           final Instant dateOutFrom,
+                           final Set<ProcessPath> processPaths) {
     final SqlQuery sqlQuery = new SqlQuery();
 
     groupers.forEach(grouper -> {
@@ -61,8 +62,10 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
     if (dateOutFrom != null) {
       sqlQuery.withWhere("date_out BETWEEN :date_out_from AND :date_out_to");
     }
+    if (!processPaths.isEmpty()) {
+      sqlQuery.withWhere("process_path IN (:process_paths)");
+    }
 
-    sqlQuery.withWhere("process_path IN (:process_paths)");
 
     return entityManager.createNativeQuery(sqlQuery.completeQuery());
   }
@@ -77,8 +80,9 @@ public class PlanningDistributionDynamicRepository implements PlanningDistributi
       final Instant dateOutTo) {
 
     query.setParameter("forecast_ids", forecastIds);
-    query.setParameter("process_paths", processPaths.stream().map(Enum::name).collect(Collectors.toList()));
-
+    if (!processPaths.isEmpty()) {
+      query.setParameter("process_paths", processPaths.stream().map(Enum::name).collect(Collectors.toList()));
+    }
     if (dateInFrom != null) {
       query.setParameter("date_in_from", dateInFrom);
       query.setParameter("date_in_to", dateInTo);

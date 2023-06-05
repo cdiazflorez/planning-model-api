@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
+import static java.util.Collections.emptySet;
 import static java.util.Comparator.comparing;
 import static java.util.Set.of;
 import static java.util.stream.Collectors.toList;
@@ -127,7 +128,7 @@ public class PlanningDistributionService {
     final List<PlanningDistribution> distributions = plannedUnitsGateway.getPlanningDistributions(
         input.getLogisticCenterId(),
         input.getWorkflow(),
-        input.getProcessPaths(),
+        input.getProcessPaths() == null ? emptySet() : input.getProcessPaths(),
         input.getDateInFrom(),
         input.getDateInTo(),
         input.getDateOutFrom(),

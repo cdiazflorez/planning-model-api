@@ -5,6 +5,6 @@ import lombok.Value;
 
 @Value
 public class ProcessPathResponse {
-    ProcessPath name;
-    int quantity;
+  ProcessPath name;
+  int quantity;
 }

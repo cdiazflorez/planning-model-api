@@ -8,5 +8,4 @@ import lombok.Value;
 public class ProcessPathRequest {
     ProcessPath name;
     Set<Quantity> quantity;
-    int total;
 }

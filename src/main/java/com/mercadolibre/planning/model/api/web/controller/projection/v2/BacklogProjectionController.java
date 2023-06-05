@@ -1,19 +1,27 @@
 package com.mercadolibre.planning.model.api.web.controller.projection.v2;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.usecase.projection.v2.backlog.BacklogUnifiedProjection;
 import com.mercadolibre.planning.model.api.projection.dto.request.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.dto.request.total.BacklogProjectionTotalRequest;
 import com.mercadolibre.planning.model.api.projection.dto.response.Backlog;
 import com.mercadolibre.planning.model.api.projection.dto.response.BacklogProjectionResponse;
-import com.mercadolibre.planning.model.api.projection.dto.response.BacklogProjectionTotalResponse;
 import com.mercadolibre.planning.model.api.projection.dto.response.Process;
 import com.mercadolibre.planning.model.api.projection.dto.response.ProcessPathResponse;
 import com.mercadolibre.planning.model.api.projection.dto.response.Sla;
+import com.mercadolibre.planning.model.api.projection.dto.response.total.BacklogProjectionTotalResponse;
+import com.mercadolibre.planning.model.api.projection.dto.response.total.SlaTotal;
+import com.mercadolibre.planning.model.api.projection.shipping.ShippingProjection;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,18 +37,41 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/logistic_center/{logisticCenterId}/projections/backlog")
 @Slf4j
 public class BacklogProjectionController {
+  private static final int IP_INTERVAL_SIZE = 60;
 
-  private static final Instant SLA1 = Instant.parse("2023-05-12T02:00:00Z");
+  private final BacklogUnifiedProjection backlogUnifiedProjection;
 
-  private static final Instant SLA2 = Instant.parse("2023-05-12T03:00:00Z");
+  public static List<BacklogProjectionResponse> mapToBacklogProjectionResponses(
+      final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionMap
+  ) {
+    return projectionMap.entrySet().stream()
+        .map(mapEntry -> new BacklogProjectionResponse(mapEntry.getKey(), mapToBacklogs(mapEntry.getValue())))
+        .collect(toList());
+  }
 
-  private static final int QUANTITY1 = 300;
+  /**
+   * From a map representing the amount of backlog per sla, create a list of objects of type Backlog
+   * @param quantityByDateOutAndProcess quantity of backlog by date out
+   * @return a List of {@link Backlog}
+   */
+  private static List<Backlog> mapToBacklogs(final Map<ProcessName, Map<Instant, Integer>> quantityByDateOutAndProcess) {
+    var processes = quantityByDateOutAndProcess.entrySet().stream()
+        .map(processMapEntry -> mapToProcess(processMapEntry.getKey(), processMapEntry.getValue()))
+        .collect(toList());
+    return List.of(new Backlog(processes));
+  }
 
-  private static final int QUANTITY2 = 500;
-
-  private static final int QUANTITY3 = 100;
-
-  private static final int QUANTITY4 = 400;
+  /**
+   * From a map representing the amount of backlog per date out, create a list of objects of type process
+   * @param quantityByDateOut quantity of backlog by date out
+   * @return a List of {@link Process}
+   */
+  private static Process mapToProcess(final ProcessName processName, final Map<Instant, Integer> quantityByDateOut) {
+    var slas = quantityByDateOut.entrySet().stream()
+        .map(instantIntegerEntry -> new Sla(instantIntegerEntry.getKey(), instantIntegerEntry.getValue(), Collections.emptyList()))
+        .collect(toList());
+    return new Process(processName, slas);
+  }
 
   /**
    * Method that handles the POST request for /backlog. Performs a projection calculation
@@ -57,43 +88,23 @@ public class BacklogProjectionController {
       @PathVariable final String logisticCenterId,
       @RequestBody final BacklogProjection backlogProjection) {
 
-    final Instant dateOut = Instant.parse("2023-04-10T14:00:00Z");
-    final Instant operationHour = Instant.parse("2023-04-10T10:00:00Z");
-
-    final BacklogProjectionResponse backlogProjectionResponse = new BacklogProjectionResponse(
-        operationHour,
-        List.of(
-            new Backlog(
-                List.of(
-                    new Process(
-                        ProcessName.PICKING,
-                        List.of(
-                            new Sla(
-                                dateOut,
-                                List.of(
-                                    new ProcessPathResponse(
-                                        TOT_MONO,
-                                        50
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
+    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionResult = ShippingProjection.calculateShippingProjection(
+        backlogProjection.getDateFrom(),
+        backlogProjection.getDateTo(),
+        backlogProjection.mapBacklogs(),
+        backlogProjection.mapForecast(),
+        backlogProjection.mapThroughput()
     );
-
-    return ResponseEntity.ok(List.of(backlogProjectionResponse));
+    return ResponseEntity.ok(mapToBacklogProjectionResponses(projectionResult));
   }
 
   /**
-   * Method that handles the POST request for /backlog. Performs a projection calculation
-   * and returns a list of ProjectionBacklogResponse objects.
+   * Method that handles the POST request for /total. Performs a projection calculation
+   * and returns a list of BacklogProjectionTotalResponse objects.
    *
    * @param logisticCenterId The ID of the logistic center to which the request refers.
    * @param request          The backlog projection request to be processed.
-   * @return A ResponseEntity object containing a list of ProjectionBacklogResponse objects.
+   * @return A ResponseEntity object containing a list of BacklogProjectionTotalResponse objects.
    */
   @PostMapping("/total")
   @Trace(dispatcher = true)
@@ -103,24 +114,35 @@ public class BacklogProjectionController {
 
     request.validateDateRange();
 
-    return ResponseEntity.ok(
-        List.of(
-            new BacklogProjectionTotalResponse(
-                Instant.parse("2023-05-12T00:00:00Z"),
-                List.of(
-                    new Sla(SLA1, List.of(new ProcessPathResponse(TOT_MONO, QUANTITY1))),
-                    new Sla(SLA2, List.of(new ProcessPathResponse(TOT_MONO, QUANTITY2)))
-                )
-            ),
-            new BacklogProjectionTotalResponse(
-                Instant.parse("2023-05-12T01:00:00Z"),
-                List.of(
-                    new Sla(SLA1, List.of(new ProcessPathResponse(TOT_MONO, QUANTITY3))),
-                    new Sla(SLA2, List.of(new ProcessPathResponse(TOT_MONO, QUANTITY4)))
-                )
+    final var projection = backlogUnifiedProjection.getProjection(request, IP_INTERVAL_SIZE);
+
+    final var response = projection.entrySet().stream()
+        .map(dateByProjection ->
+            new BacklogProjectionTotalResponse(dateByProjection.getKey(),
+                toSlaTotal(dateByProjection.getValue())
             )
-        )
-    );
+        ).collect(Collectors.toList());
+
+    return ResponseEntity.ok(response);
+  }
+
+  private List<SlaTotal> toSlaTotal(final Map<Instant, Map<ProcessPath, Long>> backlogByDateOut) {
+    return backlogByDateOut.entrySet().stream()
+        .map(backlogBySla -> new SlaTotal(backlogBySla.getKey(),
+            sumProcessPath(backlogBySla.getValue()),
+            toProcessPathResponse(backlogBySla.getValue())
+        )).collect(Collectors.toList());
+  }
+
+  private int sumProcessPath(final Map<ProcessPath, Long> backlogByProcessPath) {
+    return backlogByProcessPath.entrySet().stream().flatMapToInt(backlogByPP -> IntStream.of(Math.toIntExact(backlogByPP.getValue())))
+        .sum();
+  }
+
+  private List<ProcessPathResponse> toProcessPathResponse(final Map<ProcessPath, Long> backlogByProcessPath) {
+    return backlogByProcessPath.entrySet().stream()
+        .map(backlogByPP -> new ProcessPathResponse(backlogByPP.getKey(), Math.toIntExact(backlogByPP.getValue())))
+        .collect(Collectors.toList());
   }
 
 }

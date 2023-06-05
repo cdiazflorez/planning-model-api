@@ -1,9 +1,11 @@
-package com.mercadolibre.planning.model.api.projection.waverless.idleness;
+package com.mercadolibre.planning.model.api.projection;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -31,6 +33,7 @@ import com.mercadolibre.flow.projection.tools.services.entities.process.SimplePr
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.ProcessPathSplitter;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
@@ -43,13 +46,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class BacklogProjection {
+public final class BacklogProjection {
 
   public static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
 
   private static final String PACKING_PROCESS_GROUP = "packing_group";
 
-  private static final List<ProcessName> OUTBOUND_PROCESSES = List.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
+  private static final List<ProcessName> OUTBOUND_PROCESSES =
+      List.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL, HU_ASSEMBLY, SALES_DISPATCH);
 
   private static final Merger BACKLOG_BY_DATE_MERGER = new OrderedBacklogByDateMerger();
 
@@ -73,7 +77,7 @@ final class BacklogProjection {
   private BacklogProjection() {
   }
 
-  private static Backlog toOrderedBacklogByDate(final Map<ProcessPath, Backlog> backlogByProcessPath) {
+  public static Backlog toOrderedBacklogByDate(final Map<ProcessPath, Backlog> backlogByProcessPath) {
     final var backlogs = backlogByProcessPath.values()
         .stream()
         .map(OrderedBacklogByDate.class::cast)
@@ -94,7 +98,7 @@ final class BacklogProjection {
    * @param throughput available processing power of each process by process path.
    * @return unconsumed context holder.
    */
-  static ContextsHolder buildContexts(
+  public static ContextsHolder.ContextsHolderBuilder buildContexts(
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
@@ -107,11 +111,10 @@ final class BacklogProjection {
         .oneProcessContext(WALL_IN.getName(), contexts.get(WALL_IN))
         .oneProcessContext(PACKING.getName(), contexts.get(PACKING))
         .oneProcessContext(PACKING_WALL.getName(), contexts.get(PACKING_WALL))
-        .oneProcessContext(PACKING_PROCESS_GROUP, new ParallelProcess.Context(ASSISTANT))
-        .build();
+        .oneProcessContext(PACKING_PROCESS_GROUP, new ParallelProcess.Context(ASSISTANT));
   }
 
-  private static Map<ProcessName, SimpleProcess.Context> buildOrderedBacklogByDateBasedProcessesContexts(
+  public static Map<ProcessName, SimpleProcess.Context> buildOrderedBacklogByDateBasedProcessesContexts(
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
@@ -176,7 +179,7 @@ final class BacklogProjection {
    *
    * @return graph.
    */
-  static Processor buildGraph() {
+  public static Processor buildGraph() {
     return SequentialProcess.builder()
         .name(Workflow.FBM_WMS_OUTBOUND.getName())
         .process(new SimpleProcess(PICKING.getName()))
@@ -217,7 +220,7 @@ final class BacklogProjection {
    * @param processes        Lista de Procesos de los cuales se requiere obtener los UnprocessedBacklogs
    * @return Backlog total por proceso en cada instante.
    */
-  static Map<ProcessName, Map<Instant, Long>> project(
+  public static Map<ProcessName, Map<Instant, Long>> project(
       final Processor graph,
       final ContextsHolder holder,
       final Upstream upstream,
@@ -240,5 +243,4 @@ final class BacklogProjection {
             )
         );
   }
-
 }

@@ -1,15 +1,21 @@
 package com.mercadolibre.planning.model.api.projection.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import java.time.Instant;
 import java.util.List;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 
-@Data
-@NoArgsConstructor
+@Value
 public class Throughput {
     @JsonProperty("operation_hour")
     Instant operationHour;
-    List<Process> process;
+    List<QuantityByProcessName> quantityByProcessName;
+
+    @Value
+    public static class QuantityByProcessName {
+        ProcessName name;
+
+        int total;
+    }
 }

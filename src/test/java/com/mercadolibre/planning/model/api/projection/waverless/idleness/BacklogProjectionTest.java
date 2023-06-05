@@ -9,9 +9,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildContexts;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildGraph;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.project;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildContexts;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildGraph;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.project;
 import static java.util.Collections.emptyMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,7 +30,7 @@ import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class BacklogProjectionTest {
+public class BacklogProjectionTest {
 
   private static final Instant[] DATES = {
       Instant.parse("2023-03-29T00:00:00Z"),
@@ -42,7 +42,7 @@ class BacklogProjectionTest {
       Instant.parse("2023-03-29T06:00:00Z"),
   };
 
-  private static Map<Instant, Integer> throughput(int v1, int v2, int v3, int v4, int v5, int v6) {
+  public static Map<Instant, Integer> throughput(int v1, int v2, int v3, int v4, int v5, int v6) {
     return Map.of(
         DATES[0], v1,
         DATES[1], v2,
@@ -54,7 +54,7 @@ class BacklogProjectionTest {
     );
   }
 
-  private static Map<Instant, Long> expectedBacklogs(long d0, long d1, long d2, long d3, long d4, long d5) {
+  public static Map<Instant, Long> expectedBacklogs(long d0, long d1, long d2, long d3, long d4, long d5) {
     return Map.of(
         DATES[1], d0,
         DATES[2], d1,
@@ -96,7 +96,7 @@ class BacklogProjectionTest {
         PACKING_WALL, throughput(1000, 1000, 1000, 1000, 0, 500)
     );
 
-    final ContextsHolder holder = buildContexts(currentBacklogs, throughput);
+    final ContextsHolder holder = buildContexts(currentBacklogs, throughput).build();
 
     final Processor graph = buildGraph();
 

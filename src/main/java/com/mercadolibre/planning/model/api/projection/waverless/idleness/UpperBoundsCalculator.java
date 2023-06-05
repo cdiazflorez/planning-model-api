@@ -5,9 +5,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildContexts;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.buildGraph;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.project;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildContexts;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildGraph;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.project;
 import static com.mercadolibre.planning.model.api.util.MathUtil.safeDiv;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.stream.Collectors.toMap;
@@ -310,7 +310,7 @@ public final class UpperBoundsCalculator {
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
     final var graph = buildGraph();
-    final var contexts = buildContexts(currentBacklog, throughput);
+    final var contexts = buildContexts(currentBacklog, throughput).build();
     final var upstream = ProjectionUtils.asUpstream(waves);
 
     return project(graph, contexts, upstream, inflectionPoints, PROCESSES);

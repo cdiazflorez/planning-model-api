@@ -8,7 +8,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_SINGLE_SKU;
-import static com.mercadolibre.planning.model.api.projection.waverless.idleness.BacklogProjection.CONSOLIDATION_PROCESS_GROUP;
+import static com.mercadolibre.planning.model.api.projection.BacklogProjection.CONSOLIDATION_PROCESS_GROUP;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;

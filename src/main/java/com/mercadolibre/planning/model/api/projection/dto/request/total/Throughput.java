@@ -1,13 +1,12 @@
 package com.mercadolibre.planning.model.api.projection.dto.request.total;
 
-import java.util.List;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class BacklogRequest {
-  private List<ProcessPathRequest> processPath;
+public class Throughput {
+  private final Instant date;
+  private final Integer quantity;
 }

@@ -7,6 +7,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
@@ -44,10 +45,10 @@ class ShippingProjectionTest {
 
   private static final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> EXPECTED_BACKLOG =
       Map.of(Instant.parse("2023-03-29T01:00:00Z"), Map.of(
-          PACKING, Map.of(DATES[0], 3204),
+          PACKING, Map.of(DATES[0], 3198),
           SALES_DISPATCH, Map.of(DATES[0], 430),
-          PICKING, Map.of(DATES[0], 2400),
-          BATCH_SORTER, Map.of(DATES[0], 1320),
+          PICKING, Map.of(DATES[0], 2412),
+          BATCH_SORTER, Map.of(DATES[0], 1317),
           HU_ASSEMBLY, Map.of(DATES[0], 3233),
           PACKING_WALL, Map.of(DATES[0], 670),
           WALL_IN, Map.of(DATES[0], 360)
@@ -58,6 +59,11 @@ class ShippingProjectionTest {
 
   private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentShippingBacklogs() {
     return Map.of(
+        WAVING, Map.of(
+            TOT_MONO, Map.of(DATES[0], 1L),
+            NON_TOT_MONO, Map.of(DATES[0], 1L),
+            TOT_MULTI_BATCH, Map.of(DATES[0], 1L)
+        ),
         PICKING, Map.of(
             TOT_MONO, Map.of(DATES[0], 2500L),
             NON_TOT_MONO, Map.of(DATES[0], 1500L),

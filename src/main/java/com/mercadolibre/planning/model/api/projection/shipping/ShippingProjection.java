@@ -255,7 +255,7 @@ public final class ShippingProjection {
                   Function.identity(),
                   process -> process == PICKING
                       ? merge.apply(currentBacklog.get(WAVING), currentBacklog.get(PICKING))
-                      : currentBacklog.get(process)
+                      : currentBacklog.getOrDefault(process, Map.of())
               )
           );
   }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public final class WavesCalculator {
 
-  private static final int MAX_WAVES_TO_PROJECT = 20;
+  private static final int MAX_WAVES_TO_PROJECT = 150;
 
   private static final int INFLECTION_WINDOW_SIZE_IN_MINUTES = 5;
 

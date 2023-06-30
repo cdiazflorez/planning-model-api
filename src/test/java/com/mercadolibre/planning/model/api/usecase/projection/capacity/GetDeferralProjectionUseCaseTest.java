@@ -132,7 +132,7 @@ class GetDeferralProjectionUseCaseTest {
         .type(THROUGHPUT)
         .metricUnit(UNITS_PER_HOUR)
         .source(FORECAST)
-        .quantity(value)
+        .value(value)
         .build();
   }
 

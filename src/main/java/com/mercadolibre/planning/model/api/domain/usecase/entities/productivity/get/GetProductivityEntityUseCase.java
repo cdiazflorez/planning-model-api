@@ -19,8 +19,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -61,7 +59,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
             .filter(noSimulationExistsWithSameProperties(inputSimulatedEntities))
             .map(sp -> ProductivityOutput.builder()
                     .workflow(input.getWorkflow())
-                    .quantity(sp.getProductivity())
+                    .value(sp.getProductivity())
                     .source(SIMULATION)
                     .processPath(GLOBAL)
                     .processName(sp.getProcessName())
@@ -85,7 +83,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
             .date(ofInstant(p.getDate().toInstant(), UTC))
             .processPath(p.getProcessPath())
             .processName(p.getProcessName())
-            .quantity(p.getProductivity())
+            .value(p.getProductivity())
             .metricUnit(p.getProductivityMetricUnit())
             .source(FORECAST)
             .abilityLevel(p.getAbilityLevel())
@@ -152,7 +150,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
                                 .processPath(GLOBAL)
                                 .processName(simulation.getProcessName())
                                 .source(SIMULATION)
-                                .quantity(quantityByDate.getQuantity())
+                                .value(quantityByDate.getQuantity())
                                 .abilityLevel(1)
                                 .build())
                     )

@@ -11,6 +11,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -37,12 +38,16 @@ public class EntityOutput {
 
   private Source source;
 
-  @JsonIgnore
-  private double quantity;
+  private double value;
 
-  // TODO: remove this method after adopting double values in the app
-  public long getValue() {
-    return Math.round(quantity);
+  public double getValue() {
+    DecimalFormat decimalFormat = new DecimalFormat("#.##");
+    return Double.parseDouble(decimalFormat.format(value));
+  }
+
+  @JsonIgnore
+  public long getRoundedValue() {
+    return Math.round(value);
   }
 
   public static EntityOutput fromProcessingDistributionView(
@@ -55,7 +60,7 @@ public class EntityOutput {
         .type(processingDistributionView.getType())
         .date(fromDate(processingDistributionView.getDate()))
         .metricUnit(processingDistributionView.getQuantityMetricUnit())
-        .quantity(processingDistributionView.getQuantity())
+        .value(processingDistributionView.getQuantity())
         .build();
   }
 }

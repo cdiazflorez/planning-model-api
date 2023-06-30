@@ -72,7 +72,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(15)
+            .value(15)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -82,7 +82,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(7.5)
+            .value(7.5)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -92,7 +92,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(10)
+            .value(10)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -102,7 +102,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(5)
+            .value(5)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -112,7 +112,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(11)
+            .value(11)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -122,7 +122,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(5.5)
+            .value(5.5)
             .abilityLevel(2)
             .build(),
 
@@ -133,7 +133,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(9)
+            .value(9)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -143,7 +143,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(4.5)
+            .value(4.5)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -153,7 +153,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(6)
+            .value(6)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -163,7 +163,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(3)
+            .value(3)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -173,7 +173,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(10)
+            .value(10)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -183,7 +183,7 @@ class GetThroughputUseCaseTest {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(5)
+            .value(5)
             .abilityLevel(2)
             .build()
     );
@@ -312,7 +312,7 @@ class GetThroughputUseCaseTest {
     final EntityOutput output3 = output.get(2);
     assertEquals(A_DATE_UTC.withFixedOffsetZone(), output3.getDate());
     assertEquals(PACKING, output3.getProcessName());
-    assertEquals(4853, output3.getValue());
+    assertEquals(4853, output3.getRoundedValue());
     assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
     assertEquals(SIMULATION, output3.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
@@ -352,7 +352,7 @@ class GetThroughputUseCaseTest {
     assertEntityOutput(output.get(0), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC, 450D);
 
     // 30.5 reps x 10 prod + 2.5 reps x 5 prod (10 x 0.5)
-    assertEntityOutput(output.get(1), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 317.5D);
+    assertEntityOutput(output.get(1), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 318D);
 
     // 35 reps x 11 prod with ratio 1.0
     assertEntityOutput(output.get(2), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(2), 385D);
@@ -380,7 +380,7 @@ class GetThroughputUseCaseTest {
     assertEquals(processPath, entity.getProcessPath());
     assertEquals(process, entity.getProcessName());
     assertEquals(date.withFixedOffsetZone(), entity.getDate().withFixedOffsetZone());
-    assertEquals(quantity, entity.getQuantity());
+    assertEquals(quantity, entity.getValue());
   }
 
   private GetEntityInput getEntityInput(final List<ProcessPath> processPaths) {
@@ -403,7 +403,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC)
             .processPath(TOT_MONO)
             .processName(PICKING)
-            .quantity(30)
+            .value(30)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
@@ -412,7 +412,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(1))
             .processPath(TOT_MONO)
             .processName(PICKING)
-            .quantity(30.5)
+            .value(30.5)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
@@ -421,7 +421,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(1))
             .processPath(TOT_MONO)
             .processName(PICKING)
-            .quantity(33)
+            .value(33)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(SIMULATION)
@@ -430,7 +430,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(2))
             .processPath(TOT_MONO)
             .processName(PICKING)
-            .quantity(35)
+            .value(35)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
@@ -439,7 +439,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC)
             .processPath(NON_TOT_MONO)
             .processName(PICKING)
-            .quantity(30)
+            .value(30)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
@@ -448,7 +448,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(1))
             .processPath(NON_TOT_MONO)
             .processName(PICKING)
-            .quantity(45.5)
+            .value(45.5)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)
@@ -457,7 +457,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(1))
             .processPath(NON_TOT_MONO)
             .processName(PICKING)
-            .quantity(43)
+            .value(43)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(SIMULATION)
@@ -466,7 +466,7 @@ class GetThroughputUseCaseTest {
             .date(A_DATE_UTC.plusHours(2))
             .processPath(NON_TOT_MONO)
             .processName(PICKING)
-            .quantity(35)
+            .value(35)
             .metricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .source(FORECAST)

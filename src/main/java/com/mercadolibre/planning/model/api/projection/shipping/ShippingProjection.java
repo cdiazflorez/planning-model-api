@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -120,7 +121,7 @@ public final class ShippingProjection {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
-    final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(backlog, throughput);
+    final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(PROCESSES, backlog, throughput);
     return buildContexts(backlog, throughput)
         .oneProcessContext(HU_ASSEMBLY.getName(), contexts.get(HU_ASSEMBLY))
         .oneProcessContext(SALES_DISPATCH.getName(), contexts.get(SALES_DISPATCH))
@@ -231,8 +232,7 @@ public final class ShippingProjection {
     if (currentBacklog.get(WAVING) == null) {
       return currentBacklog;
     }
-    final BiFunction<Map<ProcessPath, Map<Instant, Long>>, Map<ProcessPath, Map<Instant, Long>>, Map<ProcessPath, Map<Instant, Long>>>
-        merge = (left, right) ->
+    final BinaryOperator<Map<ProcessPath, Map<Instant, Long>>> merge = (left, right) ->
             Stream.concat(
                     left.entrySet().stream(),
                     right.entrySet().stream()

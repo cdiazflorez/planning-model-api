@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Value;
 
 public final class WavesCalculator {
 
@@ -31,8 +33,16 @@ public final class WavesCalculator {
   private WavesCalculator() {
   }
 
+  @Value
+  public static class TriggerProjection {
+    List<Wave> waves;
+
+    Map<ProcessName, Map<Instant, Long>> projectedBacklogs;
+
+  }
+
   @Trace
-  public static List<Wave> waves(
+  public static TriggerProjection waves(
       final Instant executionDate,
       final List<ProcessPathConfiguration> configurations,
       final List<UnitsByProcessPathAndProcess> backlogs,
@@ -81,7 +91,10 @@ public final class WavesCalculator {
       wave.ifPresent(waves::add);
       nextWaveHasBeenProjected = wave.isPresent();
     }
-    return waves;
+
+    final var projectedBacklogs = BacklogProjection.project(inflectionPoints, waves, currentBacklog, throughput.get(ProcessPath.GLOBAL));
+
+    return new TriggerProjection(waves, projectedBacklogs);
   }
 
   private static List<Instant> calculateInflectionPoints(

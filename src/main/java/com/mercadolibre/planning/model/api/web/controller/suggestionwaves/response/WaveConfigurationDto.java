@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller.suggestionwaves.respo
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
+import java.util.List;
 import java.util.NavigableSet;
 import lombok.Value;
 
@@ -15,4 +16,13 @@ public class WaveConfigurationDto {
 
   NavigableSet<Instant> slaDates;
 
+  List<UnitsAtSla> units;
+
+  @Value
+  public static class UnitsAtSla {
+    Instant sla;
+
+    long quantity;
+
+  }
 }

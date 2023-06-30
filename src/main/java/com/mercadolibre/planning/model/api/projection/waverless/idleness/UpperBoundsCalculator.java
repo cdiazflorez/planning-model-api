@@ -1,12 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.waverless.idleness;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
-import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildContexts;
-import static com.mercadolibre.planning.model.api.projection.BacklogProjection.buildGraph;
 import static com.mercadolibre.planning.model.api.projection.BacklogProjection.project;
 import static com.mercadolibre.planning.model.api.util.MathUtil.safeDiv;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -18,7 +12,6 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessNameToProcessPat
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
-import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -34,8 +27,6 @@ import java.util.function.Function;
 public final class UpperBoundsCalculator {
 
   private static final int MAX_OPTIMIZATION_STEPS = 50;
-
-  private static final Set<ProcessName> PROCESSES = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
   private UpperBoundsCalculator() {
   }
@@ -187,7 +178,7 @@ public final class UpperBoundsCalculator {
     final var allWaves = new ArrayList<>(previousWaves);
     allWaves.add(candidateWave);
 
-    final var projections = getBacklogProjection(inflectionPoints, allWaves, currentBacklog, throughput);
+    final var projections = project(inflectionPoints, allWaves, currentBacklog, throughput);
 
     return projections.entrySet()
         .stream()
@@ -301,19 +292,6 @@ public final class UpperBoundsCalculator {
         .min(Comparator.naturalOrder())
         .map(Long::intValue)
         .orElse(0);
-  }
-
-  private static Map<ProcessName, Map<Instant, Long>> getBacklogProjection(
-      final List<Instant> inflectionPoints,
-      final List<Wave> waves,
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
-      final Map<ProcessName, Map<Instant, Integer>> throughput
-  ) {
-    final var graph = buildGraph();
-    final var contexts = buildContexts(currentBacklog, throughput).build();
-    final var upstream = ProjectionUtils.asUpstream(waves);
-
-    return project(graph, contexts, upstream, inflectionPoints, PROCESSES);
   }
 
   private static int totalAdjustedUnits(final Map<ProcessPath, Integer> unitsDiff) {

@@ -1,15 +1,18 @@
 package com.mercadolibre.planning.model.api.web.controller.suggestionwaves;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave.WaveConfiguration;
 import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator;
+import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator.TriggerProjection;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.request.Request;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaveConfigurationDto;
+import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaveConfigurationDto.UnitsAtSla;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaveDto;
 import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaverlessResponse;
+import com.mercadolibre.planning.model.api.web.controller.suggestionwaves.response.WaverlessResponse.UnitsAtOperationHour;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -32,7 +35,13 @@ public class SuggestionWavesController {
         processPath,
         (int) configuration.getLowerBound(),
         (int) configuration.getUpperBound(),
-        new TreeSet<>(configuration.getWavedUnitsByCpt().keySet())
+        new TreeSet<>(configuration.getWavedUnitsByCpt().keySet()),
+        configuration.getWavedUnitsByCpt()
+            .entrySet()
+            .stream()
+            .map(entry -> new UnitsAtSla(entry.getKey(), entry.getValue()))
+            .sorted(Comparator.comparing(UnitsAtSla::getSla))
+            .collect(Collectors.toList())
     );
   }
 
@@ -43,12 +52,27 @@ public class SuggestionWavesController {
         .collect(Collectors.toList());
   }
 
-  private static WaverlessResponse mapToDto(final String logisticCenterId, final Instant viewDate, final List<Wave> waves) {
-    final var suggestions = waves.stream()
+  private static WaverlessResponse mapToDto(final String logisticCenterId, final Instant viewDate, final TriggerProjection triggers) {
+    final var suggestions = triggers.getWaves().stream()
         .map(wave -> new WaveDto(wave.getDate(), toWaves(wave.getConfiguration()), wave.getReason()))
         .collect(Collectors.toList());
 
-    return new WaverlessResponse(logisticCenterId, viewDate, suggestions);
+    final var projectedBacklogs = triggers.getProjectedBacklogs()
+        .entrySet()
+        .stream()
+        .collect(
+            Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> entry.getValue()
+                    .entrySet()
+                    .stream()
+                    .map(unitsByDate -> new UnitsAtOperationHour(unitsByDate.getKey(), unitsByDate.getValue()))
+                    .sorted(Comparator.comparing(UnitsAtOperationHour::getDate))
+                    .collect(Collectors.toList())
+            )
+        );
+
+    return new WaverlessResponse(logisticCenterId, viewDate, suggestions, projectedBacklogs);
   }
 
   @Trace(dispatcher = true)
@@ -68,4 +92,5 @@ public class SuggestionWavesController {
     );
     return ResponseEntity.ok(mapToDto(logisticCenterId, request.getViewDate(), waves));
   }
+
 }

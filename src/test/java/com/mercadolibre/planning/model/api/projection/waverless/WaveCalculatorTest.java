@@ -127,7 +127,7 @@ class WaveCalculatorTest {
     );
 
     // WHEN
-    final var result = WavesCalculator.waves(
+    final var triggers = WavesCalculator.waves(
         FIRST_INFLECTION_POINT,
         CONFIGURATIONS,
         backlog,
@@ -138,6 +138,8 @@ class WaveCalculatorTest {
     );
 
     // THEN
+    final var result = triggers.getWaves();
+
     assertEquals(5, result.size());
 
     // first wave
@@ -166,5 +168,13 @@ class WaveCalculatorTest {
     final var secondWaveTotMultiBatchConf = secondWave.getConfiguration().get(TOT_MULTI_BATCH);
     assertEquals(600L, secondWaveTotMultiBatchConf.getLowerBound());
     assertEquals(2400L, secondWaveTotMultiBatchConf.getUpperBound());
+
+    // projections
+    assertEquals(72, triggers.getProjectedBacklogs().get(PICKING).size());
+
+    assertEquals(1200, triggers.getProjectedBacklogs().get(PICKING).get(firstWaveExpectedDate));
+    final var nextInflectionPointAfterFirstWave = Instant.parse("2023-03-29T01:25:00Z");
+    assertEquals(1700, triggers.getProjectedBacklogs().get(PICKING).get(nextInflectionPointAfterFirstWave));
+
   }
 }

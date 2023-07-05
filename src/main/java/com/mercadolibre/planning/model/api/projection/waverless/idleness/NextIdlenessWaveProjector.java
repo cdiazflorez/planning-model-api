@@ -1,10 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.waverless.idleness;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.TriggerName.IDLENESS;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.stream.Collectors.flatMapping;
@@ -17,7 +13,6 @@ import com.mercadolibre.planning.model.api.projection.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
-import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -114,15 +109,17 @@ public final class NextIdlenessWaveProjector {
     return isAfter;
   }
 
-  private static Map<ProcessName, Map<Instant, Long>> calculateBacklogStates(
+  public static Map<ProcessName, Map<Instant, Long>> calculateBacklogStates(
       final List<Instant> inflectionPoints,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final List<Wave> previousWaves
   ) {
+    final var globalThroughput = throughput.get(ProcessPath.GLOBAL);
+
     return Stream.of(
             buildCurrentBacklogs(inflectionPoints.get(0), backlogs),
-            calculateProjectedBacklogs(inflectionPoints, previousWaves, backlogs, throughput)
+            BacklogProjection.project(inflectionPoints, previousWaves, backlogs, globalThroughput)
         )
         .map(Map::entrySet)
         .flatMap(Set::stream)
@@ -215,24 +212,6 @@ public final class NextIdlenessWaveProjector {
                 )
             )
         );
-  }
-
-  private static Map<ProcessName, Map<Instant, Long>> calculateProjectedBacklogs(
-      final List<Instant> inflectionPoints,
-      final List<Wave> previousWaves,
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs,
-      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput
-  ) {
-    final var tph = throughput.get(ProcessPath.GLOBAL);
-
-    final var graph = BacklogProjection.buildGraph();
-    final var contexts = BacklogProjection.buildContexts(backlogs, tph).build();
-
-    final var processes = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
-
-    final var upstream = ProjectionUtils.asUpstream(previousWaves);
-
-    return BacklogProjection.project(graph, contexts, upstream, inflectionPoints, processes);
   }
 
   private static Optional<Instant> calculateWaveDate(

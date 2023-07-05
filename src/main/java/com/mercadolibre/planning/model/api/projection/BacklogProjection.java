@@ -1,11 +1,9 @@
 package com.mercadolibre.planning.model.api.projection;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -33,10 +31,12 @@ import com.mercadolibre.flow.projection.tools.services.entities.process.SimplePr
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.projection.waverless.idleness.ProcessPathSplitter;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
+import com.mercadolibre.planning.model.api.projection.waverless.ProjectionUtils;
+import com.mercadolibre.planning.model.api.projection.waverless.Wave;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.ProcessPathSplitter;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -51,9 +51,6 @@ public final class BacklogProjection {
   public static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
 
   private static final String PACKING_PROCESS_GROUP = "packing_group";
-
-  private static final List<ProcessName> OUTBOUND_PROCESSES =
-      List.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL, HU_ASSEMBLY, SALES_DISPATCH);
 
   private static final Merger BACKLOG_BY_DATE_MERGER = new OrderedBacklogByDateMerger();
 
@@ -73,6 +70,8 @@ public final class BacklogProjection {
       new ProcessPathSplitter(BacklogProjection::toOrderedBacklogByDate),
       BACKLOG_BY_DATE_MERGER
   );
+
+  private static final Set<ProcessName> PROCESSES = Set.of(PICKING, PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
   private BacklogProjection() {
   }
@@ -102,7 +101,7 @@ public final class BacklogProjection {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
-    final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(backlog, throughput);
+    final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(PROCESSES, backlog, throughput);
     final var pickingContext = buildPickingProcessContext(backlog, throughput);
 
     return ContextsHolder.builder()
@@ -115,12 +114,13 @@ public final class BacklogProjection {
   }
 
   public static Map<ProcessName, SimpleProcess.Context> buildOrderedBacklogByDateBasedProcessesContexts(
+      final Set<ProcessName> processes,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
     final var backlogQuantityByProcess = buildOrderedBacklogByDateBasedProcessesBacklogs(backlog);
 
-    return OUTBOUND_PROCESSES.stream()
+    return processes.stream()
         .collect(
             toMap(
                 Function.identity(),
@@ -242,5 +242,18 @@ public final class BacklogProjection {
                     .collect(toMap(UnprocessedBacklogState::getEndDate, ubs -> ubs.getBacklog().total()))
             )
         );
+  }
+
+  public static Map<ProcessName, Map<Instant, Long>> project(
+      final List<Instant> inflectionPoints,
+      final List<Wave> waves,
+      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
+      final Map<ProcessName, Map<Instant, Integer>> throughput
+  ) {
+    final var graph = buildGraph();
+    final var contexts = buildContexts(currentBacklog, throughput).build();
+    final var upstream = ProjectionUtils.asUpstream(waves);
+
+    return project(graph, contexts, upstream, inflectionPoints, PROCESSES);
   }
 }

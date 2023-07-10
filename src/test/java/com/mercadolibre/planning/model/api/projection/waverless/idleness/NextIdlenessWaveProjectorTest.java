@@ -155,10 +155,10 @@ class NextIdlenessWaveProjectorTest {
     final var wave = result.get();
 
     final var expectedWaveDate = Instant.parse("2023-03-29T01:20:00Z");
-    assertEquals(expectedWaveDate, wave.getDate());
-    assertEquals(TriggerName.IDLENESS, wave.getReason());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
+    assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
-    final var confs = wave.getConfiguration();
+    final var confs = wave.getWave().get().getConfiguration();
     assertEquals(699, confs.get(TOT_MONO).getUpperBound());
     assertEquals(240, confs.get(TOT_MONO).getLowerBound());
 
@@ -229,10 +229,10 @@ class NextIdlenessWaveProjectorTest {
     final var wave = result.get();
 
     final var expectedWaveDate = Instant.parse("2023-03-29T01:20:00Z");
-    assertEquals(expectedWaveDate, wave.getDate());
-    assertEquals(TriggerName.IDLENESS, wave.getReason());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
+    assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
-    final var confs = wave.getConfiguration();
+    final var confs = wave.getWave().get().getConfiguration();
     assertEquals(928, confs.get(TOT_MONO).getUpperBound());
     assertEquals(240, confs.get(TOT_MONO).getLowerBound());
 
@@ -303,10 +303,10 @@ class NextIdlenessWaveProjectorTest {
     final var wave = result.get();
 
     final var expectedWaveDate = Instant.parse("2023-03-29T00:00:00Z");
-    assertEquals(expectedWaveDate, wave.getDate());
-    assertEquals(TriggerName.IDLENESS, wave.getReason());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
+    assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
-    final var confs = wave.getConfiguration();
+    final var confs = wave.getWave().get().getConfiguration();
     assertEquals(2433, confs.get(TOT_MONO).getUpperBound());
     assertEquals(1573, confs.get(TOT_MONO).getLowerBound());
 

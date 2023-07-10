@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
 import com.mercadolibre.metrics.Metrics;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public enum ExecutionMetrics {
   UPSTREAM_ITERATIONS("upstream.iterations"),
   SLA_DATE_ITERATIONS("sla.iterations");

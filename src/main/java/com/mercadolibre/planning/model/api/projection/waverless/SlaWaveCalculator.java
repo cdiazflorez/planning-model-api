@@ -9,6 +9,7 @@ import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.DateWaveSupplier;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -51,7 +52,7 @@ public final class SlaWaveCalculator {
    * @return next wave configuration, if found.
    */
   @Trace
-  public static Optional<Wave> projectNextWave(
+  public static Optional<DateWaveSupplier> projectNextWave(
       final List<Instant> inflectionPoints,
       final Map<Instant, List<CurrentBacklog>> projectedBacklogs,
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
@@ -164,7 +165,7 @@ public final class SlaWaveCalculator {
         .collect(Collectors.toList());
   }
 
-  private static Optional<Wave> buildWaveFromExpiredSlas(
+  private static Optional<DateWaveSupplier> buildWaveFromExpiredSlas(
       final Instant waveDate,
       final Map<ProcessPath, Map<Instant, Long>> wavedBacklog,
       final Map<ProcessPath, List<Instant>> expiredSlas
@@ -187,7 +188,7 @@ public final class SlaWaveCalculator {
       return Optional.empty();
     }
 
-    return Optional.of(new Wave(waveDate, SLA, configurations));
+    return Optional.of(new DateWaveSupplier(waveDate, () -> new Wave(waveDate, SLA, configurations)));
   }
 
   private static Map<ProcessPath, Map<Instant, Long>> asBacklogs(

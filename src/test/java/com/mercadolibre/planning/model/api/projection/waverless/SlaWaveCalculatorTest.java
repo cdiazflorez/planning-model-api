@@ -181,9 +181,9 @@ class SlaWaveCalculatorTest {
     final var expectedWaveDate = Instant.parse("2023-03-06T00:10:00Z");
 
     final var wave = result.get();
-    assertEquals(expectedWaveDate, wave.getDate());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
 
-    final var units = wave.getConfiguration();
+    final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(110L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
   }
@@ -228,7 +228,7 @@ class SlaWaveCalculatorTest {
 
     final var wave = result.get();
 
-    final var units = wave.getConfiguration();
+    final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(100L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
   }
@@ -267,7 +267,7 @@ class SlaWaveCalculatorTest {
     assertTrue(result.isPresent());
 
     final var wave = result.get();
-    assertTrue(wave.getDate().isAfter(FORECAST_DATE_IN));
+    assertTrue(wave.getExecutionDate().isAfter(FORECAST_DATE_IN));
   }
 
   @ParameterizedTest
@@ -297,9 +297,9 @@ class SlaWaveCalculatorTest {
     final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
 
     final var wave = result.get();
-    assertEquals(expectedWaveDate, wave.getDate());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
 
-    final var units = wave.getConfiguration();
+    final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(expectedUnits.get(SLA_1), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
     assertEquals(expectedUnits.get(SLA_2), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));

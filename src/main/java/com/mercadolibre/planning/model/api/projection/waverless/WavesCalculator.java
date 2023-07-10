@@ -11,6 +11,7 @@ import com.mercadolibre.planning.model.api.projection.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.DateWaveSupplier;
 import com.mercadolibre.planning.model.api.projection.waverless.idleness.NextIdlenessWaveProjector;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.Value;
 
@@ -63,7 +65,7 @@ public final class WavesCalculator {
     final List<Wave> waves = new ArrayList<>();
     boolean nextWaveHasBeenProjected = true;
     while (waves.size() < MAX_WAVES_TO_PROJECT && nextWaveHasBeenProjected) {
-      final Optional<Wave> bySla = NextSlaWaveProjector.nextWave(
+      final Optional<DateWaveSupplier> bySla = NextSlaWaveProjector.calculateNextWave(
           inflectionPoints,
           waves,
           pendingBacklog,
@@ -72,7 +74,7 @@ public final class WavesCalculator {
           minCycleTimesByPP
       );
 
-      final Optional<Wave> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
+      final Optional<DateWaveSupplier> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
           inflectionPoints,
           pendingBacklog,
           currentBacklog,
@@ -84,9 +86,12 @@ public final class WavesCalculator {
 
       final var wave = bySla.map(
           sla -> byIdleness.map(
-              idl -> idl.getDate().isBefore(sla.getDate()) ? byIdleness : bySla
+              idl -> idl.getExecutionDate().isBefore(sla.getExecutionDate()) ? byIdleness : bySla
           ).orElse(bySla)
-      ).orElse(byIdleness);
+      )
+          .orElse(byIdleness)
+          .map(DateWaveSupplier::getWave)
+          .map(Supplier::get);
 
       wave.ifPresent(waves::add);
       nextWaveHasBeenProjected = wave.isPresent();

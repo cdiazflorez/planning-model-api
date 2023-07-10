@@ -112,7 +112,7 @@ jacocoTestCoverageVerification {
                     '**/PlanningModelApplication**',
                     '**/config/**',
                     '**/domain/entity/current/**',
-                    '**/domain/entity/forecast/**'
+                    '**/domain/entity/forecast/**',
             ])
         }))
     }

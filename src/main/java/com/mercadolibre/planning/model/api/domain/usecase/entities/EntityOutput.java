@@ -24,6 +24,8 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode
 public class EntityOutput {
 
+  private static final DecimalFormat decimalFormat = new DecimalFormat("#.##");
+
   private Workflow workflow;
 
   private ZonedDateTime date;
@@ -41,7 +43,6 @@ public class EntityOutput {
   private double value;
 
   public double getValue() {
-    DecimalFormat decimalFormat = new DecimalFormat("#.##");
     return Double.parseDouble(decimalFormat.format(value));
   }
 

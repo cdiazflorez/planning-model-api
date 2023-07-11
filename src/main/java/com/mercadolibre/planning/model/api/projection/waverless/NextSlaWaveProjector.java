@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.ProcessPathBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.SlaWaveCalculator.CurrentBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.idleness.DateWaveSupplier;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public final class NextSlaWaveProjector {
    * @return next wave configuration, if found.
    */
   @Trace
-  public static Optional<Wave> nextWave(
+  public static Optional<DateWaveSupplier> calculateNextWave(
       final List<Instant> inflectionPoints,
       final List<Wave> waves,
       final PendingBacklog pendingBacklog,
@@ -95,7 +96,7 @@ public final class NextSlaWaveProjector {
         );
   }
 
-  private static Optional<Wave> calculateNextWaveWithBacklog(
+  private static Optional<DateWaveSupplier> calculateNextWaveWithBacklog(
       final List<Instant> inflectionPoints,
       final List<Wave> waves,
       final Stream<ProcessPathBacklog> projectedBacklogs,

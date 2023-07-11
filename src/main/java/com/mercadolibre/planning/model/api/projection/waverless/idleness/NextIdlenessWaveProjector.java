@@ -54,7 +54,7 @@ public final class NextIdlenessWaveProjector {
    * @return if found, a wave for idleness.
    */
   @Trace
-  public static Optional<Wave> calculateNextWave(
+  public static Optional<DateWaveSupplier> calculateNextWave(
       final List<Instant> inflectionPoints,
       final PendingBacklog pendingBacklog,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs,
@@ -71,22 +71,22 @@ public final class NextIdlenessWaveProjector {
 
     return waveDate.filter(date -> isAfterPreviousWavesByIdleness(date, previousWaves))
         .map(date ->
-            new Wave(
+            new DateWaveSupplier(
                 date,
-                IDLENESS,
-                getConfigurations(
-                    date,
-                    inflectionPoints,
-                    previousWaves,
-                    pendingBacklog,
-                    backlogs,
-                    backlogsStates,
-                    throughput,
-                    backlogLimits,
-                    precalculatedWaves
+                () -> new Wave(date,
+                    IDLENESS,
+                    getConfigurations(
+                        date, inflectionPoints,
+                        previousWaves,
+                        pendingBacklog,
+                        backlogs,
+                        backlogsStates,
+                        throughput,
+                        backlogLimits,
+                        precalculatedWaves
+                    )
                 )
-            )
-        );
+        ));
   }
 
   private static boolean isAfterPreviousWavesByIdleness(final Instant waveDate, final List<Wave> previousWaves) {

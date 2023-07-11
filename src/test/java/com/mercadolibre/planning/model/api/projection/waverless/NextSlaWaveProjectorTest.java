@@ -62,7 +62,7 @@ class NextSlaWaveProjectorTest {
   @Test
   void testNextWave() {
     // WHEN
-    final var result = NextSlaWaveProjector.nextWave(
+    final var result = NextSlaWaveProjector.calculateNextWave(
         INFLECTION_POINTS,
         Collections.emptyList(),
         new PendingBacklog(READY_TO_WAVE, FORECAST),
@@ -77,9 +77,9 @@ class NextSlaWaveProjectorTest {
     final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
 
     final var wave = result.get();
-    assertEquals(expectedWaveDate, wave.getDate());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
 
-    final var units = wave.getConfiguration();
+    final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(5L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
     assertEquals(140L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
@@ -90,7 +90,7 @@ class NextSlaWaveProjectorTest {
   @DisplayName("on next wave with two inflection points to project, then return empty")
   void testNextWaveWithFewInflectionPOints() {
     // WHEN
-    final var result = NextSlaWaveProjector.nextWave(
+    final var result = NextSlaWaveProjector.calculateNextWave(
         List.of(FIRST_INFLECTION_POINT, LAST_INFLECTION_POINT),
         Collections.emptyList(),
         new PendingBacklog(READY_TO_WAVE, FORECAST),
@@ -117,7 +117,7 @@ class NextSlaWaveProjectorTest {
         )
     );
 
-    final var result = NextSlaWaveProjector.nextWave(
+    final var result = NextSlaWaveProjector.calculateNextWave(
         INFLECTION_POINTS,
         List.of(firstWave),
         new PendingBacklog(READY_TO_WAVE, FORECAST),
@@ -131,9 +131,9 @@ class NextSlaWaveProjectorTest {
     final var expectedWaveDate = Instant.parse("2023-03-06T00:35:00Z");
 
     final var wave = result.get();
-    assertEquals(expectedWaveDate, wave.getDate());
+    assertEquals(expectedWaveDate, wave.getExecutionDate());
 
-    final var units = wave.getConfiguration();
+    final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(5L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
   }

@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.adapter.units;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.DateUtils.max;
 import static com.mercadolibre.planning.model.api.util.DateUtils.min;
 import static java.util.stream.Collectors.toList;
@@ -74,6 +75,6 @@ public class PlannedUnitsAdapter implements PlannedUnitsGateway {
         new HashSet<>(forecastIds)
     );
 
-    return groupBy.contains(DATE_IN) ? resolverForecastOverlapping(distributions) : distributions;
+    return groupBy.contains(DATE_IN) || groupBy.contains(DATE_OUT) ? resolverForecastOverlapping(distributions) : distributions;
   }
 }

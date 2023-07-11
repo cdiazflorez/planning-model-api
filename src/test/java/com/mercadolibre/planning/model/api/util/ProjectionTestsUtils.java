@@ -69,7 +69,7 @@ public class ProjectionTestsUtils {
                 .source(FORECAST)
                 .date(date)
                 .processName(processName)
-                .quantity(quantity)
+                .value(quantity)
                 .build();
     }
 
@@ -124,7 +124,7 @@ public class ProjectionTestsUtils {
                                             final List<EntityOutput> entityOutputs) {
         for (final EntityOutput output : entityOutputs) {
             assertTrue(capacityByDate.containsKey(output.getDate()));
-            assertEquals(output.getValue(), capacityByDate.get(output.getDate()));
+            assertEquals(output.getRoundedValue(), capacityByDate.get(output.getDate()));
         }
     }
 }

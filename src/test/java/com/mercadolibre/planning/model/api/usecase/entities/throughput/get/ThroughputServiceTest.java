@@ -57,7 +57,7 @@ class ThroughputServiceTest {
         .processPath(path)
         .processName(process)
         .date(date)
-        .quantity(quantity)
+        .value(quantity)
         .build();
   }
 

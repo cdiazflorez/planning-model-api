@@ -35,7 +35,7 @@ public class PickingBacklogProjectionUseCase implements GetBacklogProjectionPara
 
     final Map<ZonedDateTime, Long> pickingCapacityByDate = input.getThroughputs().stream()
         .filter(e -> e.getProcessName() == PICKING)
-        .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, (v1, v2) -> v2));
+        .collect(toMap(EntityOutput::getDate, EntityOutput::getRoundedValue, (v1, v2) -> v2));
 
     final long currentBacklog = input.getCurrentBacklogs().stream()
         .filter(cb -> PICKING == cb.getProcessName())

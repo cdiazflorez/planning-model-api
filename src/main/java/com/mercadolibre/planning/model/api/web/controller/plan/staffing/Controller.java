@@ -59,7 +59,7 @@ public class Controller {
         Collectors.groupingBy(EntityOutput::getProcessPath,
             Collectors.groupingBy(EntityOutput::getProcessName,
                 Collectors.toMap(entity -> entity.getDate().toInstant(),
-                    entity -> new Throughput(entity.getValue())
+                    entity -> new Throughput(entity.getRoundedValue())
                 )
             )
         )

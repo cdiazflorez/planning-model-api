@@ -45,6 +45,6 @@ public class GetInboundBacklogProjectionParamsUseCase implements GetBacklogProje
 
         return throughput.stream()
                 .filter(e -> e.getProcessName() == processName)
-                .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
+                .collect(toMap(EntityOutput::getDate, EntityOutput::getRoundedValue, Long::sum));
     }
 }

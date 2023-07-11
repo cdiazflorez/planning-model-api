@@ -28,7 +28,7 @@ public class BatchSorterBacklogProjectionUseCase implements GetBacklogProjection
 
     final Map<ZonedDateTime, Long> batchSorterCapacityByDate = input.getThroughputs().stream()
         .filter(e -> e.getProcessName() == BATCH_SORTER)
-        .collect(toMap(EntityOutput::getDate, EntityOutput::getValue, Long::sum));
+        .collect(toMap(EntityOutput::getDate, EntityOutput::getRoundedValue, Long::sum));
 
     final long currentBacklog = input.getCurrentBacklogs().stream()
         .filter(cb -> BATCH_SORTER == cb.getProcessName())

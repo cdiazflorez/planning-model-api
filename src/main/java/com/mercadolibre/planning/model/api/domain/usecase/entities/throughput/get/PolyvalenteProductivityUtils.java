@@ -7,7 +7,6 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -72,11 +71,11 @@ public final class PolyvalenteProductivityUtils {
         .filter(entry -> entry.getKey() == FORECAST)
         .findFirst()
         .map(Map.Entry::getValue)
-        .map(ProductivityOutput::getQuantity)
+        .map(ProductivityOutput::getValue)
         .flatMap(regularProductivity -> Optional.ofNullable(polyvalentProductivityMap)
             .map(polyvalentProductivityByDate -> polyvalentProductivityByDate.get(processName))
             .map(polyvalentProductivityByDate -> polyvalentProductivityByDate.get(date))
-            .map(ProductivityOutput::getQuantity)
+            .map(ProductivityOutput::getValue)
             .map(polyvalentProductivity -> polyvalentProductivity / regularProductivity)
         ).orElse(1D);
   }

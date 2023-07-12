@@ -549,7 +549,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(50)
+            .value(50)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -558,7 +558,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(40)
+            .value(40)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -567,7 +567,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(60)
+            .value(60)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -576,7 +576,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(30)
+            .value(30)
             .build()
     );
   }
@@ -590,7 +590,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(50)
+            .value(50)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -599,7 +599,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(40)
+            .value(40)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -608,7 +608,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
-            .quantity(60)
+            .value(60)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -617,7 +617,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
-            .quantity(30)
+            .value(30)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -626,7 +626,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
-            .quantity(60)
+            .value(60)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -635,7 +635,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
-            .quantity(70)
+            .value(70)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -644,7 +644,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
-            .quantity(40)
+            .value(40)
             .build()
     );
   }
@@ -658,7 +658,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(80)
+            .value(80)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -668,7 +668,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(70)
+            .value(70)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -678,7 +678,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(85)
+            .value(85)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -688,7 +688,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(90)
+            .value(90)
             .abilityLevel(1)
             .build()
     );
@@ -703,7 +703,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(80)
+            .value(80)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -713,7 +713,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(70)
+            .value(70)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -723,7 +723,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
-            .quantity(90)
+            .value(90)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -733,7 +733,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
-            .quantity(50)
+            .value(50)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -743,7 +743,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(85)
+            .value(85)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -753,7 +753,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(90)
+            .value(90)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -763,7 +763,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
-            .quantity(75)
+            .value(75)
             .abilityLevel(1)
             .build(),
         ProductivityOutput.builder()
@@ -773,7 +773,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
-            .quantity(100)
+            .value(100)
             .abilityLevel(1)
             .build()
     );
@@ -788,7 +788,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(40)
+            .value(40)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -798,7 +798,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(35)
+            .value(35)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -808,7 +808,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(40)
+            .value(40)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()
@@ -818,7 +818,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(45)
+            .value(45)
             .abilityLevel(2)
             .build()
     );
@@ -833,7 +833,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(800)
+            .value(800)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -842,7 +842,7 @@ public final class TestUtils {
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(600)
+            .value(600)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -851,7 +851,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(700)
+            .value(700)
             .build(),
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
@@ -860,7 +860,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .quantity(550)
+            .value(550)
             .build()
     );
   }
@@ -1059,7 +1059,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(REMAINING_PROCESSING)
-            .quantity(1500)
+            .value(1500)
             .workflow(FBM_WMS_OUTBOUND)
             .build(),
         EntityOutput.builder()
@@ -1068,7 +1068,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(REMAINING_PROCESSING)
-            .quantity(1500)
+            .value(1500)
             .workflow(FBM_WMS_OUTBOUND)
             .build()
     );
@@ -1082,7 +1082,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(PERFORMED_PROCESSING)
-            .quantity(1500)
+            .value(1500)
             .workflow(FBM_WMS_OUTBOUND)
             .build(),
         EntityOutput.builder()
@@ -1091,7 +1091,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(PERFORMED_PROCESSING)
-            .quantity(1500)
+            .value(1500)
             .workflow(FBM_WMS_OUTBOUND)
             .build()
     );
@@ -1105,7 +1105,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(BACKLOG_LOWER_LIMIT)
-            .quantity(0)
+            .value(0)
             .workflow(FBM_WMS_OUTBOUND)
             .build(),
         EntityOutput.builder()
@@ -1114,7 +1114,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(BACKLOG_LOWER_LIMIT)
-            .quantity(15)
+            .value(15)
             .workflow(FBM_WMS_OUTBOUND)
             .build()
     );
@@ -1128,7 +1128,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(BACKLOG_UPPER_LIMIT)
-            .quantity(360)
+            .value(360)
             .workflow(FBM_WMS_OUTBOUND)
             .build(),
         EntityOutput.builder()
@@ -1137,7 +1137,7 @@ public final class TestUtils {
             .processName(WAVING)
             .source(FORECAST)
             .type(BACKLOG_UPPER_LIMIT)
-            .quantity(180)
+            .value(180)
             .workflow(FBM_WMS_OUTBOUND)
             .build()
     );

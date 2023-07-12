@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.adapter.units;
 
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_IN;
 import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.DATE_OUT;
+import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.Grouper.PROCESS_PATH;
 import static com.mercadolibre.planning.model.api.util.DateUtils.max;
 import static com.mercadolibre.planning.model.api.util.DateUtils.min;
 import static java.util.stream.Collectors.toList;
@@ -15,9 +16,12 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService.PlannedUnitsGateway;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +30,12 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class PlannedUnitsAdapter implements PlannedUnitsGateway {
 
+  private static final Map<Grouper, Function<PlanningDistribution, ?>> GROUPER_TO_FUNCTION = Map.of(
+      DATE_IN, PlanningDistribution::getDateIn,
+      DATE_OUT, PlanningDistribution::getDateOut,
+      PROCESS_PATH, PlanningDistribution::getProcessPath
+  );
+
   private final GetForecastUseCase getForecastUseCase;
 
   private final PlanningDistributionDynamicRepository repository;
@@ -33,22 +43,20 @@ public class PlannedUnitsAdapter implements PlannedUnitsGateway {
   private static List<PlanningDistribution> resolverForecastOverlapping(final List<PlanningDistribution> distributions,
                                                                         final Set<Grouper> groupers) {
 
-   final Grouper grouper = groupers.contains(DATE_IN) ? DATE_IN : DATE_OUT;
+    final Grouper grouper = groupers.stream()
+        .min(Comparator.comparingInt(Grouper::getPriorityOrderToGroup))
+        .orElseThrow();
 
-    final var maxForecastIdByDateIn = distributions.stream()
+    final var maxForecastIdByGrouper = distributions.stream()
         .collect(Collectors.toMap(
-            p -> getDateGrouper(p, grouper),
+            GROUPER_TO_FUNCTION.get(grouper),
             PlanningDistribution::getForecastId,
             Long::max
         ));
 
     return distributions.stream()
-        .filter(d -> maxForecastIdByDateIn.get(getDateGrouper(d, grouper)).equals(d.getForecastId()))
+        .filter(d -> maxForecastIdByGrouper.get(GROUPER_TO_FUNCTION.get(grouper).apply(d)).equals(d.getForecastId()))
         .collect(toList());
-  }
-
-  private static Instant getDateGrouper(final PlanningDistribution planningDistribution, final Grouper grouper) {
-    return grouper == DATE_IN ? planningDistribution.getDateIn() : planningDistribution.getDateOut();
   }
 
   public List<PlanningDistribution> getPlanningDistributions(
@@ -83,7 +91,6 @@ public class PlannedUnitsAdapter implements PlannedUnitsGateway {
         new HashSet<>(forecastIds)
     );
 
-    return groupBy.contains(DATE_IN) || groupBy.contains(DATE_OUT)
-        ? resolverForecastOverlapping(distributions, groupBy) : distributions;
+    return resolverForecastOverlapping(distributions, groupBy);
   }
 }

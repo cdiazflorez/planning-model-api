@@ -30,17 +30,25 @@ public class PlannedUnitsAdapter implements PlannedUnitsGateway {
 
   private final PlanningDistributionDynamicRepository repository;
 
-  private static List<PlanningDistribution> resolverForecastOverlapping(final List<PlanningDistribution> distributions) {
+  private static List<PlanningDistribution> resolverForecastOverlapping(final List<PlanningDistribution> distributions,
+                                                                        final Set<Grouper> groupers) {
+
+   final Grouper grouper = groupers.contains(DATE_IN) ? DATE_IN : DATE_OUT;
+
     final var maxForecastIdByDateIn = distributions.stream()
         .collect(Collectors.toMap(
-            PlanningDistribution::getDateIn,
+            p -> getDateGrouper(p, grouper),
             PlanningDistribution::getForecastId,
             Long::max
         ));
 
     return distributions.stream()
-        .filter(d -> maxForecastIdByDateIn.get(d.getDateIn()).equals(d.getForecastId()))
+        .filter(d -> maxForecastIdByDateIn.get(getDateGrouper(d, grouper)).equals(d.getForecastId()))
         .collect(toList());
+  }
+
+  private static Instant getDateGrouper(final PlanningDistribution planningDistribution, final Grouper grouper) {
+    return grouper == DATE_IN ? planningDistribution.getDateIn() : planningDistribution.getDateOut();
   }
 
   public List<PlanningDistribution> getPlanningDistributions(
@@ -75,6 +83,7 @@ public class PlannedUnitsAdapter implements PlannedUnitsGateway {
         new HashSet<>(forecastIds)
     );
 
-    return groupBy.contains(DATE_IN) || groupBy.contains(DATE_OUT) ? resolverForecastOverlapping(distributions) : distributions;
+    return groupBy.contains(DATE_IN) || groupBy.contains(DATE_OUT)
+        ? resolverForecastOverlapping(distributions, groupBy) : distributions;
   }
 }

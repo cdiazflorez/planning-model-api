@@ -24,7 +24,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode
 public class EntityOutput {
 
-  private static final DecimalFormat decimalFormat = new DecimalFormat("#.##");
+  private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.##");
 
   private Workflow workflow;
 
@@ -43,7 +43,7 @@ public class EntityOutput {
   private double value;
 
   public double getValue() {
-    return Double.parseDouble(decimalFormat.format(value));
+    return Double.parseDouble(DECIMAL_FORMAT.format(value));
   }
 
   @JsonIgnore

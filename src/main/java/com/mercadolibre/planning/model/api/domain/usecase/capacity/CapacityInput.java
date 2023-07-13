@@ -32,7 +32,7 @@ public class CapacityInput {
                                 .type(entityOutput.getType())
                                 .metricUnit(entityOutput.getMetricUnit())
                                 .source(entityOutput.getSource())
-                                .value(entityOutput.getValue())
+                                .value(entityOutput.getRoundedValue())
                                 .build()
                 )
                 .collect(toList());

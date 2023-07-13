@@ -29,7 +29,7 @@ public class ThroughputService {
     final var totalsByProcessAndDate = throughput.stream()
         .collect(Collectors.groupingBy(
             EntityOutput::getProcessName,
-            Collectors.toMap(EntityOutput::getDate, EntityOutput::getQuantity, Double::sum)
+            Collectors.toMap(EntityOutput::getDate, EntityOutput::getValue, Double::sum)
         ));
 
     return throughput.stream()
@@ -39,7 +39,7 @@ public class ThroughputService {
                     Collectors.toMap(
                         entity -> entity.getDate().toInstant(),
                         entity -> safeDiv(
-                            entity.getQuantity(),
+                            entity.getValue(),
                             totalsByProcessAndDate.get(entity.getProcessName())
                                 .get(entity.getDate())
                         )

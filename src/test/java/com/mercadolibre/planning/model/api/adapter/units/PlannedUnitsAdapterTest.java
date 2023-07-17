@@ -19,9 +19,13 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,17 +58,58 @@ class PlannedUnitsAdapterTest {
   @InjectMocks
   private PlannedUnitsAdapter adapter;
 
+  private static Stream<Arguments> provideArgumentsAndExpectedValuesFromMultipleForecast() {
+    return Stream.of(
+        Arguments.of(
+            List.of(
+                new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
+                new PlanningDistribution(1L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 44.5),
+                new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 30.0),
+                new PlanningDistribution(2L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 55.5),
+                new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 66.6),
+
+                new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, 0),
+                new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 10),
+                new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 37.2)
+            ),
+            GROUPERS,
+            List.of(
+                new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
+                new PlanningDistribution(2L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 55.5),
+                new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 66.6),
+                new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, 0),
+                new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 37.2)
+            )
+        ),
+        Arguments.of(
+            List.of(
+                new PlanningDistribution(1L, null, DATE_OUT_1, null, 33.5),
+                new PlanningDistribution(1L, null, DATE_OUT_3, null, 44.5),
+                new PlanningDistribution(1L, null, DATE_OUT_2, null, 30.0),
+                new PlanningDistribution(2L, null, DATE_OUT_3, null, 55.5),
+                new PlanningDistribution(2L, null, DATE_OUT_2, null, 37.2)
+            ),
+            Set.of(Grouper.DATE_OUT),
+            List.of(
+                new PlanningDistribution(1L, null, DATE_OUT_1, null, 33.5),
+                new PlanningDistribution(2L, null, DATE_OUT_3, null, 55.5),
+                new PlanningDistribution(2L, null, DATE_OUT_2, null, 37.2)
+            )
+        )
+    );
+  }
+
   @Test
   @DisplayName("when searching units from only one forecast the units should be returned immediately")
   void testGetPlannedUnitsFromOneForecast() {
     // GIVEN
     when(getForecastUseCase.execute(new GetForecastInput(
-            WAREHOUSE_ID,
-            FBM_WMS_OUTBOUND,
-            DATE_IN_1,
-            DATE_OUT_3,
-            A_DATE_UTC.toInstant()
-        ))
+             WAREHOUSE_ID,
+             FBM_WMS_OUTBOUND,
+             DATE_IN_1,
+             DATE_OUT_3,
+             A_DATE_UTC.toInstant()
+         ))
     ).thenReturn(mockForecastIds());
 
     final var distributions = List.of(
@@ -103,30 +148,21 @@ class PlannedUnitsAdapterTest {
     assertEquals(distributions, result);
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("provideArgumentsAndExpectedValuesFromMultipleForecast")
   @DisplayName("when searching units from multiple forecasts then overlapping date_ins belong to the latest forecast")
-  void testGetPlannedUnitsFromMultipleForecast() {
+  void testGetPlannedUnitsFromMultipleForecast(final List<PlanningDistribution> distributions,
+                                               final Set<Grouper> groupers,
+                                               final List<PlanningDistribution> expected) {
     // GIVEN
     when(getForecastUseCase.execute(new GetForecastInput(
-            WAREHOUSE_ID,
-            FBM_WMS_OUTBOUND,
-            DATE_IN_1,
-            DATE_OUT_3,
-            A_DATE_UTC.toInstant()
-        ))
+             WAREHOUSE_ID,
+             FBM_WMS_OUTBOUND,
+             DATE_IN_1,
+             DATE_OUT_3,
+             A_DATE_UTC.toInstant()
+         ))
     ).thenReturn(mockForecastIds());
-
-    final var distributions = List.of(
-        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
-        new PlanningDistribution(1L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 44.5),
-        new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 30.0),
-        new PlanningDistribution(2L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 55.5),
-        new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 66.6),
-
-        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, 0),
-        new PlanningDistribution(1L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 10),
-        new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 37.2)
-    );
 
     when(repository.findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
         DATE_IN_1,
@@ -134,7 +170,7 @@ class PlannedUnitsAdapterTest {
         DATE_OUT_1,
         DATE_OUT_3,
         PROCESS_PATHS,
-        GROUPERS,
+        groupers,
         new HashSet<>(mockForecastIds())
     )).thenReturn(distributions);
 
@@ -147,19 +183,11 @@ class PlannedUnitsAdapterTest {
         DATE_IN_3,
         DATE_OUT_1,
         DATE_OUT_3,
-        GROUPERS,
+        groupers,
         A_DATE_UTC.toInstant()
     );
 
     // THEN
-    final var expected = List.of(
-        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, 33.5),
-        new PlanningDistribution(2L, DATE_IN_2, DATE_OUT_3, TOT_MONO, 55.5),
-        new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, TOT_MONO, 66.6),
-        new PlanningDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, 0),
-        new PlanningDistribution(2L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, 37.2)
-    );
-
     assertEquals(expected, result);
   }
 
@@ -168,12 +196,12 @@ class PlannedUnitsAdapterTest {
   void testGetPlannedUnitsFromOneForecastWirhOutDateIn() {
     // GIVEN
     when(getForecastUseCase.execute(new GetForecastInput(
-            WAREHOUSE_ID,
-            FBM_WMS_OUTBOUND,
-            DATE_OUT_1,
-            DATE_OUT_3,
-            A_DATE_UTC.toInstant()
-        ))
+             WAREHOUSE_ID,
+             FBM_WMS_OUTBOUND,
+             DATE_OUT_1,
+             DATE_OUT_3,
+             A_DATE_UTC.toInstant()
+         ))
     ).thenReturn(mockForecastIds());
 
     final var distributions = List.of(

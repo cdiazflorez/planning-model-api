@@ -20,6 +20,8 @@ public enum MetadataCardinality {
   WAREHOUSE_ID("warehouse_id"),
   VERSION("version"),
   UNITS_PER_ORDER_RATIO("units_per_order_ratio"),
+  UNITS_PER_TOTE_RATIO("units_per_tote_ratio"),
+  ORDERS_PER_PALLET_RATIO("orders_per_pallet_ratio"),
   OUTBOUND_WALL_IN_PRODUCTIVITY("outbound_wall_in_productivity"),
   OUTBOUND_PICKING_PRODUCTIVITY("outbound_picking_productivity"),
   OUTBOUND_PACKING_WALL_PRODUCTIVITY("outbound_packing_wall_productivity"),

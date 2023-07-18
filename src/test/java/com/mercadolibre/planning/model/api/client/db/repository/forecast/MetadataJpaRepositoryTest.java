@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class MetadataJpaRepositoryTest {
+class MetadataJpaRepositoryTest {
   @InjectMocks
   private MetadataJpaRepository metadataJpaRepository;
   @Mock
@@ -40,6 +40,8 @@ public class MetadataJpaRepositoryTest {
         new MetadataView("warehouse_id", "ARTW01"),
         new MetadataView("version", "2.0"),
         new MetadataView("units_per_order_ratio", "3.96"),
+        new MetadataView("units_per_tote_ratio", "6.5"),
+        new MetadataView("orders_per_pallet_ratio", "15.0"),
         new MetadataView("outbound_wall_in_productivity", "100"),
         new MetadataView("outbound_picking_productivity", "80"),
         new MetadataView("outbound_packing_wall_productivity", "90"),
@@ -57,7 +59,7 @@ public class MetadataJpaRepositoryTest {
 
   @ParameterizedTest
   @MethodSource("mockArguments")
-  public void testGetMetadataByTagOk(
+  void testGetMetadataByTagOk(
       final Long forecastId,
       final List<ForecastMetadataView> forecastMetadataViewList,
       final List<String> cardinality) {
@@ -71,7 +73,7 @@ public class MetadataJpaRepositoryTest {
 
     //THEN
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(12, result.size());
+    Assertions.assertEquals(14, result.size());
   }
 
   @Getter

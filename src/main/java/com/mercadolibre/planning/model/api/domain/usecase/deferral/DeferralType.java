@@ -4,7 +4,8 @@ import java.util.Locale;
 
 public enum DeferralType {
   CAP_MAX,
-  CASCADE;
+  CASCADE,
+  NOT_DEFERRED;
 
   public String getName() {
     return name().toLowerCase(Locale.ROOT);

@@ -1,10 +1,15 @@
 package com.mercadolibre.planning.model.api.domain.usecase.deferral;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.SaveDeferralReport.CptDeferred;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.SaveDeferralReport.DeferralReportGateway;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -15,10 +20,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 
 @ExtendWith(MockitoExtension.class)
-public class SaveDeferralReportTest {
+class SaveDeferralReportTest {
+
+  private static final int PURGE_HOURS_RANGE = 96;
 
   private static final String LOGISTIC_CENTER_ID = "ARBA01";
 
@@ -26,17 +32,21 @@ public class SaveDeferralReportTest {
 
   private static final Instant VIEW_DATE_BEFORE = Instant.parse("2023-06-26T11:00:00Z");
 
+  private static final Instant PURGE_VIEW_DATE_BEFORE = getDateToDelete(VIEW_DATE_BEFORE);
+
   private static final Instant OPERATION_DATE_2 = Instant.parse("2023-06-28T10:20:00Z");
+
+  private static final Instant PURGE_OPERATION_DATE_2 = getDateToDelete(OPERATION_DATE_2);
 
   private static final Instant SLA_1 = Instant.parse("2023-06-28T10:00:00Z");
 
-  private static final SaveDeferralReport.SlaDeferred SLA_DEFERRAL_ON_CAP_MAX =
-      new SaveDeferralReport.SlaDeferred(SLA_1, true, DeferralType.CAP_MAX);
+  private static final CptDeferred SLA_DEFERRAL_ON_CAP_MAX =
+      new CptDeferred(SLA_1, true, DeferralType.CAP_MAX);
 
-  private static final SaveDeferralReport.SlaDeferred SLA_DEFERRAL_ON_CASCADE =
-      new SaveDeferralReport.SlaDeferred(SLA_1, true, DeferralType.CASCADE);
+  private static final CptDeferred SLA_DEFERRAL_ON_CASCADE =
+      new CptDeferred(SLA_1, true, DeferralType.CASCADE);
 
-  private static final SaveDeferralReport.SlaDeferred SLA_NO_DEFERRAL_OFF = new SaveDeferralReport.SlaDeferred(SLA_1, false, null);
+  private static final CptDeferred SLA_NO_DEFERRAL_OFF = new CptDeferred(SLA_1, false, null);
 
   private static final int DELETED_ONE_REGISTER = 1;
 
@@ -56,62 +66,98 @@ public class SaveDeferralReportTest {
   private SaveDeferralReport saveDeferralReport;
 
   @Mock
-  private SaveDeferralReport.DeferralGateway deferralGateway;
+  private DeferralReportGateway deferralReportGateway;
 
 
   private static Stream<Arguments> parametersTestSave() {
     return Stream.of(
-        Arguments.of(LOGISTIC_CENTER_ID, VIEW_DATE_BEFORE, List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE), DELETED_ONE_REGISTER,
-            VIEW_DATE_BEFORE, HttpStatus.OK),
-        Arguments.of(LOGISTIC_CENTER_ID, OPERATION_DATE_2, List.of(SLA_NO_DEFERRAL_OFF), DELETED_ONE_REGISTER, VIEW_DATE_BEFORE,
-            HttpStatus.OK),
-
-        Arguments.of(LOGISTIC_CENTER_ID, VIEW_DATE_BEFORE, List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE), NO_DELETED_REGISTER,
-            VIEW_DATE_BEFORE, HttpStatus.OK),
-        Arguments.of(LOGISTIC_CENTER_ID, OPERATION_DATE_2, List.of(SLA_NO_DEFERRAL_OFF), NO_DELETED_REGISTER, VIEW_DATE_BEFORE,
-            HttpStatus.OK)
+        Arguments.of(
+            LOGISTIC_CENTER_ID,
+            VIEW_DATE_BEFORE,
+            PURGE_VIEW_DATE_BEFORE,
+            List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
+            DELETED_ONE_REGISTER
+        ),
+        Arguments.of(
+            LOGISTIC_CENTER_ID,
+            OPERATION_DATE_2,
+            PURGE_OPERATION_DATE_2,
+            List.of(SLA_NO_DEFERRAL_OFF),
+            DELETED_ONE_REGISTER
+        ),
+        Arguments.of(
+            LOGISTIC_CENTER_ID,
+            VIEW_DATE_BEFORE,
+            PURGE_VIEW_DATE_BEFORE,
+            List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
+            NO_DELETED_REGISTER
+        ),
+        Arguments.of(
+            LOGISTIC_CENTER_ID,
+            OPERATION_DATE_2,
+            PURGE_OPERATION_DATE_2,
+            List.of(SLA_NO_DEFERRAL_OFF),
+            NO_DELETED_REGISTER
+        )
     );
+  }
+
+  private static Instant getDateToDelete(final Instant date) {
+    return date.minus(PURGE_HOURS_RANGE, ChronoUnit.HOURS);
   }
 
   private static Stream<Arguments> parametersTestsDeletedException() {
     return Stream.of(
-        Arguments.of(LOGISTIC_CENTER_ID, VIEW_DATE_BEFORE, List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE), VIEW_DATE_BEFORE,
-            HttpStatus.OK, new SQLException(MESSAGE_ERROR_SQL))
+        Arguments.of(
+            LOGISTIC_CENTER_ID,
+            VIEW_DATE_BEFORE,
+            PURGE_VIEW_DATE_BEFORE,
+            List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
+            new SQLException(MESSAGE_ERROR_SQL)
+        )
     );
   }
 
   @ParameterizedTest
   @MethodSource("parametersTestSave")
   void saveTest(
-      final String logisticCenterId, final Instant date, final List<SaveDeferralReport.SlaDeferred> slas, final int deletedRegisters,
-      final Instant dateToBefore, final HttpStatus status) throws SQLException {
+      final String logisticCenterId,
+      final Instant deferralDate,
+      final Instant dateToDelete,
+      final List<CptDeferred> cptDeferredList,
+      final int deletedRegisters
+  ) throws SQLException {
 
-    when(deferralGateway.deleteDeferralReportBeforeDate(dateToBefore))
+    //GIVEN
+    when(deferralReportGateway.deleteDeferralReportBeforeDate(dateToDelete))
         .thenReturn(deletedRegisters);
 
-    when(saveDeferralReport.save(logisticCenterId, date, slas, VIEW_DATE))
-        .thenReturn(status);
+    //WHEN
+    saveDeferralReport.save(logisticCenterId, deferralDate, cptDeferredList);
 
-    final var statusResponse = saveDeferralReport.save(logisticCenterId, date, slas, VIEW_DATE);
-
-    assertEquals(status, statusResponse);
+    //THEN
+    verify(deferralReportGateway, times(1)).saveDeferralReport(logisticCenterId, deferralDate, cptDeferredList);
   }
 
   @ParameterizedTest
   @MethodSource("parametersTestsDeletedException")
   void saveTestDeletedException(
-      final String logisticCenterId, final Instant date, final List<SaveDeferralReport.SlaDeferred> slas, final Instant dateToBefore,
-      final HttpStatus status, final SQLException exception) throws SQLException {
+      final String logisticCenterId,
+      final Instant deferralDate,
+      final Instant dateToDelete,
+      final List<CptDeferred> cptDeferredList,
+      final SQLException exception
+  ) throws SQLException {
 
-    when(deferralGateway.deleteDeferralReportBeforeDate(dateToBefore))
+    //GIVEN
+    when(deferralReportGateway.deleteDeferralReportBeforeDate(dateToDelete))
         .thenThrow(exception);
 
-    when(saveDeferralReport.save(logisticCenterId, date, slas, VIEW_DATE))
-        .thenReturn(status);
+    //WHEN
+    saveDeferralReport.save(logisticCenterId, deferralDate, cptDeferredList);
 
-    final var statusResponse = saveDeferralReport.save(logisticCenterId, date, slas, VIEW_DATE);
-
-    assertEquals(status, statusResponse);
+    //THEN
+    verify(deferralReportGateway, times(1)).saveDeferralReport(logisticCenterId, deferralDate, cptDeferredList);
   }
 
   @Test

@@ -32,6 +32,8 @@ class SaveDeferralReportAdapterTest {
 
   private static final Instant DEFERRAL_DATE = Instant.parse("2023-07-19T15:00:00Z");
 
+  private static final int DELETED_REPORTS_QTY = 5;
+
   private static final Instant CPT_DEFERRED_1_DATE = Instant.parse("2023-07-19T16:00:00Z");
 
   private static final Instant CPT_DEFERRED_2_DATE = Instant.parse("2023-07-19T17:00:00Z");
@@ -67,7 +69,7 @@ class SaveDeferralReportAdapterTest {
   }
 
   @Test
-  @DisplayName("when searching units from multiple forecasts then overlapping date_ins belong to the latest forecast")
+  @DisplayName("Saves all deferral reports on repository saveAll")
   void testSaveDeferralReport() {
     //GIVEN
     final var expectedDeferralReport = mockExpectedDeferralReport();
@@ -86,7 +88,7 @@ class SaveDeferralReportAdapterTest {
   }
 
   @Test
-  @DisplayName("Gets and exception when repository saveAll")
+  @DisplayName("Throws an exception when repository saveAll")
   void testSaveDeferralReportException() {
     //GIVEN
     when(outboundDeferralDataRepository.saveAll(any())).thenThrow(IllegalArgumentException.class);
@@ -97,6 +99,20 @@ class SaveDeferralReportAdapterTest {
         DEFERRAL_DATE,
         CPT_DEFERRALS
     ));
+  }
+
+  @Test
+  @DisplayName("Removes the repository entries where the date is before given date")
+  void testDeleteDeferralReportBeforeDate() {
+    //GIVEN
+    when(outboundDeferralDataRepository.deleteByDateBefore(DEFERRAL_DATE)).thenReturn(DELETED_REPORTS_QTY);
+
+    //WHEN
+    final int deletedReportsQty = saveDeferralReportAdapter.deleteDeferralReportBeforeDate(DEFERRAL_DATE);
+
+    //THEN
+    verify(outboundDeferralDataRepository, times(1)).deleteByDateBefore(DEFERRAL_DATE);
+    assertEquals(DELETED_REPORTS_QTY, deletedReportsQty);
   }
 }
 

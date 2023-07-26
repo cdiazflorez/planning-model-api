@@ -18,7 +18,7 @@ public class SaveDeferralReportAdapter implements DeferralReportGateway {
 
   @Override
   public int deleteDeferralReportBeforeDate(Instant dateTo) {
-    return 0;
+    return outboundDeferralDataRepository.deleteByDateBefore(dateTo);
   }
 
   @Override

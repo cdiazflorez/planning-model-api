@@ -1,0 +1,10 @@
+{
+  "msg": {
+    "warehouse_id": null,
+    "site_id": null,
+    "workflow": null,
+    "last_updated": null,
+    "projections": [
+    ]
+  }
+}

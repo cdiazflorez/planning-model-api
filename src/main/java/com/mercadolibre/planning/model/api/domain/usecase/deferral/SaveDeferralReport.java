@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -26,33 +27,40 @@ public class SaveDeferralReport {
    * If there are any register deleted will log its.
    * After deleted old registers, save new registers reported.
    *
-   * @param logisticCenterId logistic center of report
-   * @param deferralDate             date operation
-   * @param cptDeferrals     list of class contain sla date, isDeferredOn and reason of deferred (cap max or cascade)
+   * @param logisticCenterId   logistic center of report
+   * @param date               date call api
+   * @param slaDeferredReports list of class contain sla date, isDeferredOn and reason of deferred (cap max or cascade)
    */
   public void save(
       final String logisticCenterId,
-      final Instant deferralDate,
-      final List<CptDeferred> cptDeferrals
+      final Instant date,
+      final List<SlaDeferredReport> slaDeferredReports
   ) {
 
-    deleteDeferralReport(logisticCenterId, deferralDate);
+    deleteDeferralReport(logisticCenterId, date);
 
-    deferralReportGateway.saveDeferralReport(logisticCenterId, deferralDate, cptDeferrals);
+    deferralReportGateway.saveDeferralReport(logisticCenterId, date, mapCptDeferred(slaDeferredReports));
   }
 
-  private void deleteDeferralReport(final String logisticCenterId, final Instant viewDate) {
-    final Instant dateToDelete = viewDate.minus(PURGE_HOURS_RANGE, ChronoUnit.HOURS);
+  private void deleteDeferralReport(final String logisticCenterId, final Instant date) {
+    final Instant dateToDelete = date.minus(PURGE_HOURS_RANGE, ChronoUnit.HOURS);
 
     try {
       final int deletedRegisters = deferralReportGateway.deleteDeferralReportBeforeDate(dateToDelete);
 
       if (deletedRegisters > NO_REGISTER_DELETED) {
-        log.info(SaveDeferralReportLogger.generateLogMessage(deletedRegisters, logisticCenterId, dateToDelete, viewDate));
+        log.info(SaveDeferralReportLogger.generateLogMessage(deletedRegisters, logisticCenterId, dateToDelete, date));
       }
     } catch (SQLException sqlException) {
-      log.error(SaveDeferralReportLogger.generateLogError(viewDate, sqlException.getMessage()));
+      log.error(SaveDeferralReportLogger.generateLogError(date, sqlException.getMessage()));
     }
+  }
+
+  //TODO: add logic if update is true or false, here and in its test
+  private List<CptDeferred> mapCptDeferred(final List<SlaDeferredReport> slaDeferredReports) {
+    return slaDeferredReports.stream().map(
+        slaDeferredReport -> new CptDeferred(slaDeferredReport.getDate(), false, slaDeferredReport.getStatus())
+    ).collect(Collectors.toList());
   }
 
   /**
@@ -84,6 +92,14 @@ public class SaveDeferralReport {
     Instant date;
 
     boolean updated;
+
+    DeferralType status;
+  }
+
+  @AllArgsConstructor
+  @Value
+  public static class SlaDeferredReport {
+    Instant date;
 
     DeferralType status;
   }

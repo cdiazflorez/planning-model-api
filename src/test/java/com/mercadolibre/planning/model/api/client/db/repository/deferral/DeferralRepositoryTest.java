@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.deferral.OutboundDeferr
 import java.time.Instant;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -17,50 +18,63 @@ import org.springframework.test.context.jdbc.Sql;
 @DataJpaTest
 class DeferralRepositoryTest {
 
-    private static final String WAREHOUSE_ID = "ARTW01";
-    private static final Instant DATE_FROM = Instant.parse("2022-09-08T10:00:00Z");
-    private static final Instant DATE_TO = Instant.parse("2022-09-08T11:00:00Z");
+  private static final String WAREHOUSE_ID = "ARTW01";
 
+  private static final Instant DATE_FROM = Instant.parse("2022-09-08T10:00:00Z");
 
-    @Autowired
-    private OutboundDeferralDataRepository repository;
+  private static final Instant DATE_TO = Instant.parse("2022-09-08T11:00:00Z");
 
-    @ParameterizedTest
-    @MethodSource("provideDateRanges")
-    @Sql("/sql/forecast/load_deferral.sql")
-    void testSearchDeferralWithLogisticCenterShouldReturnDeferralsBetweenDate(final Instant dateFrom,
-                                                                              final Instant dateTo,
-                                                                              final int expectedDeferrals) {
-        // GIVEN
+  private static final Instant DELETE_BEFORE_DATE = Instant.parse("2022-09-11T11:00:00Z");
 
-        // WHEN
-        final var idViews = repository.findByLogisticCenterIdAndDateBetweenAndUpdatedIsTrue(
-                WAREHOUSE_ID,
-                dateFrom,
-                dateTo
-        );
+  @Autowired
+  private OutboundDeferralDataRepository repository;
 
-        // THEN
-        assertEquals(expectedDeferrals, idViews.size());
-        if (expectedDeferrals > 0) {
-            final var ids = idViews.stream().map(OutboundDeferralData::getId).collect(Collectors.toList());
-            assertTrue(ids.contains(1L));
-            assertTrue(ids.contains(2L));
-        }
+  private static Stream<Arguments> provideDateRanges() {
+    return Stream.of(
+        Arguments.of(
+            DATE_FROM,
+            DATE_TO,
+            2
+        ),
+        Arguments.of(
+            Instant.parse("2022-09-08T09:00:00Z"),
+            Instant.parse("2022-09-08T14:00:00Z"),
+            2
+        )
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideDateRanges")
+  @Sql("/sql/forecast/load_deferral.sql")
+  void testSearchDeferralWithLogisticCenterShouldReturnDeferralsBetweenDate(final Instant dateFrom,
+                                                                            final Instant dateTo,
+                                                                            final int expectedDeferrals) {
+    // GIVEN
+
+    // WHEN
+    final var idViews = repository.findByLogisticCenterIdAndDateBetweenAndUpdatedIsTrue(
+        WAREHOUSE_ID,
+        dateFrom,
+        dateTo
+    );
+
+    // THEN
+    assertEquals(expectedDeferrals, idViews.size());
+    if (expectedDeferrals > 0) {
+      final var ids = idViews.stream().map(OutboundDeferralData::getId).collect(Collectors.toList());
+      assertTrue(ids.contains(1L));
+      assertTrue(ids.contains(2L));
     }
+  }
 
-    private static Stream<Arguments> provideDateRanges() {
-        return Stream.of(
-                Arguments.of(
-                        DATE_FROM,
-                        DATE_TO,
-                        2
-                ),
-                Arguments.of(
-                        Instant.parse("2022-09-08T09:00:00Z"),
-                        Instant.parse("2022-09-08T14:00:00Z"),
-                        2
-                )
-        );
-    }
+  @Test
+  @Sql("/sql/forecast/load_deferral.sql")
+  void testDeleteByDateBefore() {
+    // WHEN
+    final var removedEntries = repository.deleteByDateBefore(DELETE_BEFORE_DATE);
+
+    // THEN
+    assertEquals(6, removedEntries);
+  }
 }

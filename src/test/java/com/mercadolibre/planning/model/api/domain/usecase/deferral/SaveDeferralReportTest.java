@@ -40,13 +40,21 @@ class SaveDeferralReportTest {
 
   private static final Instant SLA_1 = Instant.parse("2023-06-28T10:00:00Z");
 
-  private static final CptDeferred SLA_DEFERRAL_ON_CAP_MAX =
-      new CptDeferred(SLA_1, true, DeferralType.CAP_MAX);
+  private static final SaveDeferralReport.SlaDeferredReport SLA_DEFERRAL_ON_CAP_MAX =
+      new SaveDeferralReport.SlaDeferredReport(SLA_1, DeferralType.CAP_MAX);
 
-  private static final CptDeferred SLA_DEFERRAL_ON_CASCADE =
-      new CptDeferred(SLA_1, true, DeferralType.CASCADE);
+  private static final SaveDeferralReport.SlaDeferredReport SLA_DEFERRAL_ON_CASCADE =
+      new SaveDeferralReport.SlaDeferredReport(SLA_1, DeferralType.CASCADE);
 
-  private static final CptDeferred SLA_NO_DEFERRAL_OFF = new CptDeferred(SLA_1, false, null);
+  private static final SaveDeferralReport.SlaDeferredReport SLA_NO_DEFERRAL_OFF =
+      new SaveDeferralReport.SlaDeferredReport(SLA_1, DeferralType.NOT_DEFERRED);
+
+
+  private static final CptDeferred CPT_DEFERRAL_ON_CAP_MAX = new CptDeferred(SLA_1, false, DeferralType.CAP_MAX);
+
+  private static final CptDeferred CPT_DEFERRAL_ON_CASCADE = new CptDeferred(SLA_1, false, DeferralType.CASCADE);
+
+  private static final CptDeferred CPT_NO_DEFERRAL_OFF = new CptDeferred(SLA_1, false, DeferralType.NOT_DEFERRED);
 
   private static final int DELETED_ONE_REGISTER = 1;
 
@@ -76,28 +84,32 @@ class SaveDeferralReportTest {
             VIEW_DATE_BEFORE,
             PURGE_VIEW_DATE_BEFORE,
             List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
-            DELETED_ONE_REGISTER
+            DELETED_ONE_REGISTER,
+            List.of(CPT_DEFERRAL_ON_CAP_MAX, CPT_DEFERRAL_ON_CASCADE)
         ),
         Arguments.of(
             LOGISTIC_CENTER_ID,
             OPERATION_DATE_2,
             PURGE_OPERATION_DATE_2,
             List.of(SLA_NO_DEFERRAL_OFF),
-            DELETED_ONE_REGISTER
+            DELETED_ONE_REGISTER,
+            List.of(CPT_NO_DEFERRAL_OFF)
         ),
         Arguments.of(
             LOGISTIC_CENTER_ID,
             VIEW_DATE_BEFORE,
             PURGE_VIEW_DATE_BEFORE,
             List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
-            NO_DELETED_REGISTER
+            NO_DELETED_REGISTER,
+            List.of(CPT_DEFERRAL_ON_CAP_MAX, CPT_DEFERRAL_ON_CASCADE)
         ),
         Arguments.of(
             LOGISTIC_CENTER_ID,
             OPERATION_DATE_2,
             PURGE_OPERATION_DATE_2,
             List.of(SLA_NO_DEFERRAL_OFF),
-            NO_DELETED_REGISTER
+            NO_DELETED_REGISTER,
+            List.of(CPT_NO_DEFERRAL_OFF)
         )
     );
   }
@@ -113,7 +125,8 @@ class SaveDeferralReportTest {
             VIEW_DATE_BEFORE,
             PURGE_VIEW_DATE_BEFORE,
             List.of(SLA_DEFERRAL_ON_CAP_MAX, SLA_DEFERRAL_ON_CASCADE),
-            new SQLException(MESSAGE_ERROR_SQL)
+            new SQLException(MESSAGE_ERROR_SQL),
+            List.of(CPT_DEFERRAL_ON_CAP_MAX, CPT_DEFERRAL_ON_CASCADE)
         )
     );
   }
@@ -124,8 +137,9 @@ class SaveDeferralReportTest {
       final String logisticCenterId,
       final Instant deferralDate,
       final Instant dateToDelete,
-      final List<CptDeferred> cptDeferredList,
-      final int deletedRegisters
+      final List<SaveDeferralReport.SlaDeferredReport> slaDeferredReports,
+      final int deletedRegisters,
+      final List<CptDeferred> cptDeferredList
   ) throws SQLException {
 
     //GIVEN
@@ -133,7 +147,7 @@ class SaveDeferralReportTest {
         .thenReturn(deletedRegisters);
 
     //WHEN
-    saveDeferralReport.save(logisticCenterId, deferralDate, cptDeferredList);
+    saveDeferralReport.save(logisticCenterId, deferralDate, slaDeferredReports);
 
     //THEN
     verify(deferralReportGateway, times(1)).saveDeferralReport(logisticCenterId, deferralDate, cptDeferredList);
@@ -145,8 +159,9 @@ class SaveDeferralReportTest {
       final String logisticCenterId,
       final Instant deferralDate,
       final Instant dateToDelete,
-      final List<CptDeferred> cptDeferredList,
-      final SQLException exception
+      final List<SaveDeferralReport.SlaDeferredReport> slaDeferredReport,
+      final SQLException exception,
+      final List<CptDeferred> cptDeferredList
   ) throws SQLException {
 
     //GIVEN
@@ -154,7 +169,7 @@ class SaveDeferralReportTest {
         .thenThrow(exception);
 
     //WHEN
-    saveDeferralReport.save(logisticCenterId, deferralDate, cptDeferredList);
+    saveDeferralReport.save(logisticCenterId, deferralDate, slaDeferredReport);
 
     //THEN
     verify(deferralReportGateway, times(1)).saveDeferralReport(logisticCenterId, deferralDate, cptDeferredList);

@@ -1,24 +1,22 @@
 package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Value;
 
-import java.time.ZonedDateTime;
-
 @Value
-@Builder
 @AllArgsConstructor
 public class GetPlanningDistributionOutput {
 
-    private ZonedDateTime dateIn;
+    Instant dateIn;
 
-    private ZonedDateTime dateOut;
+    Instant dateOut;
 
-    private MetricUnit metricUnit;
+    MetricUnit metricUnit;
 
-    private long total;
+    ProcessPath processPath;
 
-    private boolean isDeferred;
+    double total;
 }

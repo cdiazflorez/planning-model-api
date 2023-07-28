@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
 import com.mercadolibre.planning.model.api.domain.entity.Path;
@@ -12,6 +13,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.WorkflowService;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
@@ -19,11 +21,13 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 /**
@@ -236,17 +240,26 @@ public class PlannedBacklogService {
       final GetPlanningDistributionInput input = GetPlanningDistributionInput.builder()
           .warehouseId(request.getWarehouseId())
           .workflow(request.getWorkflow())
-          .dateOutFrom(request.getDateOutFrom())
-          .dateOutTo(request.getDateOutTo())
+          .dateOutFrom(request.getDateOutFrom().toInstant())
+          .dateOutTo(request.getDateOutTo().toInstant())
           .applyDeviation(request.isApplyDeviation())
           .build();
 
-      return planningDistributionService.getPlanningDistribution(input)
+      final Map<Pair<Instant, Instant>, Double> quantityByDatesPair = planningDistributionService.getPlanningDistribution(input)
           .stream()
-          .map(plannedUnits -> new PlannedUnits(
-              plannedUnits.getDateIn(),
-              plannedUnits.getDateOut(),
-              plannedUnits.getTotal())
+          .collect(
+              Collectors.groupingBy(
+                  planningDistributionOutput -> Pair.of(
+                      planningDistributionOutput.getDateIn(),
+                      planningDistributionOutput.getDateOut()),
+                  Collectors.summingDouble(GetPlanningDistributionOutput::getTotal))
+          );
+
+      return quantityByDatesPair.entrySet().stream()
+          .map(entry -> new PlannedUnits(
+              ofInstant(entry.getKey().getLeft(), UTC),
+              ofInstant(entry.getKey().getRight(), UTC),
+              Math.round(entry.getValue()))
           ).collect(Collectors.toList());
     }
   }

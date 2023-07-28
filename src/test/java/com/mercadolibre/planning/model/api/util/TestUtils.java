@@ -11,6 +11,9 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_LOWER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.BACKLOG_UPPER_LIMIT;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
@@ -75,8 +78,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.dis
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionElemView;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionViewImpl;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanDistribution;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
@@ -92,6 +94,7 @@ import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -110,13 +113,13 @@ import org.apache.commons.io.IOUtils;
 public final class TestUtils {
 
   public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
-      ZoneId.of("UTC"));
+                                                                  ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
-      ZoneId.of("UTC"));
+                                                               ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
-      ZoneId.of("UTC"));
+                                                                ZoneId.of("UTC"));
 
   public static final ZonedDateTime DEACTIVATE_DATE_FROM = ZonedDateTime.now();
 
@@ -316,7 +319,7 @@ public final class TestUtils {
     return CurrentProcessingDistribution.builder()
         .date(date)
         .isActive(true)
-        .processPath(ProcessPath.GLOBAL)
+        .processPath(GLOBAL)
         .processName(PACKING)
         .quantity(value)
         .quantityMetricUnit(WORKERS)
@@ -361,38 +364,43 @@ public final class TestUtils {
     );
   }
 
-  public static List<PlanningDistributionElemView> planningDistributions() {
+  public static List<PlanDistribution> planningDistributions() {
     return List.of(
-        new PlanningDistributionViewImpl(
+        new PlanDistribution(
             2,
-            Date.from(A_DATE_UTC.toInstant()),
-            Date.from(A_DATE_UTC.plusDays(1).toInstant()),
-            1000,
-            UNITS.name()),
-        new PlanningDistributionViewImpl(
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            TOT_MONO,
+            UNITS,
+            1000),
+        new PlanDistribution(
             2,
-            Date.from(A_DATE_UTC.toInstant()),
-            Date.from(A_DATE_UTC.plusDays(1).toInstant()),
-            300,
-            UNITS.name()),
-        new PlanningDistributionViewImpl(
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            TOT_MULTI_BATCH,
+            UNITS,
+            300),
+        new PlanDistribution(
             1,
-            Date.from(A_DATE_UTC.toInstant()),
-            Date.from(A_DATE_UTC.plusDays(2).toInstant()),
-            1200,
-            UNITS.name()),
-        new PlanningDistributionViewImpl(
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            1200),
+        new PlanDistribution(
             1,
-            Date.from(A_DATE_UTC.plusDays(1).toInstant()),
-            Date.from(A_DATE_UTC.plusDays(2).toInstant()),
-            1250,
-            UNITS.name()),
-        new PlanningDistributionViewImpl(
+            A_DATE_UTC.plusDays(1).toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            1250),
+        new PlanDistribution(
             1,
-            Date.from(A_DATE_UTC.toInstant()),
-            Date.from(A_DATE_UTC.plusDays(1).toInstant()),
-            500,
-            UNITS.name())
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            GLOBAL,
+            UNITS,
+            500)
     );
   }
 
@@ -455,7 +463,7 @@ public final class TestUtils {
   }
 
   public static DisableForecastDeviationInput mockDisableForecastDeviationInputWithAllArgs(final Workflow workflow,
-                                                                                final DeviationType deviationType,
+                                                                                           final DeviationType deviationType,
                                                                                            final List<Path> affectedShipmentTypes) {
     return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType, affectedShipmentTypes);
   }
@@ -469,7 +477,7 @@ public final class TestUtils {
       final Set<ProcessingType> processingTypes,
       final List<Simulation> simulations
   ) {
-    return mockGetHeadcountEntityInput(List.of(ProcessPath.GLOBAL), source, processingTypes, simulations);
+    return mockGetHeadcountEntityInput(List.of(GLOBAL), source, processingTypes, simulations);
   }
 
   public static GetHeadcountInput mockGetHeadcountEntityInput(
@@ -527,16 +535,24 @@ public final class TestUtils {
   }
 
   public static GetPlanningDistributionInput mockPlanningDistributionInput(
-      final ZonedDateTime dateInFrom,
-      final ZonedDateTime dateInTo) {
+      final Instant dateInFrom,
+      final Instant dateInTo,
+      final Instant dateOutFrom,
+      final Instant dateOutTo,
+      final Instant viewDate,
+      final boolean applyDeviation,
+      final Set<ProcessPath> processPaths) {
 
     return GetPlanningDistributionInput.builder()
         .warehouseId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
-        .dateOutFrom(A_DATE_UTC)
-        .dateOutTo(A_DATE_UTC.plusDays(3))
-        .dateInTo(dateInTo)
+        .dateOutFrom(dateOutFrom)
+        .dateOutTo(dateOutTo)
         .dateInFrom(dateInFrom)
+        .dateInTo(dateInTo)
+        .viewDate(viewDate)
+        .processPaths(processPaths)
+        .applyDeviation(applyDeviation)
         .build();
   }
 
@@ -545,7 +561,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -554,7 +570,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -563,7 +579,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -572,7 +588,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -586,7 +602,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -595,7 +611,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -604,7 +620,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
@@ -613,7 +629,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
@@ -622,7 +638,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(FORECAST)
@@ -631,7 +647,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
@@ -640,7 +656,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(WORKERS)
             .source(SIMULATION)
@@ -654,7 +670,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -664,7 +680,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -674,7 +690,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -684,7 +700,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -699,7 +715,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -709,7 +725,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -719,7 +735,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
@@ -729,7 +745,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
@@ -739,7 +755,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -749,7 +765,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -759,7 +775,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
@@ -769,7 +785,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(SIMULATION)
@@ -784,7 +800,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -794,7 +810,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -804,7 +820,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -814,7 +830,7 @@ public final class TestUtils {
         ProductivityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -829,7 +845,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -838,7 +854,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PICKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -847,7 +863,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC)
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -856,7 +872,7 @@ public final class TestUtils {
         EntityOutput.builder()
             .workflow(FBM_WMS_OUTBOUND)
             .date(A_DATE_UTC.plusHours(1))
-            .processPath(ProcessPath.GLOBAL)
+            .processPath(GLOBAL)
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
@@ -867,24 +883,21 @@ public final class TestUtils {
 
   public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput() {
     return List.of(
-        GetPlanningDistributionOutput.builder()
-            .dateIn(A_DATE_UTC)
-            .dateOut(A_DATE_UTC.plusDays(1))
-            .metricUnit(UNITS)
-            .total(1500)
-            .build(),
-        GetPlanningDistributionOutput.builder()
-            .dateIn(A_DATE_UTC)
-            .dateOut(A_DATE_UTC.plusDays(2))
-            .metricUnit(UNITS)
-            .total(1800)
-            .build(),
-        GetPlanningDistributionOutput.builder()
-            .dateIn(A_DATE_UTC)
-            .dateOut(A_DATE_UTC.plusDays(3))
-            .metricUnit(UNITS)
-            .total(1700)
-            .build()
+        new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
+                                          A_DATE_UTC.plusDays(1).toInstant(),
+                                          UNITS,
+                                          GLOBAL,
+                                          1500),
+        new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
+                                          A_DATE_UTC.plusDays(2).toInstant(),
+                                          UNITS,
+                                          GLOBAL,
+                                          1800),
+        new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
+                                          A_DATE_UTC.plusDays(3).toInstant(),
+                                          UNITS,
+                                          GLOBAL,
+                                          1700)
     );
   }
 
@@ -911,7 +924,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             ProcessName.GLOBAL,
             MAX_CAPACITY,
             UNITS_PER_HOUR,
@@ -934,7 +947,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             HU_ASSEMBLY,
             EFFECTIVE_WORKERS_NS,
             WORKERS,
@@ -943,7 +956,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 10)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             SALES_DISPATCH,
             EFFECTIVE_WORKERS_NS,
             WORKERS,
@@ -952,7 +965,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 10)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             ProcessName.GLOBAL,
             MAX_CAPACITY,
             UNITS_PER_HOUR,
@@ -966,7 +979,7 @@ public final class TestUtils {
   private static List<ProcessingDistributionRequest> mockBacklogLimits() {
     return List.of(
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             WAVING,
             BACKLOG_LOWER_LIMIT,
             MINUTES,
@@ -975,7 +988,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             PICKING,
             BACKLOG_UPPER_LIMIT,
             MINUTES,
@@ -984,7 +997,7 @@ public final class TestUtils {
                 new ProcessingDistributionDataRequest(DATE_IN.plusHours(1), 295)
             )),
         new ProcessingDistributionRequest(
-            ProcessPath.GLOBAL,
+            GLOBAL,
             PACKING,
             BACKLOG_LOWER_LIMIT,
             MINUTES,
@@ -1006,7 +1019,7 @@ public final class TestUtils {
   private static List<PlanningDistributionRequest> mockPlanningDistributions() {
     return singletonList(
         new PlanningDistributionRequest(
-            DATE_IN, DATE_OUT, UNITS, ProcessPath.GLOBAL, 1200, asList(
+            DATE_IN, DATE_OUT, UNITS, GLOBAL, 1200, asList(
             new MetadataRequest("carrier_id", "17502740"),
             new MetadataRequest("service_id", "851"),
             new MetadataRequest("canalization", "U")
@@ -1029,7 +1042,7 @@ public final class TestUtils {
             new HeadcountProductivityDataRequest(A_DATE_UTC, 85),
             new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
         )),
-        new HeadcountProductivityRequest(ProcessPath.GLOBAL, PACKING, UNITS_PER_HOUR, 0, List.of(
+        new HeadcountProductivityRequest(GLOBAL, PACKING, UNITS_PER_HOUR, 0, List.of(
             new HeadcountProductivityDataRequest(A_DATE_UTC, 92),
             new HeadcountProductivityDataRequest(A_DATE_UTC.plusHours(1), 85)
         ))

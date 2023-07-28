@@ -109,20 +109,20 @@ public class PlanningDistributionControllerTest {
   @Test
   void testGetPlanningDistributionWithViewDateOk() throws Exception {
     // GIVEN
-    final var dateOutTo = A_DATE_UTC.plusDays(2);
+    final var dateOutTo = A_DATE_UTC.plusDays(2).toInstant();
     final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("warehouse_id", WAREHOUSE_ID);
     params.add("date_out_from", A_DATE_UTC.toString());
     params.add("date_out_to", dateOutTo.toString());
-    params.add("view_date", dateOutTo.toInstant().toString());
+    params.add("view_date", dateOutTo.toString());
 
     when(planningDistributionService.getPlanningDistribution(
         GetPlanningDistributionInput.builder()
             .warehouseId(WAREHOUSE_ID)
             .workflow(FBM_WMS_OUTBOUND)
-            .dateOutFrom(A_DATE_UTC)
+            .dateOutFrom(A_DATE_UTC.toInstant())
             .dateOutTo(dateOutTo)
-            .viewDate(dateOutTo.toInstant())
+            .viewDate(dateOutTo)
             .build()
     ))
         .thenReturn(mockGetPlanningDistOutput());

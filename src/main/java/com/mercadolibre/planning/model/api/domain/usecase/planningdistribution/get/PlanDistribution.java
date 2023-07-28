@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get;
 
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-public class PlanningDistribution {
+public class PlanDistribution {
 
   private static final double ADJUSTMENT_BASE = 1.0;
 
@@ -21,14 +22,16 @@ public class PlanningDistribution {
   Instant dateIn;
   Instant dateOut;
   ProcessPath processPath;
+  MetricUnit metricUnit;
   double quantity;
 
-  PlanningDistribution newWithAdjustment(final double value) {
-    return new PlanningDistribution(
+  PlanDistribution newWithAdjustment(final double value) {
+    return new PlanDistribution(
         forecastId,
         dateIn,
         dateOut,
         processPath,
+        metricUnit,
         quantity * (ADJUSTMENT_BASE + value)
     );
   }

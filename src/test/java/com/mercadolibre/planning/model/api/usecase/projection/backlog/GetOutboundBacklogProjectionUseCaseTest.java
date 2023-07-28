@@ -1,5 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase.projection.backlog;
 
+import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
@@ -12,18 +16,13 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.cal
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjection;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.output.BacklogProjectionOutputValue;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import java.time.ZonedDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class GetOutboundBacklogProjectionUseCaseTest {
@@ -65,9 +64,9 @@ public class GetOutboundBacklogProjectionUseCaseTest {
         when(planningDistributionService.getPlanningDistribution(GetPlanningDistributionInput.builder()
                 .workflow(Workflow.FBM_WMS_OUTBOUND)
                 .warehouseId(input.getLogisticCenterId())
-                .dateInTo(input.getDateTo().plusDays(1))
-                .dateOutFrom(input.getDateFrom())
-                .dateOutTo(input.getDateTo().plusDays(1))
+                .dateInTo(input.getDateTo().plusDays(1).toInstant())
+                .dateOutFrom(input.getDateFrom().toInstant())
+                .dateOutTo(input.getDateTo().plusDays(1).toInstant())
                 .applyDeviation(true)
                 .build())).thenReturn(emptyList());
 

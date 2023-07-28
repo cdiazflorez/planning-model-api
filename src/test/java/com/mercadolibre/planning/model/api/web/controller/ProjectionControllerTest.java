@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOBAL;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
@@ -385,13 +386,13 @@ class ProjectionControllerTest {
   }
 
   private List<GetPlanningDistributionOutput> getPlanningUnits() {
-    ZonedDateTime dateIn = ZonedDateTime.ofInstant(DATE_FROM, ZoneOffset.UTC);
-    ZonedDateTime dateOutA = ZonedDateTime.ofInstant(Instant.parse("2020-07-27T18:00:00Z"), ZoneOffset.UTC);
-    ZonedDateTime dateOutB = ZonedDateTime.ofInstant(Instant.parse("2020-07-27T19:00:00Z"), ZoneOffset.UTC);
+    final Instant dateIn = DATE_FROM;
+    final Instant dateOutA = Instant.parse("2020-07-27T18:00:00Z");
+    final Instant dateOutB = Instant.parse("2020-07-27T19:00:00Z");
 
     return List.of(
-        new GetPlanningDistributionOutput(dateIn, dateOutA, UNITS, 150, false),
-        new GetPlanningDistributionOutput(dateIn, dateOutB, UNITS, 130, false)
+        new GetPlanningDistributionOutput(dateIn, dateOutA, UNITS, GLOBAL, 150),
+        new GetPlanningDistributionOutput(dateIn, dateOutB, UNITS, GLOBAL, 130)
     );
   }
 

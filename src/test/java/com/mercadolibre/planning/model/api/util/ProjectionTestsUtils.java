@@ -1,19 +1,22 @@
 package com.mercadolibre.planning.model.api.util;
 
+import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput.builder;
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.calculate.BacklogProjectionInput;
@@ -75,9 +78,10 @@ public class ProjectionTestsUtils {
 
     public static Map<ZonedDateTime, Long> mockPlanningSalesByDate() {
         return mockPlanningDistributionOutputs().stream()
-                .collect(toMap(o -> ignoreMinutes(o.getDateIn()),
-                        GetPlanningDistributionOutput::getTotal,
-                        Long::sum));
+                .collect(toMap(
+                    output -> ignoreMinutes(ofInstant(output.getDateIn(), UTC)),
+                    output -> Math.round(output.getTotal()),
+                    Long::sum));
     }
 
     public static BacklogProjectionInput mockBacklogProjectionInput(
@@ -98,26 +102,27 @@ public class ProjectionTestsUtils {
 
     public static List<GetPlanningDistributionOutput> mockPlanningDistributionOutputs() {
         return List.of(
-                builder()
-                        .dateOut(A_FIXED_DATE.plusHours(3))
-                        .dateIn(A_FIXED_DATE.minusHours(1))
-                        .total(200)
-                        .build(),
-                builder()
-                        .dateOut(A_FIXED_DATE.plusHours(4))
-                        .dateIn(A_FIXED_DATE)
-                        .total(300)
-                        .build(),
-                builder()
-                        .dateOut(A_FIXED_DATE.plusHours(5))
-                        .dateIn(A_FIXED_DATE.plusHours(1))
-                        .total(400)
-                        .build(),
-                builder()
-                        .dateOut(A_FIXED_DATE.plusHours(5))
-                        .dateIn(A_FIXED_DATE.plusHours(3))
-                        .total(1400)
-                        .build());
+            new GetPlanningDistributionOutput(A_FIXED_DATE.minusHours(1).toInstant(),
+                                              A_FIXED_DATE.plusHours(3).toInstant(),
+                                              UNITS,
+                                              ProcessPath.GLOBAL,
+                                              200),
+            new GetPlanningDistributionOutput(A_FIXED_DATE.toInstant(),
+                                              A_FIXED_DATE.plusHours(4).toInstant(),
+                                              UNITS,
+                                              ProcessPath.GLOBAL,
+                                              300),
+            new GetPlanningDistributionOutput(A_FIXED_DATE.plusHours(1).toInstant(),
+                                              A_FIXED_DATE.plusHours(5).toInstant(),
+                                              UNITS,
+                                              ProcessPath.GLOBAL,
+                                              400),
+            new GetPlanningDistributionOutput(A_FIXED_DATE.plusHours(3).toInstant(),
+                                              A_FIXED_DATE.plusHours(5).toInstant(),
+                                              UNITS,
+                                              ProcessPath.GLOBAL,
+                                              1400)
+        );
     }
 
     public static void assertCapacityByDate(final Map<ZonedDateTime, Long> capacityByDate,

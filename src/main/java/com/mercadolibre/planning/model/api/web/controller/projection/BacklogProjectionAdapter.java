@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.projection;
 
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -79,7 +81,9 @@ public class BacklogProjectionAdapter {
 
   private PlannedBacklogBySla getIncomingBacklog(final List<GetPlanningDistributionOutput> planningUnits) {
     final var plannedUnits = planningUnits.stream()
-        .map(distribution -> new PlannedUnits(distribution.getDateIn(), distribution.getDateOut(), distribution.getTotal()))
+        .map(distribution -> new PlannedUnits(ofInstant(distribution.getDateIn(), UTC),
+                                              ofInstant(distribution.getDateOut(), UTC),
+                                              Math.round(distribution.getTotal())))
         .collect(toList());
 
     return PlannedBacklogBySla.fromPlannedUnits(plannedUnits);

@@ -13,6 +13,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.CurrentForecastDeviationRepository;
+import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.backlog.PlannedBacklogService;
@@ -283,16 +285,16 @@ class PlannedBacklogServiceTest {
     // GIVEN
     when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
         .thenReturn(of(
-            GetPlanningDistributionOutput.builder()
-                .dateIn(DATE_12)
-                .dateOut(DATE_14)
-                .total(10)
-                .build(),
-            GetPlanningDistributionOutput.builder()
-                .dateIn(DATE_13)
-                .dateOut(DATE_14)
-                .total(20)
-                .build()
+            new GetPlanningDistributionOutput(DATE_12.toInstant(),
+                                              DATE_14.toInstant(),
+                                              MetricUnit.UNITS,
+                                              ProcessPath.GLOBAL,
+                                              10),
+            new GetPlanningDistributionOutput(DATE_13.toInstant(),
+                                              DATE_14.toInstant(),
+                                              MetricUnit.UNITS,
+                                              ProcessPath.GLOBAL,
+                                              20)
         ));
 
     // WHEN
@@ -304,12 +306,12 @@ class PlannedBacklogServiceTest {
     assertNotNull(plannedUnits);
     assertEquals(2, plannedUnits.size());
 
-    final var first = plannedUnits.get(0);
+    final var first = plannedUnits.get(1);
     assertEquals(10, first.getTotal());
     assertEquals(DATE_12, first.getDateIn());
     assertEquals(DATE_14, first.getDateOut());
 
-    final var second = plannedUnits.get(1);
+    final var second = plannedUnits.get(0);
     assertEquals(20, second.getTotal());
     assertEquals(DATE_13, second.getDateIn());
     assertEquals(DATE_14, second.getDateOut());

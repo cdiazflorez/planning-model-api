@@ -5,3 +5,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jm
 
 # IGNORE STATUS New Relic
 ENV NEWRELIC_EXPECTED_STATUS_CODES=400,404,409
+
+# Enable profiling
+ENV AP_AGENT_DISABLED=false

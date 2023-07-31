@@ -331,8 +331,8 @@ public class PlanningDistributionServiceTest {
 
     final var input = mockPlanningDistributionInput(DATE_IN_1,
                                                     DATE_IN_3,
-                                                    DATE_OUT_1,
-                                                    DATE_OUT_3,
+                                                    null,
+                                                    null,
                                                     A_DATE_UTC.toInstant(),
                                                     false,
                                                     processPaths);
@@ -351,8 +351,8 @@ public class PlanningDistributionServiceTest {
     when(planningDistributionGateway.findByForecastIdsAndDynamicFilters(
         DATE_IN_1,
         DATE_IN_3,
-        DATE_OUT_1,
-        DATE_OUT_3,
+        null,
+        null,
         processPaths,
         new HashSet<>(mockForecastIds())
     )).thenReturn(distributions);
@@ -380,10 +380,14 @@ public class PlanningDistributionServiceTest {
     return GetForecastInput.builder()
         .workflow(input.getWorkflow())
         .warehouseId(input.getWarehouseId())
-        .dateFrom(ofInstant(input.getDateOutFrom(), UTC))
-        .dateTo(ofInstant(input.getDateOutTo(), UTC))
+        .dateFrom(ofInstant(validateDate(input.getDateOutFrom(), input.getDateInFrom()), UTC))
+        .dateTo(ofInstant(validateDate(input.getDateOutTo(), input.getDateInTo()), UTC))
         .viewDate(input.getViewDate())
         .build();
+  }
+
+  private Instant validateDate(final Instant dateOut, final Instant dateIn) {
+    return dateOut == null ? dateIn : dateOut;
   }
 
 }

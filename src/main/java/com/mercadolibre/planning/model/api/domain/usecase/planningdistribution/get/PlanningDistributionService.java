@@ -39,8 +39,8 @@ public class PlanningDistributionService {
     final List<Long> forecastIds = getForecastUseCase.execute(new GetForecastInput(
         input.getWarehouseId(),
         input.getWorkflow(),
-        input.getDateOutFrom(),
-        input.getDateOutTo(),
+        validateDate(input.getDateOutFrom(), input.getDateInFrom()),
+        validateDate(input.getDateOutTo(), input.getDateInTo()),
         input.getViewDate()
     ));
     final var nonDeviatedPlanningDistribution = getPlanningDistribution(
@@ -166,6 +166,10 @@ public class PlanningDistributionService {
       }
     });
     return planning;
+  }
+
+  private Instant validateDate(final Instant dateOut, final Instant dateIn) {
+    return dateOut == null ? dateIn : dateOut;
   }
 
 }

@@ -76,7 +76,8 @@ public final class NextIdlenessWaveProjector {
                 () -> new Wave(date,
                     IDLENESS,
                     getConfigurations(
-                        date, inflectionPoints,
+                        date,
+                        inflectionPoints,
                         previousWaves,
                         pendingBacklog,
                         backlogs,

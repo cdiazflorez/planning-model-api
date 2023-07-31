@@ -29,6 +29,8 @@ class UnitsByCptCalculatorTest {
 
   private static final Instant SLA_3 = Instant.parse("2023-03-06T05:00:00Z");
 
+  private static final Instant SLA_4 = Instant.parse("2023-03-06T06:00:00Z");
+
   private static final Map<ProcessPath, Integer> UPPER_BOUNDS = Map.of(
       TOT_MONO, 1000,
       NON_TOT_MONO, 1700,
@@ -44,7 +46,8 @@ class UnitsByCptCalculatorTest {
   private static final List<AvailableBacklog> AVAILABLE_BACKLOGS = List.of(
       new AvailableBacklog(SLA_1, SLA_1, 400D),
       new AvailableBacklog(SLA_1, SLA_2, 800D),
-      new AvailableBacklog(SLA_1, SLA_3, 900D)
+      new AvailableBacklog(SLA_1, SLA_3, 900D),
+      new AvailableBacklog(SLA_1, SLA_4, 900D)
 
   );
 
@@ -244,7 +247,7 @@ class UnitsByCptCalculatorTest {
 
     // 1000 + 1000 + 1000 -> adjust -> 500 + 500 + 500 -> cap -> 400 + 500 + 500 = 1500
     assertEquals(400L, totMultiBatch.get(SLA_1));
-    assertEquals(500L, totMultiBatch.get(SLA_2));
+    assertEquals(600L, totMultiBatch.get(SLA_2));
     assertEquals(500L, totMultiBatch.get(SLA_3));
   }
 
@@ -286,7 +289,7 @@ class UnitsByCptCalculatorTest {
     final var totMono = result.get(TOT_MONO);
     assertNotNull(totMono);
     assertEquals(400L, totMono.get(SLA_1));
-    assertEquals(300L, totMono.get(SLA_2));
+    assertEquals(400L, totMono.get(SLA_2));
 
     final var nonTotMono = result.get(NON_TOT_MONO);
     assertNotNull(nonTotMono);
@@ -295,7 +298,7 @@ class UnitsByCptCalculatorTest {
 
     final var totMultiBatch = result.get(TOT_MULTI_BATCH);
     assertNotNull(totMultiBatch);
-    assertEquals(100L, totMultiBatch.get(SLA_1));
+    assertEquals(200L, totMultiBatch.get(SLA_1));
     assertEquals(100L, totMultiBatch.get(SLA_2));
     assertEquals(900L, totMultiBatch.get(SLA_3));
   }

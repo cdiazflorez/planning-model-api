@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 final class UnitsByCptCalculator {
@@ -104,10 +105,11 @@ final class UnitsByCptCalculator {
   }
 
   private static Map<Instant, Long> limitWavedUnitsByCptWithAvailableBacklog(
-      final Map<Instant, Long> backlogToWave,
+      final Map<Instant, Long> externalDesiredBacklogToWave,
       final Map<Instant, Long> availableBacklog
   ) {
-    return backlogToWave.entrySet()
+
+    final var backlogByCpt = externalDesiredBacklogToWave.entrySet()
         .stream()
         .collect(
             toMap(
@@ -115,6 +117,26 @@ final class UnitsByCptCalculator {
                 entry -> Math.min(entry.getValue(), availableBacklog.getOrDefault(entry.getKey(), 0L))
             )
         );
+
+    final long totalBacklogToWave = externalDesiredBacklogToWave.values().stream().reduce(0L, Long::sum);
+    final long totalBacklogByCpt = backlogByCpt.values().stream().reduce(0L, Long::sum);
+    long diff = totalBacklogToWave - totalBacklogByCpt;
+
+    for (Instant sla : new TreeSet<>(availableBacklog.keySet())) {
+      if (diff <= 0) {
+        break;
+      }
+
+      final long remainingSlaBacklog = availableBacklog.get(sla) - backlogByCpt.getOrDefault(sla, 0L);
+      if (remainingSlaBacklog <= 0) {
+        continue;
+      }
+      final long unitsToAdd = Math.min(remainingSlaBacklog, diff);
+      backlogByCpt.put(sla, backlogByCpt.getOrDefault(sla, 0L) + unitsToAdd);
+      diff -= unitsToAdd;
+    }
+
+    return backlogByCpt;
   }
 
   private static Map<Instant, Long> resizePrecalculatedWaveDistribution(final Map<Instant, Long> wave, final long wavedUnits,

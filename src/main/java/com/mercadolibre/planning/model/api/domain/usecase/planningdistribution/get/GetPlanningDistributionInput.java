@@ -1,27 +1,38 @@
 package com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get;
 
+import static java.util.Collections.emptySet;
+
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.Instant;
-import java.time.ZonedDateTime;
+import java.util.Set;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@Value
+@Getter
 @Builder
+@EqualsAndHashCode
 public class GetPlanningDistributionInput {
-  String warehouseId;
+  private String warehouseId;
 
-  Workflow workflow;
+  private Workflow workflow;
 
-  ZonedDateTime dateOutFrom;
+  private Instant dateOutFrom;
 
-  ZonedDateTime dateOutTo;
+  private Instant dateOutTo;
 
-  ZonedDateTime dateInFrom;
+  private Instant dateInFrom;
 
-  ZonedDateTime dateInTo;
+  private Instant dateInTo;
 
-  boolean applyDeviation;
+  private Set<ProcessPath> processPaths;
 
-  Instant viewDate;
+  private boolean applyDeviation;
+
+  private Instant viewDate;
+
+  public Set<ProcessPath> getProcessPaths() {
+    return processPaths == null ? emptySet() : processPaths;
+  }
 }

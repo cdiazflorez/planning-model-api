@@ -9,14 +9,13 @@ import java.util.Set;
  * Planning distribution repository.
  * Obtain dynamic planning distribution
  * */
-public interface PlanningDistributionRepository {
-  List<PlanningDistribution> findByWarehouseIdWorkflowAndDateOutAndDateInInRange(
+public interface PlanningDistributionGateway {
+  List<PlanDistribution> findByForecastIdsAndDynamicFilters(
       Instant dateInFrom,
       Instant dateInTo,
       Instant dateOutFrom,
       Instant dateOutTo,
       Set<ProcessPath> processPaths,
-      Set<Grouper> groupers,
       Set<Long> forecastIds
   );
 }

@@ -10,6 +10,8 @@ import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.asse
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.getMinCapacity;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockBacklogProjectionInput;
 import static com.mercadolibre.planning.model.api.util.ProjectionTestsUtils.mockPlanningDistributionOutputs;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -87,9 +89,12 @@ public class WavingBacklogProjectionUseCaseTest {
 
   private void assertPlanningUnits(final Map<ZonedDateTime, Long> planningUnitsByDate) {
     final Map<ZonedDateTime, Long> wantedSales = mockPlanningDistributionOutputs().stream()
-        .collect(toMap(o -> ignoreMinutes(o.getDateIn()),
-                       GetPlanningDistributionOutput::getTotal,
-                       Long::sum));
+        .collect(
+            toMap(
+                output -> ignoreMinutes(ofInstant(output.getDateIn(), UTC)),
+                output -> Math.round(output.getTotal()),
+                Long::sum)
+        );
 
     assertEquals(wantedSales, planningUnitsByDate);
   }

@@ -1,0 +1,34 @@
+[
+    {
+        "group": {
+            "process_path": "tot_mono",
+            "date_in": "2022-09-10T10:00:00Z",
+            "date_out": "2022-09-11T10:00:00Z"
+        },
+        "total": 10.5
+    },
+    {
+        "group": {
+            "process_path": "non_tot_mono",
+            "date_in": "2022-09-10T10:00:00Z",
+            "date_out": "2022-09-11T10:00:00Z"
+        },
+        "total": 12.0
+    },
+    {
+        "group": {
+            "process_path": "tot_mono",
+            "date_in": "2022-09-10T14:00:00Z",
+            "date_out": "2022-09-11T14:00:00Z"
+        },
+        "total": 20.6
+    },
+    {
+        "group": {
+            "process_path": "non_tot_mono",
+            "date_in": "2022-09-10T14:00:00Z",
+            "date_out": "2022-09-11T14:00:00Z"
+        },
+        "total": 4.4
+    }
+]

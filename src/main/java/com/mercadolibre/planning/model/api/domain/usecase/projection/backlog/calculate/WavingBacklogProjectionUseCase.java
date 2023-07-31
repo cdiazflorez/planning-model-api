@@ -3,13 +3,14 @@ package com.mercadolibre.planning.model.api.domain.usecase.projection.backlog.ca
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
+import static java.time.ZoneOffset.UTC;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.CapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.capacity.GetCapacityPerHourService;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CurrentBacklog;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -31,9 +32,12 @@ public class WavingBacklogProjectionUseCase implements GetBacklogProjectionParam
   public ProcessParams execute(final ProcessName processName, final BacklogProjectionInput input) {
 
     final Map<ZonedDateTime, Long> planningSalesByDate = input.getPlanningUnits().stream()
-        .collect(toMap(o -> ignoreMinutes(o.getDateIn()),
-                       GetPlanningDistributionOutput::getTotal,
-                       Long::sum));
+        .collect(
+            toMap(
+                distributionOutput -> ignoreMinutes(ofInstant(distributionOutput.getDateIn(), UTC)),
+                distributionOutput -> Math.round(distributionOutput.getTotal()),
+                Long::sum)
+        );
 
     final Map<ZonedDateTime, Long> wavingCapacityByDate = getCapacityUseCase.execute(
             FBM_WMS_OUTBOUND,

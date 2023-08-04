@@ -1,10 +1,14 @@
 package com.mercadolibre.planning.model.api.client.db.repository.deferral;
 
+import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.CAP_MAX;
+import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.CASCADE;
+import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.NOT_DEFERRED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.deferral.OutboundDeferralData;
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -26,6 +30,8 @@ class DeferralRepositoryTest {
 
   private static final Instant DELETE_BEFORE_DATE = Instant.parse("2022-09-11T11:00:00Z");
 
+  private static final Instant DEFERRAL_DATE = Instant.parse("2022-09-28T11:00:00Z");
+
   @Autowired
   private OutboundDeferralDataRepository repository;
 
@@ -41,6 +47,15 @@ class DeferralRepositoryTest {
             Instant.parse("2022-09-08T14:00:00Z"),
             2
         )
+    );
+  }
+
+  private static List<OutboundDeferralData> mockLastOutboundDeferralData() {
+    return List.of(
+        new OutboundDeferralData(9, WAREHOUSE_ID, DEFERRAL_DATE, Instant.parse("2022-09-28T18:00:00Z"), CAP_MAX, true),
+        new OutboundDeferralData(10, WAREHOUSE_ID, DEFERRAL_DATE, Instant.parse("2022-09-28T19:00:00Z"), CASCADE, true),
+        new OutboundDeferralData(11, WAREHOUSE_ID, DEFERRAL_DATE, Instant.parse("2022-09-28T20:00:00Z"), CASCADE, true),
+        new OutboundDeferralData(12, WAREHOUSE_ID, DEFERRAL_DATE, Instant.parse("2022-09-28T21:00:00Z"), NOT_DEFERRED, false)
     );
   }
 
@@ -76,5 +91,17 @@ class DeferralRepositoryTest {
 
     // THEN
     assertEquals(6, removedEntries);
+  }
+
+  @Test
+  @Sql("/sql/forecast/load_deferral.sql")
+  void testGetLastCptDeferralReportForLogisticCenter() {
+    // GIVEN
+    final var expectedLastCptReport = mockLastOutboundDeferralData();
+    // WHEN
+    final var lastCptDeferralReportForLogisticCenter = repository.getLastCptDeferralReportForLogisticCenter(WAREHOUSE_ID);
+
+    // THEN
+    assertEquals(expectedLastCptReport, lastCptDeferralReportForLogisticCenter);
   }
 }

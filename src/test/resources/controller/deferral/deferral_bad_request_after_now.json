@@ -1,0 +1,28 @@
+{
+  "msg": {
+    "warehouse_id": "ARBA01",
+    "site_id": "MLA",
+    "workflow": "fbm-wms-outbound",
+    "last_updated": "2023-07-20T19:00:00Z",
+    "projections": [
+      {
+        "estimated_time_departure": "2023-07-21T16:00:00Z",
+        "etd_cutoff": "2023-07-21T13:00:00Z",
+        "pay_before": "2023-07-21T12:00:00Z",
+        "deferral_status": "deferred_cap_max"
+      },
+      {
+        "estimated_time_departure": "2023-07-21T17:00:00Z",
+        "etd_cutoff": "2023-07-21T13:00:00Z",
+        "pay_before": "2023-07-21T12:00:00Z",
+        "deferral_status": "deferred_cascade"
+      },
+      {
+        "estimated_time_departure": "2023-07-21T18:00:00Z",
+        "etd_cutoff": "2023-07-21T13:00:00Z",
+        "pay_before": "2023-07-21T12:00:00Z",
+        "deferral_status": "not_deferred"
+      }
+    ]
+  }
+}

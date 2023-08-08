@@ -5,8 +5,12 @@ import java.time.Instant;
 final class SaveDeferralReportLogger {
 
   private static final String MESSAGE_LOGGER = "Deleted %s sla Deferred report register of logisticCenter %s, with dateTo = %s to %s hs";
+
   private static final String MESSAGE_ERROR_DELETE = "Deleted view_date = %s. %s";
-  
+
+  private static final String UPDATED_CPT_REPORT_LOG =
+      "Updated correctly the new CptDeferralReport for %s with deferral date: %s";
+
   private SaveDeferralReportLogger() {
 
   }
@@ -18,6 +22,10 @@ final class SaveDeferralReportLogger {
 
   static String generateLogError(final Instant date, final String errorMessage) {
     return String.format(MESSAGE_ERROR_DELETE, date, errorMessage);
+  }
+
+  static String generateLogUpdate(final String logisticCenterId, final Instant deferralDate) {
+    return String.format(UPDATED_CPT_REPORT_LOG, logisticCenterId, deferralDate);
   }
 
 

@@ -1,6 +1,5 @@
 package com.mercadolibre.planning.model.api.web.controller.deferral;
 
-import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.DeferralStatus;
 import java.time.Instant;
 import java.util.List;
 import javax.validation.Valid;
@@ -30,7 +29,7 @@ public class Msg {
     @NotNull
     Instant payBefore;
     @NotNull
-    DeferralStatus deferralStatus;
+    DeferralStatusRequest deferralStatus;
   }
 }
 

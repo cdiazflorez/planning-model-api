@@ -29,4 +29,14 @@ public interface OutboundDeferralDataRepository extends JpaRepository<OutboundDe
   @Transactional
   @Query("DELETE FROM OutboundDeferralData odd WHERE odd.date < :date")
   int deleteByDateBefore(Instant date);
+
+  @Query(
+      "FROM OutboundDeferralData "
+          + "WHERE logisticCenterId = :logisticCenterId "
+          + "AND date IN "
+          + " (SELECT MAX(odd.date) FROM OutboundDeferralData odd "
+          + "   WHERE odd.logisticCenterId = :logisticCenterId)"
+  )
+  List<OutboundDeferralData> getLastCptDeferralReportForLogisticCenter(String logisticCenterId);
+
 }

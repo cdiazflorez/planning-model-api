@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class GetDeferralReportAdapterTest {
+public class GetOutboundDeferralReportAdapterTest {
 
     private static final String WAREHOUSE_ID = "ARTW01";
 

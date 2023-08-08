@@ -47,7 +47,8 @@ public class PlannedUnitsController {
       @RequestParam(required = false) final Instant dateOutFrom,
       @RequestParam(required = false) final Instant dateOutTo,
       @RequestParam final Instant viewDate,
-      @RequestParam final Set<Grouper> groupBy
+      @RequestParam final Set<Grouper> groupBy,
+      @RequestParam(required = false) final boolean excludeDeferred
   ) {
 
     validateDatesRanges(dateInFrom, dateInTo, dateOutFrom, dateOutTo);
@@ -63,6 +64,7 @@ public class PlannedUnitsController {
                 .processPaths(processPaths)
                 .applyDeviation(true)
                 .viewDate(viewDate)
+                .excludeDeferred(excludeDeferred)
                 .build()).stream()
         .collect(
             toMap(

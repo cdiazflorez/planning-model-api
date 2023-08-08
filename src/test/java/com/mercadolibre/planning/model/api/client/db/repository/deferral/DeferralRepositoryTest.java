@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.deferral.OutboundDeferralData;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,9 @@ class DeferralRepositoryTest {
 
   private static final String WAREHOUSE_ID = "ARTW01";
 
+  private static final Set<DeferralType> DEFERRAL_TYPES = Set.of(CAP_MAX, CASCADE);
+
+  private static final Instant VIEW_DATE = Instant.parse("2022-09-10T10:00:00Z");
   private static final Instant DATE_FROM = Instant.parse("2022-09-08T10:00:00Z");
 
   private static final Instant DATE_TO = Instant.parse("2022-09-08T11:00:00Z");
@@ -40,12 +45,12 @@ class DeferralRepositoryTest {
         Arguments.of(
             DATE_FROM,
             DATE_TO,
-            2
+            5
         ),
         Arguments.of(
             Instant.parse("2022-09-08T09:00:00Z"),
             Instant.parse("2022-09-08T14:00:00Z"),
-            2
+            5
         )
     );
   }
@@ -90,18 +95,23 @@ class DeferralRepositoryTest {
     final var removedEntries = repository.deleteByDateBefore(DELETE_BEFORE_DATE);
 
     // THEN
-    assertEquals(6, removedEntries);
+    assertEquals(8, removedEntries);
   }
 
   @Test
   @Sql("/sql/forecast/load_deferral.sql")
-  void testGetLastCptDeferralReportForLogisticCenter() {
-    // GIVEN
-    final var expectedLastCptReport = mockLastOutboundDeferralData();
-    // WHEN
-    final var lastCptDeferralReportForLogisticCenter = repository.getLastCptDeferralReportForLogisticCenter(WAREHOUSE_ID);
+  void testFindByLogisticCenterIdAndDateBeforeAndCpt() {
+      // WHEN
+      final List<Instant> deferrals = repository.findDeferredCpts(
+              WAREHOUSE_ID,
+              VIEW_DATE,
+              DEFERRAL_TYPES
+      );
 
-    // THEN
-    assertEquals(expectedLastCptReport, lastCptDeferralReportForLogisticCenter);
-  }
+      // THEN
+      assertEquals(2, deferrals.size());
+      deferrals.forEach(deferral -> {
+          assertTrue(deferral.isBefore(VIEW_DATE));
+      });
+    }
 }

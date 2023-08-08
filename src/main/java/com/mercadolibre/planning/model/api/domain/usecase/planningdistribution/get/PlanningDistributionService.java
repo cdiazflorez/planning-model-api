@@ -32,6 +32,8 @@ public class PlanningDistributionService {
 
   private final PlanningDistributionGateway planningDistributionGateway;
 
+  private final DeferralGateway deferralGateway;
+
   private final CurrentForecastDeviationRepository currentForecastDeviationRepository;
 
   public List<GetPlanningDistributionOutput> getPlanningDistribution(final GetPlanningDistributionInput input) {
@@ -51,9 +53,14 @@ public class PlanningDistributionService {
         input.getProcessPaths(),
         forecastIds
     );
-    final var planningDistribution = input.isApplyDeviation()
-        ? applyDeviation(input.getWarehouseId(), input.getWorkflow(), nonDeviatedPlanningDistribution, input.getViewDate())
+
+    final var deferralDistribution = input.isExcludeDeferred()
+        ? applyDeferral(input.getWarehouseId(), input.getWorkflow(), input.getViewDate(), nonDeviatedPlanningDistribution)
         : nonDeviatedPlanningDistribution;
+
+    final var planningDistribution = input.isApplyDeviation()
+        ? applyDeviation(input.getWarehouseId(), input.getWorkflow(), deferralDistribution, input.getViewDate())
+        : deferralDistribution;
 
     return planningDistribution.stream()
         .map(pd -> new GetPlanningDistributionOutput(pd.getDateIn(),
@@ -117,6 +124,19 @@ public class PlanningDistributionService {
             .collect(toList()))
         .orElse(planDistribution);
   }
+
+    private List<PlanDistribution> applyDeferral(
+            final String warehouseId,
+            final Workflow workflow,
+            final Instant viewDate,
+            final List<PlanDistribution> planDistribution
+    ) {
+        final List<Instant> deferredCpts = deferralGateway.getDeferredCpts(warehouseId, workflow, viewDate);
+
+        return planDistribution.stream()
+                .filter(plan -> !deferredCpts.contains(plan.getDateOut()))
+                .collect(toList());
+    }
 
   /**
    * Gets the applicable deviation corresponding to the specified warehouse.

@@ -32,6 +32,8 @@ public class GetPlanningDistributionInput {
 
   private Instant viewDate;
 
+  private boolean excludeDeferred;
+
   public Set<ProcessPath> getProcessPaths() {
     return processPaths == null ? emptySet() : processPaths;
   }

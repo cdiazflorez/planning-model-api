@@ -1,10 +1,7 @@
 package com.mercadolibre.planning.model.api.web.controller.deferral;
 
-import static com.mercadolibre.planning.model.api.util.DateUtils.getCurrentUtcDate;
-
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.SaveOutboundDeferralReport;
 import com.newrelic.api.agent.Trace;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;

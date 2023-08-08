@@ -541,18 +541,20 @@ public final class TestUtils {
       final Instant dateOutTo,
       final Instant viewDate,
       final boolean applyDeviation,
-      final Set<ProcessPath> processPaths) {
+      final Set<ProcessPath> processPaths,
+      final boolean applyDeferral) {
 
     return GetPlanningDistributionInput.builder()
         .warehouseId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
-        .dateOutFrom(dateOutFrom)
-        .dateOutTo(dateOutTo)
         .dateInFrom(dateInFrom)
         .dateInTo(dateInTo)
+        .dateOutFrom(dateOutFrom)
+        .dateOutTo(dateOutTo)
         .viewDate(viewDate)
         .processPaths(processPaths)
         .applyDeviation(applyDeviation)
+        .excludeDeferred(applyDeferral)
         .build();
   }
 

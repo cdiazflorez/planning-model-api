@@ -44,24 +44,26 @@ public interface CurrentHeadcountProductivityRepository extends JpaRepository<Cu
       @Param("ability_level") int abilityLevel
   );
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Transactional
-    @Query("UPDATE "
-            + " CurrentHeadcountProductivity chp "
-            + " SET "
-            + " chp.isActive = false, "
-            + " chp.userId = :user_id, "
-            + " chp.lastUpdated = CURRENT_TIMESTAMP "
-            + " WHERE "
-            + " chp.logisticCenterId = :logistic_center_id "
-            + " AND chp.date BETWEEN :date_from AND :date_to"
-            + " AND chp.isActive = true ")
-    void deactivateProductivityForRangeOfDates(
-            @Param("logistic_center_id") String logisticCenterId,
-            @Param("date_from") ZonedDateTime dateFrom,
-            @Param("date_to") ZonedDateTime dateTo,
-            @Param("user_id") long userId
-    );
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("UPDATE "
+      + " CurrentHeadcountProductivity chp "
+      + " SET "
+      + " chp.isActive = false, "
+      + " chp.userId = :user_id, "
+      + " chp.lastUpdated = CURRENT_TIMESTAMP "
+      + " WHERE "
+      + " chp.logisticCenterId = :logistic_center_id "
+      + " AND chp.workflow = :workflow "
+      + " AND chp.date BETWEEN :date_from AND :date_to"
+      + " AND chp.isActive = true ")
+  void deactivateProductivityForRangeOfDates(
+      @Param("logistic_center_id") String logisticCenterId,
+      @Param("workflow") Workflow workflow,
+      @Param("date_from") ZonedDateTime dateFrom,
+      @Param("date_to") ZonedDateTime dateTo,
+      @Param("user_id") long userId
+  );
 
   @Query(
       value = "SELECT cpd.* "

@@ -97,28 +97,28 @@ public class CurrentHeadcountProductivityRepositoryTest {
   @Test
   @DisplayName("Deactivate productivity for range of dates")
   public void testDeactivateProductivityForRangeOfDates() {
-      //GIVEN
-      final List<CurrentHeadcountProductivity> currentHeadcountProductivities = mockCurrentProductivities();
-      currentHeadcountProductivities.forEach(
-              currentHeadcountProductivity -> entityManager.persistAndFlush(currentHeadcountProductivity)
-      );
+    //GIVEN
+    final List<CurrentHeadcountProductivity> currentHeadcountProductivities = mockCurrentProductivities();
+    currentHeadcountProductivities.forEach(
+        currentHeadcountProductivity -> entityManager.persistAndFlush(currentHeadcountProductivity)
+    );
 
-      //WHEN
-      repository.deactivateProductivityForRangeOfDates(WAREHOUSE_ID, DEACTIVATE_DATE_FROM, DEACTIVATE_DATE_TO, USER_ID);
+    //WHEN
+    repository.deactivateProductivityForRangeOfDates(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DEACTIVATE_DATE_FROM, DEACTIVATE_DATE_TO, USER_ID);
 
-      final List<CurrentHeadcountProductivity> results = repository.findAll();
-      //THEN
-      assertFalse(results.isEmpty());
-      assertEquals(2,
-              results.stream()
-              .filter(CurrentHeadcountProductivity::isActive)
-              .count()
-      );
-      assertEquals(1,
-              results.stream()
-                      .filter(currentHeadcountProductivity -> !currentHeadcountProductivity.isActive())
-                      .count()
-      );
+    //THEN
+    final List<CurrentHeadcountProductivity> results = repository.findAll();
+    assertFalse(results.isEmpty());
+    assertEquals(3,
+        results.stream()
+            .filter(CurrentHeadcountProductivity::isActive)
+            .count()
+    );
+    assertEquals(1,
+        results.stream()
+            .filter(currentHeadcountProductivity -> !currentHeadcountProductivity.isActive())
+            .count()
+    );
 
   }
 

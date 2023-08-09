@@ -8,6 +8,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKE
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_AWAY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.RECEIVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.SALES_DISPATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
@@ -113,13 +114,13 @@ import org.apache.commons.io.IOUtils;
 public final class TestUtils {
 
   public static final ZonedDateTime A_DATE_UTC = ZonedDateTime.of(2020, 8, 19, 17, 0, 0, 0,
-                                                                  ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_IN = ZonedDateTime.of(2020, 8, 19, 18, 0, 0, 0,
-                                                               ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DATE_OUT = ZonedDateTime.of(2020, 8, 20, 15, 30, 0, 0,
-                                                                ZoneId.of("UTC"));
+      ZoneId.of("UTC"));
 
   public static final ZonedDateTime DEACTIVATE_DATE_FROM = ZonedDateTime.now();
 
@@ -303,6 +304,17 @@ public final class TestUtils {
             .build(),
         CurrentHeadcountProductivity.builder()
             .abilityLevel(1)
+            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+            .isActive(true)
+            .productivity(10)
+            .productivityMetricUnit(UNITS_PER_HOUR)
+            .processName(PUT_AWAY)
+            .logisticCenterId(WAREHOUSE_ID)
+            .workflow(FBM_WMS_INBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentHeadcountProductivity.builder()
+            .abilityLevel(1)
             .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
             .isActive(true)
             .productivity(10)
@@ -349,6 +361,16 @@ public final class TestUtils {
             .quantityMetricUnit(WORKERS)
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
+            .logisticCenterId(WAREHOUSE_ID)
+            .build(),
+        CurrentProcessingDistribution.builder()
+            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
+            .isActive(true)
+            .processName(PUT_AWAY)
+            .quantity(10)
+            .quantityMetricUnit(WORKERS)
+            .type(EFFECTIVE_WORKERS)
+            .workflow(FBM_WMS_INBOUND)
             .logisticCenterId(WAREHOUSE_ID)
             .build(),
         CurrentProcessingDistribution.builder()
@@ -886,20 +908,20 @@ public final class TestUtils {
   public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput() {
     return List.of(
         new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
-                                          A_DATE_UTC.plusDays(1).toInstant(),
-                                          UNITS,
-                                          GLOBAL,
-                                          1500),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            UNITS,
+            GLOBAL,
+            1500),
         new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
-                                          A_DATE_UTC.plusDays(2).toInstant(),
-                                          UNITS,
-                                          GLOBAL,
-                                          1800),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            UNITS,
+            GLOBAL,
+            1800),
         new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
-                                          A_DATE_UTC.plusDays(3).toInstant(),
-                                          UNITS,
-                                          GLOBAL,
-                                          1700)
+            A_DATE_UTC.plusDays(3).toInstant(),
+            UNITS,
+            GLOBAL,
+            1700)
     );
   }
 

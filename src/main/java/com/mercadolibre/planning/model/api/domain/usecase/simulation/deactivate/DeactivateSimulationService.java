@@ -18,6 +18,7 @@ public class DeactivateSimulationService {
 
         currentProcessingDistributionRepository.deactivateProcessingDistributionForRangeOfDates(
                 deactivateSimulationOfWeek.getLogisticCenterId(),
+                deactivateSimulationOfWeek.getWorkflow(),
                 deactivateSimulationOfWeek.getDateFrom(),
                 deactivateSimulationOfWeek.getDateTo(),
                 deactivateSimulationOfWeek.getUserId()
@@ -25,6 +26,7 @@ public class DeactivateSimulationService {
 
         currentHeadcountProductivityRepository.deactivateProductivityForRangeOfDates(
                 deactivateSimulationOfWeek.getLogisticCenterId(),
+                deactivateSimulationOfWeek.getWorkflow(),
                 deactivateSimulationOfWeek.getDateFrom(),
                 deactivateSimulationOfWeek.getDateTo(),
                 deactivateSimulationOfWeek.getUserId()

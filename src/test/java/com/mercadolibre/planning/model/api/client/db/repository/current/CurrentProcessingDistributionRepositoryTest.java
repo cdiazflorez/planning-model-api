@@ -139,34 +139,35 @@ class CurrentProcessingDistributionRepositoryTest {
   @Test
   @DisplayName("Deactivate processing distribution for range of dates")
   void testDeactivateProcessingDistributionForRangeOfDates() {
-      // GIVEN
-      final List<CurrentProcessingDistribution> currentProcessingDistributions = mockCurrentProcessingDistributions();
-      currentProcessingDistributions.forEach(
-              currentProcessingDistribution -> entityManager.persistAndFlush(currentProcessingDistribution)
-      );
+    // GIVEN
+    final List<CurrentProcessingDistribution> currentProcessingDistributions = mockCurrentProcessingDistributions();
+    currentProcessingDistributions.forEach(
+        currentProcessingDistribution -> entityManager.persistAndFlush(currentProcessingDistribution)
+    );
 
-      // WHEN
-      repository.deactivateProcessingDistributionForRangeOfDates(
-              WAREHOUSE_ID,
-              DEACTIVATE_DATE_FROM,
-              DEACTIVATE_DATE_TO,
-              USER_ID
-      );
+    // WHEN
+    repository.deactivateProcessingDistributionForRangeOfDates(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND,
+        DEACTIVATE_DATE_FROM,
+        DEACTIVATE_DATE_TO,
+        USER_ID
+    );
 
-      final List<CurrentProcessingDistribution> results = repository.findAll();
+    // THEN
+    final List<CurrentProcessingDistribution> results = repository.findAll();
 
-      // THEN
-      assertFalse(results.isEmpty());
-      assertEquals(2,
-              results.stream()
-                      .filter(CurrentProcessingDistribution::isActive)
-                      .count()
-      );
-      assertEquals(1,
-              results.stream()
-                      .filter(currentProcessingDistribution -> !currentProcessingDistribution.isActive())
-                      .count()
-      );
+    assertFalse(results.isEmpty());
+    assertEquals(3,
+        results.stream()
+            .filter(CurrentProcessingDistribution::isActive)
+            .count()
+    );
+    assertEquals(1,
+        results.stream()
+            .filter(currentProcessingDistribution -> !currentProcessingDistribution.isActive())
+            .count()
+    );
   }
 
   @ParameterizedTest

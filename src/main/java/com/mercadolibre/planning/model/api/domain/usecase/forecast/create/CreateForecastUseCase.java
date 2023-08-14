@@ -193,7 +193,7 @@ public class CreateForecastUseCase {
         .get();
 
     deactivateSimulationService.deactivateSimulation(
-        new DeactivateSimulationOfWeek(logisticCenterId, dateFrom, dateTo, input.getUserId())
+        new DeactivateSimulationOfWeek(logisticCenterId, input.getWorkflow(), dateFrom, dateTo, input.getUserId())
     );
   }
 

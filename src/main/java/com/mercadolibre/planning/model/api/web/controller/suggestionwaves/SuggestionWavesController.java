@@ -88,7 +88,8 @@ public class SuggestionWavesController {
         request.getForecast(),
         request.getIntThroughput(),
         request.getBacklogLimits(),
-        request.getPrecalculatedWavesAsEntities()
+        request.getPrecalculatedWavesAsEntities(),
+        logisticCenterId
     );
     return ResponseEntity.ok(mapToDto(logisticCenterId, request.getViewDate(), waves));
   }

@@ -40,6 +40,7 @@ public final class NextSlaWaveProjector {
    * @param currentBacklog   initial picking backlogs by process path
    * @param throughput       throughput by Process Path and Hour.
    * @param minCycleTimes    minimum cycle time configuration by Process Path. It must contain all Process Paths.
+   * @param logisticCenterId warehouse
    * @return next wave configuration, if found.
    */
   @Trace
@@ -49,7 +50,8 @@ public final class NextSlaWaveProjector {
       final PendingBacklog pendingBacklog,
       final Map<ProcessPath, Map<Instant, Long>> currentBacklog,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
-      final Map<ProcessPath, Integer> minCycleTimes
+      final Map<ProcessPath, Integer> minCycleTimes,
+      final String logisticCenterId
   ) {
     final var nextWaveCandidateInflectionPoints = slaProjectionInflectionPoints(inflectionPoints, waves);
     if (nextWaveCandidateInflectionPoints.size() <= MIN_INFLECTION_POINTS_TO_PROJECT) {
@@ -66,7 +68,8 @@ public final class NextSlaWaveProjector {
         projectedBacklogs,
         pickingThroughput,
         pendingBacklog,
-        minCycleTimes
+        minCycleTimes,
+        logisticCenterId
     );
   }
 
@@ -102,7 +105,8 @@ public final class NextSlaWaveProjector {
       final Stream<ProcessPathBacklog> projectedBacklogs,
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
       final PendingBacklog pendingBacklog,
-      final Map<ProcessPath, Integer> minCycleTimes
+      final Map<ProcessPath, Integer> minCycleTimes,
+      final String logisticCenterId
   ) {
     final var backlogProjection = projectedBacklogs.collect(Collectors.groupingBy(
         ProcessPathBacklog::getDate,
@@ -115,7 +119,8 @@ public final class NextSlaWaveProjector {
         throughput,
         pendingBacklog,
         minCycleTimes,
-        waves
+        waves,
+        logisticCenterId
     );
   }
 

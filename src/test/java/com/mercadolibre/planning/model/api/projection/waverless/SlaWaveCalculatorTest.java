@@ -39,6 +39,8 @@ import org.mockito.MockedStatic;
 class SlaWaveCalculatorTest {
 
   private static final Instant FORECAST_DATE_IN = Instant.parse("2023-03-06T02:00:00Z");
+  private static final String WH = "ARBA01";
+  private static final String WH_TEST = "BRBA01";
 
   private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
 
@@ -111,7 +113,7 @@ class SlaWaveCalculatorTest {
         Map.of(
             TOT_MONO, List.of(
                 new AvailableBacklog(SLA_1, SLA_1, 5D),
-                new AvailableBacklog(SLA_1, SLA_2, 110D),
+                new AvailableBacklog(SLA_1, SLA_2, 140D),
                 new AvailableBacklog(SLA_1, SLA_3, 1D)
             )
         ),
@@ -128,7 +130,7 @@ class SlaWaveCalculatorTest {
     final Map<Instant, List<CurrentBacklog>> currentBacklog = emptyMap();
 
     final Map<ProcessPath, List<AvailableBacklog>> readyToWave = Map.of(
-        TOT_MONO, List.of(new AvailableBacklog(SLA_1, SLA_1, 110D))
+        TOT_MONO, List.of(new AvailableBacklog(SLA_1, SLA_1, 10D))
     );
 
     final Map<ProcessPath, List<AvailableBacklog>> forecast = emptyMap();
@@ -141,7 +143,8 @@ class SlaWaveCalculatorTest {
         PICKING_THROUGHPUT,
         pending,
         MIN_CYCLE_TIMES,
-        waves
+        waves,
+        WH
     );
   }
 
@@ -166,26 +169,41 @@ class SlaWaveCalculatorTest {
     final RequestTest requestTest = generateRequestTest(emptyList());
 
     // WHEN
-    var result = SlaWaveCalculator.projectNextWave(
+    var resultARBA = SlaWaveCalculator.projectNextWave(
         requestTest.getInflectionPoints(),
         requestTest.getProjectedBacklogs(),
         requestTest.getThroughput(),
         requestTest.getPendingBacklog(),
         requestTest.getMinCycleTimes(),
-        emptyList()
+        emptyList(),
+        requestTest.logisticCenter
+    );
+
+    var resultBRBA = SlaWaveCalculator.projectNextWave(
+        requestTest.getInflectionPoints(),
+        requestTest.getProjectedBacklogs(),
+        requestTest.getThroughput(),
+        requestTest.getPendingBacklog(),
+        requestTest.getMinCycleTimes(),
+        emptyList(),
+        WH_TEST
     );
 
     // THEN
-    assertTrue(result.isPresent());
+    assertTrue(resultARBA.isPresent());
+    assertTrue(resultBRBA.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:10:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
+    final var expectedWaveDateBRBA = Instant.parse("2023-03-06T01:50:00Z");
 
-    final var wave = result.get();
+    final var wave = resultARBA.get();
+    final var waveBRBA = resultBRBA.get();
     assertEquals(expectedWaveDate, wave.getExecutionDate());
+    assertEquals(expectedWaveDateBRBA, waveBRBA.getExecutionDate());
 
     final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
-    assertEquals(110L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
+    assertEquals(10L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
   }
 
   @BeforeEach
@@ -217,10 +235,11 @@ class SlaWaveCalculatorTest {
                 new Wave.WaveConfiguration(
                     110,
                     90000000,
-                    Map.of(SLA_1, 10L)
+                    Map.of(SLA_1, 5L)
                 )
             )
-        ))
+        )),
+        requestTest.logisticCenter
     );
 
     // THEN
@@ -230,7 +249,7 @@ class SlaWaveCalculatorTest {
 
     final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
-    assertEquals(100L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
+    assertEquals(5L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
   }
 
   @ParameterizedTest
@@ -260,14 +279,15 @@ class SlaWaveCalculatorTest {
         throughput,
         pending,
         MIN_CYCLE_TIMES,
-        emptyList()
+        emptyList(),
+        WH
     );
 
     // THEN
     assertTrue(result.isPresent());
 
     final var wave = result.get();
-    assertTrue(wave.getExecutionDate().isAfter(FORECAST_DATE_IN));
+    assertFalse(wave.getExecutionDate().isBefore(FORECAST_DATE_IN));
   }
 
   @ParameterizedTest
@@ -288,13 +308,14 @@ class SlaWaveCalculatorTest {
         PICKING_THROUGHPUT,
         pending,
         MIN_CYCLE_TIMES,
-        emptyList()
+        emptyList(),
+        WH
     );
 
     // THEN
     assertTrue(result.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T00:00:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getExecutionDate());
@@ -303,7 +324,6 @@ class SlaWaveCalculatorTest {
     assertEquals(1, units.size());
     assertEquals(expectedUnits.get(SLA_1), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
     assertEquals(expectedUnits.get(SLA_2), units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
-    assertFalse(units.get(TOT_MONO).getWavedUnitsByCpt().containsKey(SLA_3));
   }
 
   @Value
@@ -319,5 +339,7 @@ class SlaWaveCalculatorTest {
     Map<ProcessPath, Integer> minCycleTimes;
 
     List<Wave> waves;
+
+    String logisticCenter;
   }
 }

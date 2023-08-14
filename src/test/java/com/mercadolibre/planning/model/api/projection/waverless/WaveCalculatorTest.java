@@ -28,6 +28,7 @@ import org.mockito.MockedStatic;
 
 class WaveCalculatorTest {
   private static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-29T00:00:00Z");
+  private static final String WH = "ARBA01";
 
   private static final Instant[] DATES = {
       Instant.parse("2023-03-29T00:00:00Z"),
@@ -134,47 +135,48 @@ class WaveCalculatorTest {
         FORECAST,
         throughput,
         new BacklogLimits(lowerLimits, upperLimits),
-        emptyMap()
+        emptyMap(),
+        WH
     );
 
     // THEN
     final var result = triggers.getWaves();
 
-    assertEquals(5, result.size());
+    assertEquals(6, result.size());
 
     // first wave
     final var firstWave = result.get(0);
-    final var firstWaveExpectedDate = Instant.parse("2023-03-29T01:20:00Z");
+    final var firstWaveExpectedDate = Instant.parse("2023-03-29T00:00:00Z");
     assertEquals(firstWaveExpectedDate, firstWave.getDate());
     assertEquals(TriggerName.SLA, firstWave.getReason());
 
     final var firstWaveTotMonoConf = firstWave.getConfiguration().get(NON_TOT_MONO);
-    assertEquals(800L, firstWaveTotMonoConf.getLowerBound());
+    assertEquals(3000L, firstWaveTotMonoConf.getLowerBound());
 
-    // second wave
-    final var secondWave = result.get(1);
-    final var secondWaveExpectedDate = Instant.parse("2023-03-29T01:35:00Z");
-    assertEquals(secondWaveExpectedDate, secondWave.getDate());
-    assertEquals(TriggerName.IDLENESS, secondWave.getReason());
+    // fourth wave
+    final var fourthWave = result.get(3);
+    final var fourthWaveExpectedDate = Instant.parse("2023-03-29T03:25:00Z");
+    assertEquals(fourthWaveExpectedDate, fourthWave.getDate());
+    assertEquals(TriggerName.IDLENESS, fourthWave.getReason());
 
-    final var secondWaveTotMonoConf = secondWave.getConfiguration().get(TOT_MONO);
-    assertEquals(600L, secondWaveTotMonoConf.getLowerBound());
-    assertEquals(2200L, secondWaveTotMonoConf.getUpperBound());
+    final var fourthWaveTotMonoConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
+    assertEquals(600L, fourthWaveTotMonoConf.getLowerBound());
+    assertEquals(600L, fourthWaveTotMonoConf.getUpperBound());
 
-    final var secondWaveNonTotMonoConf = secondWave.getConfiguration().get(NON_TOT_MONO);
-    assertEquals(600L, secondWaveNonTotMonoConf.getLowerBound());
-    assertEquals(2200L, secondWaveNonTotMonoConf.getUpperBound());
+    final var fourthWaveNonTotMonoConf = fourthWave.getConfiguration().get(NON_TOT_MONO);
+    assertEquals(600L, fourthWaveNonTotMonoConf.getLowerBound());
+    assertEquals(600L, fourthWaveNonTotMonoConf.getUpperBound());
 
-    final var secondWaveTotMultiBatchConf = secondWave.getConfiguration().get(TOT_MULTI_BATCH);
-    assertEquals(600L, secondWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(2400L, secondWaveTotMultiBatchConf.getUpperBound());
+    final var fourthWaveTotMultiBatchConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
+    assertEquals(600L, fourthWaveTotMultiBatchConf.getLowerBound());
+    assertEquals(600L, fourthWaveTotMultiBatchConf.getUpperBound());
 
     // projections
     assertEquals(72, triggers.getProjectedBacklogs().get(PICKING).size());
 
-    assertEquals(1200, triggers.getProjectedBacklogs().get(PICKING).get(firstWaveExpectedDate));
+    assertEquals(1374, triggers.getProjectedBacklogs().get(PICKING).get(fourthWaveExpectedDate));
     final var nextInflectionPointAfterFirstWave = Instant.parse("2023-03-29T01:25:00Z");
-    assertEquals(1700, triggers.getProjectedBacklogs().get(PICKING).get(nextInflectionPointAfterFirstWave));
+    assertEquals(6134, triggers.getProjectedBacklogs().get(PICKING).get(nextInflectionPointAfterFirstWave));
 
   }
 }

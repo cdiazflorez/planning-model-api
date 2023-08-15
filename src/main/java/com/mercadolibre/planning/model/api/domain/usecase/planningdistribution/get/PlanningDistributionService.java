@@ -54,7 +54,7 @@ public class PlanningDistributionService {
         forecastIds
     );
 
-    final var deferralDistribution = input.isExcludeDeferred()
+    final var deferralDistribution = input.isApplyDeferrals()
         ? applyDeferral(input.getWarehouseId(), input.getWorkflow(), input.getViewDate(), nonDeviatedPlanningDistribution)
         : nonDeviatedPlanningDistribution;
 

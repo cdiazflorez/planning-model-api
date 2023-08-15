@@ -131,7 +131,7 @@ public class PlanningDistributionServiceTest {
                                                                              null,
                                                                              false,
                                                                              emptySet(),
-                                                                  false);
+                                                                             false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -180,7 +180,7 @@ public class PlanningDistributionServiceTest {
                                                                              null,
                                                                              false,
                                                                              emptySet(),
-                                                                  false);
+                                                                             false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -221,7 +221,7 @@ public class PlanningDistributionServiceTest {
         .dateOutFrom(A_DATE_UTC.toInstant())
         .dateOutTo(A_DATE_UTC.plusDays(3).toInstant())
         .applyDeviation(true)
-        .excludeDeferred(false)
+        .applyDeferrals(false)
         .build();
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());

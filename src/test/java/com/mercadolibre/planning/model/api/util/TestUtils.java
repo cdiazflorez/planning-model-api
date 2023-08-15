@@ -564,7 +564,7 @@ public final class TestUtils {
       final Instant viewDate,
       final boolean applyDeviation,
       final Set<ProcessPath> processPaths,
-      final boolean applyDeferral) {
+      final boolean applyDeferrals) {
 
     return GetPlanningDistributionInput.builder()
         .warehouseId(WAREHOUSE_ID)
@@ -576,7 +576,7 @@ public final class TestUtils {
         .viewDate(viewDate)
         .processPaths(processPaths)
         .applyDeviation(applyDeviation)
-        .excludeDeferred(applyDeferral)
+        .applyDeferrals(applyDeferrals)
         .build();
   }
 

@@ -12,6 +12,8 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.idleness.DateWaveSupplier;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 import lombok.Value;
 
 public final class SlaWaveCalculator {
+
+  private static final String WH = "ARBA01";
 
   private SlaWaveCalculator() {
   }
@@ -49,6 +53,7 @@ public final class SlaWaveCalculator {
    * @param pendingBacklog    forecasted backlog by Process Path.
    * @param minCycleTimes     minimum cycle time configuration by Process Path. It must contain all Process Paths.
    * @param waves             existing waves
+   * @param logisticCenterId  warehouse
    * @return next wave configuration, if found.
    */
   @Trace
@@ -58,17 +63,19 @@ public final class SlaWaveCalculator {
       final Map<ProcessPath, Map<Instant, Integer>> throughput,
       final PendingBacklog pendingBacklog,
       final Map<ProcessPath, Integer> minCycleTimes,
-      final List<Wave> waves
+      final List<Wave> waves,
+      final String logisticCenterId
   ) {
     final var slas = pendingBacklog.calculateSlasByProcessPath();
 
     final var deadlines = calculateDeadlines(slas, minCycleTimes);
+    final var pessimisticDeadlines = pessimisticCalculateDeadlines(slas, minCycleTimes);
 
     final var processPaths = new ArrayList<>(throughput.keySet());
     final var graph = buildGraph(processPaths);
 
     final var simulationContext = new SimulationContext(
-        deadlines,
+        WH.equals(logisticCenterId) ? pessimisticDeadlines : deadlines,
         processPaths,
         graph,
         inflectionPoints,
@@ -223,6 +230,46 @@ public final class SlaWaveCalculator {
                     )
             )
         );
+  }
+
+  private static Map<ProcessPath, Map<Instant, Instant>> pessimisticCalculateDeadlines(
+      final Map<ProcessPath, Set<Instant>> slas,
+      final Map<ProcessPath, Integer> minCycleTime
+  ) {
+    return slas.keySet()
+        .stream()
+        .collect(Collectors.toMap(
+                Function.identity(),
+                pp -> slas.get(pp)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            Function.identity(),
+                            sla -> sla.minus(calculateMinutesToSubtract(sla, minCycleTime, pp), ChronoUnit.MINUTES)
+                        )
+                    )
+            )
+        );
+  }
+
+  private static int calculateMinutesToSubtract(
+      final Instant sla,
+      final Map<ProcessPath, Integer> minCycleTime,
+      final ProcessPath processPath) {
+
+    final int cycleTime = minCycleTime.get(processPath);
+
+    if (ProcessPath.TOT_MULTI_BATCH.equals(processPath)) {
+      return cycleTime;
+    }
+    final int sameDayMinutes = 0;
+    final int notSameDayMinutes = 80;
+    final int sameDaySla = 17;
+
+    final ZonedDateTime zonedDateTime = sla.atZone(ZoneOffset.UTC);
+    return zonedDateTime.getHour() == sameDaySla
+        ? cycleTime + sameDayMinutes
+        : cycleTime + notSameDayMinutes;
+
   }
 
   private static Map<ProcessPath, List<Instant>> filterWavedSlasWithProjectedEndDateAfterDeadline(

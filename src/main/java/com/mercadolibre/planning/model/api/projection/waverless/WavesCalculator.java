@@ -51,7 +51,8 @@ public final class WavesCalculator {
       final List<ForecastedUnitsByProcessPath> forecast,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final BacklogLimits backlogLimits,
-      final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves
+      final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves,
+      final String logisticCenterId
   ) {
     final List<Instant> inflectionPoints = calculateInflectionPoints(executionDate, throughput);
 
@@ -71,7 +72,8 @@ public final class WavesCalculator {
           pendingBacklog,
           currentBacklog.getOrDefault(ProcessName.PICKING, emptyMap()),
           throughput,
-          minCycleTimesByPP
+          minCycleTimesByPP,
+          logisticCenterId
       );
 
       final Optional<DateWaveSupplier> byIdleness = NextIdlenessWaveProjector.calculateNextWave(

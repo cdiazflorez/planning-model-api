@@ -31,9 +31,9 @@ public class GetDeferralReportAdapter implements GetDeferralReport.DeferralHisto
 
         return deferred.stream()
                 .map(deferralDto -> new GetDeferralReport.Deferral(
+                        deferralDto.getDate(),
                         deferralDto.getCpt(),
-                        deferralDto.getStatus(),
-                        deferralDto.getUpdated()
+                        deferralDto.getStatus()
                 ))
                 .collect(Collectors.toList());
     }

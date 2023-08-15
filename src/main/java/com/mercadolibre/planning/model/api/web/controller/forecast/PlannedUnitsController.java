@@ -48,7 +48,6 @@ public class PlannedUnitsController {
       @RequestParam(required = false) final Instant dateOutTo,
       @RequestParam final Instant viewDate,
       @RequestParam final Set<Grouper> groupBy,
-      @RequestParam(required = false) final boolean excludeDeferred,
       @RequestParam(required = false) final boolean applyDeferrals
   ) {
 
@@ -65,7 +64,7 @@ public class PlannedUnitsController {
                 .processPaths(processPaths)
                 .applyDeviation(true)
                 .viewDate(viewDate)
-                .applyDeferrals(applyDeferrals || excludeDeferred)
+                .applyDeferrals(applyDeferrals)
                 .build()).stream()
         .collect(
             toMap(

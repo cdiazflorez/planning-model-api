@@ -145,4 +145,17 @@ public final class DateUtils {
   public static boolean isOnTheHour(final Instant date) {
     return date.equals(date.truncatedTo(ChronoUnit.HOURS));
   }
+
+  /**
+   * Validate dates range.
+   * Verify if dateFrom is < to dateTo.
+   *
+   * @param dateFrom start range
+   * @param dateTo   finish range
+   * @return true, if dateFrom is < or == to date else false.
+   */
+  public static boolean validateDatesRanges(final Instant dateFrom, final Instant dateTo) {
+    return dateFrom.isBefore(dateTo);
+  }
+
 }

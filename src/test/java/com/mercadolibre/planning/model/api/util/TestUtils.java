@@ -905,7 +905,22 @@ public final class TestUtils {
     );
   }
 
-  public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput() {
+  public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput(final boolean applyDeferrals) {
+      if (applyDeferrals) {
+          return mockGetPlanningDistributionOutputList();
+      }
+      return List.of(
+              mockGetPlanningDistributionOutputList().get(0),
+              mockGetPlanningDistributionOutputList().get(1),
+              new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
+                      A_DATE_UTC.plusDays(3).toInstant(),
+                      UNITS,
+                      GLOBAL,
+                      1700)
+      );
+  }
+
+  public static List<GetPlanningDistributionOutput> mockGetPlanningDistributionOutputList() {
     return List.of(
         new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
             A_DATE_UTC.plusDays(1).toInstant(),
@@ -916,12 +931,7 @@ public final class TestUtils {
             A_DATE_UTC.plusDays(2).toInstant(),
             UNITS,
             GLOBAL,
-            1800),
-        new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
-            A_DATE_UTC.plusDays(3).toInstant(),
-            UNITS,
-            GLOBAL,
-            1700)
+            1800)
     );
   }
 

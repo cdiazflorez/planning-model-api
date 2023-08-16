@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -92,7 +93,7 @@ public class PlanningDistributionControllerTest {
   public void testGetPlanningDistributionOk(final MultiValueMap<String, String> params) throws Exception {
     // GIVEN
     when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
-        .thenReturn(mockGetPlanningDistOutput());
+        .thenReturn(mockGetPlanningDistOutput(false));
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -125,7 +126,7 @@ public class PlanningDistributionControllerTest {
             .viewDate(dateOutTo)
             .build()
     ))
-        .thenReturn(mockGetPlanningDistOutput());
+        .thenReturn(mockGetPlanningDistOutput(false));
 
     // WHEN
     final ResultActions result = mvc.perform(
@@ -137,6 +138,37 @@ public class PlanningDistributionControllerTest {
     // THEN
     result.andExpect(status().isOk())
         .andExpect(content().json(getResourceAsString("get_processing_distribution.json")));
+  }
+
+  @DisplayName("Get planning distribution flag exclude deferred")
+  @ParameterizedTest
+  @ValueSource(booleans = { true, false })
+  void testGetPlanningDistributionWithFlagExclude(boolean applyDeferralsParam) throws Exception {
+      // GIVEN
+      final MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+      params.add("warehouse_id", WAREHOUSE_ID);
+      params.add("date_out_from", A_DATE_UTC.toString());
+      params.add("date_out_to", A_DATE_UTC.plusDays(2).toString());
+      params.add("apply_deferrals", String.valueOf(applyDeferralsParam));
+
+      when(planningDistributionService.getPlanningDistribution(any(GetPlanningDistributionInput.class)))
+              .thenReturn(mockGetPlanningDistOutput(applyDeferralsParam));
+
+      // WHEN
+      final ResultActions result = mvc.perform(
+              get(URL_OUTBOUND)
+                      .contentType(APPLICATION_JSON)
+                      .params(params)
+      );
+
+      // THEN
+      if (applyDeferralsParam) {
+          result.andExpect(status().isOk())
+                  .andExpect(content().json(getResourceAsString("get_processing_distribution_exclude_deferred.json")));
+      } else {
+          result.andExpect(status().isOk())
+                  .andExpect(content().json(getResourceAsString("get_processing_distribution.json")));
+      }
   }
 
   @DisplayName("Planning distribution returns 404 when forecast doesn't exists")

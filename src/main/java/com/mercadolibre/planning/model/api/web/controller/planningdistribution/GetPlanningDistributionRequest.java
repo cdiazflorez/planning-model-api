@@ -40,6 +40,8 @@ public class GetPlanningDistributionRequest {
 
   private Workflow workflow;
 
+  private boolean applyDeferrals;
+
   public GetPlanningDistributionInput toGetPlanningDistInput(final Workflow workflow) {
     return GetPlanningDistributionInput.builder()
         .warehouseId(warehouseId)
@@ -50,6 +52,7 @@ public class GetPlanningDistributionRequest {
         .dateInTo(dateInTo == null ? null : dateInTo.toInstant())
         .applyDeviation(applyDeviation)
         .viewDate(viewDate)
+        .applyDeferrals(applyDeferrals)
         .build();
   }
 }

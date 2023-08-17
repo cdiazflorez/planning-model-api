@@ -1,0 +1,40 @@
+{
+  "deferral_time": [
+    {
+      "date": "2023-07-21T17:00:00Z",
+      "sla" : [
+        {
+          "date":"2023-07-21T16:00:00Z",
+          "status":"CASCADE"
+        },
+        {
+          "date":"2023-07-21T17:00:00Z",
+          "status":"CASCADE"
+        },
+
+        {
+          "date":"2023-07-21T18:00:00Z",
+          "status":"CAP_MAX"
+        }
+      ]
+    },
+    {
+      "date": "2023-07-21T18:00:00Z",
+      "sla" : [
+        {
+          "date":"2023-07-21T16:00:00Z",
+          "status":"NOT_DEFERRED"
+        },
+        {
+          "date":"2023-07-21T17:00:00Z",
+          "status":"NOT_DEFERRED"
+        },
+
+        {
+          "date":"2023-07-21T18:00:00Z",
+          "status":"NOT_DEFERRED"
+        }
+      ]
+    }
+  ]
+}

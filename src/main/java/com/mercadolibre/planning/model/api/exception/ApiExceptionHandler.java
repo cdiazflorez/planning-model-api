@@ -1,6 +1,11 @@
 package com.mercadolibre.planning.model.api.exception;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,204 +16,224 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.servlet.http.HttpServletRequest;
-
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-
 @Slf4j
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    public static final String EXCEPTION_ATTRIBUTE = "application.exception";
+  public static final String EXCEPTION_ATTRIBUTE = "application.exception";
 
-    @ExceptionHandler(BindException.class)
-    public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
-                                                             final HttpServletRequest request) {
+  private static final String MISSING_PARAMETER = "missing_parameter";
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-                BAD_REQUEST,
-                exception.getMessage(),
-                "missing_parameter"
-        );
+  private static final String INVALID_ENTITY_TYPE = "invalid_entity_type";
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("bind_error", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+  private static final String INVALID_PROJECTION_TYPE = "invalid_projection_type";
 
-    @ExceptionHandler(InvalidEntityTypeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidEntityTypeException(
-            final InvalidEntityTypeException exception, final HttpServletRequest request) {
+  private static final String BIND_ERROR = "bind_error";
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "invalid_entity_type");
+  private static final String PROJECTION_TYPE_NOT_SUPPORTED = "projection_type_not_supported";
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_entity_type", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+  private static final String ENTITY_ALREADY_EXIST = "entity_already_exists";
 
-    @ExceptionHandler(InvalidProjectionTypeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidProjectionTypeException(
-            final InvalidProjectionTypeException exception, final HttpServletRequest request) {
+  private static final String ENTITY_NOT_FOUND = "entity_not_found";
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "invalid_projection_type");
+  private static final String FORECAST_NOT_FOUND = "forecast_not_found";
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_projection_type", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+  private static final String INVALID_DOMAIN_FILTER = "invalid_domain_filter";
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
-            final EntityNotFoundException exception,
-            final HttpServletRequest request) {
+  private static final String UNKNOWN_ERROR = "unknown_error";
 
-        final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
-                exception.getMessage(), "entity_not_found");
+  private static final String INVALID_FORECAST = "invalid_forecast";
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_not_found", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+  private static final String INVALID_DATE_RANGE = "invalid_date_range";
 
-    @ExceptionHandler(EntityTypeNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleEntityTypeNotSupportedException(
-            final EntityTypeNotSupportedException exception, final HttpServletRequest request) {
+  private static final String ENTITY_TYPE_NOT_SUPPORTED = "entity_type_not_supported";
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "entity_type_not_supported");
+  @ExceptionHandler(BindException.class)
+  public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
+                                                           final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_type_not_supported", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        MISSING_PARAMETER
+    );
 
-    @ExceptionHandler(ProjectionTypeNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleProjectionTypeNotSupportedException(
-            final ProjectionTypeNotSupportedException exception, final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(BIND_ERROR, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "projection_type_not_supported");
+  @ExceptionHandler(InvalidEntityTypeException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidEntityTypeException(
+      final InvalidEntityTypeException exception, final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("projection_type_not_supported", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), INVALID_ENTITY_TYPE);
 
-    @ExceptionHandler(EntityAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
-            final EntityAlreadyExistsException exception, final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(INVALID_ENTITY_TYPE, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "entity_already_exists");
+  @ExceptionHandler(InvalidProjectionTypeException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidProjectionTypeException(
+      final InvalidProjectionTypeException exception, final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("entity_already_exists", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), INVALID_PROJECTION_TYPE);
 
-    @ExceptionHandler(ForecastNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleForecastNotFoundException(
-            final ForecastNotFoundException exception,
-            final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(INVALID_PROJECTION_TYPE, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
-                exception.getMessage(), "forecast_not_found");
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
+      final EntityNotFoundException exception,
+      final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("forecast_not_found", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
+        exception.getMessage(), ENTITY_NOT_FOUND);
 
-    @ExceptionHandler(InvalidForecastException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidForecastException(
-            final InvalidForecastException exception,
-            final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(ENTITY_NOT_FOUND, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(CONFLICT,
-                exception.getMessage(), "invalid_forecast");
+  @ExceptionHandler(EntityTypeNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleEntityTypeNotSupportedException(
+      final EntityTypeNotSupportedException exception, final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_forecast", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), ENTITY_TYPE_NOT_SUPPORTED);
 
-    @ExceptionHandler(InvalidInputFilterException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidDomainFilter(final InvalidInputFilterException exception,
-                                                                   final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(ENTITY_TYPE_NOT_SUPPORTED, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
-                exception.getMessage(), "invalid_domain_filter");
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error("invalid_domain_filter");
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+  @ExceptionHandler(ProjectionTypeNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleProjectionTypeNotSupportedException(
+      final ProjectionTypeNotSupportedException exception, final HttpServletRequest request) {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            final Exception exception,
-            final HttpServletRequest request) {
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), PROJECTION_TYPE_NOT_SUPPORTED);
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                exception.getMessage(),
-                "unknown_error");
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(PROJECTION_TYPE_NOT_SUPPORTED, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+  @ExceptionHandler(EntityAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleEntityAlreadyExistsException(
+      final EntityAlreadyExistsException exception, final HttpServletRequest request) {
 
-        log.error("unknown_error", exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), ENTITY_ALREADY_EXIST);
 
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParameterException(
-        final MissingServletRequestParameterException exception,
-        final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(ENTITY_ALREADY_EXIST, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-            BAD_REQUEST,
-            exception.getMessage(),
-            "missing_parameter"
-        );
+  @ExceptionHandler(ForecastNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleForecastNotFoundException(
+      final ForecastNotFoundException exception,
+      final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(NOT_FOUND,
+        exception.getMessage(), FORECAST_NOT_FOUND);
 
-    @ExceptionHandler(InvalidDateRangeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidDateRangeException(
-        final InvalidDateRangeException exception,
-        final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(FORECAST_NOT_FOUND, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-            BAD_REQUEST,
-            exception.getMessage(),
-            "invalid_date_range"
-        );
+  @ExceptionHandler(InvalidForecastException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidForecastException(
+      final InvalidForecastException exception,
+      final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(CONFLICT,
+        exception.getMessage(), INVALID_FORECAST);
 
-    @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
-    public ResponseEntity<ErrorResponse> handleBadRequestException(
-        final Exception exception,
-        final HttpServletRequest request) {
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(INVALID_FORECAST, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-            BAD_REQUEST,
-            exception.getMessage(),
-            exception.getMessage()
-        );
+  @ExceptionHandler(InvalidInputFilterException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidDomainFilter(final InvalidInputFilterException exception,
+                                                                 final HttpServletRequest request) {
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-    }
+    final ErrorResponse errorResponse = new ErrorResponse(BAD_REQUEST,
+        exception.getMessage(), INVALID_DOMAIN_FILTER);
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(INVALID_DOMAIN_FILTER);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ErrorResponse> handleGenericException(
+      final Exception exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        exception.getMessage(),
+        UNKNOWN_ERROR);
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+
+    log.error(UNKNOWN_ERROR, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ErrorResponse> handleMissingParameterException(
+      final MissingServletRequestParameterException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        MISSING_PARAMETER
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler({InvalidDateRangeException.class, DateRangeException.class})
+  public ResponseEntity<ErrorResponse> handleInvalidDateRangeException(
+      final Exception exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        INVALID_DATE_RANGE
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler({BadRequestException.class, HttpMessageNotReadableException.class})
+  public ResponseEntity<ErrorResponse> handleBadRequestException(
+      final Exception exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        exception.getMessage()
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
 }

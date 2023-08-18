@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
 import com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.inputdomain.InputOptionFilter;
@@ -322,6 +323,96 @@ public class ApiExceptionHandlerTest {
 
     // WHEN
     final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidDateRangeException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+  }
+
+
+  @Test
+  @DisplayName("Handle InvalidDateToSaveDeviationException")
+  void handleInvalidDateToSaveDeviationExceptionTest() {
+    //GIVEN
+    final Instant now = Instant.now();
+    final InvalidDateToSaveDeviationException exception = new InvalidDateToSaveDeviationException(
+        now.minus(2, HOURS),
+        now.plus(4, HOURS),
+        now);
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "invalid_date_range_to_save_deviation"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidDateToSaveDeviationException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+
+
+  }
+
+  @Test
+  @DisplayName("Handle InvalidDateToSaveDeviationException")
+  void handleInvalidDateRangeDeviationsExceptionTest() {
+    //GIVEN
+    final Instant now = Instant.now();
+    final InvalidDateRangeDeviationsException exception = new InvalidDateRangeDeviationsException(
+        now.plus(2, HOURS),
+        now);
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "invalid_date_range_deviations"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidDateRangeDeviationsException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+
+
+  }
+
+  @Test
+  @DisplayName("Handle UnexpiredDeviationPresentException")
+  void handlePercentageDeviationUnexpiredExceptionTest() {
+    //GIVEN
+    final UnexpiredDeviationPresentException exception = new UnexpiredDeviationPresentException(
+        "There is a deviation percentage in effect."
+    );
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        CONFLICT,
+        exception.getMessage(),
+        "percentage_deviation_Unexpired"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handlePercentageDeviationUnexpiredException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+  }
+
+  @Test
+  @DisplayName("Handle PercentageDeviationUnexpiredException")
+  void handleDeviationsToSaveNotFoundExceptionTest() {
+    //GIVEN
+    final DeviationsToSaveNotFoundException exception = new DeviationsToSaveNotFoundException();
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "deviations_to_save_not_found"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleDeviationsToSaveNotFoundException(exception, request);
 
     // THEN
     assertErrorResponse(expectedResponse, response);

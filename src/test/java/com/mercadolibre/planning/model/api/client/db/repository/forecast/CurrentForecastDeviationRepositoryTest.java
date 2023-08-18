@@ -15,6 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
@@ -67,6 +70,59 @@ class CurrentForecastDeviationRepositoryTest {
     assertEquals(DATE_OUT, deviation.getDateTo());
     assertEquals(0.025, deviation.getValue());
     assertEquals("FBM_WMS_OUTBOUND", deviation.getWorkflow().name());
+  }
+
+  @Test
+  @DisplayName("Find currentForecastDeviation active and unexpired by warehouse id and workflow and currentDate")
+  void findByLogisticCenterIdAndWorkflowAndIsActiveAndDateToIsGreaterThanCurrentDateOk() {
+    // GIVEN
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+
+    // Active and expired deviations
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviation(
+            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate.minus(2, ChronoUnit.HOURS),
+            true
+        )
+    );
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviation(
+            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate,
+            true
+        )
+    );
+    // inactive deviation
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviation(
+            currentDate.minus(1, ChronoUnit.HOURS),
+            currentDate.plus(1, ChronoUnit.HOURS),
+            false
+        )
+    );
+    // Active and unexpired deviation
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviation(
+            currentDate,
+            currentDate.plus(2, ChronoUnit.HOURS),
+            true
+        )
+    );
+
+    // WHEN
+    final List<CurrentForecastDeviation> optDeviation = repository
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
+            WAREHOUSE_ID, FBM_WMS_OUTBOUND, currentDate
+        );
+
+    // THEN
+    assertEquals(1, optDeviation.size());
+
+    final CurrentForecastDeviation deviation = optDeviation.get(0);
+    assertTrue(deviation.getDateTo().isAfter(currentDate));
+    assertTrue(deviation.isActive());
+
   }
 
   @Test

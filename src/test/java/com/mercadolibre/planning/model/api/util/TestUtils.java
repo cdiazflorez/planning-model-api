@@ -479,6 +479,39 @@ public final class TestUtils {
         .build();
   }
 
+  public static SaveDeviationInput mockSaveDeviationInput(final Workflow workflow,
+                                                          final DeviationType deviationType,
+                                                          final List<Path> paths,
+                                                          final double value,
+                                                          final ZonedDateTime dateIn,
+                                                          final ZonedDateTime dateOut) {
+
+    if (FBM_WMS_OUTBOUND.equals(workflow)) {
+      return SaveDeviationInput
+          .builder()
+          .workflow(workflow)
+          .dateFrom(dateIn)
+          .dateTo(dateOut)
+          .deviationType(deviationType)
+          .value(value)
+          .userId(USER_ID)
+          .warehouseId(WAREHOUSE_ID)
+          .build();
+    }
+
+    return SaveDeviationInput
+        .builder()
+        .workflow(workflow)
+        .dateFrom(dateIn)
+        .dateTo(dateOut)
+        .deviationType(deviationType)
+        .value(value)
+        .paths(paths)
+        .userId(USER_ID)
+        .warehouseId(WAREHOUSE_ID)
+        .build();
+  }
+
   public static DisableForecastDeviationInput mockDisableForecastDeviationInput(final Workflow workflow,
                                                                                 final DeviationType deviationType) {
     return new DisableForecastDeviationInput(WAREHOUSE_ID, workflow, deviationType, null);
@@ -1239,6 +1272,21 @@ public final class TestUtils {
         .userId(USER_ID)
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(true)
+        .build();
+  }
+
+  public static CurrentForecastDeviation mockCurrentForecastDeviation(final ZonedDateTime dateIn,
+                                                                      final ZonedDateTime dateTo,
+                                                                      final boolean isActive) {
+    return CurrentForecastDeviation
+        .builder()
+        .workflow(FBM_WMS_OUTBOUND)
+        .dateFrom(dateIn)
+        .dateTo(dateTo)
+        .value(0.025)
+        .userId(USER_ID)
+        .logisticCenterId(WAREHOUSE_ID)
+        .isActive(isActive)
         .build();
   }
 

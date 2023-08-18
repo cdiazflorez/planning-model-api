@@ -94,6 +94,38 @@ class ShippingProjectionTest {
     );
   }
 
+  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> noPickingBacklogs() {
+    return Map.of(
+        WAVING, Map.of(
+            TOT_MONO, Map.of(DATES[0], 1L),
+            NON_TOT_MONO, Map.of(DATES[0], 1L),
+            TOT_MULTI_BATCH, Map.of(DATES[0], 1L)
+        ),
+        PACKING, Map.of(
+            TOT_MONO, Map.of(DATES[0], 3000L),
+            NON_TOT_MONO, Map.of(DATES[0], 800L)
+        ),
+        BATCH_SORTER, Map.of(
+            TOT_MULTI_BATCH, Map.of(DATES[0], 1780L)
+        ),
+        WALL_IN, Map.of(
+            TOT_MULTI_BATCH, Map.of(DATES[0], 490L)
+
+        ),
+        PACKING_WALL, Map.of(
+            TOT_MULTI_BATCH, Map.of(DATES[0], 800L)
+
+        ),
+        HU_ASSEMBLY, Map.of(
+            TOT_MULTI_BATCH, Map.of(DATES[0], 800L)
+
+        ),
+        SALES_DISPATCH, Map.of(
+            TOT_MULTI_BATCH, Map.of(DATES[0], 800L)
+        )
+    );
+  }
+
   private static Map<ProcessName, Map<Instant, Integer>> getShippingThroughput() {
     return Map.of(
         PICKING, throughput(3600, 3600, 3600, 3600, 3600, 3600),
@@ -127,6 +159,22 @@ class ShippingProjectionTest {
             emptyMap(),
             getShippingThroughput(),
             EXPECTED_BACKLOG
+        ),
+        Arguments.of(
+            EXECUTION_DATE_FROM,
+            EXECUTION_DATE_TO,
+            noPickingBacklogs(),
+            emptyMap(),
+            getShippingThroughput(),
+            emptyMap()
+        ),
+        Arguments.of(
+            EXECUTION_DATE_FROM,
+            EXECUTION_DATE_TO,
+            emptyMap(),
+            emptyMap(),
+            getShippingThroughput(),
+            emptyMap()
         )
     );
   }

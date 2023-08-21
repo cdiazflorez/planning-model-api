@@ -140,6 +140,8 @@ public final class TestUtils {
 
   public static final String CONFIG_KEY = "expedition_processing_time";
 
+  public static final String WEEK = "31-2023";
+
   public static final long USER_ID = 1234L;
 
   public static final long CALLER_ID = 1234;
@@ -442,6 +444,7 @@ public final class TestUtils {
   public static CreateForecastInput mockCreateForecastInput() {
     return CreateForecastInput.builder()
         .workflow(FBM_WMS_OUTBOUND)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
         .headcountDistributions(mockHeadcounts())
         .headcountProductivities(mockProductivities())
         .planningDistributions(mockPlanningDistributions())
@@ -449,6 +452,7 @@ public final class TestUtils {
         .polyvalentProductivities(mockPolyvalentProductivities())
         .backlogLimits(mockBacklogLimits())
         .metadata(mockMetadatas())
+        .week(WEEK)
         .userId(CALLER_ID)
         .build();
   }
@@ -456,6 +460,7 @@ public final class TestUtils {
   public static CreateForecastInput mockCreateForecastInputWithTotalWorkersNsType() {
     return CreateForecastInput.builder()
         .workflow(FBM_WMS_OUTBOUND)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
         .headcountDistributions(mockHeadcounts())
         .headcountProductivities(mockProductivities())
         .planningDistributions(mockPlanningDistributions())
@@ -463,6 +468,7 @@ public final class TestUtils {
         .polyvalentProductivities(mockPolyvalentProductivities())
         .backlogLimits(mockBacklogLimits())
         .metadata(mockMetadatas())
+        .week(WEEK)
         .userId(CALLER_ID)
         .build();
   }
@@ -1096,8 +1102,6 @@ public final class TestUtils {
 
   public static List<MetadataRequest> mockMetadatas() {
     return asList(
-        new MetadataRequest("warehouse_id", WAREHOUSE_ID),
-        new MetadataRequest("week", "26-2020"),
         new MetadataRequest("mono_order_distribution", "58"),
         new MetadataRequest("multi_order_distribution", "42")
     );

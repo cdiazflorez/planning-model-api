@@ -18,6 +18,8 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.CALLER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.LOGISTIC_CENTER_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WEEK;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInputWithTotalWorkersNsType;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
@@ -82,10 +84,14 @@ public class CreateForecastUseCaseTest {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    forecast.setWeek(WEEK);
     forecast.setUserId(1234);
 
     final Forecast savedForecast = new Forecast();
     savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    savedForecast.setWeek(WEEK);
     savedForecast.setId(1L);
     savedForecast.setUserId(1234);
 
@@ -95,6 +101,7 @@ public class CreateForecastUseCaseTest {
 
     final CreateForecastInput input = CreateForecastInput.builder()
         .workflow(FBM_WMS_OUTBOUND)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
         .headcountDistributions(List.of())
         .headcountProductivities(List.of())
         .planningDistributions(List.of())
@@ -102,6 +109,7 @@ public class CreateForecastUseCaseTest {
         .polyvalentProductivities(List.of())
         .backlogLimits(List.of())
         .metadata(mockMetadatas())
+        .week(WEEK)
         .userId(CALLER_ID)
         .build();
 
@@ -124,10 +132,14 @@ public class CreateForecastUseCaseTest {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    forecast.setWeek(WEEK);
     forecast.setUserId(1234);
 
     final Forecast savedForecast = new Forecast();
     savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    savedForecast.setWeek(WEEK);
     savedForecast.setId(1L);
     savedForecast.setUserId(1234);
 
@@ -137,6 +149,7 @@ public class CreateForecastUseCaseTest {
 
     final CreateForecastInput input = CreateForecastInput.builder()
         .workflow(FBM_WMS_OUTBOUND)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
         .headcountDistributions(null)
         .headcountProductivities(null)
         .planningDistributions(null)
@@ -144,6 +157,7 @@ public class CreateForecastUseCaseTest {
         .polyvalentProductivities(null)
         .backlogLimits(null)
         .metadata(mockMetadatas())
+        .week(WEEK)
         .userId(CALLER_ID)
         .build();
 
@@ -167,10 +181,14 @@ public class CreateForecastUseCaseTest {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    forecast.setWeek(WEEK);
     forecast.setUserId(1234);
 
     final Forecast savedForecast = new Forecast();
     savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    savedForecast.setWeek(WEEK);
     savedForecast.setId(1L);
     savedForecast.setUserId(1234);
 
@@ -209,10 +227,14 @@ public class CreateForecastUseCaseTest {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    forecast.setWeek(WEEK);
     forecast.setUserId(1234);
 
     final Forecast savedForecast = new Forecast();
     savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    savedForecast.setWeek(WEEK);
     savedForecast.setId(1L);
     savedForecast.setUserId(1234);
 
@@ -239,12 +261,16 @@ public class CreateForecastUseCaseTest {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
+    forecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    forecast.setWeek(WEEK);
     forecast.setUserId(1234);
 
     final List<ForecastMetadata> forecastMetadatas = getForecastMetadatas();
 
     final Forecast savedForecast = new Forecast();
     savedForecast.setWorkflow(FBM_WMS_OUTBOUND);
+    savedForecast.setLogisticCenterId(LOGISTIC_CENTER_ID);
+    savedForecast.setWeek(WEEK);
     savedForecast.setId(1L);
     savedForecast.setUserId(1234);
 
@@ -252,7 +278,9 @@ public class CreateForecastUseCaseTest {
 
     final CreateForecastInput input = CreateForecastInput.builder()
         .workflow(FBM_WMS_OUTBOUND)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
         .metadata(mockMetadatas())
+        .week(WEEK)
         .userId(CALLER_ID)
         .headcountDistributions(List.of())
         .processingDistributions(List.of())
@@ -276,8 +304,6 @@ public class CreateForecastUseCaseTest {
 
   private List<ForecastMetadata> getForecastMetadatas() {
     return List.of(
-        new ForecastMetadata(0, "warehouse_id", "ARBA01"),
-        new ForecastMetadata(0, "week", "26-2020"),
         new ForecastMetadata(0, "mono_order_distribution", "58"),
         new ForecastMetadata(0, "multi_order_distribution", "42")
     );

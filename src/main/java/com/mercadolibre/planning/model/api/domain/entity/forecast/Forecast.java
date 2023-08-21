@@ -42,11 +42,17 @@ public class Forecast {
     private Workflow workflow;
 
     @Column(updatable = false)
+    private String logisticCenterId;
+
+    @Column(updatable = false)
     @CreationTimestamp
     private ZonedDateTime dateCreated;
 
     @UpdateTimestamp
     private ZonedDateTime lastUpdated;
+
+    @Column(updatable = false)
+    private String week;
 
     @Column(updatable = false)
     private long userId;

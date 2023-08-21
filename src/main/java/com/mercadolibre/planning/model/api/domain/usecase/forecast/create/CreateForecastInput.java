@@ -18,6 +18,7 @@ import java.util.List;
 public class CreateForecastInput {
 
     private Workflow workflow;
+    private String logisticCenterId;
     private List<MetadataRequest> metadata;
     private List<ProcessingDistributionRequest> processingDistributions;
     private List<HeadcountDistributionRequest> headcountDistributions;
@@ -25,5 +26,6 @@ public class CreateForecastInput {
     private List<HeadcountProductivityRequest> headcountProductivities;
     private List<PlanningDistributionRequest> planningDistributions;
     private List<ProcessingDistributionRequest> backlogLimits;
+    private String week;
     private long userId;
 }

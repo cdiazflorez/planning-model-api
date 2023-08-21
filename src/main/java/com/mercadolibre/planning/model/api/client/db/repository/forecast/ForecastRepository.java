@@ -14,18 +14,13 @@ import org.springframework.stereotype.Repository;
 public interface ForecastRepository extends GetForecastUseCase.Repository, CrudRepository<Forecast, Long> {
 
   @Override
-  @Query(value = "SELECT MAX(fm.id) as id FROM "
-      + "     (SELECT id, workflow, date_created, "
-      + "     (SELECT m.`value` FROM forecast_metadata m "
-      + "     WHERE m.forecast_id = f.id AND m.`key` = 'warehouse_id') AS warehouse_id, "
-      + "     (SELECT m.`value` FROM forecast_metadata m "
-      + "     WHERE m.forecast_id = f.id AND m.`key` = 'week') AS forecast_week "
-      + "     FROM forecast f) fm "
-      + "     WHERE fm.warehouse_id = :warehouse_id "
-      + "     AND fm.workflow = :workflow "
-      + "     AND fm.forecast_week in (:weeks)"
-      + "     AND fm.date_created <= :view_date"
-      + "     GROUP BY fm.forecast_week",
+  @Query(value = "SELECT MAX(f.id) as id"
+      + "     FROM forecast f "
+      + "     WHERE f.workflow = :workflow "
+      + "     AND f.logistic_center_id = :warehouse_id "
+      + "     AND f.week in (:weeks)"
+      + "     AND f.date_created <= :view_date"
+      + "     GROUP BY f.week",
       nativeQuery = true)
   List<ForecastIdView> findForecastIdsByWarehouseIdAAndWorkflowAndWeeksAtViewDate(
       @Param("warehouse_id") String warehouseId,

@@ -17,8 +17,8 @@ public interface ForecastMetadataRepository
             + "    FROM forecast_metadata "
             + "    WHERE forecast_metadata.key in (:metadata_keys)"
             + "    AND forecast_metadata.forecast_id in (:forecast_ids)", nativeQuery = true)
-    List<ForecastMetadataView> findLastForecastMetadataByWarehouseId(
-            @Param("metadata_keys") List<String> cardinalityDist,
+    List<ForecastMetadataView> findForecastMetadata(
+            @Param("metadata_keys") List<String> metadataKeys,
             @Param("forecast_ids") List<Long> forecastIds
     );
 }

@@ -16,6 +16,7 @@ import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import com.mercadolibre.planning.model.api.util.GetSlaByWarehouseUtils;
+import com.newrelic.api.agent.Trace;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ public class GetSlaByWarehouseOutboundService
 
     private RouteCoverageClientGateway routeCoverageClientGateway;
 
+    @Trace
     @Override
     public List<GetSlaByWarehouseOutput> execute(final GetSlaByWarehouseInput input) {
 

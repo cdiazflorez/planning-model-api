@@ -5,6 +5,7 @@ import static java.lang.String.format;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationsUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityNotFoundException;
+import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ public class GetCycleTimeService {
 
   private final GetConfigurationsUseCase getConfigurationsUseCase;
 
+  @Trace
   public Map<ZonedDateTime, Long> execute(final GetCycleTimeInput input) {
     final List<Configuration> configurations = getConfigurationsUseCase.execute(input.getLogisticCenterId());
 

@@ -16,6 +16,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import com.mercadolibre.planning.model.api.util.DateUtils;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -52,6 +53,7 @@ public class PlannedBacklogService {
     return date.atZone(UTC);
   }
 
+  @Trace
   public List<PlannedUnits> getExpectedBacklog(final String warehouseId,
                                                final Workflow workflow,
                                                final ZonedDateTime dateOutFrom,

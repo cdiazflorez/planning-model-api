@@ -19,6 +19,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import com.newrelic.api.agent.Trace;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
 
   protected final GetForecastUseCase getForecastUseCase;
 
+  @Trace
   @Override
   public List<ProductivityOutput> execute(final GetProductivityInput input) {
     return Stream.concat(

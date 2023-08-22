@@ -25,6 +25,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +65,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
   /**
    * Calculates the productivity for each of the specified processes.
    */
+  @Trace
   @Override
   public List<EntityOutput> execute(final GetEntityInput input) {
     List<EntityOutput> allThroughputs = new ArrayList<>();

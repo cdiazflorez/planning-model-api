@@ -48,6 +48,14 @@ public class ApiExceptionHandler {
 
   private static final String ENTITY_TYPE_NOT_SUPPORTED = "entity_type_not_supported";
 
+  private static final String INVALID_DATE_RANGE_TO_SAVE_DEVIATION = "invalid_date_range_to_save_deviation";
+
+  private static final String DATE_FROM_IS_AFTER_DATE_TO = "invalid_date_range_deviations";
+
+  private static final String PERCENTAGE_DEVIATION_UNEXPIRED = "percentage_deviation_Unexpired";
+
+  private static final String DEVIATIONS_TO_SAVE_NOT_FOUND = "deviations_to_save_not_found";
+
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
                                                            final HttpServletRequest request) {
@@ -230,6 +238,70 @@ public class ApiExceptionHandler {
         BAD_REQUEST,
         exception.getMessage(),
         exception.getMessage()
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(InvalidDateRangeDeviationsException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidDateRangeDeviationsException(
+      final InvalidDateRangeDeviationsException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        DATE_FROM_IS_AFTER_DATE_TO
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(InvalidDateToSaveDeviationException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidDateToSaveDeviationException(
+      final InvalidDateToSaveDeviationException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        INVALID_DATE_RANGE_TO_SAVE_DEVIATION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(UnexpiredDeviationPresentException.class)
+  public ResponseEntity<ErrorResponse> handlePercentageDeviationUnexpiredException(
+      final UnexpiredDeviationPresentException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        CONFLICT,
+        exception.getMessage(),
+        PERCENTAGE_DEVIATION_UNEXPIRED
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(DeviationsToSaveNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleDeviationsToSaveNotFoundException(
+      final DeviationsToSaveNotFoundException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        DEVIATIONS_TO_SAVE_NOT_FOUND
     );
 
     request.setAttribute(EXCEPTION_ATTRIBUTE, exception);

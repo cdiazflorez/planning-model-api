@@ -33,6 +33,12 @@ public interface CurrentForecastDeviationRepository extends CrudRepository<Curre
       ZonedDateTime dateTo
   );
 
+  List<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
+      String logisticCenterId,
+      Workflow workflow,
+      ZonedDateTime dateTo
+  );
+
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Transactional
   @Query("UPDATE "

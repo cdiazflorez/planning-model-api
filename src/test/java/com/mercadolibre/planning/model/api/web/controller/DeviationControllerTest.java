@@ -35,16 +35,26 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.sav
 import com.mercadolibre.planning.model.api.web.controller.deviation.DeviationController;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Stream;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 
 @WebMvcTest(controllers = DeviationController.class)
@@ -55,8 +65,6 @@ class DeviationControllerTest {
   private static final String WAREHOUSE_LABEL = "warehouse_id";
 
   private static final String LOGISTIC_CENTER_LABEL = "logistic_center_id";
-
-  private static final String SAVE = "/save";
 
   private static final String SAVE_ALL = "/save/all";
 
@@ -78,6 +86,72 @@ class DeviationControllerTest {
 
   @MockBean
   private GetForecastDeviationUseCase getForecastDeviationUseCase;
+
+  private static Stream<Arguments> saveDeviationCases() throws JSONException {
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    return Stream.of(
+        Arguments.of(
+            FBM_WMS_OUTBOUND.toJson(),
+            buildDeviationRequest(
+                FBM_WMS_OUTBOUND.toJson(),
+                currentDate.minus(1, ChronoUnit.HOURS),
+                currentDate.minus(2, ChronoUnit.HOURS)
+            ),
+            status().isBadRequest()
+        ),
+        Arguments.of(
+            FBM_WMS_OUTBOUND.toJson(),
+            buildDeviationRequest(
+                FBM_WMS_OUTBOUND.toJson(),
+                currentDate.minus(1, ChronoUnit.HOURS),
+                currentDate.plus(2, ChronoUnit.HOURS)
+            ),
+            status().isBadRequest()
+        ),
+        Arguments.of(
+            FBM_WMS_OUTBOUND.toJson(),
+            buildDeviationRequest(
+                FBM_WMS_OUTBOUND.toJson(),
+                currentDate.minus(3, ChronoUnit.HOURS),
+                currentDate.minus(2, ChronoUnit.HOURS)
+            ),
+            status().isBadRequest()
+        ),
+        Arguments.of(
+            FBM_WMS_OUTBOUND.toJson(),
+            new JSONObject()
+                .put("logistic_center_id", WAREHOUSE_ID)
+                .put("deviations", new JSONArray()),
+            status().isBadRequest()
+        ),
+        Arguments.of(
+            FBM_WMS_OUTBOUND.toJson(),
+            buildDeviationRequest(
+                FBM_WMS_OUTBOUND.toJson(),
+                currentDate.plus(1, ChronoUnit.HOURS),
+                currentDate.plus(2, ChronoUnit.HOURS)
+            ),
+            status().isCreated()
+        )
+    );
+  }
+
+  private static JSONObject buildDeviationRequest(final String workflow,
+                                                  final ZonedDateTime dateIn,
+                                                  final ZonedDateTime dateOut) throws JSONException {
+
+    final JSONObject deviationItemRequest = new JSONObject();
+    deviationItemRequest.put("workflow", workflow);
+    deviationItemRequest.put("type", "units");
+    deviationItemRequest.put("date_from", dateIn);
+    deviationItemRequest.put("date_to", dateOut);
+    deviationItemRequest.put("value", 0.1);
+    deviationItemRequest.put("user_id", 1234);
+
+    return new JSONObject()
+        .put("logistic_center_id", WAREHOUSE_ID)
+        .put("deviations", new JSONArray().put(deviationItemRequest));
+  }
 
   @DisplayName("Disable all ok")
   @Test
@@ -298,24 +372,20 @@ class DeviationControllerTest {
         );
   }
 
-  @DisplayName("Save forecast deviation /save is not found")
-  @Test
-  void saveDeviationNotFound() throws Exception {
-    // GIVEN
-    final SaveDeviationInput input = mockSaveForecastDeviationInput();
-
-    when(saveDeviationUseCase.execute(List.of(input)))
-        .thenReturn(new DeviationResponse(200));
+  @DisplayName("Save forecast deviation /save")
+  @ParameterizedTest
+  @MethodSource("saveDeviationCases")
+  void saveDeviationsOk(final String workflow, final JSONObject request, final ResultMatcher status) throws Exception {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL + SAVE, "fbm-wms-outbound")
+        post(URL, workflow)
             .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_forecast_deviation.json"))
+            .content(request.toString())
     );
 
     // THEN
-    result.andExpect(status().isNotFound());
+    result.andExpect(status);
   }
 
   @DisplayName("Save outbound deviation type unit not found")

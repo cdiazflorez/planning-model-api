@@ -11,9 +11,17 @@ import lombok.Value;
 
 @Value
 public class SaveDeviationRequest {
+  @NotNull
+  String logisticCenterId;
 
   @NotNull
-  String warehouseId;
+  Workflow workflow;
+
+  @NotNull
+  List<Path> affectedShipmentTypes;
+
+  @NotNull
+  DeviationType type;
 
   @NotNull
   ZonedDateTime dateFrom;
@@ -25,21 +33,33 @@ public class SaveDeviationRequest {
   double value;
 
   @NotNull
-  Long userId;
+  long userId;
 
-  List<Path> paths;
-
-  public SaveDeviationInput toDeviationInput(final Workflow workflow, final DeviationType deviationType) {
+  public SaveDeviationInput toDeviationInput() {
     return SaveDeviationInput
         .builder()
-        .warehouseId(warehouseId)
+        .warehouseId(logisticCenterId)
         .dateFrom(dateFrom)
         .dateTo(dateTo)
         .value(value)
         .userId(userId)
-        .paths(paths)
         .workflow(workflow)
-        .deviationType(deviationType)
+        .deviationType(type)
+        .paths(affectedShipmentTypes)
+        .build();
+  }
+
+  public SaveDeviationInput toDeviationInput(final Workflow workflow, final String logisticCenterId) {
+    return SaveDeviationInput
+        .builder()
+        .warehouseId(logisticCenterId)
+        .dateFrom(dateFrom)
+        .dateTo(dateTo)
+        .value(value)
+        .userId(userId)
+        .workflow(workflow)
+        .deviationType(type)
+        .paths(affectedShipmentTypes)
         .build();
   }
 }

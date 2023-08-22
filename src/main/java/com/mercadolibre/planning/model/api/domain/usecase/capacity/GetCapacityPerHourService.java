@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toList;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.newrelic.api.agent.Trace;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class GetCapacityPerHourService {
    * @param  capacityInputList available throughput per date and process.
    * @return                   one record for each instant in time with the available capacity at that instant.
    */
+  @Trace
   public List<CapacityOutput> execute(final Workflow workflow,
                                       final List<CapacityInput> capacityInputList) {
 

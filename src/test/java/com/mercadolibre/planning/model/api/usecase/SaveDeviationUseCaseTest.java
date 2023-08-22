@@ -4,9 +4,13 @@ import static com.mercadolibre.planning.model.api.domain.entity.DeviationType.UN
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
+import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSaveDeviationInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSaveForecastDeviationInput;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,11 +20,15 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationUseCase;
+import com.mercadolibre.planning.model.api.exception.UnexpiredDeviationPresentException;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +43,7 @@ public class SaveDeviationUseCaseTest {
 
   @Mock
   private CurrentForecastDeviationRepository deviationRepository;
+
 
   @Test
   public void testSaveForecastDeviationOk() {
@@ -95,6 +104,63 @@ public class SaveDeviationUseCaseTest {
     assertEquals(200L, output.getStatus());
   }
 
+  @Test
+  void testSaveDeviationsOk() {
+
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    final List<SaveDeviationInput> inputs = List.of(mockSaveDeviationInput(
+            FBM_WMS_OUTBOUND,
+            UNITS,
+            List.of(),
+            0.1,
+            currentDate,
+            currentDate.plus(2, ChronoUnit.HOURS)
+        )
+    );
+    when(deviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(WAREHOUSE_ID, FBM_WMS_OUTBOUND,
+        currentDate))
+        .thenReturn(List.of());
+
+    useCase.execute(FBM_WMS_OUTBOUND, WAREHOUSE_ID, inputs, currentDate);
+
+
+    verify(deviationRepository).findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(anyString(), any(), any());
+    verify(deviationRepository).saveAll(anyList());
+  }
+
+  @Test
+  void testSaveDeviationsWithUnexpiredDeviation() {
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    final List<SaveDeviationInput> inputs = List.of(
+        mockSaveDeviationInput(
+            FBM_WMS_OUTBOUND,
+            UNITS,
+            List.of(),
+            0.1,
+            currentDate,
+            currentDate.plus(2, ChronoUnit.HOURS)
+        ));
+
+    when(deviationRepository
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(WAREHOUSE_ID, FBM_WMS_OUTBOUND, currentDate))
+        .thenReturn(List.of(
+            CurrentForecastDeviation.builder()
+                .dateCreated(currentDate.minus(2, ChronoUnit.HOURS))
+                .dateFrom(currentDate.minus(1, ChronoUnit.HOURS))
+                .dateTo(currentDate.plus(2, ChronoUnit.HOURS))
+                .isActive(true)
+                .logisticCenterId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .build())
+        );
+
+    Assertions.assertThrows(
+        UnexpiredDeviationPresentException.class,
+        () -> useCase.execute(FBM_WMS_OUTBOUND, WAREHOUSE_ID, inputs, currentDate));
+
+
+  }
+
   private SaveDeviationInput mockSaveInboundDeviation(final Workflow workflow) {
     return SaveDeviationInput
         .builder()
@@ -112,16 +178,16 @@ public class SaveDeviationUseCaseTest {
   private List<CurrentForecastDeviation> mockCurrentForecastDeviationSaved(final Workflow workflow) {
     return List.of(
         CurrentForecastDeviation.builder()
-          .logisticCenterId("ARTW01")
-          .dateFrom(Instant.now().atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
-          .dateTo(Instant.now().plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
-          .value(10)
-          .isActive(true)
-          .userId(1234L)
-          .workflow(workflow)
-          .type(UNITS)
-          .path(Path.PRIVATE)
-          .build(),
+            .logisticCenterId("ARTW01")
+            .dateFrom(Instant.now().atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
+            .dateTo(Instant.now().plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("America/Argentina/Buenos_Aires")))
+            .value(10)
+            .isActive(true)
+            .userId(1234L)
+            .workflow(workflow)
+            .type(UNITS)
+            .path(Path.PRIVATE)
+            .build(),
         CurrentForecastDeviation.builder()
             .logisticCenterId("ARTW01")
             .dateFrom(Instant.now().atZone(ZoneId.of("America/Argentina/Buenos_Aires")))

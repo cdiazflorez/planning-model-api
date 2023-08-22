@@ -33,8 +33,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -53,6 +51,7 @@ public final class ShippingProjection {
 
   /**
    * filters inflection points that are not on the hour.
+   *
    * @param projectedBacklog resulting from the projection of backlogs
    * @return a projected backlog where inflection points that are not on the hour are removed
    */
@@ -74,6 +73,7 @@ public final class ShippingProjection {
 
   /**
    * From a backlog representation the amount of backlog per date out is obtained.
+   *
    * @param process Process Name
    * @param backlog a type of {@link com.mercadolibre.flow.projection.tools.services.entities.context.Backlog}.
    * @return a map where the key is the date out and the value the amount of corresponding backlog
@@ -97,6 +97,7 @@ public final class ShippingProjection {
 
   /**
    * Responsible for creating the shipping graph, obtaining the outbound graph and adding the corresponding shipping part.
+   *
    * @return a {@link Processor} with outbound and shipping processes.
    */
   private static Processor buildShippingGraph() {
@@ -115,6 +116,7 @@ public final class ShippingProjection {
 
   /**
    * Responsible for creating the shipping context, obtaining the outbound context and adding the corresponding shipping part.
+   *
    * @return a {@link ContextsHolder} with outbound and shipping contexts.
    */
   private static ContextsHolder buildShippingContexts(
@@ -131,6 +133,7 @@ public final class ShippingProjection {
 
   /**
    * Rearranges the map so that it is grouped first by hour of operation, then by process name, then by date out to quantity.
+   *
    * @param projectionMap resulting from projection
    * @return a new Map
    */
@@ -191,11 +194,12 @@ public final class ShippingProjection {
    * From the inputs, it creates the graph, looks for the inflection points,
    * creates the context map, executes the projection,
    * then filters the inflection points that are of no interest and builds the resulting response.
+   *
    * @param executionDateFrom moment where the projection begins
-   * @param executionDateTo moment where the projection ends
-   * @param currentBacklog current backlog per process
-   * @param forecastBacklog sales forecast from the beginning to the end of the projection
-   * @param throughput throughput from the beginning to the end of the projection
+   * @param executionDateTo   moment where the projection ends
+   * @param currentBacklog    current backlog per process
+   * @param forecastBacklog   sales forecast from the beginning to the end of the projection
+   * @param throughput        throughput from the beginning to the end of the projection
    * @return a {@link  BacklogProjectionResponse}.
    */
   public static Map<Instant, Map<ProcessName, Map<Instant, Integer>>> calculateShippingProjection(
@@ -229,35 +233,42 @@ public final class ShippingProjection {
   private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> getCurrentBacklogUpdated(
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog
   ) {
+
     if (currentBacklog.get(WAVING) == null) {
       return currentBacklog;
     }
-    final BinaryOperator<Map<ProcessPath, Map<Instant, Long>>> merge = (left, right) ->
-            Stream.concat(
-                    left.entrySet().stream(),
-                    right.entrySet().stream()
-                )
-                .collect(
-                    groupingBy(
-                        Map.Entry::getKey,
-                        flatMapping(
-                            entry -> entry.getValue()
-                                .entrySet()
-                                .stream(),
-                            toMap(Map.Entry::getKey, Map.Entry::getValue, Long::sum)
-                        )
-                    )
-                );
 
-      return PROCESSES.stream()
-          .collect(
-              toMap(
-                  Function.identity(),
-                  process -> process == PICKING
-                      ? merge.apply(currentBacklog.get(WAVING), currentBacklog.get(PICKING))
-                      : currentBacklog.getOrDefault(process, Map.of())
-              )
-          );
+    return getCurrentBacklogMerged(currentBacklog);
+  }
+
+  private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> getCurrentBacklogMerged(
+      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog
+  ) {
+    final Map<ProcessPath, Map<Instant, Long>> merge = Stream.concat(
+            currentBacklog.get(WAVING).entrySet().stream(),
+            currentBacklog.getOrDefault(PICKING, Map.of()).entrySet().stream()
+        )
+        .collect(
+            groupingBy(
+                Map.Entry::getKey,
+                flatMapping(
+                    entry -> entry.getValue()
+                        .entrySet()
+                        .stream(),
+                    toMap(Map.Entry::getKey, Map.Entry::getValue, Long::sum)
+                )
+            )
+        );
+
+    return PROCESSES.stream()
+        .collect(
+            toMap(
+                Function.identity(),
+                process -> process == PICKING
+                    ? merge
+                    : currentBacklog.getOrDefault(process, Map.of())
+            )
+        );
   }
 
   @AllArgsConstructor

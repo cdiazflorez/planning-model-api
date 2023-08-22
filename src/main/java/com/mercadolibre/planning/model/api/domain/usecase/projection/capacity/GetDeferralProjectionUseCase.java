@@ -33,6 +33,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.output.DeferralProjectionOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -75,6 +76,7 @@ public class GetDeferralProjectionUseCase {
 
   private final GetCapacityPerHourService getCapacityPerHourService;
 
+  @Trace
   public List<DeferralProjectionOutput> execute(final GetDeferralProjectionInput input) {
     final List<GetSlaByWarehouseOutput> allCptByWarehouse = getSlaByWarehouseOutboundService.execute(
         new GetSlaByWarehouseInput(
@@ -179,6 +181,7 @@ public class GetDeferralProjectionUseCase {
     return new PlannedBacklogBySla(filteredPlannedUnits);
   }
 
+  @Trace
   private List<DeferralProjectionOutput> getDeferralProjectionsByLoopingOverPossibleBacklogStates(
       final GetDeferralProjectionInput input,
       final List<GetSlaByWarehouseOutput> allCptByWarehouse,

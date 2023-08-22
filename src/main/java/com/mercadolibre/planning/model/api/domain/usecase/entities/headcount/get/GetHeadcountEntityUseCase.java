@@ -22,6 +22,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +48,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     return entityType == HEADCOUNT;
   }
 
+  @Trace
   @Override
   public List<EntityOutput> execute(final GetHeadcountInput input) {
     return Stream.concat(

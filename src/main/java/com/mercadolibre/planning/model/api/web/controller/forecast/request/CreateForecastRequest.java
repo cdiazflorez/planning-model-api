@@ -9,25 +9,25 @@ import java.util.List;
 @Value
 public class CreateForecastRequest {
 
-    private String logisticCenterId;
+    String logisticCenterId;
 
-    private List<MetadataRequest> metadata;
+    List<MetadataRequest> metadata;
 
-    private List<ProcessingDistributionRequest> processingDistributions;
+    List<ProcessingDistributionRequest> processingDistributions;
 
-    private List<HeadcountDistributionRequest> headcountDistributions;
+    List<HeadcountDistributionRequest> headcountDistributions;
 
-    private List<PolyvalentProductivityRequest> polyvalentProductivities;
+    List<PolyvalentProductivityRequest> polyvalentProductivities;
 
-    private List<HeadcountProductivityRequest> headcountProductivities;
+    List<HeadcountProductivityRequest> headcountProductivities;
 
-    private List<PlanningDistributionRequest> planningDistributions;
+    List<PlanningDistributionRequest> planningDistributions;
 
-    private List<ProcessingDistributionRequest> backlogLimits;
+    List<ProcessingDistributionRequest> backlogLimits;
 
-    private String week;
+    String week;
 
-    private long userId;
+    long userId;
 
     public CreateForecastInput toCreateForecastInput(final Workflow workflow) {
         return CreateForecastInput.builder()

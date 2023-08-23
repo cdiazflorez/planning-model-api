@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +23,7 @@ public class DisableForecastDeviationUseCase {
   private final CurrentForecastDeviationRepository deviationRepository;
 
   @Transactional
-  public Integer execute(final List<DisableForecastDeviationInput> input) {
+  public Integer execute(final List<DisableForecastDeviationInput> input, final ZonedDateTime currentDate) {
 
 
     final List<AdjustmentByPath> adjustmentByPaths = input.stream()
@@ -31,11 +32,12 @@ public class DisableForecastDeviationUseCase {
         .collect(Collectors.toUnmodifiableList());
 
     final List<CurrentForecastDeviation> activeAdjustment = adjustmentByPaths.stream().map(adjustmentByPath ->
-        deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             adjustmentByPath.logisticCenterId,
             Set.of(adjustmentByPath.workflow),
             adjustmentByPath.path,
-            adjustmentByPath.deviationType)
+            adjustmentByPath.deviationType,
+            currentDate)
     ).flatMap(Collection::stream)
         .collect(Collectors.toUnmodifiableList());
 

@@ -2,24 +2,29 @@ package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviation;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviationWithPath;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockListOfCurrentForecastDeviations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
+import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -196,5 +201,152 @@ class CurrentForecastDeviationRepositoryTest {
 
     // THEN
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testFindCurrentActiveDeviationsWithoutPath() {
+
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+
+    mockEntitiesToPersistWithoutPath(currentDate);
+
+
+    final List<CurrentForecastDeviation> currentForecastDeviations =
+        repository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID,
+            Set.of(FBM_WMS_OUTBOUND),
+            null,
+            DeviationType.UNITS,
+            currentDate
+        );
+
+    assertEquals(1, currentForecastDeviations.size());
+
+    final CurrentForecastDeviation deviation = currentForecastDeviations.get(0);
+    assertTrue(deviation.getDateTo().isAfter(currentDate));
+    assertTrue(deviation.isActive());
+  }
+
+  @Test
+  void testFindCurrentActiveDeviationsWithPath() {
+
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+
+    mockPathEntitiesToPersistWithPath(currentDate);
+    final Set<Path> paths = Set.of(Path.FTL, Path.COLLECT, Path.SPD);
+
+    final List<CurrentForecastDeviation> deviations = paths.stream()
+        .map(path -> repository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID,
+            Set.of(INBOUND),
+            path,
+            DeviationType.MINUTES,
+            currentDate))
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+
+    assertEquals(2, deviations.size());
+    assertEquals(2, deviations.stream()
+        .filter(deviation -> deviation.getDateTo().isAfter(currentDate)).count());
+    assertEquals(1, deviations.stream()
+        .filter(deviation -> deviation.getPath().equals(Path.FTL) && deviation.isActive()).count());
+    assertEquals(1, deviations.stream()
+        .filter(deviation -> deviation.getPath().equals(Path.COLLECT) && deviation.isActive()).count());
+    assertEquals(0, deviations.stream()
+        .filter(deviation -> deviation.getPath().equals(Path.SPD)).count());
+  }
+
+  private void mockEntitiesToPersistWithoutPath(final ZonedDateTime currentDate) {
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            FBM_WMS_OUTBOUND,
+            null,
+            DeviationType.UNITS,
+            true,
+            0.1,
+            currentDate.minus(12, ChronoUnit.HOURS),
+            currentDate.minus(8, ChronoUnit.HOURS)
+        )
+
+    );
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            FBM_WMS_OUTBOUND,
+            null,
+            DeviationType.UNITS,
+            true,
+            0.1,
+            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate.plus(3, ChronoUnit.HOURS)
+        )
+    );
+
+  }
+
+  private void mockPathEntitiesToPersistWithPath(final ZonedDateTime currentDate) {
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            INBOUND,
+            Path.COLLECT,
+            DeviationType.MINUTES,
+            true,
+            80,
+            currentDate.minus(5, ChronoUnit.HOURS),
+            currentDate.minus(3, ChronoUnit.HOURS)
+        )
+
+    );
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            INBOUND,
+            Path.SPD,
+            DeviationType.MINUTES,
+            true,
+            80,
+            currentDate.minus(8, ChronoUnit.HOURS),
+            currentDate.minus(4, ChronoUnit.HOURS)
+        )
+
+    );
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            INBOUND,
+            Path.FTL,
+            DeviationType.MINUTES,
+            true,
+            80,
+            currentDate.minus(12, ChronoUnit.HOURS),
+            currentDate.minus(8, ChronoUnit.HOURS)
+        )
+
+    );
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            INBOUND,
+            Path.FTL,
+            DeviationType.MINUTES,
+            true,
+            30,
+            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate.plus(3, ChronoUnit.HOURS)
+        )
+    );
+
+    entityManager.persistAndFlush(
+        mockCurrentForecastDeviationWithPath(
+            INBOUND,
+            Path.COLLECT,
+            DeviationType.MINUTES,
+            true,
+            30,
+            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate.plus(3, ChronoUnit.HOURS)
+        )
+    );
   }
 }

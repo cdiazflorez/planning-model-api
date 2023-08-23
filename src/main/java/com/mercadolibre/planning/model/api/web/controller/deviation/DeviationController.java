@@ -105,10 +105,12 @@ public class DeviationController {
       @RequestParam final String logisticCenterId,
       @RequestBody final List<DisabledDeviationAdjustmentsRequest> request) {
 
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+
     final var disableForecastDeviations = request.stream().map(adjustmentRequest ->
         adjustmentRequest.toDisableDeviationInput(logisticCenterId)).collect(Collectors.toUnmodifiableList());
 
-    disableDeviationUseCase.execute(disableForecastDeviations);
+    disableDeviationUseCase.execute(disableForecastDeviations, currentDate);
 
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }

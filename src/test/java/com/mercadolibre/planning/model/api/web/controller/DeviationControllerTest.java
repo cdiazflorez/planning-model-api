@@ -157,6 +157,7 @@ class DeviationControllerTest {
   @Test
   void disableAllOk() throws Exception {
     // GIVEN
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
     final List<DisableForecastDeviationInput> inputs = List.of(
         new DisableForecastDeviationInput(
             WAREHOUSE_ID,
@@ -170,7 +171,7 @@ class DeviationControllerTest {
             List.of())
     );
 
-    when(disableDeviationUseCase.execute(inputs))
+    when(disableDeviationUseCase.execute(inputs, currentDate))
         .thenReturn(200);
 
     // WHEN
@@ -412,9 +413,10 @@ class DeviationControllerTest {
   @Test
   void disableDeviationOutboundNotFound() throws Exception {
     // GIVEN
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
     final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, DeviationType.UNITS);
 
-    when(disableDeviationUseCase.execute(List.of(input)))
+    when(disableDeviationUseCase.execute(List.of(input), currentDate))
         .thenReturn(5);
 
     // WHEN
@@ -436,10 +438,11 @@ class DeviationControllerTest {
   @Test
   void disableDeviationTypeNotFound() throws Exception {
     // GIVEN
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
     final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_INBOUND, DeviationType.UNITS);
 
 
-    when(disableDeviationUseCase.execute(List.of(input)))
+    when(disableDeviationUseCase.execute(List.of(input), currentDate))
         .thenReturn(5);
 
     // WHEN

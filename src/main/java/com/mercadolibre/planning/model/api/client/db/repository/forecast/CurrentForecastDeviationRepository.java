@@ -20,12 +20,13 @@ public interface CurrentForecastDeviationRepository extends CrudRepository<Curre
 
   List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(String logisticCenterId, Set<Workflow> workflows);
 
-  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+  List<CurrentForecastDeviation> findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
       String logisticCenterId,
-       Set<Workflow> workflows,
-       Path path,
-       DeviationType type
-      );
+      Set<Workflow> workflows,
+      Path path,
+      DeviationType type,
+      ZonedDateTime currentDate
+  );
 
   List<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
       String logisticCenterId,

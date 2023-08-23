@@ -28,12 +28,6 @@ public interface CurrentForecastDeviationRepository extends CrudRepository<Curre
       ZonedDateTime currentDate
   );
 
-  List<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
-      String logisticCenterId,
-      Workflow workflow,
-      ZonedDateTime dateTo
-  );
-
   List<CurrentForecastDeviation> findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
       String logisticCenterId,
       Workflow workflow,

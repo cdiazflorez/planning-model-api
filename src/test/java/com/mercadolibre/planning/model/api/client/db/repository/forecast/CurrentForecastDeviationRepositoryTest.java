@@ -62,7 +62,7 @@ class CurrentForecastDeviationRepositoryTest {
 
     // WHEN
     final List<CurrentForecastDeviation> optDeviation = repository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
             WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN.plusHours(1)
         );
 
@@ -160,7 +160,7 @@ class CurrentForecastDeviationRepositoryTest {
   void findByLogisticCenterIdAndWorkflowAndIsActiveWhenNotExistDeviation() {
     // WHEN
     final List<CurrentForecastDeviation> optDeviation = repository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
             WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC
         );
 

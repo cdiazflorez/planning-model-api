@@ -66,9 +66,13 @@ class DeviationControllerTest {
 
   private static final String LOGISTIC_CENTER_LABEL = "logistic_center_id";
 
+  private static final String VIEW_DATE_LABEL = "view_date";
+
   private static final String SAVE_ALL = "/save/all";
 
   private static final String DISABLE_ALL = "/disable/all";
+
+  private static final String SEARCH = "/search";
 
   private static final String UNITS = "units";
 
@@ -132,6 +136,45 @@ class DeviationControllerTest {
                 currentDate.plus(2, ChronoUnit.HOURS)
             ),
             status().isCreated()
+        )
+    );
+  }
+
+  private static Stream<Arguments> listDeviationsProvided() {
+    return Stream.of(
+        Arguments.of(
+            List.of(
+                GetForecastDeviationResponse.builder()
+                    .workflow(FBM_WMS_OUTBOUND)
+                    .dateFrom(DATE_IN.minus(3, ChronoUnit.HOURS))
+                    .dateTo(DATE_IN.minus(2, ChronoUnit.HOURS))
+                    .value(0.3)
+                    .metricUnit(PERCENTAGE)
+                    .type(DeviationType.UNITS)
+                    .build(),
+                GetForecastDeviationResponse.builder()
+                    .workflow(FBM_WMS_OUTBOUND)
+                    .dateFrom(DATE_IN.minus(8, ChronoUnit.HOURS))
+                    .dateTo(DATE_IN.minus(5, ChronoUnit.HOURS))
+                    .value(0.7)
+                    .metricUnit(PERCENTAGE)
+                    .type(DeviationType.UNITS)
+                    .build(),
+                GetForecastDeviationResponse.builder()
+                    .workflow(FBM_WMS_OUTBOUND)
+                    .dateFrom(DATE_IN)
+                    .dateTo(DATE_IN.plus(1, ChronoUnit.HOURS))
+                    .value(0.4)
+                    .metricUnit(PERCENTAGE)
+                    .type(DeviationType.UNITS)
+                    .build()
+
+            ),
+            "get_deviations_response.json"
+        ),
+        Arguments.of(
+            emptyList(),
+            "get_empty_deviations_response.json"
         )
     );
   }
@@ -387,6 +430,28 @@ class DeviationControllerTest {
 
     // THEN
     result.andExpect(status);
+  }
+
+  @DisplayName("Get deviations list ")
+  @ParameterizedTest
+  @MethodSource("listDeviationsProvided")
+  void testGetDeviations(final List<GetForecastDeviationResponse> deviations, final String expectedResponse) throws Exception {
+    // GIVEN
+
+    when(getForecastDeviationUseCase.execute(any(GetForecastDeviationInput.class)))
+        .thenReturn(deviations);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(URL + SEARCH, FBM_WMS_OUTBOUND)
+            .param(LOGISTIC_CENTER_LABEL, WAREHOUSE_ID)
+            .param(VIEW_DATE_LABEL, "2020-08-19T18:00:00Z")
+            .contentType(APPLICATION_JSON)
+    );
+
+    // THEN
+    result.andExpect(status().isOk())
+        .andExpect(content().json(getResourceAsString(expectedResponse)));
   }
 
   @DisplayName("Save outbound deviation type unit not found")

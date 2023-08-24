@@ -21,7 +21,6 @@ import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityRequest;
-import com.mercadolibre.planning.model.api.web.controller.forecast.request.MetadataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.PlanningDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.ProcessingDistributionRequest;
@@ -38,8 +37,6 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class CreateForecastUseCase {
-
-  private static final String WAREHOUSE_ID = "warehouse_id";
 
   private final ForecastGateway forecastGateway;
 
@@ -72,8 +69,11 @@ public class CreateForecastUseCase {
 
   private Forecast saveForecast(final CreateForecastInput input) {
     final Forecast forecast = Forecast.builder()
+        .workflow(input.getWorkflow())
+        .logisticCenterId(input.getLogisticCenterId())
+        .week(input.getWeek())
         .userId(input.getUserId())
-        .workflow(input.getWorkflow()).build();
+        .build();
 
     final List<ForecastMetadata> metadata = input.getMetadata().stream()
         .map(metadataRequest -> ForecastMetadata.builder()
@@ -169,11 +169,6 @@ public class CreateForecastUseCase {
       return;
     }
 
-    final String logisticCenterId = input.getMetadata().stream()
-        .filter(metadataRequest -> WAREHOUSE_ID.equals(metadataRequest.getKey()))
-        .map(MetadataRequest::getValue)
-        .findFirst().orElseThrow();
-
     final ZonedDateTime dateFrom = processingDistribution.stream()
         .map(ProcessingDistributionRequest::getData)
         .map(processingDistributionDataRequests -> processingDistributionDataRequests.stream()
@@ -193,7 +188,7 @@ public class CreateForecastUseCase {
         .get();
 
     deactivateSimulationService.deactivateSimulation(
-        new DeactivateSimulationOfWeek(logisticCenterId, input.getWorkflow(), dateFrom, dateTo, input.getUserId())
+        new DeactivateSimulationOfWeek(input.getLogisticCenterId(), input.getWorkflow(), dateFrom, dateTo, input.getUserId())
     );
   }
 

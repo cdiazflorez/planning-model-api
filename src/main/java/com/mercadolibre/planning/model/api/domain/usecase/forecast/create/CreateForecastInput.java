@@ -16,14 +16,15 @@ import java.util.List;
 @Builder
 @Value
 public class CreateForecastInput {
-
-    private Workflow workflow;
-    private List<MetadataRequest> metadata;
-    private List<ProcessingDistributionRequest> processingDistributions;
-    private List<HeadcountDistributionRequest> headcountDistributions;
-    private List<PolyvalentProductivityRequest> polyvalentProductivities;
-    private List<HeadcountProductivityRequest> headcountProductivities;
-    private List<PlanningDistributionRequest> planningDistributions;
-    private List<ProcessingDistributionRequest> backlogLimits;
-    private long userId;
+    Workflow workflow;
+    String logisticCenterId;
+    List<MetadataRequest> metadata;
+    List<ProcessingDistributionRequest> processingDistributions;
+    List<HeadcountDistributionRequest> headcountDistributions;
+    List<PolyvalentProductivityRequest> polyvalentProductivities;
+    List<HeadcountProductivityRequest> headcountProductivities;
+    List<PlanningDistributionRequest> planningDistributions;
+    List<ProcessingDistributionRequest> backlogLimits;
+    String week;
+    long userId;
 }

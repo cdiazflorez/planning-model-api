@@ -939,18 +939,18 @@ public final class TestUtils {
   }
 
   public static List<GetPlanningDistributionOutput> mockGetPlanningDistOutput(final boolean applyDeferrals) {
-      if (applyDeferrals) {
-          return mockGetPlanningDistributionOutputList();
-      }
-      return List.of(
-              mockGetPlanningDistributionOutputList().get(0),
-              mockGetPlanningDistributionOutputList().get(1),
-              new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
-                      A_DATE_UTC.plusDays(3).toInstant(),
-                      UNITS,
-                      GLOBAL,
-                      1700)
-      );
+    if (applyDeferrals) {
+      return mockGetPlanningDistributionOutputList();
+    }
+    return List.of(
+        mockGetPlanningDistributionOutputList().get(0),
+        mockGetPlanningDistributionOutputList().get(1),
+        new GetPlanningDistributionOutput(A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(3).toInstant(),
+            UNITS,
+            GLOBAL,
+            1700)
+    );
   }
 
   public static List<GetPlanningDistributionOutput> mockGetPlanningDistributionOutputList() {
@@ -1287,6 +1287,8 @@ public final class TestUtils {
         .userId(USER_ID)
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(isActive)
+        .path(null)
+        .type(DeviationType.UNITS)
         .build();
   }
 
@@ -1302,6 +1304,29 @@ public final class TestUtils {
         .dateTo(A_DATE_UTC.plus(1, DAYS))
         .dateCreated(A_DATE_UTC)
         .lastUpdated(A_DATE_UTC)
+        .userId(131206L)
+        .build();
+  }
+
+  public static CurrentForecastDeviation mockCurrentForecastDeviationWithPath(final Workflow workflow,
+                                                                              final Path path,
+                                                                              final DeviationType type,
+                                                                              final boolean isActive,
+                                                                              final double value,
+                                                                              final ZonedDateTime dateIn,
+                                                                              final ZonedDateTime dateTo
+  ) {
+    return CurrentForecastDeviation.builder()
+        .logisticCenterId(WAREHOUSE_ID)
+        .workflow(workflow)
+        .isActive(isActive)
+        .value(value)
+        .path(path)
+        .type(type)
+        .dateFrom(dateIn)
+        .dateTo(dateTo)
+        .dateCreated(dateIn)
+        .lastUpdated(dateIn)
         .userId(131206L)
         .build();
   }

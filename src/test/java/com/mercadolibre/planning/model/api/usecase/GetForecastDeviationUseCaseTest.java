@@ -44,7 +44,7 @@ class GetForecastDeviationUseCaseTest {
     final CurrentForecastDeviation currentForecastDeviation = mockCurrentForecastDeviation();
 
     when(deviationRepository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
             input.getWarehouseId(),
             input.getWorkflow(),
             A_DATE_UTC.withFixedOffsetZone()))
@@ -70,7 +70,7 @@ class GetForecastDeviationUseCaseTest {
         new GetForecastDeviationInput(WAREHOUSE_ID, FBM_WMS_OUTBOUND, A_DATE_UTC);
 
     when(deviationRepository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
             input.getWarehouseId(),
             input.getWorkflow(),
             A_DATE_UTC.withFixedOffsetZone()))

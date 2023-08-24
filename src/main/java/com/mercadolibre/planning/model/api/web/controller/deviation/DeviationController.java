@@ -18,6 +18,7 @@ import com.mercadolibre.planning.model.api.web.controller.deviation.request.Disa
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.request.SaveDeviationsContentRequest;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationResponse;
+import com.mercadolibre.planning.model.api.web.controller.deviation.response.DeviationsResponse;
 import com.mercadolibre.planning.model.api.web.controller.deviation.response.GetForecastDeviationResponse;
 import com.mercadolibre.planning.model.api.web.controller.editor.DeviationTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -28,6 +29,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
@@ -105,10 +107,12 @@ public class DeviationController {
       @RequestParam final String logisticCenterId,
       @RequestBody final List<DisabledDeviationAdjustmentsRequest> request) {
 
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+
     final var disableForecastDeviations = request.stream().map(adjustmentRequest ->
         adjustmentRequest.toDisableDeviationInput(logisticCenterId)).collect(Collectors.toUnmodifiableList());
 
-    disableDeviationUseCase.execute(disableForecastDeviations);
+    disableDeviationUseCase.execute(disableForecastDeviations, currentDate);
 
     return ResponseEntity.ok(new DeviationResponse(STATUS_OK));
   }
@@ -153,6 +157,21 @@ public class DeviationController {
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("CurrentForecastDeviation", warehouseId))
     );
+  }
+
+  @GetMapping("/search")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeviationsResponse> getDeviations(
+      @PathVariable final Workflow workflow,
+      @RequestParam final String logisticCenterId,
+      @RequestParam final ZonedDateTime viewDate) {
+
+    final DeviationsResponse deviations = new DeviationsResponse(
+        getForecastDeviationUseCase.execute(new GetForecastDeviationInput(logisticCenterId, workflow, viewDate)).stream()
+            .sorted(Comparator.comparing(GetForecastDeviationResponse::getDateTo).reversed())
+            .collect(Collectors.toList())
+    );
+    return ResponseEntity.ok(deviations);
   }
 
   private void validateIfCurrentDateMustBeGreaterThanDateRange(final List<SaveDeviationRequest> request, final Instant currentDate) {

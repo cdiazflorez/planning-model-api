@@ -22,6 +22,8 @@ import com.mercadolibre.planning.model.api.client.db.repository.forecast.Current
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationUseCase;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,9 @@ public class DisableForecastDeviationUseCaseTest {
 
     @Test
     public void testDisableForecastDeviationOneInput() {
+
+        final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(ZoneOffset.UTC);
+
         // GIVEN
         final List<DisableForecastDeviationInput> arguments = List.of(
             mockDisableForecastDeviationInputWithAllArgs(
@@ -53,25 +58,28 @@ public class DisableForecastDeviationUseCaseTest {
                 List.of(PRIVATE))
         );
 
-        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             WAREHOUSE_ID,
             of(FBM_WMS_INBOUND),
             PRIVATE,
-            UNITS
+            UNITS,
+            currentDate
         ))
             .thenReturn(List.of(mockCurrentForecastDeviationWithPath(PRIVATE)));
 
-        final int output = useCase.execute(arguments);
+        final int output = useCase.execute(arguments, currentDate);
 
         //THEN
-        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
-            WAREHOUSE_ID, of(FBM_WMS_INBOUND), PRIVATE, UNITS);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID, of(FBM_WMS_INBOUND), PRIVATE, UNITS, currentDate);
         assertEquals(deviationDisableOneInputTest, output);
     }
 
     @Test
     public void testDisableForecastDeviationMultipleInputs() {
         // GIVEN
+        final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(ZoneOffset.UTC);
+
         final List<DisableForecastDeviationInput> arguments = List.of(
             mockDisableForecastDeviationInputWithAllArgs(
                 FBM_WMS_INBOUND,
@@ -83,63 +91,68 @@ public class DisableForecastDeviationUseCaseTest {
                 List.of(PRIVATE))
         );
 
-        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             WAREHOUSE_ID,
             of(FBM_WMS_INBOUND),
             FTL,
-            UNITS
+            UNITS,
+            currentDate
         ))
             .thenReturn(List.of());
-        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             WAREHOUSE_ID,
             of(FBM_WMS_INBOUND),
             COLLECT,
-            UNITS
+            UNITS,
+            currentDate
         ))
             .thenReturn(List.of(mockCurrentForecastDeviationWithPath(COLLECT)));
-        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             WAREHOUSE_ID,
             of(FBM_WMS_INBOUND),
             PRIVATE,
-            UNITS
+            UNITS,
+            currentDate
         ))
             .thenReturn(List.of(mockCurrentForecastDeviationWithPath(PRIVATE)));
 
-        final int output = useCase.execute(arguments);
+        final int output = useCase.execute(arguments, currentDate);
 
         //THEN
 
-        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
-            WAREHOUSE_ID, of(FBM_WMS_INBOUND), FTL, UNITS);
-        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
-            WAREHOUSE_ID, of(FBM_WMS_INBOUND), COLLECT, UNITS);
-        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
-            WAREHOUSE_ID, of(FBM_WMS_INBOUND), PRIVATE, UNITS);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID, of(FBM_WMS_INBOUND), FTL, UNITS, currentDate);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID, of(FBM_WMS_INBOUND), COLLECT, UNITS, currentDate);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID, of(FBM_WMS_INBOUND), PRIVATE, UNITS, currentDate);
         assertEquals(deviationDisable, output);
     }
 
     @Test
     public void testDisableForecastDeviationOk() {
         // GIVEN
+        final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(ZoneOffset.UTC);
+
         final DisableForecastDeviationInput input = mockDisableForecastDeviationInput(FBM_WMS_OUTBOUND, UNITS);
 
-        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
+        when(deviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
             WAREHOUSE_ID,
             of(FBM_WMS_OUTBOUND),
             null,
-            UNITS
-        ))
-            .thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
+            UNITS,
+            currentDate
+        )).thenReturn(mockCurrentForecastDeviation(true, now().minusMinutes(15)));
 
         final List<CurrentForecastDeviation> toSave = mockCurrentForecastDeviation(false, now());
         when(deviationRepository.saveAll(any(List.class)))
                 .thenReturn(toSave);
 
-        final int output = useCase.execute(List.of(input));
+        final int output = useCase.execute(List.of(input), currentDate);
 
         // THEN
-        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndType(
-            WAREHOUSE_ID, of(FBM_WMS_OUTBOUND), null, UNITS);
+        verify(deviationRepository).findByLogisticCenterIdAndIsActiveTrueAndWorkflowInAndPathAndTypeAndDateToIsGreaterThan(
+            WAREHOUSE_ID, of(FBM_WMS_OUTBOUND), null, UNITS, currentDate);
         verify(deviationRepository).saveAll(any(List.class));
         assertEquals(deviationDisable, output);
     }

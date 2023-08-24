@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class GetForecastDeviationUseCase {
 
-  private static final int ROUNDING_FACTOR = 100;
-
   private final CurrentForecastDeviationRepository deviationRepository;
 
   private static GetForecastDeviationResponse toResponse(final CurrentForecastDeviation deviation) {
@@ -32,7 +30,7 @@ public class GetForecastDeviationUseCase {
 
   public List<GetForecastDeviationResponse> execute(final GetForecastDeviationInput input) {
     return deviationRepository
-        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThanEqual(
+        .findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
             input.getWarehouseId(),
             input.getWorkflow(),
             input.getDate().withFixedOffsetZone()

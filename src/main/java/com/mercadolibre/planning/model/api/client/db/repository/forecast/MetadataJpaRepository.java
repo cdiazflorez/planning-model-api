@@ -20,7 +20,7 @@ public class MetadataJpaRepository implements MetadataRepository {
     final List<String> cardinality = MetadataCardinality.getMetadataTag();
 
     final List<ForecastMetadataView> metadata =
-        forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
+        forecastMetadataRepository.findForecastMetadata(
             new ArrayList<>(cardinality),
             List.of(forecastId));
 

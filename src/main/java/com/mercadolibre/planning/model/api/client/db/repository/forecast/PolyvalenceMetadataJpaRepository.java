@@ -22,7 +22,7 @@ public class PolyvalenceMetadataJpaRepository implements GetPolyvalenceForecastM
     final List<ProductivityPolyvalenceCardinality> cardinality = ProductivityPolyvalenceCardinality.getPolyvalencesByWorkflow(workflow);
 
     final List<ForecastMetadataView> polyvalencesMetadata =
-        forecastMetadataRepository.findLastForecastMetadataByWarehouseId(
+        forecastMetadataRepository.findForecastMetadata(
             cardinality.stream()
                 .map(ProductivityPolyvalenceCardinality::getTagName)
                 .collect(Collectors.toList()),

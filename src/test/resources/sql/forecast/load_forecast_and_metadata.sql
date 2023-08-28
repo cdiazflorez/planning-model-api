@@ -1,27 +1,11 @@
-INSERT INTO forecast(id, workflow, date_created, last_updated, user_id)
-VALUES (1, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
-       (2, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
-       (3, 'FBM_WMS_OUTBOUND', '2022-09-08 12:32:00', '2022-09-08 12:31:00', 100),
-       (4, 'FBM_WMS_OUTBOUND', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
-       (5, 'FBM_WMS_OUTBOUND', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
-       (6, 'FBM_WMS_OUTBOUND', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
-       (7, 'FBM_WMS_OUTBOUND', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100);
-
-INSERT INTO forecast_metadata(forecast_id, "key", "value")
-VALUES (1, 'warehouse_id', 'ARTW01'),
-       (1, 'week', '33-2022'),
-       (2, 'warehouse_id', 'ARTW01'),
-       (2, 'week', '34-2022'),
-       (3, 'warehouse_id', 'ARTW01'),
-       (3, 'week', '34-2022'),
-       (4, 'warehouse_id', 'ARTW01'),
-       (4, 'week', '35-2022'),
-       (5, 'warehouse_id', 'ARTW01'),
-       (5, 'week', '35-2022'),
-       (6, 'warehouse_id', 'ARTW02'),
-       (6, 'week', '34-2022'),
-       (7, 'warehouse_id', 'ARTW02'),
-       (7, 'week', '35-2022');
+INSERT INTO forecast(id, workflow, logistic_center_id, week, date_created, last_updated, user_id)
+VALUES (1, 'FBM_WMS_OUTBOUND', 'ARTW01', '33-2022', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
+       (2, 'FBM_WMS_OUTBOUND', 'ARTW01', '34-2022', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
+       (3, 'FBM_WMS_OUTBOUND', 'ARTW01', '34-2022', '2022-09-08 12:32:00', '2022-09-08 12:31:00', 100),
+       (4, 'FBM_WMS_OUTBOUND', 'ARTW01', '35-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
+       (5, 'FBM_WMS_OUTBOUND', 'ARTW01', '35-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
+       (6, 'FBM_WMS_OUTBOUND', 'ARTW02', '34-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
+       (7, 'FBM_WMS_OUTBOUND', 'ARTW02', '35-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100);
 
 INSERT INTO current_forecast_deviation(id, logistic_center_id, date_from, date_to, "value", is_active, workflow, user_id, date_created, last_updated)
 VALUES

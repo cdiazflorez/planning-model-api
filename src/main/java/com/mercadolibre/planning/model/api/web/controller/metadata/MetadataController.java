@@ -30,8 +30,7 @@ public class MetadataController {
   public ResponseEntity<List<Metadata>> getPolyvalenceMetadata(
       @PathVariable final Workflow workflow,
       @RequestParam final String warehouseId,
-      @RequestParam
-      @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTime
+      @RequestParam @DateTimeFormat(iso = DATE_TIME) final ZonedDateTime dateTime
   ) {
     return ResponseEntity
         .status(HttpStatus.OK)

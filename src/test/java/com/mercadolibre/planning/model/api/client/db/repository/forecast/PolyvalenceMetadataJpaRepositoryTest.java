@@ -87,7 +87,7 @@ class PolyvalenceMetadataJpaRepositoryTest {
       final List<String> cardinality) {
 
     //GIVEN
-    when(forecastMetadataRepository.findLastForecastMetadataByWarehouseId(cardinality, List.of(forecastId)))
+    when(forecastMetadataRepository.findForecastMetadata(cardinality, List.of(forecastId)))
         .thenReturn(forecastMetadataViewList);
 
     //WHEN

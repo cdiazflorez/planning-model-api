@@ -88,7 +88,7 @@ public class ConfigurationController {
         configuration.getMetricUnit().toJson());
   }
 
-  @PostMapping("/logistic_center_id/{logisticCenterId}/cycle_time/search")
+  @PostMapping({"/logistic_center/{logisticCenterId}/cycle_time/search", "/logistic_center_id/{logisticCenterId}/cycle_time/search"})
   public ResponseEntity<Map<Workflow, Map<Instant, SlaProperties>>> search(
       @PathVariable final String logisticCenterId,
       @RequestBody @Valid final CycleTimeRequest request

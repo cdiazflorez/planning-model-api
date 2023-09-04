@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -49,7 +51,8 @@ public class ConfigurationControllerTest {
 
   private static final String UPDATE_URL = "/planning/model/configuration/%s/%s";
 
-  private static final String CYCLE_TIME_PATH = "/logistic_center_id/{lcID}/cycle_time/search";
+  private static final String OLD_CT_PATH = "/logistic_center_id/{lcID}/cycle_time/search";
+  private static final String CYCLE_TIME_PATH = "/logistic_center/{lc}/cycle_time/search";
 
   private static final Instant DATE_FROM = A_DATE_UTC.toInstant();
 
@@ -162,11 +165,12 @@ public class ConfigurationControllerTest {
   }
 
   @DisplayName("Get Outbound Cycle Time Ok")
-  @Test
-  void testGetOutboundCycleTimeOk() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {OLD_CT_PATH, CYCLE_TIME_PATH})
+  void testGetOutboundCycleTimeOk(
+      final String cycleTimePath
+  ) throws Exception {
     // GIVEN
-
-
     when(outboundSlaPropertiesService.get(
         new OutboundSlaPropertiesService.Input(
             WAREHOUSE_ID,
@@ -187,7 +191,7 @@ public class ConfigurationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL + CYCLE_TIME_PATH, "ARBA01")
+        post(URL + cycleTimePath, "ARBA01")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("search_cycle_times.json"))
     );

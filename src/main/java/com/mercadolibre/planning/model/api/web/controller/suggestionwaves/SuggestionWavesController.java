@@ -1,6 +1,9 @@
 package com.mercadolibre.planning.model.api.web.controller.suggestionwaves;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
+import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
+import com.mercadolibre.planning.model.api.projection.waverless.ForecastedUnitsByProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave.WaveConfiguration;
 import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator;
 import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator.TriggerProjection;
@@ -15,6 +18,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -81,17 +85,37 @@ public class SuggestionWavesController {
       @PathVariable final String logisticCenterId,
       @RequestBody final Request request
   ) {
+
+    final Set<ProcessPath> processPath = request.getProcessPathConfigurations()
+        .stream()
+        .map(ProcessPathConfiguration::getProcessPath)
+        .collect(Collectors.toSet());
+
     final var waves = WavesCalculator.waves(
         request.getViewDate(),
         request.getProcessPathConfigurations(),
-        request.getBacklogs(),
-        request.getForecast(),
+        getBacklogFiltered(request.getBacklogs(), processPath),
+        getForecastFiltered(request.getForecast(), processPath),
         request.getIntThroughput(),
         request.getBacklogLimits(),
         request.getPrecalculatedWavesAsEntities(),
         logisticCenterId
     );
     return ResponseEntity.ok(mapToDto(logisticCenterId, request.getViewDate(), waves));
+  }
+
+  private List<UnitsByProcessPathAndProcess> getBacklogFiltered(final List<UnitsByProcessPathAndProcess> backlog,
+                                                                final Set<ProcessPath> processPaths) {
+    return backlog.stream()
+        .filter(processPathAndProcess -> processPaths.contains(processPathAndProcess.getProcessPath()))
+        .collect(Collectors.toList());
+  }
+
+  private List<ForecastedUnitsByProcessPath> getForecastFiltered(final List<ForecastedUnitsByProcessPath> forecast,
+                                                                 final Set<ProcessPath> processPaths) {
+    return forecast.stream()
+        .filter(unitsByProcessPath -> processPaths.contains(unitsByProcessPath.getProcessPath()))
+        .collect(Collectors.toList());
   }
 
 }

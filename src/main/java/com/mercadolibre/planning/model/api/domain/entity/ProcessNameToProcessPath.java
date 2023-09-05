@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.entity;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_ORDER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_SINGLE_SKU;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
@@ -23,15 +24,17 @@ public enum ProcessNameToProcessPath {
 
   WAVING(
       ProcessName.WAVING,
-      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_BATCH, NON_TOT_MULTI_BATCH, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU)
+      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_BATCH, NON_TOT_MULTI_BATCH, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU,
+          NON_TOT_SINGLE_SKU)
   ),
   PICKING(
       ProcessName.PICKING,
-      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_BATCH, NON_TOT_MULTI_BATCH, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU)
+      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_BATCH, NON_TOT_MULTI_BATCH, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU,
+          NON_TOT_SINGLE_SKU)
   ),
   PACKING(
       ProcessName.PACKING,
-      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU)
+      List.of(TOT_MONO, NON_TOT_MONO, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, TOT_SINGLE_SKU, NON_TOT_SINGLE_SKU)
   ),
   BATCH_SORTER(
       ProcessName.BATCH_SORTER,

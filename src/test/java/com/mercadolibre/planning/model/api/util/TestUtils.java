@@ -43,6 +43,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.lang.Boolean.TRUE;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -56,7 +57,6 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentPlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -428,17 +428,98 @@ public final class TestUtils {
     );
   }
 
-  public static List<CurrentPlanningDistribution> currentPlanningDistributions() {
-    final CurrentPlanningDistribution first = mock(CurrentPlanningDistribution.class);
-    final CurrentPlanningDistribution second = mock(CurrentPlanningDistribution.class);
+  public static List<PlanDistribution> planningDistributionsToApplyDeviations() {
+    return List.of(
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(5).toInstant(),
+            A_DATE_UTC.minusDays(4).toInstant(),
+            TOT_MONO,
+            UNITS,
+            1000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(4).toInstant().minus(3, HOURS),
+            A_DATE_UTC.plusDays(3).toInstant().minus(3, HOURS),
+            TOT_MONO,
+            UNITS,
+            1000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(2).toInstant().minus(3, HOURS),
+            A_DATE_UTC.plusDays(1).toInstant().minus(3, HOURS),
+            TOT_MONO,
+            UNITS,
+            1000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            TOT_MULTI_BATCH,
+            UNITS,
+            300),
+        new PlanDistribution(
+            1,
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            1200),
+        new PlanDistribution(
+            1,
+            A_DATE_UTC.plusDays(1).toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            1250)
+    );
+  }
 
-    when(first.getDateOut()).thenReturn(A_DATE_UTC);
-
-    when(second.getDateOut()).thenReturn(A_DATE_UTC.plusDays(2));
-    when(second.getDateInFrom()).thenReturn(A_DATE_UTC.plusDays(1));
-    when(second.getQuantity()).thenReturn(2500L);
-
-    return List.of(first, second);
+  public static List<PlanDistribution> expectedPlanningDistributionsWithApplyDeviations() {
+    return List.of(
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(5).toInstant(),
+            A_DATE_UTC.minusDays(4).toInstant(),
+            TOT_MONO,
+            UNITS,
+            2000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(4).toInstant().minus(3, HOURS),
+            A_DATE_UTC.plusDays(3).toInstant().minus(3, HOURS),
+            TOT_MONO,
+            UNITS,
+            4000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.minusDays(2).toInstant().minus(3, HOURS),
+            A_DATE_UTC.plusDays(1).toInstant().minus(3, HOURS),
+            TOT_MONO,
+            UNITS,
+            1000),
+        new PlanDistribution(
+            2,
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(1).toInstant(),
+            TOT_MULTI_BATCH,
+            UNITS,
+            300),
+        new PlanDistribution(
+            1,
+            A_DATE_UTC.toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            1200),
+        new PlanDistribution(
+            1,
+            A_DATE_UTC.plusDays(1).toInstant(),
+            A_DATE_UTC.plusDays(2).toInstant(),
+            GLOBAL,
+            UNITS,
+            2500)
+    );
   }
 
   public static CreateForecastInput mockCreateForecastInput() {

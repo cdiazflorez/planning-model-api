@@ -15,23 +15,30 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProcessingDistributionRepository extends CrudRepository<ProcessingDistribution, Long> {
 
-  @Query(value =
-      "SELECT p.date, process_path as processPath, process_name as processName, quantity, quantity_metric_unit as quantityMetricUnit, type "
-          + "FROM processing_distribution p "
-          + "WHERE p.process_path IN (:process_paths) "
-          + "AND p.process_name IN (:process_name) "
-          + "AND p.date BETWEEN :date_from AND :date_to "
-          + "AND (COALESCE(:type) is NULL OR p.type IN (:type)) "
-          + "AND p.forecast_id in (:forecast_ids)", nativeQuery = true)
-  List<ProcessingDistributionView> findByTypeProcessPathProcessNameAndDateInRange(
-      @Param("type") Set<String> type,
-      @Param("process_paths") List<String> processPaths,
-      @Param("process_name") List<String> processNames,
-      @Param("date_from") ZonedDateTime dateFrom,
-      @Param("date_to") ZonedDateTime dateTo,
-      @Param("forecast_ids") List<Long> forecastIds);
+    @Query(value =
+            "WITH all_t as ("
+                    + "  SELECT p.forecast_id, p.date, p.process_path, p.process_name, p.quantity, p.quantity_metric_unit, p.type, "
+                    + "    ROW_NUMBER() OVER(PARTITION BY p.date, p.process_path, p.process_name, p.type "
+                    + "ORDER BY p.forecast_id DESC) as r_number "
+                    + "  FROM processing_distribution p "
+                    + "  WHERE p.process_path IN (:process_paths) "
+                    + "    AND p.process_name IN (:process_name) "
+                    + "    AND p.date BETWEEN :date_from AND :date_to "
+                    + "    AND (COALESCE(:type) IS NULL OR p.type IN (:type)) "
+                    + "    AND p.forecast_id IN (:forecast_ids)) "
+                    + "SELECT t.forecast_id, t.date, t.process_path as processPath, t.process_name as processName, "
+                    + "       t.quantity, t.quantity_metric_unit as quantityMetricUnit, t.type "
+                    + "FROM all_t t "
+                    + "WHERE r_number = 1", nativeQuery = true)
+    List<ProcessingDistributionView> findByTypeProcessPathProcessNameAndDateInRange(
+            @Param("type") Set<String> type,
+            @Param("process_paths") List<String> processPaths,
+            @Param("process_name") List<String> processNames,
+            @Param("date_from") ZonedDateTime dateFrom,
+            @Param("date_to") ZonedDateTime dateTo,
+            @Param("forecast_ids") List<Long> forecastIds);
 
-  @Query(
+    @Query(
       value =
           "SELECT m.value as logisticCenterId, "
               + "f.date_created as loadDate, p.date as maxCapacityDate, "

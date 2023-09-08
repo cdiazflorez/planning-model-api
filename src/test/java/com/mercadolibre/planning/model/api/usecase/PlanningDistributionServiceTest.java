@@ -7,11 +7,15 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
+import static com.mercadolibre.planning.model.api.util.TestUtils.expectedPlanningDistributionsWithApplyDeviations;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastIds;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDistributionInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributions;
+import static com.mercadolibre.planning.model.api.util.TestUtils.planningDistributionsToApplyDeviations;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
+import static java.time.temporal.ChronoUnit.HOURS;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Set.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +36,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionService;
 import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,18 +83,163 @@ public class PlanningDistributionServiceTest {
   @InjectMocks
   private PlanningDistributionService planningDistributionService;
 
+  private static Stream<Arguments> forecastArguments() {
+    return Stream.of(
+        Arguments.of(
+            mockPlanningDistributionInput(
+                DATE_IN_1,
+                DATE_IN_3,
+                DATE_OUT_1,
+                DATE_OUT_3,
+                A_DATE_UTC.toInstant(),
+                true,
+                of(TOT_MONO, TOT_MULTI_BATCH),
+                true
+            ),
+            List.of(
+                new GetPlanningDistributionOutput(DATE_IN_2, DATE_OUT_3, UNITS, TOT_MONO, 44.5)
+            )
+        ),
+        Arguments.of(
+            mockPlanningDistributionInput(
+                DATE_IN_1,
+                DATE_IN_3,
+                DATE_OUT_1,
+                DATE_OUT_3,
+                A_DATE_UTC.toInstant(),
+                false,
+                of(TOT_MONO, TOT_MULTI_BATCH),
+                true
+            ),
+            List.of(
+                new GetPlanningDistributionOutput(DATE_IN_2, DATE_OUT_3, UNITS, TOT_MONO, 44.5)
+            )
+        )
+    );
+  }
+
+  private static Stream<Arguments> deviationArguments() {
+    return Stream.of(
+        Arguments.of(
+            GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .viewDate(A_DATE_UTC.toInstant())
+                .dateInFrom(A_DATE_UTC.minusDays(7).toInstant())
+                .dateInTo(A_DATE_UTC.plusDays(3).toInstant())
+                .dateOutTo(A_DATE_UTC.plusDays(10).toInstant())
+                .dateOutFrom(A_DATE_UTC.minusDays(7).toInstant())
+                .applyDeviation(true)
+                .applyDeferrals(false)
+                .build(),
+            deviationsToApply(),
+            planningDistributionsToApplyDeviations(),
+            expectedPlanningDistributionsWithApplyDeviations(),
+            A_DATE_UTC.minusDays(7)
+        ),
+        Arguments.of(
+            GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateOutTo(A_DATE_UTC.plusDays(10).toInstant())
+                .dateOutFrom(A_DATE_UTC.minusDays(7).toInstant())
+                .applyDeviation(true)
+                .applyDeferrals(false)
+                .build(),
+            emptyList(),
+            planningDistributionsToApplyDeviations(),
+            planningDistributionsToApplyDeviations(),
+            A_DATE_UTC.minusDays(5)
+        ),
+        Arguments.of(
+            GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .dateOutTo(A_DATE_UTC.plusDays(10).toInstant())
+                .dateOutFrom(A_DATE_UTC.minusDays(7).toInstant())
+                .applyDeviation(true)
+                .applyDeferrals(false)
+                .build(),
+            emptyList(),
+            emptyList(),
+            emptyList(),
+            A_DATE_UTC.minusDays(7)
+        ),
+        Arguments.of(
+            GetPlanningDistributionInput.builder()
+                .warehouseId(WAREHOUSE_ID)
+                .workflow(FBM_WMS_OUTBOUND)
+                .viewDate(A_DATE_UTC.minusDays(7).toInstant())
+                .dateOutTo(A_DATE_UTC.plusDays(10).toInstant())
+                .dateOutFrom(A_DATE_UTC.minusDays(7).toInstant())
+                .applyDeviation(true)
+                .applyDeferrals(false)
+                .build(),
+            emptyList(),
+            emptyList(),
+            emptyList(),
+            A_DATE_UTC.minusDays(7)
+        )
+    );
+  }
+
+  private static List<CurrentForecastDeviation> deviationsToApply() {
+    return List.of(new CurrentForecastDeviation(
+            1,
+            WAREHOUSE_ID,
+            A_DATE_UTC.minusDays(5).minus(3, HOURS).withZoneSameInstant(UTC),
+            A_DATE_UTC.minusDays(5).plus(5, HOURS).withZoneSameInstant(UTC),
+            1.0,
+            true,
+            123L,
+            FBM_WMS_OUTBOUND,
+            A_DATE_UTC.minusDays(5).minus(3, HOURS),
+            A_DATE_UTC.minusDays(5).minus(3, HOURS),
+            DeviationType.UNITS,
+            null
+        ),
+        new CurrentForecastDeviation(
+            2,
+            WAREHOUSE_ID,
+            A_DATE_UTC.minusDays(4).minus(3, HOURS),
+            A_DATE_UTC.minusDays(3),
+            3.0,
+            true,
+            123L,
+            FBM_WMS_OUTBOUND,
+            A_DATE_UTC.minusDays(4).minus(3, HOURS),
+            A_DATE_UTC.minusDays(4).minus(3, HOURS),
+            DeviationType.UNITS,
+            null
+        ),
+        new CurrentForecastDeviation(
+            3,
+            WAREHOUSE_ID,
+            A_DATE_UTC.plusDays(1).minus(5, HOURS),
+            A_DATE_UTC.plusDays(1).plus(5, HOURS),
+            1.0,
+            true,
+            123L,
+            FBM_WMS_OUTBOUND,
+            A_DATE_UTC,
+            A_DATE_UTC,
+            DeviationType.UNITS,
+            null
+        ));
+  }
+
   @Test
   @DisplayName("Get planning distribution from forecast without date in to")
   public void testGetPlanningDistributionOk() {
     // GIVEN
     final GetPlanningDistributionInput input = mockPlanningDistributionInput(null,
-                                                                             null,
-                                                                             A_DATE_UTC.toInstant(),
-                                                                             A_DATE_UTC.plusDays(3).toInstant(),
-                                                                             null,
-                                                                             false,
-                                                                             emptySet(),
-                                                                             false);
+        null,
+        A_DATE_UTC.toInstant(),
+        A_DATE_UTC.plusDays(3).toInstant(),
+        null,
+        false,
+        emptySet(),
+        false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -125,13 +276,13 @@ public class PlanningDistributionServiceTest {
     // GIVEN
     final Instant dateInTo = A_DATE_UTC.minusDays(3).toInstant();
     final GetPlanningDistributionInput input = mockPlanningDistributionInput(null,
-                                                                             dateInTo,
-                                                                             A_DATE_UTC.toInstant(),
-                                                                             A_DATE_UTC.plusDays(3).toInstant(),
-                                                                             null,
-                                                                             false,
-                                                                             emptySet(),
-                                                                             false);
+        dateInTo,
+        A_DATE_UTC.toInstant(),
+        A_DATE_UTC.plusDays(3).toInstant(),
+        null,
+        false,
+        emptySet(),
+        false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -174,13 +325,13 @@ public class PlanningDistributionServiceTest {
     // GIVEN
     final Instant dateInFrom = A_DATE_UTC.minusDays(3).toInstant();
     final GetPlanningDistributionInput input = mockPlanningDistributionInput(dateInFrom,
-                                                                             A_DATE_UTC.toInstant(),
-                                                                             A_DATE_UTC.toInstant(),
-                                                                             A_DATE_UTC.plusDays(3).toInstant(),
-                                                                             null,
-                                                                             false,
-                                                                             emptySet(),
-                                                                             false);
+        A_DATE_UTC.toInstant(),
+        A_DATE_UTC.toInstant(),
+        A_DATE_UTC.plusDays(3).toInstant(),
+        null,
+        false,
+        emptySet(),
+        false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -218,6 +369,8 @@ public class PlanningDistributionServiceTest {
     final GetPlanningDistributionInput input = GetPlanningDistributionInput.builder()
         .warehouseId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
+        .dateInFrom(A_DATE_UTC.toInstant())
+        .dateInTo(A_DATE_UTC.plusDays(3).toInstant())
         .dateOutFrom(A_DATE_UTC.toInstant())
         .dateOutTo(A_DATE_UTC.plusDays(3).toInstant())
         .applyDeviation(true)
@@ -227,15 +380,15 @@ public class PlanningDistributionServiceTest {
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
     when(planningDistributionGateway.findByForecastIdsAndDynamicFilters(
-        null,
-        null,
+        A_DATE_UTC.toInstant(),
+        A_DATE_UTC.plusDays(3).toInstant(),
         A_DATE_UTC.toInstant(),
         A_DATE_UTC.plusDays(3).toInstant(),
         of(),
         new HashSet<>(mockForecastIds()))
     ).thenReturn(planningDistributions());
 
-    when(currentForecastDeviationRepository.findByLogisticCenterIdAndIsActiveTrueAndWorkflowIn(WAREHOUSE_ID, of(FBM_WMS_OUTBOUND)))
+    when(currentForecastDeviationRepository.findActiveDeviationAt(WAREHOUSE_ID, FBM_WMS_OUTBOUND.name(), A_DATE_UTC.toInstant()))
         .thenReturn(
             List.of(new CurrentForecastDeviation(
                 1,
@@ -260,7 +413,7 @@ public class PlanningDistributionServiceTest {
     // THEN
     final GetPlanningDistributionOutput output1 = output.get(0);
     assertEquals(A_DATE_UTC.plusDays(1).toInstant(), output1.getDateOut());
-    assertEquals(2000, output1.getTotal());
+    assertEquals(1000, output1.getTotal());
 
     final List<GetPlanningDistributionOutput> recordsForSecondDay =
         output.stream()
@@ -273,7 +426,54 @@ public class PlanningDistributionServiceTest {
         .reduce(0D, Double::sum);
 
     assertEquals(2, recordsForSecondDay.size());
-    assertEquals(Double.valueOf(3650), outputTotalForSecondDay);
+    assertEquals(Double.valueOf(2450), outputTotalForSecondDay);
+  }
+
+  @ParameterizedTest
+  @MethodSource("deviationArguments")
+  @DisplayName("Get planning distribution applying historic forecast deviation")
+  void testGetPlanningDistributionApplyingHistoricForecastDeviation(final GetPlanningDistributionInput input,
+                                                                    final List<CurrentForecastDeviation> deviationsToApply,
+                                                                    final List<PlanDistribution> planDistributions,
+                                                                    final List<PlanDistribution> expectedPlanDistributions,
+                                                                    final ZonedDateTime mockMinDate) {
+    // GIVEN
+    when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
+
+    when(planningDistributionGateway.findByForecastIdsAndDynamicFilters(
+        input.getDateInFrom(),
+        input.getDateInTo(),
+        input.getDateOutFrom(),
+        input.getDateOutTo(),
+        of(),
+        new HashSet<>(mockForecastIds()))
+    ).thenReturn(planDistributions);
+
+    if (input.getViewDate() == null) {
+      when(currentForecastDeviationRepository.findActiveDeviationAt(WAREHOUSE_ID, FBM_WMS_OUTBOUND.name(), mockMinDate.toInstant()))
+          .thenReturn(deviationsToApply);
+    } else {
+      when(currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
+          WAREHOUSE_ID, FBM_WMS_OUTBOUND, mockMinDate.withZoneSameInstant(UTC)))
+          .thenReturn(deviationsToApply);
+    }
+
+    // WHEN
+    final List<GetPlanningDistributionOutput> output = planningDistributionService
+        .getPlanningDistribution(input).stream()
+        .sorted(Comparator.comparing(GetPlanningDistributionOutput::getDateIn))
+        .collect(Collectors.toList());
+
+    // THEN
+    assertEquals(expectedPlanDistributions.size(), output.size());
+    if (!output.isEmpty()) {
+      assertEquals(expectedPlanDistributions.get(0).getQuantity(), output.get(0).getTotal());
+      assertEquals(expectedPlanDistributions.get(1).getQuantity(), output.get(1).getTotal());
+      assertEquals(expectedPlanDistributions.get(2).getQuantity(), output.get(2).getTotal());
+      assertEquals(expectedPlanDistributions.get(3).getQuantity(), output.get(3).getTotal());
+      assertEquals(expectedPlanDistributions.get(4).getQuantity(), output.get(4).getTotal());
+      assertEquals(expectedPlanDistributions.get(5).getQuantity(), output.get(5).getTotal());
+    }
   }
 
   @Test
@@ -283,13 +483,13 @@ public class PlanningDistributionServiceTest {
     final var processPaths = of(TOT_MONO, NON_TOT_MONO);
 
     final var input = mockPlanningDistributionInput(DATE_IN_1,
-                                                    DATE_IN_3,
-                                                    DATE_OUT_1,
-                                                    DATE_OUT_3,
-                                                    A_DATE_UTC.toInstant(),
-                                                    true,
-                                                    processPaths,
-                                                    false);
+        DATE_IN_3,
+        DATE_OUT_1,
+        DATE_OUT_3,
+        A_DATE_UTC.toInstant(),
+        true,
+        processPaths,
+        false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -311,12 +511,14 @@ public class PlanningDistributionServiceTest {
         new HashSet<>(mockForecastIds())
     )).thenReturn(distributions);
 
-    when(currentForecastDeviationRepository.findActiveDeviationAt(WAREHOUSE_ID, FBM_WMS_OUTBOUND.name(), input.getViewDate()))
-        .thenReturn(List.of(CurrentForecastDeviation.builder()
-                                .dateFrom(ofInstant(DATE_IN_2, UTC))
-                                .dateTo(ofInstant(DATE_IN_3, UTC))
-                                .value(0.5)
-                                .build())
+    when(currentForecastDeviationRepository.findByLogisticCenterIdAndWorkflowAndIsActiveTrueAndDateToIsGreaterThan(
+        WAREHOUSE_ID, FBM_WMS_OUTBOUND, ofInstant(input.getViewDate(), UTC)))
+        .thenReturn(
+            List.of(CurrentForecastDeviation.builder()
+                .dateFrom(ofInstant(DATE_IN_2, UTC))
+                .dateTo(ofInstant(DATE_IN_3, UTC))
+                .value(0.5)
+                .build())
         );
 
     // WHEN
@@ -328,9 +530,9 @@ public class PlanningDistributionServiceTest {
     final var expected = List.of(
         new GetPlanningDistributionOutput(DATE_IN_1, DATE_OUT_1, UNITS, TOT_MONO, 33.5),
         new GetPlanningDistributionOutput(DATE_IN_2, DATE_OUT_3, UNITS, TOT_MONO, 66.75),
-        new GetPlanningDistributionOutput(DATE_IN_3, DATE_OUT_2, UNITS, TOT_MONO, 45.0),
+        new GetPlanningDistributionOutput(DATE_IN_3, DATE_OUT_2, UNITS, TOT_MONO, 30.0),
         new GetPlanningDistributionOutput(DATE_IN_1, DATE_OUT_1, UNITS, NON_TOT_MONO, 0),
-        new GetPlanningDistributionOutput(DATE_IN_3, DATE_OUT_2, UNITS, NON_TOT_MONO, 15)
+        new GetPlanningDistributionOutput(DATE_IN_3, DATE_OUT_2, UNITS, NON_TOT_MONO, 10)
     );
 
     assertEquals(expected.size(), actual.size());
@@ -344,13 +546,13 @@ public class PlanningDistributionServiceTest {
     final var processPaths = of(TOT_MONO, NON_TOT_MONO);
 
     final var input = mockPlanningDistributionInput(DATE_IN_1,
-                                                    DATE_IN_3,
-                                                    null,
-                                                    null,
-                                                    A_DATE_UTC.toInstant(),
-                                                    false,
-                                                    processPaths,
-                                                    false);
+        DATE_IN_3,
+        null,
+        null,
+        A_DATE_UTC.toInstant(),
+        false,
+        processPaths,
+        false);
 
     when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
@@ -392,82 +594,47 @@ public class PlanningDistributionServiceTest {
     verifyNoInteractions(deferralGateway);
   }
 
-    @ParameterizedTest
-    @MethodSource("forecastArguments")
-    @DisplayName("forecasted backlog get with request flag is apply deferred")
-    void testRequestFlagIsApplyDeferred(
-            final GetPlanningDistributionInput input,
-            final List<GetPlanningDistributionOutput> expected
-    ) {
-        // GIVEN
-        final var distributions = List.of(
-                new PlanDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, UNITS, 33.5),
-                new PlanDistribution(1L, DATE_IN_2, DATE_OUT_3, TOT_MONO, UNITS, 44.5),
-                new PlanDistribution(1L, DATE_IN_3, DATE_OUT_2, TOT_MONO, UNITS, 30.0),
-                new PlanDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, UNITS, 0),
-                new PlanDistribution(1L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, UNITS, 10)
-        );
+  @ParameterizedTest
+  @MethodSource("forecastArguments")
+  @DisplayName("forecasted backlog get with request flag is apply deferred")
+  void testRequestFlagIsApplyDeferred(
+      final GetPlanningDistributionInput input,
+      final List<GetPlanningDistributionOutput> expected
+  ) {
+    // GIVEN
+    final var distributions = List.of(
+        new PlanDistribution(1L, DATE_IN_1, DATE_OUT_1, TOT_MONO, UNITS, 33.5),
+        new PlanDistribution(1L, DATE_IN_2, DATE_OUT_3, TOT_MONO, UNITS, 44.5),
+        new PlanDistribution(1L, DATE_IN_3, DATE_OUT_2, TOT_MONO, UNITS, 30.0),
+        new PlanDistribution(1L, DATE_IN_1, DATE_OUT_1, NON_TOT_MONO, UNITS, 0),
+        new PlanDistribution(1L, DATE_IN_3, DATE_OUT_2, NON_TOT_MONO, UNITS, 10)
+    );
 
-        when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
+    when(getForecastUseCase.execute(mockForecastInput(input))).thenReturn(mockForecastIds());
 
-        when(planningDistributionGateway.findByForecastIdsAndDynamicFilters(
-                DATE_IN_1,
-                DATE_IN_3,
-                DATE_OUT_1,
-                DATE_OUT_3,
-                of(TOT_MONO, TOT_MULTI_BATCH),
-                new HashSet<>(mockForecastIds())
-        )).thenReturn(distributions);
+    when(planningDistributionGateway.findByForecastIdsAndDynamicFilters(
+        DATE_IN_1,
+        DATE_IN_3,
+        DATE_OUT_1,
+        DATE_OUT_3,
+        of(TOT_MONO, TOT_MULTI_BATCH),
+        new HashSet<>(mockForecastIds())
+    )).thenReturn(distributions);
 
-        when(deferralGateway.getDeferredCpts(
-                input.getWarehouseId(),
-                input.getWorkflow(),
-                input.getViewDate()
-        )).thenReturn(List.of(DATE_OUT_1, DATE_OUT_2));
+    when(deferralGateway.getDeferredCpts(
+        input.getWarehouseId(),
+        input.getWorkflow(),
+        input.getViewDate()
+    )).thenReturn(List.of(DATE_OUT_1, DATE_OUT_2));
 
-        // WHEN
-        final List<GetPlanningDistributionOutput> output = planningDistributionService
-                .getPlanningDistribution(input);
+    // WHEN
+    final List<GetPlanningDistributionOutput> output = planningDistributionService
+        .getPlanningDistribution(input);
 
-        // THEN
-        assertNotNull(output);
-        assertTrue(expected.containsAll(output) && output.containsAll(expected));
-    }
-
-    private static Stream<Arguments> forecastArguments() {
-        return Stream.of(
-                Arguments.of(
-                        mockPlanningDistributionInput(
-                                DATE_IN_1,
-                                DATE_IN_3,
-                                DATE_OUT_1,
-                                DATE_OUT_3,
-                                A_DATE_UTC.toInstant(),
-                                true,
-                                of(TOT_MONO, TOT_MULTI_BATCH),
-                                true
-                        ),
-                        List.of(
-                                new GetPlanningDistributionOutput(DATE_IN_2, DATE_OUT_3, UNITS, TOT_MONO, 44.5)
-                        )
-                ),
-                Arguments.of(
-                        mockPlanningDistributionInput(
-                                DATE_IN_1,
-                                DATE_IN_3,
-                                DATE_OUT_1,
-                                DATE_OUT_3,
-                                A_DATE_UTC.toInstant(),
-                                false,
-                                of(TOT_MONO, TOT_MULTI_BATCH),
-                                true
-                        ),
-                        List.of(
-                                new GetPlanningDistributionOutput(DATE_IN_2, DATE_OUT_3, UNITS, TOT_MONO, 44.5)
-                        )
-                )
-        );
-    }
+    // THEN
+    assertNotNull(output);
+    assertTrue(expected.containsAll(output) && output.containsAll(expected));
+  }
 
   private GetForecastInput mockForecastInput(final GetPlanningDistributionInput input) {
     return GetForecastInput.builder()

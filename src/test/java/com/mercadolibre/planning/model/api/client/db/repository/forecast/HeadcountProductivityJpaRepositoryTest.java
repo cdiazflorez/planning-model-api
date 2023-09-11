@@ -8,6 +8,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -18,6 +19,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 class HeadcountProductivityJpaRepositoryTest {
+
+  private static final ZonedDateTime DATE = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
   @Autowired
   private EntityManager entityManager;
@@ -31,7 +34,7 @@ class HeadcountProductivityJpaRepositoryTest {
     final HeadcountProductivityJpaRepository repository = new HeadcountProductivityJpaRepository(entityManager);
 
     final HeadcountProductivity entity = HeadcountProductivity.builder()
-        .date(ZonedDateTime.now())
+        .date(DATE)
         .processPath(ProcessPath.GLOBAL)
         .processName(ProcessName.PICKING)
         .productivity(10)

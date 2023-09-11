@@ -1,1 +1,1 @@
-FROM hub.furycloud.io/mercadolibre/java:1.11-mini
+FROM hub.furycloud.io/mercadolibre/java:17-mini

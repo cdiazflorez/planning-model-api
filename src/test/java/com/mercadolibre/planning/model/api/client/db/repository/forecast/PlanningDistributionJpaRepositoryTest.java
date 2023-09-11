@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.IntStream;
 import javax.persistence.EntityManager;
@@ -20,6 +21,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 public class PlanningDistributionJpaRepositoryTest {
+
+  private static final ZonedDateTime DATE = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
   @Autowired
   private EntityManager entityManager;
@@ -35,8 +38,8 @@ public class PlanningDistributionJpaRepositoryTest {
         new PlanningDistributionJpaRepositoryMock(entityManager);
 
     final PlanningDistribution entity = PlanningDistribution.builder()
-        .dateIn(ZonedDateTime.now())
-        .dateOut(ZonedDateTime.now().plusHours(1))
+        .dateIn(DATE)
+        .dateOut(DATE.plusHours(1))
         .quantity(10.11)
         .quantityMetricUnit(MetricUnit.UNITS)
         .processPath(ProcessPath.TOT_MONO)

@@ -10,6 +10,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -20,6 +21,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
 class ProcessingDistributionJpaRepositoryTest {
+
+  private static final ZonedDateTime DATE = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
 
   @Autowired
   private EntityManager entityManager;
@@ -33,7 +36,7 @@ class ProcessingDistributionJpaRepositoryTest {
     final ProcessingDistributionJpaRepository repository = new ProcessingDistributionJpaRepository(entityManager);
 
     final ProcessingDistribution entity = ProcessingDistribution.builder()
-        .date(ZonedDateTime.now())
+        .date(DATE)
         .processPath(ProcessPath.GLOBAL)
         .processName(ProcessName.PICKING)
         .quantity(10)

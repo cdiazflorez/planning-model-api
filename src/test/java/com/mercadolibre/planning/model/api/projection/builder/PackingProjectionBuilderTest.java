@@ -149,13 +149,13 @@ public class PackingProjectionBuilderTest {
     // THEN
     assertNotNull(result);
 
-    final var projectedEndDateBySla = result.getSlas()
+    final var projectedEndDateBySla = result.slas()
         .stream()
-        .filter(r -> r.getProjectedEndDate() != null)
+        .filter(r -> r.projectedEndDate() != null)
         .collect(
             Collectors.toMap(
-                SlaProjectionResult.Sla::getDate,
-                r -> r.getProjectedEndDate().truncatedTo(ChronoUnit.MINUTES)
+                SlaProjectionResult.Sla::date,
+                r -> r.projectedEndDate().truncatedTo(ChronoUnit.MINUTES)
             )
         );
 

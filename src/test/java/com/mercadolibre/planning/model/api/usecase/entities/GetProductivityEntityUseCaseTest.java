@@ -20,11 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
@@ -52,7 +52,7 @@ public class GetProductivityEntityUseCaseTest {
   private HeadcountProductivityRepository productivityRepository;
 
   @Mock
-  private CurrentHeadcountProductivityRepository currentProductivityRepository;
+  private CurrentProcessingDistributionRepository processingDistributionRepository;
 
   @Mock
   private GetForecastUseCase getForecastUseCase;
@@ -90,7 +90,7 @@ public class GetProductivityEntityUseCaseTest {
 
     // THEN
     assertEquals(4, output.size());
-    verifyNoInteractions(currentProductivityRepository);
+    verifyNoInteractions(processingDistributionRepository);
     outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
     outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
     outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
@@ -122,11 +122,13 @@ public class GetProductivityEntityUseCaseTest {
         .build())
     ).thenReturn(forecastIds);
 
-    when(currentProductivityRepository
+    when(processingDistributionRepository
         .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
             WAREHOUSE_ID,
             FBM_WMS_OUTBOUND.name(),
+            Set.of(ProcessName.GLOBAL.name()),
             Set.of(PICKING.name(), PACKING.name()),
+            Set.of(PRODUCTIVITY.name()),
             input.getDateFrom(),
             input.getDateTo(),
             A_DATE_UTC.toInstant()
@@ -164,7 +166,7 @@ public class GetProductivityEntityUseCaseTest {
   public void testGetProductivityFromSourceSimulation() {
     // GIVEN
     final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, emptyList());
-    final CurrentHeadcountProductivity currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
+    final CurrentProcessingDistribution currentProd = mockCurrentProdEntity(A_DATE_UTC, 68L);
     final List<Long> forecastIds = List.of(1L);
 
     // WHEN
@@ -186,11 +188,13 @@ public class GetProductivityEntityUseCaseTest {
         Set.of(1))
     ).thenReturn(productivities());
 
-    when(currentProductivityRepository
+    when(processingDistributionRepository
         .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
             currentProd.getLogisticCenterId(),
             FBM_WMS_OUTBOUND.name(),
+            Set.of(ProcessName.GLOBAL.name()),
             Set.of(PICKING.name(), PACKING.name()),
+            Set.of(PRODUCTIVITY.name()),
             input.getDateFrom(),
             input.getDateTo(),
             A_DATE_UTC.toInstant()
@@ -240,7 +244,7 @@ public class GetProductivityEntityUseCaseTest {
         // THEN
         assertThat(output).isNotEmpty();
         assertEquals(4, output.size());
-        verifyNoInteractions(currentProductivityRepository);
+        verifyNoInteractions(processingDistributionRepository);
         outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
         outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
         outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
@@ -260,16 +264,16 @@ public class GetProductivityEntityUseCaseTest {
     );
   }
 
-  private List<CurrentHeadcountProductivity> currentProductivities() {
+  private List<CurrentProcessingDistribution> currentProductivities() {
     return List.of(
-        CurrentHeadcountProductivity
+        CurrentProcessingDistribution
             .builder()
-            .abilityLevel(1)
             .date(A_DATE_UTC)
             .isActive(true)
-            .productivity(68)
-            .productivityMetricUnit(UNITS_PER_HOUR)
+            .quantity(68)
+            .quantityMetricUnit(UNITS_PER_HOUR)
             .processName(PICKING)
+            .processPath(GLOBAL)
             .logisticCenterId(WAREHOUSE_ID)
             .workflow(FBM_WMS_OUTBOUND)
             .build()

@@ -21,20 +21,20 @@ VALUES
     (7, 'ARTW04', '2022-09-08 12:30:00', '2022-09-09 12:40:00', 0.7, 0, 'FBM_WMS_OUTBOUND', 1, '2022-09-08 13:30:00', '2022-09-08 12:30:00');
 
 
-INSERT INTO current_headcount_productivity(id, date, logistic_center_id, workflow, process_name, productivity, productivity_metric_unit, ability_level, is_active, date_created, last_updated, user_id)
-VALUES (1, '2022-09-08 11:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1), -- there are simulations out of date range
-       (2, '2022-09-08 14:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1),
+INSERT INTO current_processing_distribution(id, date, logistic_center_id, workflow, process_name, quantity, quantity_metric_unit, is_active, date_created, last_updated, user_id)
+VALUES (11, '2022-09-08 11:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1), -- there are simulations out of date range
+       (12, '2022-09-08 14:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1),
 
-       (3, '2022-09-08 12:30:00', 'ARTW02', 'FBM_WMS_OUTBOUND', 'BATCH_SORTER', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1), -- there are simulations for other processes
-       (4, '2022-09-08 12:30:00', 'ARTW02', 'FBM_WMS_OUTBOUND', 'WALL_IN', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1),
+       (13, '2022-09-08 12:30:00', 'ARTW02', 'FBM_WMS_OUTBOUND', 'BATCH_SORTER', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1), -- there are simulations for other processes
+       (14, '2022-09-08 12:30:00', 'ARTW02', 'FBM_WMS_OUTBOUND', 'WALL_IN', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1),
 
-       (5, '2022-09-08 12:30:00', 'ARTW03', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1), -- there is an active simulation
-       (6, '2022-09-08 12:30:00', 'ARTW03', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1),
+       (15, '2022-09-08 12:30:00', 'ARTW03', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1), -- there is an active simulation
+       (16, '2022-09-08 12:30:00', 'ARTW03', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1),
 
-       (7, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PACKING', 09, 'UNITS_PER_HOUR', 0, 0, '2022-09-08 10:10:00', '2022-09-08 10:15:00', 1), -- the simulation was deactivated with another simulation
-       (8, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1),
-       (9, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 0, 0, '2022-09-08 10:15:00', '2022-09-08 10:45:00', 1),
-       (10, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PICKING', 09, 'UNITS_PER_HOUR', 0, 1, '2022-09-08 10:45:00', '2022-09-08 10:45:00', 1);
+       (17, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PACKING', 09, 'UNITS_PER_HOUR', 0, '2022-09-08 10:10:00', '2022-09-08 10:15:00', 1), -- the simulation was deactivated with another simulation
+       (18, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PACKING', 10, 'UNITS_PER_HOUR', 1, '2022-09-08 10:15:00', '2022-09-08 10:15:00', 1),
+       (19, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 'UNITS_PER_HOUR', 0, '2022-09-08 10:15:00', '2022-09-08 10:45:00', 1),
+       (20, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PICKING', 09, 'UNITS_PER_HOUR', 1, '2022-09-08 10:45:00', '2022-09-08 10:45:00', 1);
 
 
 INSERT INTO current_processing_distribution(id, date, logistic_center_id, workflow, process_path, process_name, quantity, quantity_metric_unit, "type", is_active, date_created, last_updated, user_id)

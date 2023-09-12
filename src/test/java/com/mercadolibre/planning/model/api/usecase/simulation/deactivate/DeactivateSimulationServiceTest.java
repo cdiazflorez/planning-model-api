@@ -7,7 +7,6 @@ import static java.time.temporal.ChronoUnit.HOURS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationOfWeek;
@@ -28,8 +27,6 @@ public class DeactivateSimulationServiceTest {
   @Mock
   private CurrentProcessingDistributionRepository currentProcessingDistributionRepository;
 
-  @Mock
-  private CurrentHeadcountProductivityRepository currentHeadcountProductivityRepository;
 
   @Test
   public void deactivateSimulationOkTest() {
@@ -49,14 +46,6 @@ public class DeactivateSimulationServiceTest {
 
     //THEN
     verify(currentProcessingDistributionRepository, times(1)).deactivateProcessingDistributionForRangeOfDates(
-        WAREHOUSE_ID,
-        Workflow.FBM_WMS_OUTBOUND,
-        A_DATE_UTC,
-        dateTo,
-        USER_ID
-    );
-
-    verify(currentHeadcountProductivityRepository, times(1)).deactivateProductivityForRangeOfDates(
         WAREHOUSE_ID,
         Workflow.FBM_WMS_OUTBOUND,
         A_DATE_UTC,

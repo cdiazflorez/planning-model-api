@@ -9,18 +9,20 @@ import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
-import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,9 +33,10 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivityInput, List<ProductivityOutput>> {
 
+  private static final int ABILITY_LEVEL = 1;
   protected final HeadcountProductivityRepository productivityRepository;
 
-  protected final CurrentHeadcountProductivityRepository currentProductivityRepository;
+  protected final CurrentProcessingDistributionRepository currentProcessingDistributionRepository;
 
   protected final GetForecastUseCase getForecastUseCase;
 
@@ -61,13 +64,13 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
             .filter(noSimulationExistsWithSameProperties(inputSimulatedEntities))
             .map(sp -> ProductivityOutput.builder()
                     .workflow(input.getWorkflow())
-                    .value(sp.getProductivity())
+                    .value(sp.getQuantity())
                     .source(SIMULATION)
                     .processPath(GLOBAL)
                     .processName(sp.getProcessName())
-                    .metricUnit(sp.getProductivityMetricUnit())
+                    .metricUnit(sp.getQuantityMetricUnit())
                     .date(sp.getDate())
-                    .abilityLevel(sp.getAbilityLevel())
+                    .abilityLevel(ABILITY_LEVEL)
                     .build());
 
     return Stream.concat(
@@ -92,7 +95,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
             .build());
   }
 
-  private Predicate<CurrentHeadcountProductivity> noSimulationExistsWithSameProperties(
+  private Predicate<CurrentProcessingDistribution> noSimulationExistsWithSameProperties(
           final List<ProductivityOutput> entities
   ) {
      return currentHeadcountProductivity -> entities.stream().noneMatch(entityOutput -> entityOutput.getSource() == SIMULATION
@@ -102,16 +105,18 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
              .isEqual(currentHeadcountProductivity.getDate().withFixedOffsetZone()));
   }
 
-  private List<CurrentHeadcountProductivity> findCurrentProductivityBy(final GetProductivityInput input) {
+  private List<CurrentProcessingDistribution> findCurrentProductivityBy(final GetProductivityInput input) {
     final var processes = input.getProcessName()
         .stream()
         .map(ProcessName::name)
         .collect(toSet());
 
-    return currentProductivityRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+    return currentProcessingDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         input.getWarehouseId(),
         input.getWorkflow().name(),
+        input.getProcessPaths().stream().map(ProcessPath::name).collect(toSet()),
         processes,
+        Set.of(PRODUCTIVITY.name()),
         input.getDateFrom(),
         input.getDateTo(),
         input.viewDate()

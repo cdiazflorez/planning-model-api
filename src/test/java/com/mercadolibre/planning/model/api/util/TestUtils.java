@@ -56,7 +56,6 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
@@ -265,68 +264,19 @@ public final class TestUtils {
         .build();
   }
 
-  public static CurrentHeadcountProductivity mockCurrentProdEntity(final ZonedDateTime date,
+  public static CurrentProcessingDistribution mockCurrentProdEntity(final ZonedDateTime date,
                                                                    final long value) {
-    return CurrentHeadcountProductivity.builder()
-        .abilityLevel(1)
+    return CurrentProcessingDistribution.builder()
         .date(date)
         .isActive(true)
-        .productivity(value)
-        .productivityMetricUnit(UNITS_PER_HOUR)
+        .quantity(value)
+        .quantityMetricUnit(UNITS_PER_HOUR)
         .processName(PICKING)
+        .processPath(GLOBAL)
         .logisticCenterId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
-        .logisticCenterId(WAREHOUSE_ID)
+        .type(ProcessingType.PRODUCTIVITY)
         .build();
-  }
-
-  public static List<CurrentHeadcountProductivity> mockCurrentProductivities() {
-    return List.of(
-        CurrentHeadcountProductivity.builder()
-            .abilityLevel(1)
-            .date(DEACTIVATE_DATE_FROM.minus(1, DAYS))
-            .isActive(true)
-            .productivity(10)
-            .productivityMetricUnit(UNITS_PER_HOUR)
-            .processName(PICKING)
-            .logisticCenterId(WAREHOUSE_ID)
-            .workflow(FBM_WMS_OUTBOUND)
-            .logisticCenterId(WAREHOUSE_ID)
-            .build(),
-        CurrentHeadcountProductivity.builder()
-            .abilityLevel(1)
-            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
-            .isActive(true)
-            .productivity(10)
-            .productivityMetricUnit(UNITS_PER_HOUR)
-            .processName(PICKING)
-            .logisticCenterId(WAREHOUSE_ID)
-            .workflow(FBM_WMS_OUTBOUND)
-            .logisticCenterId(WAREHOUSE_ID)
-            .build(),
-        CurrentHeadcountProductivity.builder()
-            .abilityLevel(1)
-            .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
-            .isActive(true)
-            .productivity(10)
-            .productivityMetricUnit(UNITS_PER_HOUR)
-            .processName(PUT_AWAY)
-            .logisticCenterId(WAREHOUSE_ID)
-            .workflow(FBM_WMS_INBOUND)
-            .logisticCenterId(WAREHOUSE_ID)
-            .build(),
-        CurrentHeadcountProductivity.builder()
-            .abilityLevel(1)
-            .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
-            .isActive(true)
-            .productivity(10)
-            .productivityMetricUnit(UNITS_PER_HOUR)
-            .processName(PICKING)
-            .logisticCenterId(WAREHOUSE_ID)
-            .workflow(FBM_WMS_OUTBOUND)
-            .logisticCenterId(WAREHOUSE_ID)
-            .build()
-    );
   }
 
   public static CurrentProcessingDistribution mockCurrentProcDist(final ZonedDateTime date, final long value) {

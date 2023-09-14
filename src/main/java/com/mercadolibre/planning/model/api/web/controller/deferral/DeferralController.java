@@ -45,6 +45,21 @@ public class DeferralController {
     return ResponseEntity.status(deferralResponse.getStatus()).body(deferralResponse);
   }
 
+  @PostMapping("/event")
+  @Trace(dispatcher = true)
+  public ResponseEntity<DeferralResponse> saveDeferredEvent(
+      @RequestBody @Valid final Msg request
+  ) {
+
+    final DeferralResponse deferralResponse = saveOutboundDeferralReport.save(
+        request.getMsg().getWarehouseId(),
+        request.getMsg().getLastUpdated(),
+        mapSlaDeferral(request.getMsg().getProjections())
+    );
+
+    return ResponseEntity.status(deferralResponse.getStatus()).body(deferralResponse);
+  }
+
   @GetMapping
   @Trace(dispatcher = true)
   public ResponseEntity<DeferralReportDto> get(

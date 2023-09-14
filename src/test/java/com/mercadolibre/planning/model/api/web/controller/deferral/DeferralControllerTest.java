@@ -47,6 +47,8 @@ class DeferralControllerTest {
 
   private static final String URL = "/planning/model/deferred/save";
 
+  private static final String DEFERRAL_URL = "/planning/model/deferred/event";
+
   private static final String URL_GET = "/planning/model/deferred";
 
   private static final String URL_FILE_GET = "controller/deferral/deferral_report.json";
@@ -101,8 +103,10 @@ class DeferralControllerTest {
 
   @Autowired
   private MockMvc mvc;
+
   @MockBean
   private SaveOutboundDeferralReport saveOutboundDeferralReport;
+
   @MockBean
   private GetDeferralReport getDeferralReport;
 
@@ -210,4 +214,28 @@ class DeferralControllerTest {
         .andExpect(content().json(expected));
   }
 
+  @ParameterizedTest
+  @MethodSource("parametersSaveStatus")
+  void testSaveDeferralEvent(
+      final String url,
+      final ResultMatcher statusController,
+      final int times,
+      final Instant deferralDate,
+      final DeferralResponse deferralResponse
+  ) throws Exception {
+    // GIVEN
+    when(saveOutboundDeferralReport.save(LOGISTIC_CENTER_ID, deferralDate, CPT_DEFERRAL_REPORTS))
+        .thenReturn(deferralResponse);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(DEFERRAL_URL)
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString(url))
+    );
+
+    // THEN
+    result.andExpect(statusController);
+    verify(saveOutboundDeferralReport, times(times)).save(LOGISTIC_CENTER_ID, deferralDate, CPT_DEFERRAL_REPORTS);
+  }
 }

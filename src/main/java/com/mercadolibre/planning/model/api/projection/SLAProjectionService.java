@@ -9,7 +9,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.springframework.stereotype.Service;
 
+@Service
 public final class SLAProjectionService {
 
   private SLAProjectionService() {

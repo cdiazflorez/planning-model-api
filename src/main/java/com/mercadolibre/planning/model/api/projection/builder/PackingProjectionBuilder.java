@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
+import static com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -276,7 +277,7 @@ public class PackingProjectionBuilder implements Projector {
     );
 
     final var results = slas.stream()
-        .map(sla -> new SlaProjectionResult.Sla(sla, projectedEndDates.get(sla), 0D))
+        .map(sla -> new Sla(sla, projectedEndDates.get(sla), 0D))
         .collect(Collectors.toList());
 
     return new SlaProjectionResult(results);

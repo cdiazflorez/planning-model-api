@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * A service for calculating the sum of values within a specified time range based on a map of time-value pairs.
  */
-final class ThroughputCalculator {
+public final class ThroughputCalculator {
 
   private static final double MINUTES_IN_A_HOUR = 60.0;
 

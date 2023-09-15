@@ -12,13 +12,11 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
@@ -41,10 +39,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<SimulationOutput>> {
 
-  private static final int ORIGINAL_WORKER_ABILITY = 1;
-
-  private final CurrentHeadcountProductivityRepository currentProductivityRepository;
-
   private final CurrentProcessingDistributionRepository currentProcessingRepository;
 
   private final ProcessPathHeadcountShareService processPathHeadcountShareService;
@@ -62,16 +56,16 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
         simulation.getEntities().stream()
             .filter(e -> e.getType() == PRODUCTIVITY)
             .forEach(entity ->
-                currentProductivityRepository.deactivateProductivity(
+                currentProcessingRepository.deactivateProcessingDistribution(
                     input.getWarehouseId(),
                     input.getWorkflow(),
                     simulation.getProcessName(),
                     entity.getValues().stream()
                         .map(QuantityByDate::getDate)
                         .collect(toList()),
-                    UNITS_PER_HOUR,
+                    ProcessingType.PRODUCTIVITY,
                     userId,
-                    ORIGINAL_WORKER_ABILITY
+                    UNITS_PER_HOUR
                 )
             ));
 
@@ -94,18 +88,17 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
   }
 
   private List<SimulationOutput> createSimulation(final SimulationInput input) {
-    final List<CurrentHeadcountProductivity> simulatedProductivities =
-        currentProductivityRepository.saveAll(createProductivities(input));
+    final ArrayList<CurrentProcessingDistribution> currentProcessingDistributions = new ArrayList<>();
+    currentProcessingDistributions.addAll(createHeadcount(input));
+    currentProcessingDistributions.addAll(createProductivities(input));
 
-    final List<CurrentProcessingDistribution> simulatedHeadcount =
-        currentProcessingRepository.saveAll(createHeadcount(input));
+    final List<CurrentProcessingDistribution> savedProcessingDistribution =
+        currentProcessingRepository.saveAll(currentProcessingDistributions);
 
-    return createSimulationOutput(simulatedProductivities, simulatedHeadcount);
+    return createSimulationOutput(savedProcessingDistribution);
   }
 
-  private List<SimulationOutput> createSimulationOutput(
-      final List<CurrentHeadcountProductivity> simulatedProductivities,
-      final List<CurrentProcessingDistribution> simulatedHeadcount) {
+  private List<SimulationOutput> createSimulationOutput(final List<CurrentProcessingDistribution> simulatedHeadcount) {
 
     final List<SimulationOutput> simulationOutputs = new ArrayList<>();
     simulatedHeadcount.forEach(headcount -> simulationOutputs.add(
@@ -121,37 +114,25 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
         )
     ));
 
-    simulatedProductivities.forEach(productivity -> simulationOutputs.add(
-        new SimulationOutput(
-            productivity.getId(),
-            productivity.getDate(),
-            productivity.getWorkflow(),
-            productivity.getProcessName(),
-            productivity.getProductivity(),
-            productivity.getProductivityMetricUnit(),
-            productivity.isActive(),
-            productivity.getAbilityLevel()
-        )
-    ));
-
     return simulationOutputs;
   }
 
-  private List<CurrentHeadcountProductivity> createProductivities(final SimulationInput input) {
-    final List<CurrentHeadcountProductivity> simulatedProductivities = new ArrayList<>();
+  private List<CurrentProcessingDistribution> createProductivities(final SimulationInput input) {
+    final List<CurrentProcessingDistribution> simulatedProductivities = new ArrayList<>();
 
     input.getSimulations().forEach(simulation -> simulation.getEntities().stream()
         .filter(entity -> entity.getType() == PRODUCTIVITY)
         .forEach(entity -> entity.getValues().forEach(value ->
-            simulatedProductivities.add(CurrentHeadcountProductivity.builder()
+            simulatedProductivities.add(CurrentProcessingDistribution.builder()
                 .workflow(input.getWorkflow())
                 .processName(simulation.getProcessName())
+                .processPath(GLOBAL)
                 .date(value.getDate())
                 .logisticCenterId(input.getWarehouseId())
-                .productivity(value.getQuantity())
+                .quantity(value.getQuantity())
+                .quantityMetricUnit(UNITS_PER_HOUR)
+                .type(ProcessingType.PRODUCTIVITY)
                 .userId(input.getUserId())
-                .productivityMetricUnit(UNITS_PER_HOUR)
-                .abilityLevel(ORIGINAL_WORKER_ABILITY)
                 .isActive(true)
                 .build()))));
 

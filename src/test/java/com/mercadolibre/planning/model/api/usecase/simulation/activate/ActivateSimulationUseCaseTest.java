@@ -25,12 +25,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentHeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingDistributionRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentHeadcountProductivity;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
@@ -42,6 +41,7 @@ import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import com.mercadolibre.planning.model.api.web.controller.simulation.SimulationEntity;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -59,9 +59,6 @@ public class ActivateSimulationUseCaseTest {
 
   @InjectMocks
   private ActivateSimulationUseCase activateSimulationUseCase;
-
-  @Mock
-  private CurrentHeadcountProductivityRepository currentProductivityRepository;
 
   @Mock
   private CurrentProcessingDistributionRepository currentProcessingRepository;
@@ -106,9 +103,6 @@ public class ActivateSimulationUseCaseTest {
     when(currentProcessingRepository.saveAll(anyList()))
         .thenReturn(mockCurrentDistribution());
 
-    when(currentProductivityRepository.saveAll(anyList()))
-        .thenReturn(mockCurrentProductivity());
-
     // WHEN
     final List<SimulationOutput> simulations = activateSimulationUseCase.execute(input);
 
@@ -117,8 +111,8 @@ public class ActivateSimulationUseCaseTest {
         workflow, PICKING, List.of(DATE_12, DATE_13),
         EFFECTIVE_WORKERS, USER_ID, WORKERS);
 
-    verify(currentProductivityRepository).deactivateProductivity(input.getWarehouseId(),
-        workflow, PACKING, singletonList(DATE_12), UNITS_PER_HOUR, USER_ID, 1);
+    verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
+        workflow, PACKING, singletonList(DATE_12), ProcessingType.PRODUCTIVITY, USER_ID, UNITS_PER_HOUR);
 
     assertEquals(3, simulations.size());
 
@@ -141,7 +135,6 @@ public class ActivateSimulationUseCaseTest {
     assertTrue(simulation2.isActive());
 
     final SimulationOutput simulation3 = simulations.get(2);
-    assertEquals(Integer.valueOf(1), simulation3.getAbilityLevel());
     assertEquals(DATE_12, simulation3.getDate());
     assertEquals(PACKING, simulation3.getProcessName());
     assertEquals(96, simulation3.getQuantity());
@@ -181,7 +174,7 @@ public class ActivateSimulationUseCaseTest {
             mockCurrentProcessingDistribution(DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15)
     );
 
-    final List<CurrentHeadcountProductivity> currentHeadcountProductivities = List.of(
+    final List<CurrentProcessingDistribution> currentHeadcountProductivities = List.of(
             mockCurrentHeadcountProductivity(DATE_12, PICKING, 30),
             mockCurrentHeadcountProductivity(DATE_13, PICKING, 30),
             mockCurrentHeadcountProductivity(DATE_12, PACKING, 35),
@@ -195,11 +188,12 @@ public class ActivateSimulationUseCaseTest {
     when(processPathHeadcountShareService.getHeadcountShareByProcessPath(anyString(), any(), anySet(), any(), any(), any()))
             .thenReturn(processPathHeadcountResponse);
 
-    when(currentProcessingRepository.saveAll(anyList()))
-            .thenReturn(currentProcessingDistributions);
+    final var allProcessingDistribution = new ArrayList<>(currentProcessingDistributions);
+    allProcessingDistribution.addAll(currentHeadcountProductivities);
 
-    when(currentProductivityRepository.saveAll(anyList()))
-            .thenReturn(currentHeadcountProductivities);
+    when(currentProcessingRepository.saveAll(anyList()))
+            .thenReturn(allProcessingDistribution);
+
     //WHEN
     final List<SimulationOutput> simulations = activateSimulationUseCase.execute(input);
 
@@ -217,15 +211,15 @@ public class ActivateSimulationUseCaseTest {
             ));
 
     currentHeadcountProductivities.stream()
-            .map(CurrentHeadcountProductivity::getProcessName)
+            .map(CurrentProcessingDistribution::getProcessName)
             .distinct()
-            .forEach(processName -> verify(currentProductivityRepository).deactivateProductivity(input.getWarehouseId(),
+            .forEach(processName -> verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
                     workflow,
                     processName,
                     List.of(DATE_12, DATE_13),
-                    UNITS_PER_HOUR,
+                    ProcessingType.PRODUCTIVITY,
                     USER_ID,
-                    1
+                    UNITS_PER_HOUR
             ));
 
     final int expectedResultSize = currentHeadcountProductivities.size() + currentProcessingDistributions.size();
@@ -263,6 +257,16 @@ public class ActivateSimulationUseCaseTest {
             .workflow(FBM_WMS_OUTBOUND)
             .type(EFFECTIVE_WORKERS)
             .isActive(true)
+            .build(),
+        CurrentProcessingDistribution.builder()
+            .date(DATE_12)
+            .processName(PACKING)
+            .processPath(ProcessPath.GLOBAL)
+            .quantity(96)
+            .quantityMetricUnit(UNITS_PER_HOUR)
+            .type(ProcessingType.PRODUCTIVITY)
+            .workflow(FBM_WMS_OUTBOUND)
+            .isActive(true)
             .build()
     );
   }
@@ -289,27 +293,16 @@ public class ActivateSimulationUseCaseTest {
             .build();
   }
 
-  private List<CurrentHeadcountProductivity> mockCurrentProductivity() {
-    return singletonList(CurrentHeadcountProductivity.builder()
-        .date(DATE_12)
-        .processName(PACKING)
-        .productivity(96)
-        .productivityMetricUnit(UNITS_PER_HOUR)
-        .abilityLevel(1)
-        .workflow(FBM_WMS_OUTBOUND)
-        .isActive(true)
-        .build());
-  }
-
-  private CurrentHeadcountProductivity mockCurrentHeadcountProductivity(final ZonedDateTime date,
+  private CurrentProcessingDistribution mockCurrentHeadcountProductivity(final ZonedDateTime date,
                                                                         final ProcessName processName,
                                                                         final int productivity) {
-    return CurrentHeadcountProductivity.builder()
+    return CurrentProcessingDistribution.builder()
             .date(date)
             .processName(processName)
-            .productivity(productivity)
-            .productivityMetricUnit(UNITS_PER_HOUR)
-            .abilityLevel(1)
+            .processPath(ProcessPath.GLOBAL)
+            .quantity(productivity)
+            .quantityMetricUnit(UNITS_PER_HOUR)
+            .type(ProcessingType.PRODUCTIVITY)
             .workflow(FBM_WMS_OUTBOUND)
             .isActive(true)
             .build();

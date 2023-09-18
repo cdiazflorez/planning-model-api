@@ -1,0 +1,12 @@
+{
+  "capacity": 7500,
+  "projection": {
+    "slas": [
+      {
+        "date": "2023-09-14T14:00:00Z",
+        "projected_end_date": "2023-09-14T13:00:00Z",
+        "remaining_quantity": 0
+      }
+    ]
+  }
+}

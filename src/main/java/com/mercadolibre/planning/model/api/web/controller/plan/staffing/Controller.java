@@ -9,6 +9,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PUT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -16,7 +17,11 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
@@ -28,9 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import lombok.Value;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -54,21 +57,13 @@ public class Controller {
 
   private final GetThroughputUseCase getThroughputUseCase;
 
-  private static Map<ProcessPath, Map<ProcessName, Map<Instant, Throughput>>> adaptResponse(final List<EntityOutput> throughputs) {
-    return throughputs.stream().collect(
-        Collectors.groupingBy(EntityOutput::getProcessPath,
-            Collectors.groupingBy(EntityOutput::getProcessName,
-                Collectors.toMap(entity -> entity.getDate().toInstant(),
-                    entity -> new Throughput(entity.getRoundedValue())
-                )
-            )
-        )
-    );
-  }
+  private final GetHeadcountEntityUseCase getHeadcountEntityUseCase;
 
-  @GetMapping("/throughput")
+  private final GetProductivityEntityUseCase getProductivityEntityUseCase;
+
+  @GetMapping
   @Trace(dispatcher = true)
-  public ResponseEntity<Map<ProcessPath, Map<ProcessName, Map<Instant, Throughput>>>> getThroughput(
+  public ResponseEntity<StaffingPlanMapper.StaffingPlan> getStaffingPlan(
       @PathVariable final String logisticCenterId,
       @RequestParam final Workflow workflow,
       @RequestParam(required = false) final List<ProcessPath> processPaths,
@@ -78,10 +73,77 @@ public class Controller {
       @RequestParam final Instant viewDate
   ) {
 
-    // TODO retrieve all processes if processes params is empty based on processes stored in DB
-    final var processesNames = CollectionUtils.isEmpty(processes) ? PROCESSES_BY_WORKFLOW.get(workflow) : new ArrayList<>(processes);
+    final GetEntityInput input = createEntityInput(
+        logisticCenterId,
+        workflow,
+        processPaths,
+        processes,
+        dateFrom,
+        dateTo,
+        viewDate
+    );
+    final List<EntityOutput> headcounts = getHeadcountEntityUseCase.execute(StaffingPlanMapper.createSystemicHeadcountInput(input));
+    final List<EntityOutput> headcountsNs = getHeadcountEntityUseCase.execute(StaffingPlanMapper.createNonSystemicHeadcountInput(input));
+    final List<ProductivityOutput> productivity = getProductivityEntityUseCase.execute(StaffingPlanMapper.createProductivityInput(input));
+    final List<EntityOutput> throughput = getThroughputUseCase.execute(input);
 
-    final GetEntityInput input = GetEntityInput.builder()
+    return ResponseEntity.status(OK).body(new StaffingPlanMapper.StaffingPlan(
+        StaffingPlanMapper.adaptEntityOutputResponse(headcounts),
+        StaffingPlanMapper.adaptEntityOutputResponse(headcountsNs),
+        StaffingPlanMapper.adaptEntityOutputResponse(
+            productivity.stream().filter(ProductivityOutput::isMainProductivity).collect(toList())
+        ),
+        StaffingPlanMapper.adaptThroughputResponse(throughput)
+    ));
+  }
+
+  @GetMapping("/throughput")
+  @Trace(dispatcher = true)
+  public ResponseEntity<Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>>> getThroughput(
+      @PathVariable final String logisticCenterId,
+      @RequestParam final Workflow workflow,
+      @RequestParam(required = false) final List<ProcessPath> processPaths,
+      @RequestParam(required = false) final Set<ProcessName> processes,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Instant dateFrom,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final Instant dateTo,
+      @RequestParam final Instant viewDate
+  ) {
+    final GetEntityInput input = createEntityInput(
+        logisticCenterId,
+        workflow,
+        processPaths,
+        processes,
+        dateFrom,
+        dateTo,
+        viewDate
+    );
+    final var result = getThroughputUseCase.execute(input);
+    return ResponseEntity.status(OK).body(StaffingPlanMapper.adaptThroughputResponse(result));
+  }
+
+  @InitBinder
+  public void initBinder(final PropertyEditorRegistry dataBinder) {
+    dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
+    dataBinder.registerCustomEditor(ProcessPath.class, new ProcessPathEditor());
+    dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
+  }
+
+  private GetEntityInput createEntityInput(
+      final String logisticCenterId,
+      final Workflow workflow,
+      final List<ProcessPath> processPaths,
+      final Set<ProcessName> processes,
+      final Instant dateFrom,
+      final Instant dateTo,
+      final Instant viewDate
+  ) {
+
+    // TODO retrieve all processes if processes params is empty based on processes stored in DB
+    final var processesNames = CollectionUtils.isEmpty(processes)
+        ? PROCESSES_BY_WORKFLOW.get(workflow)
+        : new ArrayList<>(processes);
+
+    return GetEntityInput.builder()
         .warehouseId(logisticCenterId)
         .workflow(workflow)
         .dateFrom(ZonedDateTime.ofInstant(dateFrom, ZoneOffset.UTC))
@@ -92,20 +154,5 @@ public class Controller {
         .simulations(emptyList())
         .viewDate(viewDate)
         .build();
-
-    final var result = getThroughputUseCase.execute(input);
-    return ResponseEntity.status(OK).body(adaptResponse(result));
-  }
-
-  @InitBinder
-  public void initBinder(final PropertyEditorRegistry dataBinder) {
-    dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
-    dataBinder.registerCustomEditor(ProcessPath.class, new ProcessPathEditor());
-    dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
-  }
-
-  @Value
-  static class Throughput {
-    long quantity;
   }
 }

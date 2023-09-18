@@ -1,12 +1,9 @@
 package com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS_PER_HOUR;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.PolyvalenteProductivityUtils.calculatePolyvalentProductivityRatioByProcessPath;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameAndDate;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.toMapByProcessPathProcessNameDateAndSource;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -21,8 +18,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInpu
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
+import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import com.newrelic.api.agent.Trace;
@@ -32,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -49,9 +45,6 @@ import org.springframework.util.CollectionUtils;
 @AllArgsConstructor
 public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<EntityOutput>> {
 
-  private static final int MAIN_ABILITY = 1;
-
-  private static final int POLYVALENT_ABILITY = 2;
 
   private final GetHeadcountEntityUseCase headcountEntityUseCase;
 
@@ -76,8 +69,8 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
       allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
     }
 
-    final List<EntityOutput> headcounts = headcountEntityUseCase.execute(createHeadcountInput(input));
-    final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(createProductivityInput(input));
+    final List<EntityOutput> headcounts = headcountEntityUseCase.execute(StaffingPlanMapper.createSystemicHeadcountInput(input));
+    final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(StaffingPlanMapper.createProductivityInput(input));
 
     allThroughputs.addAll(createThroughput(
             input.getProcessPaths(),
@@ -221,17 +214,19 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
         polyvalentProductivityRatios.getForProcessPathProcessNameAndDate(processPath, process, dateTime);
 
     final double tph;
+    final var regularHeadcount = forecastHeadcount.getValue();
+    final var regularProductivity = simulatedRegularProductivity.getValue();
+    final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
+    final double polyvalentProductivity = simulatedRegularProductivity.getValue() * forecastPolyvalentProductivity.orElse(0.0);
+    double regularTph = regularHeadcount * regularProductivity + polyvalentHeadcount * polyvalentProductivity;
+
     if (simulatedHeadcount.getValue() <= forecastHeadcount.getValue()
         || workflow != Workflow.FBM_WMS_OUTBOUND
         || forecastPolyvalentProductivity.isEmpty()
     ) {
       tph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
     } else {
-      final var regularHeadcount = forecastHeadcount.getValue();
-      final var regularProductivity = simulatedRegularProductivity.getValue();
-      final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-      final double polyvalentProductivity = simulatedRegularProductivity.getValue() * forecastPolyvalentProductivity.get();
-      tph = regularHeadcount * regularProductivity + polyvalentHeadcount * polyvalentProductivity;
+      tph = regularTph;
     }
 
     return Optional.of(
@@ -243,39 +238,8 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
             .source(simulatedRegularProductivity.getSource())
             .metricUnit(UNITS_PER_HOUR)
             .value(Math.round(tph))
+            .originalValue(Math.round(regularTph))
             .build()
     );
-  }
-
-  private GetProductivityInput createProductivityInput(final GetEntityInput input) {
-    return GetProductivityInput.builder()
-        .warehouseId(input.getWarehouseId())
-        .workflow(input.getWorkflow())
-        .entityType(PRODUCTIVITY)
-        .dateFrom(input.getDateFrom())
-        .dateTo(input.getDateTo())
-        .source(input.getSource())
-        .processPaths(input.getProcessPaths())
-        .processName(input.getProcessName())
-        .simulations(input.getSimulations())
-        .abilityLevel(Set.of(MAIN_ABILITY, POLYVALENT_ABILITY))
-        .viewDate(input.getViewDate())
-        .build();
-  }
-
-  private GetHeadcountInput createHeadcountInput(final GetEntityInput input) {
-    return GetHeadcountInput.builder()
-        .warehouseId(input.getWarehouseId())
-        .workflow(input.getWorkflow())
-        .entityType(HEADCOUNT)
-        .dateFrom(input.getDateFrom())
-        .dateTo(input.getDateTo())
-        .source(input.getSource())
-        .processPaths(input.getProcessPaths())
-        .processName(input.getProcessName())
-        .simulations(input.getSimulations())
-        .processingType(Set.of(EFFECTIVE_WORKERS))
-        .viewDate(input.getViewDate())
-        .build();
   }
 }

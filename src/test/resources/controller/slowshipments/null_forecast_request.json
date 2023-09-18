@@ -1,0 +1,35 @@
+{
+  "execution_date_from": "2023-09-14T12:00:00Z",
+  "execution_date_to": "2023-09-14T14:00:00Z",
+  "current_backlog_at_view_date": [
+    {
+      "process_name": "picking",
+      "process_path": "TOT_MONO",
+      "date_out": "2023-09-14T14:00:00Z",
+      "units": 150
+    },
+    {
+      "process_name": "packing",
+      "process_path": "TOT_MONO",
+      "date_out": "2023-09-14T14:00:00Z",
+      "units": 150
+    }
+  ],
+  "throughput": {
+    "PICKING": {
+      "2023-09-14T12:00:00Z": 10000,
+      "2023-09-14T13:00:00Z": 15000,
+      "2023-09-14T14:00:00Z": 1500
+    },
+    "PACKING": {
+      "2023-09-14T12:00:00Z": 10000,
+      "2023-09-14T13:00:00Z": 15000,
+      "2023-09-14T14:00:00Z": 1500
+    }
+  },
+  "cycle_time_by_sla": {
+    "2023-09-14T12:00:00Z": 30,
+    "2023-09-14T13:00:00Z": 30,
+    "2023-09-14T14:00:00Z": 30
+  }
+}

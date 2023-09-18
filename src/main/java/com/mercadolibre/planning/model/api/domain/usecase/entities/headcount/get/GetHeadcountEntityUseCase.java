@@ -182,6 +182,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
                     entity.getType() == HEADCOUNT ? EFFECTIVE_WORKERS : ProcessingType.MAX_CAPACITY,
                     entity.getType().getMetricUnit(),
                     SIMULATION,
+                    quantityByDate.getQuantity(),
                     quantityByDate.getQuantity()))))
         .collect(toList());
   }

@@ -42,6 +42,8 @@ public class EntityOutput {
 
   private double value;
 
+  private double originalValue;
+
   public double getValue() {
     return Double.parseDouble(decimalFormat.format(value));
   }
@@ -49,6 +51,11 @@ public class EntityOutput {
   @JsonIgnore
   public long getRoundedValue() {
     return Math.round(value);
+  }
+
+  @JsonIgnore
+  public long getRoundedOriginalValue() {
+    return Math.round(originalValue);
   }
 
   public static EntityOutput fromProcessingDistributionView(

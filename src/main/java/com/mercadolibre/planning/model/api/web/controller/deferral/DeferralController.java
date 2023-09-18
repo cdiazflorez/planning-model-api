@@ -30,9 +30,9 @@ public class DeferralController {
 
   private GetDeferralReport getDeferralReport;
 
-  @PostMapping("/save")
+  @PostMapping("/event")
   @Trace(dispatcher = true)
-  public ResponseEntity<DeferralResponse> save(
+  public ResponseEntity<DeferralResponse> saveDeferredEvent(
       @RequestBody @Valid final Msg request
   ) {
 

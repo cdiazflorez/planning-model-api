@@ -63,6 +63,8 @@ class DeferralControllerTest {
 
   private static final Instant CPT2 = Instant.parse("2023-07-21T18:00:00Z");
 
+  private static final Instant CPT3 = Instant.parse("2023-07-21T19:00:00Z");
+
   private static final Instant DATE_FROM = Instant.parse("2023-07-21T16:00:00Z");
 
   private static final Instant DATE_TO = Instant.parse("2023-07-22T16:00:00Z");
@@ -72,7 +74,8 @@ class DeferralControllerTest {
   private static final List<SaveOutboundDeferralReport.CptDeferralReport> CPT_DEFERRAL_REPORTS = List.of(
       new SaveOutboundDeferralReport.CptDeferralReport(CPT, true, DeferralType.CAP_MAX),
       new SaveOutboundDeferralReport.CptDeferralReport(CPT1, true, DeferralType.CASCADE),
-      new SaveOutboundDeferralReport.CptDeferralReport(CPT2, true, DeferralType.NOT_DEFERRED)
+      new SaveOutboundDeferralReport.CptDeferralReport(CPT2, true, DeferralType.NOT_DEFERRED),
+      new SaveOutboundDeferralReport.CptDeferralReport(CPT3, false, DeferralType.NOT_DEFERRED)
   );
 
   private static final DeferralResponse DEFERRAL_RESPONSE_SUCCESS = new DeferralResponse(

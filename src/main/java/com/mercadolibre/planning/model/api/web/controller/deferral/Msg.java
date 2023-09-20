@@ -19,7 +19,7 @@ public class Msg {
     @NotNull
     Instant lastUpdated;
     @NotNull
-    List<Projection> projections;
+    List<Projection> completedProjections;
   }
 
   @Data
@@ -30,6 +30,8 @@ public class Msg {
     Instant payBefore;
     @NotNull
     DeferralStatusRequest deferralStatus;
+    @NotNull
+    boolean updated;
   }
 }
 

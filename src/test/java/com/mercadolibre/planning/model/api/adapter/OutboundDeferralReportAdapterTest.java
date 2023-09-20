@@ -3,10 +3,8 @@ package com.mercadolibre.planning.model.api.adapter;
 import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.CAP_MAX;
 import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.CASCADE;
 import static com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType.NOT_DEFERRED;
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -64,19 +62,10 @@ class OutboundDeferralReportAdapterTest {
         .map(cpt -> new OutboundDeferralData(
             ARTW01,
             DEFERRAL_DATE,
-            cpt.getDate(),
-            cpt.getStatus(),
-            cpt.isUpdated()
+            cpt.date(),
+            cpt.status(),
+            cpt.updated()
         )).collect(Collectors.toList());
-  }
-
-  private static List<OutboundDeferralData> mockLastOutboundDeferralData() {
-    return List.of(
-        new OutboundDeferralData(9, ARTW01, DEFERRAL_DATE, Instant.parse("2022-09-28T18:00:00Z"), CAP_MAX, true),
-        new OutboundDeferralData(10, ARTW01, DEFERRAL_DATE, Instant.parse("2022-09-28T19:00:00Z"), CASCADE, true),
-        new OutboundDeferralData(11, ARTW01, DEFERRAL_DATE, Instant.parse("2022-09-28T20:00:00Z"), CASCADE, true),
-        new OutboundDeferralData(12, ARTW01, DEFERRAL_DATE, Instant.parse("2022-09-28T21:00:00Z"), NOT_DEFERRED, false)
-    );
   }
 
   @Test
@@ -124,38 +113,6 @@ class OutboundDeferralReportAdapterTest {
     //THEN
     verify(outboundDeferralDataRepository, times(1)).deleteByDateBefore(DEFERRAL_DATE);
     assertEquals(DELETED_REPORTS_QTY, deletedReportsQty);
-  }
-
-  @Test
-  @DisplayName("Happy path to retrieve the last CptDeferralReport for the specified logistic center")
-  void testGetLastCptDeferralReportForLogisticCenter() {
-    // GIVEN
-    final var expectedCptDeferralReport = mockLastOutboundDeferralData();
-
-    when(outboundDeferralDataRepository.getLastCptDeferralReportForLogisticCenter(ARTW01))
-        .thenReturn(expectedCptDeferralReport);
-
-    // WHEN
-    final List<CptDeferralReport> result = outboundDeferralReportAdapter.getLastCptDeferralReportForLogisticCenter(ARTW01);
-
-    // THEN
-    assertEquals(expectedCptDeferralReport.size(), result.size());
-    verify(outboundDeferralDataRepository, times(1)).getLastCptDeferralReportForLogisticCenter(ARTW01);
-  }
-
-  @Test
-  @DisplayName("Empty list from repo to retrieve the last CptDeferralReport for the specified logistic center")
-  void testGetLastCptDeferralReportForLogisticCenterEmptyResponse() {
-    // GIVEN
-    when(outboundDeferralDataRepository.getLastCptDeferralReportForLogisticCenter(ARTW01))
-        .thenReturn(emptyList());
-
-    // WHEN
-    final List<CptDeferralReport> result = outboundDeferralReportAdapter.getLastCptDeferralReportForLogisticCenter(ARTW01);
-
-    // THEN
-    assertTrue(result.isEmpty());
-    verify(outboundDeferralDataRepository, times(1)).getLastCptDeferralReportForLogisticCenter(ARTW01);
   }
 }
 

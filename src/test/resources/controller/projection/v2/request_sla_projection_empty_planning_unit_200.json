@@ -1,0 +1,101 @@
+{
+  "workflow": "fbm-wms-outbound",
+  "date_from": "2023-09-14T12:00:00Z",
+  "date_to": "2023-09-14T14:00:00Z",
+  "backlog": {
+    "process": [
+      {
+        "name": "picking",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity_by_date": [
+              {
+                "date_out": "2023-09-14T14:00:00Z",
+                "total": 150
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "packing",
+        "process_path": [
+          {
+            "name": "tot_mono",
+            "quantity_by_date": [
+              {
+                "date_out": "2023-09-14T14:00:00Z",
+                "total": 150
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "planned_unit": {
+    "process_path": []
+  },
+  "throughput": [
+    {
+      "operation_hour": "2023-09-14T12:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "picking",
+          "total": 10000
+        }
+      ]
+    },
+    {
+      "operation_hour": "2023-09-14T13:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "picking",
+          "total": 15000
+        }
+      ]
+    },
+    {
+      "operation_hour": "2023-09-14T14:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "picking",
+          "total": 1500
+        }
+      ]
+    },
+    {
+      "operation_hour": "2023-09-14T14:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "packing",
+          "total": 10000
+        }
+      ]
+    },
+    {
+      "operation_hour": "2023-09-14T14:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "packing",
+          "total": 15000
+        }
+      ]
+    },
+    {
+      "operation_hour": "2023-09-14T14:00:00Z",
+      "quantity_by_process_name": [
+        {
+          "name": "packing",
+          "total": 1500
+        }
+      ]
+    }
+  ],
+  "cycle_time_by_sla": {
+    "2023-09-14T12:00:00Z": 30,
+    "2023-09-14T13:00:00Z": 30,
+    "2023-09-14T14:00:00Z": 30
+  }
+}

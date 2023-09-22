@@ -9,6 +9,6 @@ public record SlaProjectionResult(
   public record Sla(
       Instant date,
       Instant projectedEndDate,
-      Double remainingQuantity) {
+      double remainingQuantity) {
   }
 }

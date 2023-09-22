@@ -255,16 +255,12 @@ class SaveOutboundDeferralReportTest {
     when(deferralReportGateway.deleteDeferralReportBeforeDate(dateToDelete))
         .thenReturn(deletedRegisters);
 
-    when(deferralReportGateway.getLastCptDeferralReportForLogisticCenter(logisticCenterId))
-        .thenReturn(lastCptDeferralReportList);
-
     //WHEN
-
     final DeferralResponse deferralResponse = saveOutboundDeferralReport.save(logisticCenterId, deferralDate, newCptDeferralReports);
 
     //THEN
     verify(deferralReportGateway, times(wantedNumberOfInvocationsOfSave))
-        .saveDeferralReport(logisticCenterId, deferralDate, updatedCptDeferralReportList);
+        .saveDeferralReport(logisticCenterId, deferralDate, newCptDeferralReports);
 
     assertEquals(expectedDeferralResponse.getStatus(), deferralResponse.getStatus());
     assertEquals(expectedDeferralResponse.getMessage(), deferralResponse.getMessage());
@@ -298,37 +294,6 @@ class SaveOutboundDeferralReportTest {
   }
 
   @ParameterizedTest
-  @MethodSource("parametersTestSaveError")
-  @DisplayName("new CPT report throwing DataAccessException while saving deferral report process")
-  void saveErrorInJpaDataAccessExceptionTest(
-      final String logisticCenterId,
-      final Instant deferralDate,
-      final List<CptDeferralReport> newCptDeferralReports,
-      final DataAccessException dataAccessException,
-      final int wantedNumberOfInvocationsOfSave,
-      final int expectedStatus,
-      final String responseMsg
-  ) throws DataAccessException {
-
-    //GIVEN
-    when(deferralReportGateway.getLastCptDeferralReportForLogisticCenter(logisticCenterId))
-        .thenThrow(dataAccessException);
-
-    final String expectedMsg = String.format(responseMsg, logisticCenterId, deferralDate);
-    final DeferralResponse expectedDeferralResponse = mockDeferralResponse(expectedStatus, expectedMsg);
-
-    //WHEN
-    final DeferralResponse deferralResponse = saveOutboundDeferralReport.save(logisticCenterId, deferralDate, newCptDeferralReports);
-
-    //THEN
-    verify(deferralReportGateway, times(wantedNumberOfInvocationsOfSave))
-        .saveDeferralReport(any(), any(), anyList());
-
-    assertEquals(expectedDeferralResponse.getStatus(), deferralResponse.getStatus());
-    assertEquals(expectedDeferralResponse.getMessage(), deferralResponse.getMessage());
-  }
-
-  @ParameterizedTest
   @MethodSource("parametersTestsDeletedException")
   void saveTestDeletedException(
       final String logisticCenterId,
@@ -344,15 +309,12 @@ class SaveOutboundDeferralReportTest {
     when(deferralReportGateway.deleteDeferralReportBeforeDate(dateToDelete))
         .thenThrow(exception);
 
-    when(deferralReportGateway.getLastCptDeferralReportForLogisticCenter(logisticCenterId))
-        .thenReturn(lastCptDeferralReportList);
-
     //WHEN
     saveOutboundDeferralReport.save(logisticCenterId, deferralDate, newCptDeferralReports);
 
     //THEN
     verify(deferralReportGateway, times(1))
-        .saveDeferralReport(logisticCenterId, deferralDate, updatedCptDeferralReportList);
+        .saveDeferralReport(logisticCenterId, deferralDate, newCptDeferralReports);
   }
 
   @Test

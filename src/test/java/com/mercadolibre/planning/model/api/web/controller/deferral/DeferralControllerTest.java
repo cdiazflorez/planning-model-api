@@ -45,7 +45,7 @@ class DeferralControllerTest {
 
   private static final String URL_FILE_BAD_REQUEST_DEFERRAL_AFTER_NOW = "controller/deferral/deferral_bad_request_after_now.json";
 
-  private static final String URL = "/planning/model/deferred/save";
+  private static final String URL = "/planning/model/deferred/events";
 
   private static final String URL_GET = "/planning/model/deferred";
 
@@ -63,6 +63,8 @@ class DeferralControllerTest {
 
   private static final Instant CPT2 = Instant.parse("2023-07-21T18:00:00Z");
 
+  private static final Instant CPT3 = Instant.parse("2023-07-21T19:00:00Z");
+
   private static final Instant DATE_FROM = Instant.parse("2023-07-21T16:00:00Z");
 
   private static final Instant DATE_TO = Instant.parse("2023-07-22T16:00:00Z");
@@ -72,7 +74,8 @@ class DeferralControllerTest {
   private static final List<SaveOutboundDeferralReport.CptDeferralReport> CPT_DEFERRAL_REPORTS = List.of(
       new SaveOutboundDeferralReport.CptDeferralReport(CPT, true, DeferralType.CAP_MAX),
       new SaveOutboundDeferralReport.CptDeferralReport(CPT1, true, DeferralType.CASCADE),
-      new SaveOutboundDeferralReport.CptDeferralReport(CPT2, true, DeferralType.NOT_DEFERRED)
+      new SaveOutboundDeferralReport.CptDeferralReport(CPT2, true, DeferralType.NOT_DEFERRED),
+      new SaveOutboundDeferralReport.CptDeferralReport(CPT3, false, DeferralType.NOT_DEFERRED)
   );
 
   private static final DeferralResponse DEFERRAL_RESPONSE_SUCCESS = new DeferralResponse(
@@ -185,4 +188,28 @@ class DeferralControllerTest {
         .andExpect(content().json(expected));
   }
 
+  @ParameterizedTest
+  @MethodSource("parametersSaveStatus")
+  void testSaveDeferralEvent(
+      final String url,
+      final ResultMatcher statusController,
+      final int times,
+      final Instant deferralDate,
+      final DeferralResponse deferralResponse
+  ) throws Exception {
+    // GIVEN
+    when(saveOutboundDeferralReport.save(LOGISTIC_CENTER_ID, deferralDate, CPT_DEFERRAL_REPORTS))
+        .thenReturn(deferralResponse);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL)
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString(url))
+    );
+
+    // THEN
+    result.andExpect(statusController);
+    verify(saveOutboundDeferralReport, times(times)).save(LOGISTIC_CENTER_ID, deferralDate, CPT_DEFERRAL_REPORTS);
+  }
 }

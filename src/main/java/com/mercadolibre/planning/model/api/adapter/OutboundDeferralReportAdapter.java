@@ -17,19 +17,6 @@ public class OutboundDeferralReportAdapter implements DeferralReportGateway {
   private final OutboundDeferralDataRepository outboundDeferralDataRepository;
 
   /**
-   * Retrieves the last CptDeferralReport list for the specified logistic center.
-   *
-   * @param logisticCenter The ID or name of the logistic center.
-   * @return A list of CptDeferralReport or empty List.
-   */
-  @Override
-  public List<CptDeferralReport> getLastCptDeferralReportForLogisticCenter(String logisticCenter) {
-    return outboundDeferralDataRepository.getLastCptDeferralReportForLogisticCenter(logisticCenter).stream()
-        .map(deferralEntry -> new CptDeferralReport(deferralEntry.getCpt(), deferralEntry.getUpdated(), deferralEntry.getStatus()))
-        .collect(Collectors.toList());
-  }
-
-  /**
    * Deletes the deferral reports before the specified date.
    *
    * @param dateTo The date before which the deferral reports will be deleted.
@@ -58,9 +45,9 @@ public class OutboundDeferralReportAdapter implements DeferralReportGateway {
         .map(cpt -> new OutboundDeferralData(
             logisticCenterId,
             deferralDate,
-            cpt.getDate(),
-            cpt.getStatus(),
-            cpt.isUpdated()
+            cpt.date(),
+            cpt.status(),
+            cpt.updated()
         )).collect(Collectors.toList());
 
     outboundDeferralDataRepository.saveAll(outboundDeferralDataList);

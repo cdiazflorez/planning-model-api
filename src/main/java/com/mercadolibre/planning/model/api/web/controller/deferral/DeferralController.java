@@ -39,7 +39,7 @@ public class DeferralController {
     final DeferralResponse deferralResponse = saveOutboundDeferralReport.save(
         request.getMsg().getWarehouseId(),
         request.getMsg().getLastUpdated(),
-        mapSlaDeferral(request.getMsg().getProjections())
+        mapSlaDeferral(request.getMsg().getCompletedProjections())
     );
 
     return ResponseEntity.status(deferralResponse.getStatus()).body(deferralResponse);
@@ -72,7 +72,7 @@ public class DeferralController {
     return projections.stream()
         .map(projection -> new SaveOutboundDeferralReport.CptDeferralReport(
             projection.getEstimatedTimeDeparture(),
-            true,
+            projection.isUpdated(),
             projection.getDeferralStatus().getDeferralType()))
         .collect(Collectors.toList());
   }

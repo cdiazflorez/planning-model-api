@@ -135,7 +135,7 @@ public class SLAsProjectionControllerTest {
 
   @ParameterizedTest
   @MethodSource("testArguments")
-  void testAvailableCapacityEndpoint(
+  void testSLAsProjectionEndpoint(
       final Instant from,
       final Instant to,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,

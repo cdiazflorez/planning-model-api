@@ -113,7 +113,7 @@ public record SLAsProjectionRequest(
     ) {
       public record ProcessPathByDateOut(
           ProcessPath name,
-          @JsonProperty("quantity_by_date")
+          @JsonProperty("quantity")
           Set<QuantityByDateOut> quantityByDate
       ) {
         public record QuantityByDateOut(

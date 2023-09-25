@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.web.controller.projection.v2;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.projection.SLAProjectionService;
 import com.mercadolibre.planning.model.api.projection.builder.PackingProjectionBuilder;
 import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
@@ -41,6 +42,8 @@ public class SLAsProjectionController {
       @PathVariable final String logisticCenterId,
       @RequestBody final SLAsProjectionRequest slAsProjection
   ) {
+    final Workflow wf = Workflow.of(slAsProjection.workflow().getName()).orElseThrow();
+
     final SlaProjectionResult slaProjectionResult = SLAProjectionService.execute(
         slAsProjection.dateFrom(),
         slAsProjection.dateTo(),
@@ -51,6 +54,6 @@ public class SLAsProjectionController {
         new PackingProjectionBuilder()
     );
 
-    return ResponseEntity.ok(new SLAsProjectionResponse(slAsProjection.workflow(), slaProjectionResult));
+    return ResponseEntity.ok(new SLAsProjectionResponse(wf, slaProjectionResult));
   }
 }

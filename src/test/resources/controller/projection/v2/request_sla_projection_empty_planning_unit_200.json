@@ -9,7 +9,7 @@
         "process_path": [
           {
             "name": "tot_mono",
-            "quantity_by_date": [
+            "quantity": [
               {
                 "date_out": "2023-09-14T14:00:00Z",
                 "total": 150
@@ -23,7 +23,7 @@
         "process_path": [
           {
             "name": "tot_mono",
-            "quantity_by_date": [
+            "quantity": [
               {
                 "date_out": "2023-09-14T14:00:00Z",
                 "total": 150

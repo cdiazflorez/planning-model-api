@@ -120,8 +120,8 @@ public final class StaffingPlanMapper {
   }
 
   public record StaffingPlan(
-      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> headcountSystemic,
-      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> headcountNonSystemic,
+      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> systemicHeadcount,
+      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> nonSystemicHeadcount,
       Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> productivity,
       Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> throughput
   ) {

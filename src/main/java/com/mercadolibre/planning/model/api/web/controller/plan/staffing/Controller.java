@@ -25,6 +25,7 @@ import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
+import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingSimulationRequest;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -34,17 +35,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/logistic_center/{logisticCenterId}/plan/staffing")
@@ -95,6 +102,17 @@ public class Controller {
         ),
         StaffingPlanMapper.adaptThroughputResponse(throughput)
     ));
+  }
+
+  @ResponseStatus(HttpStatus.CREATED)
+  @PutMapping
+  @Trace(dispatcher = true)
+  public void updateStaffingPlan(@PathVariable final String logisticCenterId,
+                                 @RequestParam final Workflow workflow,
+                                 @RequestParam final long userId,
+                                 @RequestBody final StaffingSimulationRequest request) {
+
+    log.info("LogisticCenterID: {} - Workflow: {}", logisticCenterId, workflow);
   }
 
   @GetMapping("/throughput")

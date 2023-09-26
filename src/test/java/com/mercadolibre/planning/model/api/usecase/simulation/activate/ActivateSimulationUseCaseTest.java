@@ -73,15 +73,15 @@ public class ActivateSimulationUseCaseTest {
     final SimulationInput input = mockSimulationInput(List.of(
         new Simulation(PICKING,
             List.of(new SimulationEntity(HEADCOUNT,
-                List.of(new QuantityByDate(DATE_12, 30),
-                    new QuantityByDate(DATE_13, 25))
+                List.of(new QuantityByDate(DATE_12, 30, null),
+                    new QuantityByDate(DATE_13, 25, null))
             ))),
         new Simulation(PACKING,
             singletonList(new SimulationEntity(PRODUCTIVITY,
-                singletonList(new QuantityByDate(DATE_12, 96))))),
+                singletonList(new QuantityByDate(DATE_12, 96, null))))),
         new Simulation(GLOBAL,
             singletonList(new SimulationEntity(MAX_CAPACITY,
-                singletonList(new QuantityByDate(DATE_12, 96)))))
+                singletonList(new QuantityByDate(DATE_12, 96, null)))))
     ));
 
     final Workflow workflow = input.getWorkflow();
@@ -317,8 +317,8 @@ public class ActivateSimulationUseCaseTest {
                       new SimulationEntity(
                               entityType,
                               List.of(
-                                      new QuantityByDate(DATE_12, quantity),
-                                      new QuantityByDate(DATE_13, quantity)
+                                      new QuantityByDate(DATE_12, quantity, null),
+                                      new QuantityByDate(DATE_13, quantity, null)
                               )
                       )
               )

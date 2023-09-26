@@ -1,0 +1,126 @@
+{
+  "simulations": [
+    {
+      "process_name": "picking",
+      "entities": [
+        {
+          "type": "productivity",
+          "values": [
+            {
+              "date": "2023-03-13T00:00:00Z",
+              "quantity": 10.0,
+              "process_path": {
+                "tot_mono": 3,
+                "non_tot_mono": 4,
+                "tot_multi_order": 2
+              }
+            }
+          ]
+        },
+        {
+          "type": "headcount_systemic",
+          "values": [
+            {
+              "date": "2023-03-13T00:00:00Z",
+              "quantity": 15.0,
+              "process_path": {
+                "tot_mono": 0.3,
+                "non_tot_mono": 0.5,
+                "tot_multi_order": 0.2
+              }
+            },
+            {
+              "date": "2023-03-13T03:00:00Z",
+              "quantity": 20.0,
+              "process_path": {
+                "tot_mono": 0.3,
+                "non_tot_mono": 0.5,
+                "tot_multi_order": 0.2
+              }
+            },
+            {
+              "date": "2023-03-13T15:00:00Z",
+              "quantity": 20.0,
+              "process_path": {
+                "tot_mono": 0.3,
+                "non_tot_mono": 0.5,
+                "tot_multi_order": 0.2
+              }
+            }
+          ]
+        },
+        {
+          "type": "headcount_non_systemic",
+          "values": [
+            {
+              "date": "2023-03-13T00:00:00Z",
+              "quantity": 3.0
+            },
+            {
+              "date": "2023-03-13T03:00:00Z",
+              "quantity": 1.0
+            },
+            {
+              "date": "2023-03-13T15:00:00Z",
+              "quantity": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "process_name": "batch_sorter",
+      "entities": [
+        {
+          "type": "productivity",
+          "values": [
+            {
+              "date": "2023-03-13T00:00:00Z",
+              "quantity": 10.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "process_name": "packing",
+      "entities": [
+        {
+          "type": "productivity",
+          "values": [
+            {
+              "date": "2023-03-13T00:00:00Z",
+              "quantity": 10.0
+            }
+          ]
+        },
+        {
+          "type": "headcount_systemic",
+          "values": [
+            {
+              "date": "2023-03-13T06:00:00Z",
+              "quantity": 15.0
+            },
+            {
+              "date": "2023-03-13T20:00:00Z",
+              "quantity": 13.0
+            }
+          ]
+        },
+        {
+          "type": "headcount_non_systemic",
+          "values": [
+            {
+              "date": "2023-03-13T06:00:00Z",
+              "quantity": 4.0
+            },
+            {
+              "date": "2023-03-13T20:00:00Z",
+              "quantity": 5.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

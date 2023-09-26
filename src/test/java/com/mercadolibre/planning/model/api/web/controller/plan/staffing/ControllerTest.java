@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -128,6 +129,22 @@ class ControllerTest {
 
     // THEN
     result.andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testUpdateStaffingPlan() throws Exception {
+    // WHEN
+    final ResultActions result = mvc.perform(
+        put(BASE_URL, LOGISTIC_CENTER_ID)
+            .param("user_id", "123")
+            .param("workflow", "fbm-wms-outbound")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("controller/plan/staffing/put_plan_staffing_entities_request.json"))
+
+    );
+
+    // THEN
+    result.andExpect(status().isCreated());
   }
 
 

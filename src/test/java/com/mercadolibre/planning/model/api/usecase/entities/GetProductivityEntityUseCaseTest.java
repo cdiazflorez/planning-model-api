@@ -107,8 +107,8 @@ public class GetProductivityEntityUseCaseTest {
             PICKING,
             List.of(new SimulationEntity(
                 PRODUCTIVITY,
-                List.of(new QuantityByDate(A_DATE_UTC, 100),
-                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101)))))),
+                List.of(new QuantityByDate(A_DATE_UTC, 100, null),
+                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101, null)))))),
             null);
 
     final List<Long> forecastIds = List.of(1L);

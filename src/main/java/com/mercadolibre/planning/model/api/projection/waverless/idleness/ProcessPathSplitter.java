@@ -4,6 +4,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_ORDER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_SINGLE_SKU;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
@@ -29,7 +30,7 @@ public class ProcessPathSplitter implements Splitter {
   private static final Set<ProcessPath> PACKING_WALL_PROCESS_PATH = Set.of(TOT_MULTI_BATCH, NON_TOT_MULTI_BATCH);
 
   private static final Set<ProcessPath> PACKING_TOTE_PROCESS_PATH =
-      Set.of(TOT_SINGLE_SKU, TOT_MONO, NON_TOT_MONO, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER);
+      Set.of(TOT_SINGLE_SKU, TOT_MONO, NON_TOT_MONO, TOT_MULTI_ORDER, NON_TOT_MULTI_ORDER, NON_TOT_SINGLE_SKU);
 
   private final Function<Map<ProcessPath, Backlog>, Backlog> finisher;
 

@@ -5,10 +5,13 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.flatMapping;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toMap;
@@ -133,7 +136,22 @@ public class PackingProjectionBuilder implements Projector {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
-    final var currentPickingBacklog = OrderedBacklogByProcessPath.from(backlog.getOrDefault(PICKING, emptyMap()));
+    final Map<ProcessPath, Map<Instant, Long>> pickingWithWavingBacklog = Stream.concat(
+        backlog.getOrDefault(WAVING, emptyMap()).entrySet().stream(),
+        backlog.getOrDefault(PICKING, emptyMap()).entrySet().stream()
+    ).collect(
+        groupingBy(
+            Map.Entry::getKey,
+            flatMapping(
+                entry -> entry.getValue()
+                    .entrySet()
+                    .stream(),
+                toMap(Map.Entry::getKey, Map.Entry::getValue, Long::sum)
+            )
+        )
+    );
+
+    final var currentPickingBacklog = OrderedBacklogByProcessPath.from(pickingWithWavingBacklog);
 
     return new SimpleProcess.Context(
         new ThroughputPerHour(throughput.getOrDefault(PICKING, emptyMap())),

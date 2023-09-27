@@ -5,6 +5,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
@@ -48,25 +49,30 @@ public class SLAProjectionServiceTest {
 
   private static final SlaProjectionResult EXPECTED_1 = new SlaProjectionResult(
       List.of(
-          new Sla(SLAS_1, Instant.parse("2023-09-08T04:20:07Z"), 0D),
-          new Sla(SLAS_2, Instant.parse("2023-09-08T04:31:01Z"), 0D),
-          new Sla(SLAS_3, Instant.parse("2023-09-08T02:42:13Z"), 0D),
-          new Sla(SLAS_4, Instant.parse("2023-09-08T03:40:32Z"), 0D),
+          new Sla(SLAS_1, Instant.parse("2023-09-08T05:55:57Z"), 0D),
+          new Sla(SLAS_2, null, 0D),
+          new Sla(SLAS_3, Instant.parse("2023-09-08T03:35:36Z"), 0D),
+          new Sla(SLAS_4, Instant.parse("2023-09-08T05:06:30Z"), 0D),
           new Sla(SLAS_5, null, 0D)
       )
   );
   private static final SlaProjectionResult EXPECTED_2 = new SlaProjectionResult(
       List.of(
-          new Sla(SLAS_1, Instant.parse("2023-09-08T02:50:18Z"), 0D),
-          new Sla(SLAS_2, Instant.parse("2023-09-08T03:00:32Z"), 0D),
-          new Sla(SLAS_3, Instant.parse("2023-09-08T03:15:46Z"), 0D),
-          new Sla(SLAS_4, Instant.parse("2023-09-08T03:45:54Z"), 0D),
-          new Sla(SLAS_5, Instant.parse("2023-09-08T03:51:55Z"), 0D)
+          new Sla(SLAS_1, null, 0D),
+          new Sla(SLAS_2, null, 0D),
+          new Sla(SLAS_3, Instant.parse("2023-09-08T05:25:25Z"), 0D),
+          new Sla(SLAS_4, null, 0D),
+          new Sla(SLAS_5, null, 0D)
       )
   );
   private static final SlaProjectionResult EXPECTED_3 = new SlaProjectionResult(List.of());
 
   private static final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> CURRENT_BACKLOGS = Map.of(
+      WAVING, Map.of(
+          TOT_MONO, Map.of(SLAS_1, 1500L, SLAS_2, 1500L),
+          NON_TOT_MONO, Map.of(SLAS_1, 300L),
+          TOT_MULTI_BATCH, Map.of(SLAS_2, 550L)
+      ),
       PICKING, Map.of(
           TOT_MONO, Map.of(SLAS_1, 1000L, SLAS_2, 1000L),
           NON_TOT_MONO, Map.of(SLAS_1, 250L),
@@ -83,6 +89,7 @@ public class SLAProjectionServiceTest {
   );
 
   private static final Map<ProcessName, Map<Instant, Integer>> THROUGHPUT = Map.of(
+      WAVING, throughputValues(),
       PICKING, throughputValues(),
       PACKING, throughputValues(),
       BATCH_SORTER, throughputValues(),

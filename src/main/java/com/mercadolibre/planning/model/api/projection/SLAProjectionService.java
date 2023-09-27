@@ -5,7 +5,9 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.builder.Projector;
 import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
+import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -31,7 +33,13 @@ public final class SLAProjectionService {
     final ContextsHolder updatedContext =
         Projection.execute(executionDateFrom, executionDateTo, currentBacklog, forecastBacklog, throughput, projector);
 
-    return projector.calculateProjectedEndDate(slas, updatedContext);
+    final SlaProjectionResult projectionResult = projector.calculateProjectedEndDate(slas, updatedContext);
+
+    final List<Sla> slasSorted = projectionResult.slas().stream()
+        .sorted(Comparator.comparing(Sla::date))
+        .toList();
+
+    return new SlaProjectionResult(slasSorted);
   }
 
   private static List<Instant> getSLAs(final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,

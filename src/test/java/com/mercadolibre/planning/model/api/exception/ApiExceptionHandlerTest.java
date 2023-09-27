@@ -7,6 +7,8 @@ import static com.mercadolibre.planning.model.api.domain.usecase.inputcatalog.in
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -26,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 public class ApiExceptionHandlerTest {
 
@@ -66,7 +69,7 @@ public class ApiExceptionHandlerTest {
     final ErrorResponse expectedResponse = new ErrorResponse(
         BAD_REQUEST,
         "Value invalid is invalid, instead it should be one of"
-            + " [HEADCOUNT, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
+            + " [HEADCOUNT, HEADCOUNT_SYSTEMIC, HEADCOUNT_NON_SYSTEMIC, PRODUCTIVITY, THROUGHPUT, REMAINING_PROCESSING,"
             + " PERFORMED_PROCESSING, BACKLOG_LOWER_LIMIT, BACKLOG_UPPER_LIMIT,"
             + " BACKLOG_LOWER_LIMIT_SHIPPING, BACKLOG_UPPER_LIMIT_SHIPPING,"
             + " MAX_CAPACITY]",
@@ -413,6 +416,25 @@ public class ApiExceptionHandlerTest {
 
     // WHEN
     final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleDeviationsToSaveNotFoundException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+  }
+
+  @Test
+  void handleMethodArgumentTypeMismatchExceptionTest() {
+    //GIVEN
+    final MethodArgumentTypeMismatchException exception =
+        new MethodArgumentTypeMismatchException(null, null, anyString(), any(), new Exception());
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "method_argument_type_mismatch_exception"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleMethodArgumentTypeMismatchException(exception, request);
 
     // THEN
     assertErrorResponse(expectedResponse, response);

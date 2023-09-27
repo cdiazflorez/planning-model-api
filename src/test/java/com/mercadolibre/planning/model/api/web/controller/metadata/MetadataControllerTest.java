@@ -98,6 +98,6 @@ public class MetadataControllerTest {
         get(URL)
     );
     //THEN
-    result.andExpect(status().isInternalServerError());
+    result.andExpect(status().isBadRequest());
   }
 }

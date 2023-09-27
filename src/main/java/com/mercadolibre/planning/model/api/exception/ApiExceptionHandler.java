@@ -15,6 +15,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
 @RestControllerAdvice
@@ -55,6 +56,8 @@ public class ApiExceptionHandler {
   private static final String PERCENTAGE_DEVIATION_UNEXPIRED = "percentage_deviation_Unexpired";
 
   private static final String DEVIATIONS_TO_SAVE_NOT_FOUND = "deviations_to_save_not_found";
+
+  private static final String ARGUMENT_TYPE_MISMATCH_EXCEPTION = "method_argument_type_mismatch_exception";
 
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
@@ -307,5 +310,19 @@ public class ApiExceptionHandler {
     request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
     log.error(exception.getMessage(), exception);
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(final MethodArgumentTypeMismatchException ex,
+                                                                                 HttpServletRequest request) {
+    final ErrorResponse apiError = new ErrorResponse(
+        BAD_REQUEST,
+        ex.getMessage(),
+        ARGUMENT_TYPE_MISMATCH_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, ex);
+    log.error(apiError.getMessage(), ex);
+    return ResponseEntity.status(apiError.getStatus()).body(apiError);
   }
 }

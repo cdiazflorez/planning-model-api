@@ -115,6 +115,19 @@ public class SLAProjectionServiceTest {
       )
   );
 
+  private static final Map<Instant, Instant> CUT_OFF = Map.of(
+      DATE_1, DATE_1,
+      DATE_2, DATE_2,
+      DATE_3, DATE_3,
+      DATE_4, DATE_4,
+      DATE_5, DATE_5,
+      DATE_6, DATE_6,
+      DATE_7, DATE_7,
+      SLAS_1, SLAS_1,
+      SLAS_2, SLAS_2,
+      SLAS_3, SLAS_3
+  );
+
   private static Map<Instant, Integer> throughputValues() {
     return Map.of(
         DATE_1, 1000,
@@ -135,6 +148,7 @@ public class SLAProjectionServiceTest {
             CURRENT_BACKLOGS,
             FORECAST_BACKLOG,
             THROUGHPUT,
+            CUT_OFF,
             new PackingProjectionBuilder(),
             EXPECTED_1
         ),
@@ -144,6 +158,7 @@ public class SLAProjectionServiceTest {
             CURRENT_BACKLOGS,
             emptyMap(),
             THROUGHPUT,
+            CUT_OFF,
             new PackingProjectionBuilder(),
             EXPECTED_2
         ),
@@ -153,6 +168,7 @@ public class SLAProjectionServiceTest {
             emptyMap(),
             emptyMap(),
             THROUGHPUT,
+            CUT_OFF,
             new PackingProjectionBuilder(),
             EXPECTED_3
         )
@@ -168,12 +184,13 @@ public class SLAProjectionServiceTest {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklogs,
       final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> forecastBacklog,
       final Map<ProcessName, Map<Instant, Integer>> throughput,
+      final Map<Instant, Instant> cutOff,
       final Projector projector,
       final SlaProjectionResult expected
   ) {
     // WHEN
     final SlaProjectionResult actual =
-        SLAProjectionService.execute(dateFrom, dateTo, currentBacklogs, forecastBacklog, throughput, emptyMap(), projector);
+        SLAProjectionService.execute(dateFrom, dateTo, currentBacklogs, forecastBacklog, throughput, cutOff, projector);
 
     // THEN
     assertNotNull(expected);

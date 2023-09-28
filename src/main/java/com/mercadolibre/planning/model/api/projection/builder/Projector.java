@@ -24,4 +24,6 @@ public interface Projector {
 
   SlaProjectionResult calculateProjectedEndDate(List<Instant> slas, ContextsHolder holder);
 
+  Map<Instant, Long> getRemainingQuantity(ContextsHolder updatedContext, Map<Instant, Instant> cutOff);
+
 }

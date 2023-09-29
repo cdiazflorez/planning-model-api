@@ -18,6 +18,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogHelper;
+import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogState;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Merger;
@@ -73,8 +74,10 @@ public class PackingProjectionBuilder implements Projector {
       BACKLOG_BY_DATE_MERGER
   );
 
+  private static final double MIN_THROUGHPUT_PERCENTAGE = 0.05;
+
   private static final BacklogHelper BACKLOG_BY_PROCESS_PATH_HELPER = new BacklogByDateHelper(
-      new DistributionBasedConsumer(BACKLOG_BY_DATE_CONSUMER),
+      new DistributionBasedConsumer(BACKLOG_BY_DATE_CONSUMER, MIN_THROUGHPUT_PERCENTAGE),
       new ProcessPathMerger(BACKLOG_BY_DATE_MERGER)
   );
 
@@ -299,6 +302,59 @@ public class PackingProjectionBuilder implements Projector {
         .collect(Collectors.toList());
 
     return new SlaProjectionResult(results);
+  }
+  
+  @Override
+  public Map<Instant, Long> getRemainingQuantity(final ContextsHolder updatedContext, final Map<Instant, Instant> cutOff) {
+    final Set<String> processes = updatedContext.getProcessContextByProcessName().keySet();
+
+    final List<String> finalProcesses = processes.stream()
+        .filter(s -> !s.contains(PACKING_PROCESS_GROUP) && !s.contains(GLOBAL_PROCESS) && !s.contains(PICKING.getName()))
+        .toList();
+
+    final SimpleProcess.Context picking = (SimpleProcess.Context) updatedContext.getProcessContextByProcessName().get(PICKING.getName());
+
+    final Stream<ProcessedBacklogState> pickingProcessedBacklogStates = picking.getProcessedBacklog().stream()
+        .flatMap(processedBacklogState -> {
+          final OrderedBacklogByProcessPath backlog = (OrderedBacklogByProcessPath) processedBacklogState.getBacklog();
+          return backlog.getBacklogs().values().stream()
+              .map(OrderedBacklogByDate.class::cast)
+              .map(orderedBacklogByDate -> new ProcessedBacklogState(
+                  processedBacklogState.getStartDate(),
+                  processedBacklogState.getEndDate(),
+                  orderedBacklogByDate));
+        });
+
+    final Stream<UnprocessedBacklogState> pickingUnprocessedBacklogStates = picking.getUnprocessedBacklog().stream()
+        .flatMap(processedBacklogState -> {
+          final OrderedBacklogByProcessPath backlog = (OrderedBacklogByProcessPath) processedBacklogState.getBacklog();
+          return backlog.getBacklogs().values().stream()
+              .map(OrderedBacklogByDate.class::cast)
+              .map(orderedBacklogByDate -> new UnprocessedBacklogState(
+                  processedBacklogState.getStartDate(),
+                  processedBacklogState.getEndDate(),
+                  orderedBacklogByDate));
+        });
+
+    final Stream<BacklogState> processed = finalProcesses.stream()
+        .map(updatedContext::getProcessContextByProcessName)
+        .map(SimpleProcess.Context.class::cast)
+        .map(SimpleProcess.Context::getProcessedBacklog)
+        .flatMap(List::stream)
+        .map(BacklogState.class::cast);
+
+    final Stream<BacklogState> unprocessed = finalProcesses.stream()
+        .map(updatedContext::getProcessContextByProcessName)
+        .map(SimpleProcess.Context.class::cast)
+        .map(SimpleProcess.Context::getUnprocessedBacklog)
+        .flatMap(List::stream)
+        .map(BacklogState.class::cast);
+
+    final List<BacklogState> finalProcessed = Stream.concat(processed, pickingProcessedBacklogStates).toList();
+
+    final List<BacklogState> finalUnprocessed = Stream.concat(unprocessed, pickingUnprocessedBacklogStates).toList();
+
+    return OrderedBacklogByDateUtils.getRemainingQuantity(finalProcessed, finalUnprocessed, cutOff);
   }
 
 }

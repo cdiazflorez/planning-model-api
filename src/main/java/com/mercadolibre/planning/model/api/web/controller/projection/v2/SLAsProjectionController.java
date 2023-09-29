@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.projection.SLAProjectionService;
 import com.mercadolibre.planning.model.api.projection.builder.PackingProjectionBuilder;
 import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
+import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.SLAsProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.response.SLAsProjectionResponse;
 import com.newrelic.api.agent.Trace;
@@ -14,7 +15,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,8 +45,6 @@ public class SLAsProjectionController {
       @PathVariable final String logisticCenterId,
       @RequestBody final SLAsProjectionRequest slAsProjection
   ) {
-    final Workflow wf = Workflow.of(slAsProjection.workflow().getName()).orElseThrow();
-
     final SlaProjectionResult slaProjectionResult = SLAProjectionService.execute(
         slAsProjection.dateFrom(),
         slAsProjection.dateTo(),
@@ -54,6 +55,11 @@ public class SLAsProjectionController {
         new PackingProjectionBuilder()
     );
 
-    return ResponseEntity.ok(new SLAsProjectionResponse(wf, slaProjectionResult));
+    return ResponseEntity.ok(new SLAsProjectionResponse(slAsProjection.workflow(), slaProjectionResult));
+  }
+
+  @InitBinder
+  public void initBinder(final PropertyEditorRegistry dataBinder) {
+    dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
   }
 }

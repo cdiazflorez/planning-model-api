@@ -1,11 +1,12 @@
 package com.mercadolibre.planning.model.api.projection;
 
+import static com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
+
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.builder.Projector;
 import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
-import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -33,13 +34,21 @@ public final class SLAProjectionService {
     final ContextsHolder updatedContext =
         Projection.execute(executionDateFrom, executionDateTo, currentBacklog, forecastBacklog, throughput, projector);
 
-    final SlaProjectionResult projectionResult = projector.calculateProjectedEndDate(slas, updatedContext);
+    final Map<Instant, Long> remainingQuantity = projector.getRemainingQuantity(updatedContext, cutOff);
 
-    final List<Sla> slasSorted = projectionResult.slas().stream()
+    final SlaProjectionResult slaProjectionResult = projector.calculateProjectedEndDate(slas, updatedContext);
+
+    final List<Sla> slaList = slaProjectionResult.slas().stream()
+        .map(
+            sla -> new Sla(
+                sla.date(),
+                sla.projectedEndDate(),
+                remainingQuantity.getOrDefault(sla.date(), 0L))
+        )
         .sorted(Comparator.comparing(Sla::date))
         .toList();
 
-    return new SlaProjectionResult(slasSorted);
+    return new SlaProjectionResult(slaList);
   }
 
   private static List<Instant> getSLAs(final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,

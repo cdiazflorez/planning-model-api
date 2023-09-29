@@ -6,6 +6,10 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * The scope of pre-prod points to stage because for now we only want to test waverless,
+ * in the future a complete pre-prod environment can be generated.
+ */
 @Getter
 @AllArgsConstructor
 public enum Scope {
@@ -13,7 +17,8 @@ public enum Scope {
   PROD_SLAVE("prod-slave"),
   PROD("prod"),
   TEST("test"),
-  STAGE("stage");
+  STAGE("stage"),
+  PRE_PROD("stage");
 
   private final String springProfileName;
 

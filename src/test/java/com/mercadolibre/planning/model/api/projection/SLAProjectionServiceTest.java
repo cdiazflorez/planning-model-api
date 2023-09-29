@@ -49,10 +49,10 @@ public class SLAProjectionServiceTest {
 
   private static final SlaProjectionResult EXPECTED_1 = new SlaProjectionResult(
       List.of(
-          new Sla(SLAS_1, Instant.parse("2023-09-08T05:55:57Z"), 0D),
+          new Sla(SLAS_1, Instant.parse("2023-09-08T05:35:39Z"), 0D),
           new Sla(SLAS_2, null, 0D),
-          new Sla(SLAS_3, Instant.parse("2023-09-08T03:35:36Z"), 0D),
-          new Sla(SLAS_4, Instant.parse("2023-09-08T05:06:30Z"), 0D),
+          new Sla(SLAS_3, Instant.parse("2023-09-08T03:30:50Z"), 0D),
+          new Sla(SLAS_4, Instant.parse("2023-09-08T05:05:57Z"), 0D),
           new Sla(SLAS_5, null, 0D)
       )
   );
@@ -60,7 +60,7 @@ public class SLAProjectionServiceTest {
       List.of(
           new Sla(SLAS_1, null, 0D),
           new Sla(SLAS_2, null, 0D),
-          new Sla(SLAS_3, Instant.parse("2023-09-08T05:25:25Z"), 0D),
+          new Sla(SLAS_3, Instant.parse("2023-09-08T05:00:14Z"), 0D),
           new Sla(SLAS_4, null, 0D),
           new Sla(SLAS_5, null, 0D)
       )

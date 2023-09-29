@@ -74,8 +74,10 @@ public class PackingProjectionBuilder implements Projector {
       BACKLOG_BY_DATE_MERGER
   );
 
+  private static final double MIN_THROUGHPUT_PERCENTAGE = 0.05;
+
   private static final BacklogHelper BACKLOG_BY_PROCESS_PATH_HELPER = new BacklogByDateHelper(
-      new DistributionBasedConsumer(BACKLOG_BY_DATE_CONSUMER),
+      new DistributionBasedConsumer(BACKLOG_BY_DATE_CONSUMER, MIN_THROUGHPUT_PERCENTAGE),
       new ProcessPathMerger(BACKLOG_BY_DATE_MERGER)
   );
 

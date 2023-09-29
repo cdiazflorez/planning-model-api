@@ -50,13 +50,13 @@ public class PackingProjectionBuilderTest {
   };
 
   private static final Map<Instant, Instant> EXPECTED_END_DATES_WITH_UPSTREAM = Map.of(
-      SLAS[0], Instant.parse("2023-03-29T04:20:00Z"),
-      SLAS[1], Instant.parse("2023-03-29T04:31:00Z"),
+      SLAS[0], Instant.parse("2023-03-29T03:10:00Z"),
+      SLAS[1], Instant.parse("2023-03-29T04:30:00Z"),
       SLAS[2], Instant.parse("2023-03-29T03:51:00Z")
   );
 
   private static final Map<Instant, Instant> EXPECTED_END_DATES_WITHOUT_UPSTREAM = Map.of(
-      SLAS[0], Instant.parse("2023-03-29T02:50:00Z"),
+      SLAS[0], Instant.parse("2023-03-29T02:40:00Z"),
       SLAS[1], Instant.parse("2023-03-29T03:21:00Z"),
       SLAS[2], Instant.parse("2023-03-29T03:51:00Z")
   );

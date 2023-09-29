@@ -278,6 +278,7 @@ class ControllerTest {
         productivityOutput(DATE_FROM.plusHours(3), 52, TOT_MULTI_ORDER, FORECAST, 1),
         productivityOutput(DATE_FROM.plusHours(4), 65, TOT_MULTI_ORDER, FORECAST, 1),
         productivityOutput(DATE_FROM.plusHours(4), 68, TOT_MULTI_ORDER, SIMULATION, 1),
+        productivityOutput(DATE_FROM.plusHours(5), 78, TOT_MULTI_ORDER, FORECAST, 1),
         productivityOutput(DATE_FROM.plusHours(5), 78, TOT_MULTI_ORDER, FORECAST, 1)
     );
   }
@@ -304,6 +305,7 @@ class ControllerTest {
         entityOutput(DATE_FROM.plusHours(2), 33, TOT_MULTI_BATCH, FORECAST, false),
         entityOutput(DATE_FROM.plusHours(3), 40, TOT_MULTI_BATCH, SIMULATION, false),
         entityOutput(DATE_FROM.plusHours(4), 50, TOT_MULTI_BATCH, SIMULATION, false),
+        entityOutput(DATE_FROM.plusHours(5), 60, TOT_MULTI_BATCH, SIMULATION, false),
         entityOutput(DATE_FROM.plusHours(5), 60, TOT_MULTI_BATCH, SIMULATION, false)
     );
   }

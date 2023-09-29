@@ -96,8 +96,10 @@ public final class StaffingPlanMapper {
         .collect(
             Collectors.groupingBy(EntityOutput::getProcessPath,
                 Collectors.groupingBy(EntityOutput::getProcessName,
-                    Collectors.toMap(entity -> entity.getDate().toInstant(),
-                        entity -> createStaffingPlan(entityOutputBySource, entity)
+                    Collectors.toMap(
+                        entity -> entity.getDate().toInstant(),
+                        entity -> createStaffingPlan(entityOutputBySource, entity),
+                        (staffingPlanMetrics, staffingPlanMetrics2) -> staffingPlanMetrics
                     )
                 )
             )

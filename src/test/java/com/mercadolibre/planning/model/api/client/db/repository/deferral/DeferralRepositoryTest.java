@@ -11,7 +11,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,6 +28,7 @@ class DeferralRepositoryTest {
   private static final Set<DeferralType> DEFERRAL_TYPES = Set.of(CAP_MAX, CASCADE);
 
   private static final Instant VIEW_DATE = Instant.parse("2022-09-10T10:00:00Z");
+
   private static final Instant DATE_FROM = Instant.parse("2022-09-08T10:00:00Z");
 
   private static final Instant DATE_TO = Instant.parse("2022-09-08T11:00:00Z");
@@ -82,7 +82,7 @@ class DeferralRepositoryTest {
     // THEN
     assertEquals(expectedDeferrals, idViews.size());
     if (expectedDeferrals > 0) {
-      final var ids = idViews.stream().map(OutboundDeferralData::getId).collect(Collectors.toList());
+      final var ids = idViews.stream().map(OutboundDeferralData::getId).toList();
       assertTrue(ids.contains(1L));
       assertTrue(ids.contains(2L));
     }
@@ -101,17 +101,17 @@ class DeferralRepositoryTest {
   @Test
   @Sql("/sql/forecast/load_deferral.sql")
   void testFindByLogisticCenterIdAndDateBeforeAndCpt() {
-      // WHEN
-      final List<Instant> deferrals = repository.findDeferredCpts(
-              WAREHOUSE_ID,
-              VIEW_DATE,
-              DEFERRAL_TYPES
-      );
+    // WHEN
+    final List<OutboundDeferralData> deferrals = repository.findDeferredCpts(
+        WAREHOUSE_ID,
+        VIEW_DATE,
+        DEFERRAL_TYPES
+    );
 
-      // THEN
-      assertEquals(2, deferrals.size());
-      deferrals.forEach(deferral -> {
-          assertTrue(deferral.isBefore(VIEW_DATE));
-      });
-    }
+    // THEN
+    assertEquals(2, deferrals.size());
+    deferrals.forEach(deferral -> {
+      assertTrue(deferral.getCpt().isBefore(VIEW_DATE));
+    });
+  }
 }

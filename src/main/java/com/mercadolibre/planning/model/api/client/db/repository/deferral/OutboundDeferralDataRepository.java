@@ -36,17 +36,17 @@ public interface OutboundDeferralDataRepository extends JpaRepository<OutboundDe
    * @param deferralType The status provide which the CPTs were deferred.
    * @return A list of CPTs that were deferred before the specified date.
    */
-  @Query("SELECT dd.cpt "
-      + "FROM OutboundDeferralData dd "
-      + "WHERE dd.logisticCenterId = :warehouseId "
-      + "AND dd.date IN ("
-      + "  SELECT MAX(id.date) "
-      + "  FROM OutboundDeferralData id "
-      + "  WHERE id.logisticCenterId = :warehouseId "
-      + "  AND id.date <= :viewDate"
-      + ") AND dd.status in :deferralType"
+  @Query("""
+      FROM OutboundDeferralData dd
+      WHERE dd.logisticCenterId = :warehouseId
+      AND dd.date IN (
+        SELECT MAX(id.date)
+        FROM OutboundDeferralData id
+        WHERE id.logisticCenterId = :warehouseId
+        AND id.date <= :viewDate
+      ) AND dd.status in :deferralType"""
   )
-  List<Instant> findDeferredCpts(String warehouseId, Instant viewDate, Set<DeferralType> deferralType);
+  List<OutboundDeferralData> findDeferredCpts(String warehouseId, Instant viewDate, Set<DeferralType> deferralType);
 
   @Modifying
   @Transactional

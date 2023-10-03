@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.adapter;
 
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -10,6 +11,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.deferral.OutboundDeferralData;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.GetDeferralReport;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.GetDeferred;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -24,14 +26,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class GetOutboundDeferralReportAdapterTest {
+class GetOutboundDeferralReportAdapterTest {
 
   private static final String WAREHOUSE_ID = "ARTW01";
 
   private static final Set<DeferralType> DEFERRAL_TYPES = Set.of(DeferralType.CAP_MAX, DeferralType.CASCADE);
 
-  private static final Instant DATE_IN_1 = A_DATE_UTC.toInstant();
-  private static final Instant DATE_IN_2 = A_DATE_UTC.toInstant();
+  private static final Instant DATE_IN_1 = Instant.parse("2022-09-09T10:00:00Z");
+
+  private static final Instant DATE_IN_2 = Instant.parse("2022-09-09T10:00:00Z");
 
   private static final Instant DATE = Instant.parse("2022-09-08T10:00:00Z");
 
@@ -91,7 +94,10 @@ public class GetOutboundDeferralReportAdapterTest {
   private static Stream<Arguments> provideArgumentsAndExpectedValuesFromMultipleDeferredCpts() {
     return Stream.of(
         Arguments.of(
-            mockResponseForDeferredCpts(),
+            List.of(
+                new OutboundDeferralData(1, "ARTW01", DATE_IN_1, DATE_IN_1, DeferralType.CASCADE, true),
+                new OutboundDeferralData(1, "ARTW01", DATE_IN_1, DATE_IN_2, DeferralType.CAP_MAX, true)
+            ),
             List.of(DATE_IN_1, DATE_IN_2)
         ),
         Arguments.of(
@@ -101,18 +107,29 @@ public class GetOutboundDeferralReportAdapterTest {
     );
   }
 
-  private static List<Instant> mockResponseForDeferredCpts() {
-    return List.of(
-        Instant.parse("2020-08-19T17:00:00Z"),
-        Instant.parse("2020-08-19T17:00:00Z")
+  private static Stream<Arguments> params() {
+    return Stream.of(
+        Arguments.of(
+            List.of(
+                new OutboundDeferralData(1, "ARTW01", A_DATE_UTC.toInstant(), DATE_IN_1, DeferralType.CASCADE, true),
+                new OutboundDeferralData(1, "ARTW01", A_DATE_UTC.toInstant(), DATE_IN_2, DeferralType.CAP_MAX, true)
+            ),
+            List.of(
+                new GetDeferred.DeferralStatus(DATE_IN_1, DeferralType.CASCADE),
+                new GetDeferred.DeferralStatus(DATE_IN_2, DeferralType.CAP_MAX)
+            )
+        ),
+        Arguments.of(
+            List.of(),
+            List.of()
+        )
     );
   }
 
   @ParameterizedTest
   @MethodSource("provideArgumentsAndExpectedValuesFromMultipleDeferral")
   @DisplayName("Should return a list of deferrals")
-  void testGetDeferralReportOk(final List<OutboundDeferralData> deferralDto,
-                               final List<GetDeferralReport.Deferral> expected) {
+  void testGetDeferralReportOk(final List<OutboundDeferralData> deferralDto, final List<GetDeferralReport.Deferral> expected) {
     // GIVEN
     when(deferralRepository.findByLogisticCenterIdAndDateBetweenAndUpdatedIsTrue(WAREHOUSE_ID, DATE, CPT))
         .thenReturn(deferralDto);
@@ -128,18 +145,30 @@ public class GetOutboundDeferralReportAdapterTest {
   @ParameterizedTest
   @MethodSource("provideArgumentsAndExpectedValuesFromMultipleDeferredCpts")
   @DisplayName("Should return a list of deferred CPTs")
-  void testGetDeferredCptsOk(final List<Instant> deferralDto,
-                             final List<Instant> expected) {
+  void testGetDeferredCptsOk(final List<OutboundDeferralData> deferralDto, final List<Instant> expected) {
     // GIVEN
 
     when(deferralRepository.findDeferredCpts(WAREHOUSE_ID, DATE_IN_1, DEFERRAL_TYPES))
         .thenReturn(deferralDto);
 
     // WHEN
-    final var result = getDeferralReportAdapter.getDeferredCpts(
-        WAREHOUSE_ID,
-        Workflow.FBM_WMS_OUTBOUND,
-        A_DATE_UTC.toInstant());
+    final var result = getDeferralReportAdapter.getDeferredCpts(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN_1);
+
+    // THEN
+    assertNotNull(result);
+    assertEquals(expected, result);
+  }
+
+  @ParameterizedTest
+  @MethodSource("params")
+  @DisplayName("Should return a list of deferred CPTs with the status")
+  void testGetDeferredCptsWithStatusOk(final List<OutboundDeferralData> deferralDto, final List<GetDeferred.DeferralStatus> expected) {
+    // GIVEN
+    when(deferralRepository.findDeferredCpts(WAREHOUSE_ID, DATE_IN_1, DEFERRAL_TYPES))
+        .thenReturn(deferralDto);
+
+    // WHEN
+    final var result = getDeferralReportAdapter.getDeferredWithStatus(WAREHOUSE_ID, FBM_WMS_OUTBOUND, DATE_IN_1);
 
     // THEN
     assertNotNull(result);

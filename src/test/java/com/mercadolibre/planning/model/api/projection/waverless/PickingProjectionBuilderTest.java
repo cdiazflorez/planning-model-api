@@ -146,14 +146,14 @@ class PickingProjectionBuilderTest {
     final var totMonoProjections = projectedEndDates.get(TOT_MONO);
     assertNotNull(totMonoProjections);
 
-    assertEquals(Instant.parse("2023-02-17T10:40:00Z"), totMonoProjections.get(DATE_OUT_1));
-    assertNull(totMonoProjections.get(DATE_OUT_2));
+    assertEquals(Instant.parse("2023-02-17T10:58:24Z"), totMonoProjections.get(DATE_OUT_2));
+    assertNull(totMonoProjections.get(DATE_OUT_1));
 
     final var nonTotMonoProjections = projectedEndDates.get(NON_TOT_MONO);
     assertNotNull(nonTotMonoProjections);
 
-    assertEquals(Instant.parse("2023-02-17T10:20:00Z"), nonTotMonoProjections.get(DATE_OUT_1));
-    assertEquals(Instant.parse("2023-02-17T10:50:00Z"), nonTotMonoProjections.get(DATE_OUT_2));
+    assertEquals(Instant.parse("2023-02-17T10:47:00Z"), nonTotMonoProjections.get(DATE_OUT_1));
+    assertEquals(Instant.parse("2023-02-17T10:48:00Z"), nonTotMonoProjections.get(DATE_OUT_2));
   }
 
   @Test
@@ -174,7 +174,7 @@ class PickingProjectionBuilderTest {
 
     final var holder = PickingProjectionBuilder.buildContextHolder(currentBacklog, throughput);
 
-    final var ip = List.of(DATE_1, DATE_2, DATE_2.plus(1, ChronoUnit.HOURS));
+    final var ip = List.of(DATE_1, DATE_2, DATE_3);
 
     final var processPaths = Set.of(TOT_MONO, NON_TOT_MONO);
     //WHEN
@@ -205,6 +205,7 @@ class PickingProjectionBuilderTest {
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
+            33L,
             0L
         ),
         new PickingProjectionBuilder.ProcessPathBacklog(
@@ -212,13 +213,31 @@ class PickingProjectionBuilderTest {
             TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
-            50L
+            17L,
+            0L
+        ),
+        new PickingProjectionBuilder.ProcessPathBacklog(
+            DATE_3,
+            TOT_MONO,
+            ProcessName.PICKING,
+            DATE_OUT_1,
+            16L,
+            0L
+        ),
+        new PickingProjectionBuilder.ProcessPathBacklog(
+            DATE_3,
+            TOT_MONO,
+            ProcessName.PICKING,
+            DATE_OUT_2,
+            9L,
+            0L
         ),
         new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_2,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_1,
+            42L,
             0L
         ),
         new PickingProjectionBuilder.ProcessPathBacklog(
@@ -226,21 +245,24 @@ class PickingProjectionBuilderTest {
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
-            100L
+            58L,
+            0L
         ),
         new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_3,
-            TOT_MONO,
+            NON_TOT_MONO,
             ProcessName.PICKING,
-            DATE_OUT_2,
-            25L
+            DATE_OUT_1,
+            21L,
+            0L
         ),
         new PickingProjectionBuilder.ProcessPathBacklog(
             DATE_3,
             NON_TOT_MONO,
             ProcessName.PICKING,
             DATE_OUT_2,
-            50L
+            29L,
+            0L
         )
 
     );

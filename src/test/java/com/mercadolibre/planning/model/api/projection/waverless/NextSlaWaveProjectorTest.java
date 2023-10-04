@@ -34,7 +34,6 @@ class NextSlaWaveProjectorTest {
   );
 
   private static final String WH = "ARBA01";
-
   private static final Map<ProcessPath, List<PendingBacklog.AvailableBacklog>> READY_TO_WAVE = Map.of(
       TOT_MONO, List.of(
           new PendingBacklog.AvailableBacklog(SLA_1, SLA_1, 5D),
@@ -133,13 +132,13 @@ class NextSlaWaveProjectorTest {
 
     // THEN
     assertTrue(result.isPresent());
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:35:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T01:10:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getExecutionDate());
 
     final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
-    assertEquals(5L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
+    assertEquals(30L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
   }
 }

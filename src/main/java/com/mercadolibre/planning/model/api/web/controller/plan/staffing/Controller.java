@@ -21,11 +21,13 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
-import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingSimulationRequest;
+import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.UpdateStaffingPlanRequest;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -38,7 +40,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,6 +68,8 @@ public class Controller {
   private final GetHeadcountEntityUseCase getHeadcountEntityUseCase;
 
   private final GetProductivityEntityUseCase getProductivityEntityUseCase;
+
+  private final ActivateSimulationUseCase activateSimulationUseCase;
 
   @GetMapping
   @Trace(dispatcher = true)
@@ -104,15 +107,16 @@ public class Controller {
     ));
   }
 
-  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseStatus(OK)
   @PutMapping
   @Trace(dispatcher = true)
   public void updateStaffingPlan(@PathVariable final String logisticCenterId,
                                  @RequestParam final Workflow workflow,
                                  @RequestParam final long userId,
-                                 @RequestBody final StaffingSimulationRequest request) {
+                                 @RequestBody final UpdateStaffingPlanRequest request) {
 
-    log.info("LogisticCenterID: {} - Workflow: {}", logisticCenterId, workflow);
+    final SimulationInput input = request.toSimulationInput(workflow, logisticCenterId, userId);
+    activateSimulationUseCase.execute(input);
   }
 
   @GetMapping("/throughput")

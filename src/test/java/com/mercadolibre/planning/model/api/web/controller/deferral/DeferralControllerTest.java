@@ -1,6 +1,8 @@
 package com.mercadolibre.planning.model.api.web.controller.deferral;
 
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static java.util.Collections.emptyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,6 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.DeferralType;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.GetDeferralReport;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.GetDeferred;
+import com.mercadolibre.planning.model.api.domain.usecase.deferral.GetDeferred.DeferralStatus;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.SaveOutboundDeferralReport;
 import java.io.IOException;
 import java.time.Instant;
@@ -104,10 +108,15 @@ class DeferralControllerTest {
 
   @Autowired
   private MockMvc mvc;
+
   @MockBean
   private SaveOutboundDeferralReport saveOutboundDeferralReport;
+
   @MockBean
   private GetDeferralReport getDeferralReport;
+
+  @MockBean
+  private GetDeferred getDeferred;
 
   private static Stream<Arguments> parametersSaveStatus() {
     return Stream.of(
@@ -169,6 +178,31 @@ class DeferralControllerTest {
     );
   }
 
+  public static Stream<Arguments> params() {
+    return Stream.of(
+        Arguments.of(
+            List.of(
+                new DeferralStatus(CPT1, DeferralType.CASCADE),
+                new DeferralStatus(CPT2, DeferralType.CAP_MAX)
+            ),
+            """
+                {
+                  "statuses": [
+                      {"date": "2023-07-21T17:00:00Z", "status": "CASCADE"},
+                      {"date": "2023-07-21T18:00:00Z", "status": "CAP_MAX"}
+                  ]
+                }
+                """
+        ),
+        Arguments.of(
+            emptyList(),
+            """
+                {"statuses": []}
+                """
+        )
+    );
+  }
+
   @ParameterizedTest
   @MethodSource("parameterGetTest")
   void testGet(final Map<Instant, List<GetDeferralReport.SlaStatus>> deferred, final String logisticCenterId, final String dateFrom,
@@ -211,5 +245,25 @@ class DeferralControllerTest {
     // THEN
     result.andExpect(statusController);
     verify(saveOutboundDeferralReport, times(times)).save(LOGISTIC_CENTER_ID, deferralDate, CPT_DEFERRAL_REPORTS);
+  }
+
+  @ParameterizedTest
+  @MethodSource("params")
+  void testGetCurrentStatus(final List<DeferralStatus> mocked, final String expected) throws Exception {
+    //GIVEN
+    when(getDeferred.getDeferred(LOGISTIC_CENTER_ID, FBM_WMS_OUTBOUND, DATE_FROM))
+        .thenReturn(mocked);
+
+    final var url = String.format("/planning/model/deferred/%s/status", LOGISTIC_CENTER_ID);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(url)
+            .param("workflow", FBM_WMS_OUTBOUND.getName())
+            .param("view_date", DATE_FROM.toString())
+    );
+
+    result.andExpect(status().isOk())
+        .andExpect(content().json(expected));
   }
 }

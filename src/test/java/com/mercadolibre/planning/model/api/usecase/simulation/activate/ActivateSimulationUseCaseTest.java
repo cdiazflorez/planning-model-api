@@ -150,37 +150,34 @@ public class ActivateSimulationUseCaseTest {
     //GIVEN
     final SimulationInput input = mockSimulationInput(
             List.of(
-                    mockSimulation(PICKING, HEADCOUNT, 15),
-                    mockSimulation(PICKING, PRODUCTIVITY, 30),
-                    mockSimulation(PACKING, HEADCOUNT, 5),
-                    mockSimulation(PACKING, PRODUCTIVITY, 35),
-                    mockSimulation(PACKING_WALL, HEADCOUNT, 10),
-                    mockSimulation(PACKING_WALL, PRODUCTIVITY, 15)
+                    mockSimulation(PICKING, HEADCOUNT, 15, null),
+                    mockSimulation(PICKING, PRODUCTIVITY, 30, null),
+                    mockSimulation(PACKING, HEADCOUNT, 5, null),
+                    mockSimulation(PACKING, PRODUCTIVITY, 35, null),
+                    mockSimulation(PACKING_WALL, HEADCOUNT, 10, null),
+                    mockSimulation(PACKING_WALL, PRODUCTIVITY, 15, null)
             )
     );
 
     final Map<ProcessPath, Map<ProcessName, Map<Instant, Double>>> processPathHeadcountResponse = mockProcessPathHeadcountShare();
 
     final List<CurrentProcessingDistribution> currentProcessingDistributions = List.of(
-            mockCurrentProcessingDistribution(DATE_12, PICKING, ProcessPath.GLOBAL, 15),
-            mockCurrentProcessingDistribution(DATE_12, PICKING, ProcessPath.TOT_MULTI_ORDER, 15),
-            mockCurrentProcessingDistribution(DATE_12, PICKING, ProcessPath.NON_TOT_MULTI_ORDER, 15),
-            mockCurrentProcessingDistribution(DATE_13, PICKING, ProcessPath.GLOBAL, 15),
-            mockCurrentProcessingDistribution(DATE_13, PICKING, ProcessPath.TOT_MULTI_ORDER, 15),
-            mockCurrentProcessingDistribution(DATE_13, PICKING, ProcessPath.NON_TOT_MULTI_ORDER, 15),
-            mockCurrentProcessingDistribution(DATE_12, PACKING, ProcessPath.GLOBAL, 5),
-            mockCurrentProcessingDistribution(DATE_13, PACKING, ProcessPath.GLOBAL, 5),
-            mockCurrentProcessingDistribution(DATE_12, PACKING_WALL, ProcessPath.GLOBAL, 15),
-            mockCurrentProcessingDistribution(DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15)
-    );
-
-    final List<CurrentProcessingDistribution> currentHeadcountProductivities = List.of(
-            mockCurrentHeadcountProductivity(DATE_12, PICKING, 30),
-            mockCurrentHeadcountProductivity(DATE_13, PICKING, 30),
-            mockCurrentHeadcountProductivity(DATE_12, PACKING, 35),
-            mockCurrentHeadcountProductivity(DATE_13, PACKING, 35),
-            mockCurrentHeadcountProductivity(DATE_12, PACKING_WALL, 15),
-            mockCurrentHeadcountProductivity(DATE_13, PACKING_WALL, 15)
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.TOT_MULTI_ORDER, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.NON_TOT_MULTI_ORDER, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.TOT_MULTI_ORDER, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.NON_TOT_MULTI_ORDER, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PACKING, ProcessPath.GLOBAL, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PACKING, ProcessPath.GLOBAL, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PICKING, ProcessPath.GLOBAL, 30),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PICKING, ProcessPath.GLOBAL, 30),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PACKING, ProcessPath.GLOBAL, 35),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PACKING, ProcessPath.GLOBAL, 35),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15)
     );
 
     final Workflow workflow = input.getWorkflow();
@@ -188,44 +185,83 @@ public class ActivateSimulationUseCaseTest {
     when(processPathHeadcountShareService.getHeadcountShareByProcessPath(anyString(), any(), anySet(), any(), any(), any()))
             .thenReturn(processPathHeadcountResponse);
 
-    final var allProcessingDistribution = new ArrayList<>(currentProcessingDistributions);
-    allProcessingDistribution.addAll(currentHeadcountProductivities);
-
     when(currentProcessingRepository.saveAll(anyList()))
-            .thenReturn(allProcessingDistribution);
+            .thenReturn(currentProcessingDistributions);
 
     //WHEN
     final List<SimulationOutput> simulations = activateSimulationUseCase.execute(input);
 
     //THEN
     currentProcessingDistributions.stream()
-            .map(CurrentProcessingDistribution::getProcessName)
             .distinct()
-            .forEach(processName -> verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
+            .forEach(processingDistribution -> verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
                     workflow,
-                    processName,
+                    processingDistribution.getProcessName(),
                     List.of(DATE_12, DATE_13),
-                    EFFECTIVE_WORKERS,
+                    processingDistribution.getType(),
                     USER_ID,
-                    WORKERS
+                    processingDistribution.getQuantityMetricUnit()
             ));
 
-    currentHeadcountProductivities.stream()
-            .map(CurrentProcessingDistribution::getProcessName)
-            .distinct()
-            .forEach(processName -> verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
-                    workflow,
-                    processName,
-                    List.of(DATE_12, DATE_13),
-                    ProcessingType.PRODUCTIVITY,
-                    USER_ID,
-                    UNITS_PER_HOUR
-            ));
-
-    final int expectedResultSize = currentHeadcountProductivities.size() + currentProcessingDistributions.size();
+    final int expectedResultSize = currentProcessingDistributions.size();
     assertEquals(expectedResultSize, simulations.size());
 
   }
+
+  @Test
+  @DisplayName("Create process paths active from simulation")
+  void createProcessPathsFromSimulation() {
+    //GIVEN
+    final SimulationInput input = mockSimulationInput(
+        List.of(
+            mockSimulation(PICKING, HEADCOUNT, 15, Map.of(ProcessPath.TOT_MONO, 10.0, ProcessPath.NON_TOT_MONO, 5.0)),
+            mockSimulation(PICKING, PRODUCTIVITY, 30, Map.of(ProcessPath.TOT_MONO, 12.0, ProcessPath.NON_TOT_MONO, 28.0)),
+            mockSimulation(PACKING, HEADCOUNT, 5, null),
+            mockSimulation(PACKING, PRODUCTIVITY, 35, null),
+            mockSimulation(PACKING_WALL, HEADCOUNT, 10, null),
+            mockSimulation(PACKING_WALL, PRODUCTIVITY, 15, null)
+        )
+    );
+
+    final List<CurrentProcessingDistribution> currentProcessingDistributions = List.of(
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.TOT_MONO, 10),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PICKING, ProcessPath.NON_TOT_MONO, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.TOT_MONO, 10),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PICKING, ProcessPath.NON_TOT_MONO, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PACKING, ProcessPath.GLOBAL, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PACKING, ProcessPath.GLOBAL, 5),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_12, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(HEADCOUNT, DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PICKING, ProcessPath.GLOBAL, 30),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PICKING, ProcessPath.TOT_MONO, 12),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PICKING, ProcessPath.NON_TOT_MONO, 28),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PICKING, ProcessPath.GLOBAL, 30),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PICKING, ProcessPath.TOT_MONO, 12),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PICKING, ProcessPath.NON_TOT_MONO, 28),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PACKING, ProcessPath.GLOBAL, 35),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PACKING, ProcessPath.GLOBAL, 35),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_12, PACKING_WALL, ProcessPath.GLOBAL, 15),
+        mockCurrentProcessingDistribution(PRODUCTIVITY, DATE_13, PACKING_WALL, ProcessPath.GLOBAL, 15)
+    );
+
+    activateSimulationUseCase.execute(input);
+
+    //THEN
+    currentProcessingDistributions.stream()
+        .distinct()
+        .forEach(processingDistribution -> verify(currentProcessingRepository).deactivateProcessingDistribution(input.getWarehouseId(),
+            input.getWorkflow(),
+            processingDistribution.getProcessName(),
+            List.of(DATE_12, DATE_13),
+            processingDistribution.getType(),
+            USER_ID,
+            processingDistribution.getQuantityMetricUnit()
+        ));
+  }
+
+
 
   private SimulationInput mockSimulationInput(final List<Simulation> simulations) {
     return SimulationInput.builder()
@@ -271,7 +307,8 @@ public class ActivateSimulationUseCaseTest {
     );
   }
 
-  private CurrentProcessingDistribution mockCurrentProcessingDistribution(final ZonedDateTime date,
+  private CurrentProcessingDistribution mockCurrentProcessingDistribution(final EntityType entityType,
+                                                                          final ZonedDateTime date,
                                                                           final ProcessName processName,
                                                                           final ProcessPath processPath,
                                                                           final int quantity) {
@@ -282,43 +319,30 @@ public class ActivateSimulationUseCaseTest {
             .getOrDefault(date.toInstant(), 1.0D);
 
     return CurrentProcessingDistribution.builder()
+            .logisticCenterId("ARBA01")
             .date(date)
             .processName(processName)
             .processPath(processPath)
             .quantity(quantity * ratio)
-            .quantityMetricUnit(WORKERS)
+            .quantityMetricUnit(entityType.getMetricUnit())
             .workflow(FBM_WMS_OUTBOUND)
-            .type(EFFECTIVE_WORKERS)
-            .isActive(true)
-            .build();
-  }
-
-  private CurrentProcessingDistribution mockCurrentHeadcountProductivity(final ZonedDateTime date,
-                                                                        final ProcessName processName,
-                                                                        final int productivity) {
-    return CurrentProcessingDistribution.builder()
-            .date(date)
-            .processName(processName)
-            .processPath(ProcessPath.GLOBAL)
-            .quantity(productivity)
-            .quantityMetricUnit(UNITS_PER_HOUR)
-            .type(ProcessingType.PRODUCTIVITY)
-            .workflow(FBM_WMS_OUTBOUND)
+            .type(entityType.getProcessingType())
             .isActive(true)
             .build();
   }
 
   private Simulation mockSimulation(final ProcessName processName,
                                     final EntityType entityType,
-                                    final int quantity) {
+                                    final int quantity,
+                                    final Map<ProcessPath, Double> processPaths) {
       return new Simulation(
               processName,
               singletonList(
                       new SimulationEntity(
                               entityType,
                               List.of(
-                                      new QuantityByDate(DATE_12, quantity, null),
-                                      new QuantityByDate(DATE_13, quantity, null)
+                                      new QuantityByDate(DATE_12, quantity, processPaths),
+                                      new QuantityByDate(DATE_13, quantity, processPaths)
                               )
                       )
               )

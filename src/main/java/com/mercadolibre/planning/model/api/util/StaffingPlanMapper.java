@@ -114,8 +114,8 @@ public final class StaffingPlanMapper {
         .get(entity.getProcessPath())
         .get(entity.getProcessName())
         .get(entity.getDate().withFixedOffsetZone());
-    final long originalValue = eo.get(Source.FORECAST).getRoundedValue();
-    final long value = eo.get(Source.SIMULATION) != null
+    final double originalValue = eo.get(Source.FORECAST).getValue();
+    final double value = eo.get(Source.SIMULATION) != null
         ? eo.get(Source.SIMULATION).getRoundedValue()
         : originalValue;
     return new StaffingPlanMetrics(value, originalValue);
@@ -129,6 +129,6 @@ public final class StaffingPlanMapper {
   ) {
   }
 
-  public record StaffingPlanMetrics(long quantity, long originalQuantity) {
+  public record StaffingPlanMetrics(double quantity, double originalQuantity) {
   }
 }

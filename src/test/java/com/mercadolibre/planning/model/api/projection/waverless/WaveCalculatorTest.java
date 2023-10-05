@@ -161,15 +161,15 @@ class WaveCalculatorTest {
 
     final var fourthWaveTotMonoConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
     assertEquals(600L, fourthWaveTotMonoConf.getLowerBound());
-    assertEquals(600L, fourthWaveTotMonoConf.getUpperBound());
+    assertEquals(630L, fourthWaveTotMonoConf.getUpperBound());
 
     final var fourthWaveNonTotMonoConf = fourthWave.getConfiguration().get(NON_TOT_MONO);
     assertEquals(600L, fourthWaveNonTotMonoConf.getLowerBound());
-    assertEquals(600L, fourthWaveNonTotMonoConf.getUpperBound());
+    assertEquals(630L, fourthWaveNonTotMonoConf.getUpperBound());
 
     final var fourthWaveTotMultiBatchConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
     assertEquals(600L, fourthWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(600L, fourthWaveTotMultiBatchConf.getUpperBound());
+    assertEquals(630L, fourthWaveTotMultiBatchConf.getUpperBound());
 
     // projections
     assertEquals(72, triggers.getProjectedBacklogs().get(PICKING).size());

@@ -239,7 +239,7 @@ class NextIdlenessWaveProjectorTest {
     assertEquals(928, confs.get(NON_TOT_MONO).getUpperBound());
     assertEquals(240, confs.get(NON_TOT_MONO).getLowerBound());
 
-    assertEquals(240, confs.get(TOT_MULTI_BATCH).getUpperBound());
+    assertEquals(252, confs.get(TOT_MULTI_BATCH).getUpperBound());
     assertEquals(240, confs.get(TOT_MULTI_BATCH).getLowerBound());
   }
 

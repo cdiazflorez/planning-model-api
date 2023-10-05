@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.waverless.sla.BacklogAndForecastByDate;
 import java.time.Instant;
 import java.util.Map;
 import java.util.function.LongUnaryOperator;
@@ -24,6 +25,23 @@ public class OrderedBacklogByProcessPath implements Backlog {
         );
 
     return new OrderedBacklogByProcessPath(orderedBacklogByProcessPath);
+  }
+
+  public static OrderedBacklogByProcessPath fromForecast(final Map<ProcessPath, Map<Instant, Long>> forecast) {
+    final Map<ProcessPath, Backlog> orderedBacklogByProcessPath = forecast.entrySet()
+        .stream()
+        .collect(
+            toMap(Map.Entry::getKey, entry -> new BacklogAndForecastByDate(asBacklogAndForecastByDate(entry.getValue())))
+        );
+
+    return new OrderedBacklogByProcessPath(orderedBacklogByProcessPath);
+  }
+
+  private static Map<Instant, BacklogAndForecastByDate.Quantity> asBacklogAndForecastByDate(final Map<Instant, Long> quantities) {
+    return quantities.entrySet().stream()
+        .collect(
+            toMap(Map.Entry::getKey, entry -> new BacklogAndForecastByDate.Quantity(0, entry.getValue()))
+        );
   }
 
   private static Map<Instant, OrderedBacklogByDate.Quantity> asQuantityByDate(final Map<Instant, Long> quantities) {

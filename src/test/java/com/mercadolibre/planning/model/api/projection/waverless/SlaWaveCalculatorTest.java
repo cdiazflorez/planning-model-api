@@ -339,7 +339,6 @@ class SlaWaveCalculatorTest {
     Map<ProcessPath, Integer> minCycleTimes;
 
     List<Wave> waves;
-
     String logisticCenter;
   }
 }

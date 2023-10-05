@@ -53,7 +53,6 @@ public final class SlaWaveCalculator {
    * @param pendingBacklog    forecasted backlog by Process Path.
    * @param minCycleTimes     minimum cycle time configuration by Process Path. It must contain all Process Paths.
    * @param waves             existing waves
-   * @param logisticCenterId  warehouse
    * @return next wave configuration, if found.
    */
   @Trace

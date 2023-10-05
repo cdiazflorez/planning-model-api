@@ -1,7 +1,9 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
-import static com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.utils.OrderedBacklogByDateUtils.calculateProjectedEndDate;
+import static com.mercadolibre.planning.model.api.projection.waverless.sla.BacklogAndForecastByDateUtils.calculateProjectedEndDate;
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.flatMapping;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
@@ -11,17 +13,18 @@ import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessC
 import com.mercadolibre.flow.projection.tools.services.entities.context.ThroughputPerHour;
 import com.mercadolibre.flow.projection.tools.services.entities.context.UnprocessedBacklogState;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Upstream;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDate.Quantity;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.OrderedBacklogByDateConsumer;
+import com.mercadolibre.flow.projection.tools.services.entities.context.UpstreamAtInflectionPoint;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
-import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.OrderedBacklogByDateMerger;
 import com.mercadolibre.flow.projection.tools.services.entities.process.ParallelProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathSplitter;
+import com.mercadolibre.planning.model.api.projection.waverless.sla.BacklogAndForecastByDate;
+import com.mercadolibre.planning.model.api.projection.waverless.sla.BacklogAndForecastDateMerge;
+import com.mercadolibre.planning.model.api.projection.waverless.sla.ProportionalBacklogConsumer;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +45,11 @@ public final class PickingProjectionBuilder {
   private static final String PICKING_PROCESS = "picking";
 
   private static final BacklogByDateHelper HELPER = new BacklogByDateHelper(
-      new OrderedBacklogByDateConsumer(),
-      new OrderedBacklogByDateMerger()
+      new ProportionalBacklogConsumer(),
+      new BacklogAndForecastDateMerge()
   );
 
-  private static final OrderedBacklogByDateMerger MERGER = new OrderedBacklogByDateMerger();
+  private static final BacklogAndForecastDateMerge MERGER = new BacklogAndForecastDateMerge();
 
   private PickingProjectionBuilder() {
   }
@@ -97,11 +100,47 @@ public final class PickingProjectionBuilder {
       final List<Instant> slas
   ) {
     final var updatedContexts = processor.accept(
-        contexts, ProjectionUtils.asUpstream(waves), inflectionPoints
+        contexts, asUpstream(waves), inflectionPoints
     );
 
     return processPaths.stream()
         .collect(toMap(Function.identity(), path -> getProjectedEndDate(path, updatedContexts, slas)));
+  }
+
+  static Upstream asUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> waves) {
+    return new UpstreamAtInflectionPoint(
+        waves.entrySet().stream()
+            .collect(
+                toMap(
+                    Map.Entry::getKey,
+                    entry -> OrderedBacklogByProcessPath.fromForecast(entry.getValue())
+                )
+            )
+    );
+  }
+
+  public static Map<Instant, Map<ProcessPath, Map<Instant, Long>>> asMap(final List<Wave> waves) {
+    return waves.stream()
+        .collect(
+            groupingBy(
+                Wave::getDate,
+                flatMapping(
+                    wave -> wave.getConfiguration()
+                        .entrySet()
+                        .stream(),
+                    groupingBy(
+                        Map.Entry::getKey,
+                        flatMapping(
+                            entry -> entry.getValue()
+                                .getWavedUnitsByCpt()
+                                .entrySet()
+                                .stream(),
+                            toMap(Map.Entry::getKey, Map.Entry::getValue, Long::sum)
+                        )
+                    )
+                )
+            )
+        );
   }
 
   private static Map<Instant, Instant> getProjectedEndDate(
@@ -147,13 +186,13 @@ public final class PickingProjectionBuilder {
         .stream()
         .collect(toMap(
             Map.Entry::getKey,
-            entry -> new OrderedBacklogByDate(
+            entry -> new BacklogAndForecastByDate(
                 entry.getValue()
                     .entrySet()
                     .stream()
                     .collect(toMap(
                         Map.Entry::getKey,
-                        inner -> new Quantity(inner.getValue())
+                        inner -> new BacklogAndForecastByDate.Quantity(inner.getValue(), 0)
                     ))
             )
         ));
@@ -165,7 +204,7 @@ public final class PickingProjectionBuilder {
                 process -> new SimpleProcess.Context(
                     new ThroughputPerHour(throughput.getOrDefault(process, emptyMap())),
                     HELPER,
-                    orderedBacklogByProcessPath.getOrDefault(process, OrderedBacklogByDate.emptyBacklog())
+                    orderedBacklogByProcessPath.getOrDefault(process, BacklogAndForecastByDate.emptyBacklog())
                 )
             )
         );
@@ -175,7 +214,7 @@ public final class PickingProjectionBuilder {
       final UnprocessedBacklogState unprocessedBacklogState,
       final ProcessPath processPath
   ) {
-    var backlogByDateOuts = (OrderedBacklogByDate) unprocessedBacklogState.getBacklog();
+    var backlogByDateOuts = (BacklogAndForecastByDate) unprocessedBacklogState.getBacklog();
 
     return backlogByDateOuts.getBacklogs().entrySet().stream().map(
         backlogByDateOut -> new ProcessPathBacklog(
@@ -183,7 +222,8 @@ public final class PickingProjectionBuilder {
             processPath,
             ProcessName.PICKING,
             backlogByDateOut.getKey(),
-            backlogByDateOut.getValue().total()
+            backlogByDateOut.getValue().backlog(),
+            backlogByDateOut.getValue().forecast()
         )
     );
   }
@@ -198,7 +238,10 @@ public final class PickingProjectionBuilder {
 
     Instant cpt;
 
-    Long units;
+    Long backlog;
+
+    Long forecast;
+
   }
 
 }

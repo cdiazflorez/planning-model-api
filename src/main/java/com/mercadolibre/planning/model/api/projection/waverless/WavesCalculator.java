@@ -35,14 +35,6 @@ public final class WavesCalculator {
   private WavesCalculator() {
   }
 
-  @Value
-  public static class TriggerProjection {
-    List<Wave> waves;
-
-    Map<ProcessName, Map<Instant, Long>> projectedBacklogs;
-
-  }
-
   @Trace
   public static TriggerProjection waves(
       final Instant executionDate,
@@ -87,10 +79,10 @@ public final class WavesCalculator {
       );
 
       final var wave = bySla.map(
-          sla -> byIdleness.map(
-              idl -> idl.getExecutionDate().isBefore(sla.getExecutionDate()) ? byIdleness : bySla
-          ).orElse(bySla)
-      )
+              sla -> byIdleness.map(
+                  idl -> idl.getExecutionDate().isBefore(sla.getExecutionDate()) ? byIdleness : bySla
+              ).orElse(bySla)
+          )
           .orElse(byIdleness)
           .map(DateWaveSupplier::getWave)
           .map(Supplier::get);
@@ -165,6 +157,14 @@ public final class WavesCalculator {
                 )
             )
         );
+  }
+
+  @Value
+  public static class TriggerProjection {
+    List<Wave> waves;
+
+    Map<ProcessName, Map<Instant, Long>> projectedBacklogs;
+
   }
 
 }

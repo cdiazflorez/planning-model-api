@@ -1,5 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
+import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.asMap;
+import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.asUpstream;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.backlogProjection;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildContextHolder;
 import static java.util.Collections.emptyMap;
@@ -125,7 +127,7 @@ public final class NextSlaWaveProjector {
   }
 
   private static CurrentBacklog toCurrentBacklog(final ProcessPathBacklog projection) {
-    return new CurrentBacklog(projection.getProcessPath(), projection.getCpt(), projection.getUnits());
+    return new CurrentBacklog(projection.getProcessPath(), projection.getCpt(), projection.getBacklog());
   }
 
   private static Stream<ProcessPathBacklog> calculateBacklogStates(
@@ -156,7 +158,8 @@ public final class NextSlaWaveProjector {
                     pp,
                     ProcessName.PICKING,
                     entry.getKey(),
-                    entry.getValue()
+                    entry.getValue(),
+                    0L
                 )
             )
         );
@@ -171,7 +174,7 @@ public final class NextSlaWaveProjector {
       final List<Wave> waves
   ) {
     final var contextsHolder = buildContextHolder(currentBacklog, throughput);
-    final var upstream = ProjectionUtils.asUpstream(waves);
+    final var upstream = asUpstream(asMap(waves));
     return backlogProjection(graph, contextsHolder, upstream, inflectionPoints, throughput.keySet()).stream()
         .filter(projection -> !projection.getDate().equals(currentInflectionPoint));
   }

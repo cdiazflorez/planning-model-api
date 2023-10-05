@@ -15,6 +15,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,6 +32,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
 import java.time.ZonedDateTime;
@@ -65,6 +67,9 @@ class ControllerTest {
 
   @MockBean
   private GetHeadcountEntityUseCase getHeadcountEntityUseCase;
+
+  @MockBean
+  private ActivateSimulationUseCase activateSimulationUseCase;
 
   private static GetEntityInput throughputInput() {
     return GetEntityInput.builder()
@@ -133,6 +138,8 @@ class ControllerTest {
 
   @Test
   void testUpdateStaffingPlan() throws Exception {
+    when(activateSimulationUseCase.execute(any())).thenReturn(anyList());
+
     // WHEN
     final ResultActions result = mvc.perform(
         put(BASE_URL, LOGISTIC_CENTER_ID)
@@ -144,7 +151,7 @@ class ControllerTest {
     );
 
     // THEN
-    result.andExpect(status().isCreated());
+    result.andExpect(status().isOk());
   }
 
 

@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -18,20 +19,22 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EntityType {
-    HEADCOUNT(WORKERS),
-    HEADCOUNT_SYSTEMIC(WORKERS),
-    HEADCOUNT_NON_SYSTEMIC(WORKERS),
-    PRODUCTIVITY(UNITS_PER_HOUR),
-    THROUGHPUT(UNITS_PER_HOUR),
-    REMAINING_PROCESSING(UNITS),
-    PERFORMED_PROCESSING(UNITS),
-    BACKLOG_LOWER_LIMIT(UNITS),
-    BACKLOG_UPPER_LIMIT(UNITS),
-    BACKLOG_LOWER_LIMIT_SHIPPING(ORDERS),
-    BACKLOG_UPPER_LIMIT_SHIPPING(ORDERS),
-    MAX_CAPACITY(UNITS_PER_HOUR);
+    HEADCOUNT(WORKERS, ProcessingType.EFFECTIVE_WORKERS),
+    HEADCOUNT_SYSTEMIC(WORKERS, ProcessingType.EFFECTIVE_WORKERS),
+    HEADCOUNT_NON_SYSTEMIC(WORKERS, ProcessingType.EFFECTIVE_WORKERS_NS),
+    PRODUCTIVITY(UNITS_PER_HOUR, ProcessingType.PRODUCTIVITY),
+    THROUGHPUT(UNITS_PER_HOUR, ProcessingType.THROUGHPUT),
+    REMAINING_PROCESSING(UNITS, ProcessingType.REMAINING_PROCESSING),
+    PERFORMED_PROCESSING(UNITS, ProcessingType.PERFORMED_PROCESSING),
+    BACKLOG_LOWER_LIMIT(UNITS, ProcessingType.BACKLOG_LOWER_LIMIT),
+    BACKLOG_UPPER_LIMIT(UNITS, ProcessingType.BACKLOG_UPPER_LIMIT),
+    BACKLOG_LOWER_LIMIT_SHIPPING(ORDERS, ProcessingType.BACKLOG_LOWER_LIMIT_SHIPPING),
+    BACKLOG_UPPER_LIMIT_SHIPPING(ORDERS, ProcessingType.BACKLOG_UPPER_LIMIT_SHIPPING),
+    MAX_CAPACITY(UNITS_PER_HOUR, ProcessingType.MAX_CAPACITY);
 
     private final MetricUnit metricUnit;
+
+    private final ProcessingType processingType;
 
     private static final Map<String, EntityType> LOOKUP = Arrays.stream(values()).collect(
             toMap(EntityType::toString, Function.identity())

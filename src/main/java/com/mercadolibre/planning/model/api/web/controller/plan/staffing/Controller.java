@@ -121,7 +121,7 @@ public class Controller {
 
   @GetMapping("/throughput")
   @Trace(dispatcher = true)
-  public ResponseEntity<Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>>> getThroughput(
+  public ResponseEntity<Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanThroughput>>>> getThroughput(
       @PathVariable final String logisticCenterId,
       @RequestParam final Workflow workflow,
       @RequestParam(required = false) final List<ProcessPath> processPaths,

@@ -72,14 +72,14 @@ public final class StaffingPlanMapper {
         .build();
   }
 
-  public static Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMetrics>>> adaptThroughputResponse(
+  public static Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanThroughput>>> adaptThroughputResponse(
       final List<EntityOutput> throughputList
   ) {
     return throughputList.stream().collect(
         Collectors.groupingBy(EntityOutput::getProcessPath,
             Collectors.groupingBy(EntityOutput::getProcessName,
                 Collectors.toMap(entity -> entity.getDate().toInstant(),
-                    entity -> new StaffingPlanMetrics(entity.getRoundedValue(), entity.getRoundedOriginalValue())
+                    entity -> new StaffingPlanThroughput(entity.getRoundedValue(), entity.getRoundedOriginalValue())
                 )
             )
         )
@@ -125,10 +125,13 @@ public final class StaffingPlanMapper {
       Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> systemicHeadcount,
       Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> nonSystemicHeadcount,
       Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> productivity,
-      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanMetrics>>> throughput
+      Map<ProcessPath, Map<ProcessName, Map<Instant, StaffingPlanMapper.StaffingPlanThroughput>>> throughput
   ) {
   }
 
   public record StaffingPlanMetrics(double quantity, double originalQuantity) {
+  }
+
+  public record StaffingPlanThroughput(long quantity, long originalQuantity) {
   }
 }

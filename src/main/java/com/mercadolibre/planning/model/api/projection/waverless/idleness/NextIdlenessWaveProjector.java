@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public final class NextIdlenessWaveProjector {
 
   public static final int WAVE_LOWER_BOUND_IN_MINUTES = 30;
+  public static final double LOWER_BOUND_PERCENTAGE = 1.05;
 
   private NextIdlenessWaveProjector() {
 
@@ -87,7 +88,7 @@ public final class NextIdlenessWaveProjector {
                         precalculatedWaves
                     )
                 )
-        ));
+            ));
   }
 
   private static boolean isAfterPreviousWavesByIdleness(final Instant waveDate, final List<Wave> previousWaves) {
@@ -156,18 +157,20 @@ public final class NextIdlenessWaveProjector {
         backlogLimits.getLower().get(PICKING)
     );
 
-    final var upperBounds = UpperBoundsCalculator.calculate(
-        waveExecutionDate,
-        inflectionPoints,
-        previousWaves,
-        pendingBacklog,
-        currentBacklog,
-        projectedBacklog,
-        globalThroughput,
-        pickingThroughput,
-        backlogLimits.getUpper(),
-        lowerBounds
-    );
+    final var upperBounds = validateUpperBound(
+        lowerBounds,
+        UpperBoundsCalculator.calculate(
+            waveExecutionDate,
+            inflectionPoints,
+            previousWaves,
+            pendingBacklog,
+            currentBacklog,
+            projectedBacklog,
+            globalThroughput,
+            pickingThroughput,
+            backlogLimits.getUpper(),
+            lowerBounds
+        ));
 
     final var wavedUnitsByCptAndProcessPath = UnitsByCptCalculator.calculateBacklogToWave(
         waveExecutionDate,
@@ -191,6 +194,18 @@ public final class NextIdlenessWaveProjector {
                 )
             )
         );
+  }
+
+  private static Map<ProcessPath, Integer> validateUpperBound(final Map<ProcessPath, Integer> lower,
+                                                              final Map<ProcessPath, Integer> upper) {
+
+    return upper.entrySet().stream()
+        .collect(toMap(
+            Map.Entry::getKey,
+            entry -> lower.get(entry.getKey()).equals(entry.getValue())
+                ? (int) (entry.getValue() * LOWER_BOUND_PERCENTAGE)
+                : entry.getValue()));
+
   }
 
   private static Map<ProcessName, Map<Instant, Long>> buildCurrentBacklogs(

@@ -201,10 +201,10 @@ class QueueProjectionServiceTest {
         DATE_FROM,
         DATE_TO,
         List.of(
-            new QuantityByDate(DATE_FROM.plusHours(0), 50000, null),
-            new QuantityByDate(DATE_FROM.plusHours(1), 50000, null),
-            new QuantityByDate(DATE_FROM.plusHours(2), 50000, null),
-            new QuantityByDate(DATE_FROM.plusHours(3), 50000, null)
+            new QuantityByDate(DATE_FROM.plusHours(0), 50000D, null),
+            new QuantityByDate(DATE_FROM.plusHours(1), 50000D, null),
+            new QuantityByDate(DATE_FROM.plusHours(2), 50000D, null),
+            new QuantityByDate(DATE_FROM.plusHours(3), 50000D, null)
         ),
         TIMEZONE,
         null,
@@ -229,10 +229,10 @@ class QueueProjectionServiceTest {
         DATE_FROM,
         DATE_TO,
         List.of(
-            new QuantityByDate(DATE_FROM.plusMinutes(30), 10, null),
-            new QuantityByDate(DATE_FROM.plusHours(1), 5, null),
-            new QuantityByDate(DATE_FROM.plusHours(2), 20, null),
-            new QuantityByDate(DATE_FROM.plusHours(3), 30, null)
+            new QuantityByDate(DATE_FROM.plusMinutes(30), 10D, null),
+            new QuantityByDate(DATE_FROM.plusHours(1), 5D, null),
+            new QuantityByDate(DATE_FROM.plusHours(2), 20D, null),
+            new QuantityByDate(DATE_FROM.plusHours(3), 30D, null)
         ),
         TIMEZONE,
         null,

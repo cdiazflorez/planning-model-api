@@ -15,8 +15,10 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +26,7 @@ import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentP
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityRepository;
 import com.mercadolibre.planning.model.api.client.db.repository.forecast.HeadcountProductivityView;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
@@ -107,9 +110,9 @@ public class GetProductivityEntityUseCaseTest {
             PICKING,
             List.of(new SimulationEntity(
                 PRODUCTIVITY,
-                List.of(new QuantityByDate(A_DATE_UTC, 100, null),
-                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101, null)))))),
-            null);
+                List.of(new QuantityByDate(A_DATE_UTC, 100D, null),
+                    new QuantityByDate(A_DATE_UTC.plusHours(1), 101D, null)))))),
+        null);
 
     final List<Long> forecastIds = List.of(1L);
 
@@ -199,7 +202,7 @@ public class GetProductivityEntityUseCaseTest {
             input.getDateTo(),
             A_DATE_UTC.toInstant()
         )
-    ).thenReturn(currentProductivities());
+    ).thenReturn(currentProductivities(Set.of(GLOBAL)));
 
     final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
 
@@ -216,40 +219,97 @@ public class GetProductivityEntityUseCaseTest {
   @Test
   @DisplayName("Get productivity entity when source is simulation and contains a process path other than global")
   public void testGetProductivityFromSourceSimulationAndProcessPath() {
-        // GIVEN
-        final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, List.of(TOT_MONO));
-        final List<Long> forecastIds = List.of(1L);
+    // GIVEN
+    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, List.of(TOT_MONO));
+    final List<Long> forecastIds = List.of(1L);
 
-        // WHEN
-        when(getForecastUseCase.execute(GetForecastInput.builder()
-                .workflow(input.getWorkflow())
-                .warehouseId(input.getWarehouseId())
-                .dateFrom(input.getDateFrom())
-                .dateTo(input.getDateTo())
-                .viewDate(A_DATE_UTC.toInstant())
-                .build())
-        ).thenReturn(forecastIds);
+    // WHEN
+    when(getForecastUseCase.execute(GetForecastInput.builder()
+        .workflow(input.getWorkflow())
+        .warehouseId(input.getWarehouseId())
+        .dateFrom(input.getDateFrom())
+        .dateTo(input.getDateTo())
+        .viewDate(A_DATE_UTC.toInstant())
+        .build())
+    ).thenReturn(forecastIds);
 
-        when(productivityRepository.findBy(
-                List.of(PICKING.name(), PACKING.name()),
-                List.of(TOT_MONO.name()),
-                input.getDateFrom(),
-                input.getDateTo(),
-                forecastIds,
-                Set.of(1))
-        ).thenReturn(productivities());
+    when(productivityRepository.findBy(
+        List.of(PICKING.name(), PACKING.name()),
+        List.of(TOT_MONO.name()),
+        input.getDateFrom(),
+        input.getDateTo(),
+        forecastIds,
+        Set.of(1))
+    ).thenReturn(productivities());
 
-        final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
+    final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
 
-        // THEN
-        assertThat(output).isNotEmpty();
-        assertEquals(4, output.size());
-        verifyNoInteractions(processingDistributionRepository);
-        outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
-        outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
-        outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
-        outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
-    }
+    // THEN
+    assertThat(output).isNotEmpty();
+    assertEquals(4, output.size());
+    verifyNoInteractions(processingDistributionRepository);
+    outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+    outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+    outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+    outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+  }
+
+  @Test
+  @DisplayName("Get productivity entity when source is simulation and contains a process path other than global  and global")
+  public void testGetProductivityFromSourceSimulationAndProcessPathWithGlobal() {
+    // GIVEN
+    final GetProductivityInput input = mockGetProductivityEntityInput(SIMULATION, null, List.of(GLOBAL, TOT_MONO));
+    final List<Long> forecastIds = List.of(1L);
+
+    // WHEN
+    when(getForecastUseCase.execute(GetForecastInput.builder()
+        .workflow(input.getWorkflow())
+        .warehouseId(input.getWarehouseId())
+        .dateFrom(input.getDateFrom())
+        .dateTo(input.getDateTo())
+        .viewDate(A_DATE_UTC.toInstant())
+        .build())
+    ).thenReturn(forecastIds);
+
+    when(productivityRepository.findBy(
+        List.of(PICKING.name(), PACKING.name()),
+        List.of(GLOBAL.name(), TOT_MONO.name()),
+        input.getDateFrom(),
+        input.getDateTo(),
+        forecastIds,
+        Set.of(1))
+    ).thenReturn(productivities());
+
+    when(processingDistributionRepository
+        .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
+            input.getWarehouseId(),
+            input.getWorkflow().name(),
+            input.getProcessPaths().stream().map(ProcessPath::name).collect(toSet()),
+            Set.of(PICKING.name(), PACKING.name()),
+            Set.of(PRODUCTIVITY.name()),
+            input.getDateFrom(),
+            input.getDateTo(),
+            input.viewDate()
+        )).thenReturn(currentProductivities(Set.of(GLOBAL, TOT_MONO)));
+
+    final List<ProductivityOutput> output = getProductivityEntityUseCase.execute(input);
+
+    // THEN
+    assertThat(output).isNotEmpty();
+    assertEquals(6, output.size());
+    outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
+    outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
+    outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);
+    outputPropertiesEqualTo(output.get(3), PACKING, FORECAST, 92);
+    outputPropertiesEqualTo(output.get(4), PICKING, SIMULATION, 68);
+    outputPropertiesEqualTo(output.get(5), PICKING, SIMULATION, 68);
+    assertTrue(output.stream()
+        .filter(productivityOutput -> productivityOutput.getSource() == SIMULATION)
+        .anyMatch(productivityOutput -> productivityOutput.getProcessPath() == GLOBAL));
+    assertTrue(output.stream()
+        .filter(productivityOutput -> productivityOutput.getSource() == SIMULATION)
+        .anyMatch(productivityOutput -> productivityOutput.getProcessPath() == TOT_MONO));
+  }
 
   private List<HeadcountProductivityView> productivities() {
     return List.of(
@@ -264,8 +324,8 @@ public class GetProductivityEntityUseCaseTest {
     );
   }
 
-  private List<CurrentProcessingDistribution> currentProductivities() {
-    return List.of(
+  private List<CurrentProcessingDistribution> currentProductivities(final Set<ProcessPath> processPaths) {
+    return processPaths.stream().map(processPath ->
         CurrentProcessingDistribution
             .builder()
             .date(A_DATE_UTC)
@@ -273,11 +333,11 @@ public class GetProductivityEntityUseCaseTest {
             .quantity(68)
             .quantityMetricUnit(UNITS_PER_HOUR)
             .processName(PICKING)
-            .processPath(GLOBAL)
+            .processPath(processPath)
             .logisticCenterId(WAREHOUSE_ID)
             .workflow(FBM_WMS_OUTBOUND)
             .build()
-    );
+    ).toList();
   }
 
   private void outputPropertiesEqualTo(final ProductivityOutput productivityOutput,

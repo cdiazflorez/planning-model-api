@@ -227,7 +227,7 @@ class GetSlaProjectionUseCaseTest {
         List.of(PUT_AWAY),
         DATE_FROM,
         DATE_TO,
-        List.of(new QuantityByDate(DATE_FROM, 10, null)),
+        List.of(new QuantityByDate(DATE_FROM, 10D, null)),
         TIMEZONE,
         null,
         null,

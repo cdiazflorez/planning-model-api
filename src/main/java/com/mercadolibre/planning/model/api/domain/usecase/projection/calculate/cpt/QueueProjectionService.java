@@ -53,6 +53,17 @@ public class QueueProjectionService {
 
   private final GetCycleTimeService getCycleTimeService;
 
+  private static Set<Instant> getAllDateOuts(
+      final List<QuantityByDate> backlog,
+      final NavigableMap<Instant, NavigableMap<Instant, Long>> upstreamQuantityByDateOutByDateIn
+  ) {
+
+    final var backlogDateOuts = backlog.stream().map(QuantityByDate::getDate).map(ZonedDateTime::toInstant);
+    final var upstreamDateOuts = upstreamQuantityByDateOutByDateIn.values().stream()
+        .flatMap(upstreamQuantityByDateOUt -> upstreamQuantityByDateOUt.keySet().stream());
+    return Stream.concat(backlogDateOuts, upstreamDateOuts).collect(Collectors.toSet());
+  }
+
   public List<CptProjectionOutput> calculateCptProjection(final GetSlaProjectionInput input) {
     final var startingDate = input.getDateFrom().toInstant();
     final var endingDate = input.getDateTo().toInstant();
@@ -133,17 +144,6 @@ public class QueueProjectionService {
         .collect(Collectors.toList());
   }
 
-  private static Set<Instant> getAllDateOuts(
-      final List<QuantityByDate> backlog,
-      final NavigableMap<Instant, NavigableMap<Instant, Long>> upstreamQuantityByDateOutByDateIn
-  ) {
-
-    final var backlogDateOuts = backlog.stream().map(QuantityByDate::getDate).map(ZonedDateTime::toInstant);
-    final var upstreamDateOuts = upstreamQuantityByDateOutByDateIn.values().stream()
-        .flatMap(upstreamQuantityByDateOUt -> upstreamQuantityByDateOUt.keySet().stream());
-    return Stream.concat(backlogDateOuts, upstreamDateOuts).collect(Collectors.toSet());
-  }
-
   private NavigableMap<Instant, Integer> getCapacity(final GetSlaProjectionInput input) {
     final List<EntityOutput> throughput = getThroughputUseCase.execute(
         GetEntityInput
@@ -204,7 +204,7 @@ public class QueueProjectionService {
   private Queue<Instant> getInitialQueue(final List<QuantityByDate> quantityByDateOut, final Function<Instant, Instant> cutoffMapper) {
     final var quantityByCutoff = quantityByDateOut.stream().collect(toMap(
         quantityAtDateOut -> cutoffMapper.apply(quantityAtDateOut.getDate().toInstant()),
-        quantityAtDateOut -> (long) quantityAtDateOut.getQuantity(),
+        quantityAtDateOut -> (long) quantityAtDateOut.getQuantity().intValue(),
         Long::sum,
         TreeMap::new
     ));

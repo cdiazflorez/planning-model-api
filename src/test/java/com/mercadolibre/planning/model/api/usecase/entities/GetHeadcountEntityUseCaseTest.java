@@ -120,17 +120,17 @@ class GetHeadcountEntityUseCaseTest {
                 PICKING,
                 List.of(new SimulationEntity(
                     HEADCOUNT,
-                    List.of(new QuantityByDate(A_DATE_UTC, 50, null))))),
+                    List.of(new QuantityByDate(A_DATE_UTC, 50D, null))))),
             new Simulation(
                 PACKING,
                 List.of(new SimulationEntity(
                     HEADCOUNT,
-                    List.of(new QuantityByDate(A_DATE_UTC, 100, null))))),
+                    List.of(new QuantityByDate(A_DATE_UTC, 100D, null))))),
             new Simulation(
                 GLOBAL,
                 List.of(new SimulationEntity(
                     MAX_CAPACITY,
-                    List.of(new QuantityByDate(A_DATE_UTC, 100, null)))))));
+                    List.of(new QuantityByDate(A_DATE_UTC, 100D, null)))))));
 
     final List<Long> forecastIds = List.of(1L);
 

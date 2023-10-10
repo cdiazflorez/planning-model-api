@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -97,19 +96,19 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
         .flatMap(simulation -> simulation.getEntities().stream()
             .flatMap(entity -> entity.getValues().stream()
                 .map(value ->
-                CurrentProcessingDistribution.builder()
-                    .workflow(input.getWorkflow())
-                    .processName(simulation.getProcessName())
-                    .processPath(GLOBAL)
-                    .date(value.getDate())
-                    .quantity(value.getQuantity())
-                    .logisticCenterId(input.getWarehouseId())
-                    .userId(input.getUserId())
-                    .type(entity.getType().getProcessingType())
-                    .quantityMetricUnit(entity.getType().getMetricUnit())
-                    .isActive(true)
-                    .build()
-            ))
+                    CurrentProcessingDistribution.builder()
+                        .workflow(input.getWorkflow())
+                        .processName(simulation.getProcessName())
+                        .processPath(GLOBAL)
+                        .date(value.getDate())
+                        .quantity(value.getQuantity())
+                        .logisticCenterId(input.getWarehouseId())
+                        .userId(input.getUserId())
+                        .type(entity.getType().getProcessingType())
+                        .quantityMetricUnit(entity.getType().getMetricUnit())
+                        .isActive(true)
+                        .build()
+                ))
         );
 
     final var currentProcessingDistributionProcessPath = input.getSimulations().stream()
@@ -145,39 +144,42 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
   private Stream<CurrentProcessingDistribution> createHeadcountByProcessPath(final SimulationInput input) {
 
     final var simulationsByProcessAndDate = input.getSimulations()
+        .stream()
+        .filter(simulation -> simulation.getEntities()
             .stream()
-            .filter(simulation -> simulation.getEntities()
-                .stream()
-                .anyMatch(simulationEntity -> simulationEntity.getType() == HEADCOUNT
+            .anyMatch(simulationEntity -> simulationEntity.getType() == HEADCOUNT
                 || simulationEntity.getType() == HEADCOUNT_SYSTEMIC)
-            )
-            .collect(
-                    groupingBy(
-                            Simulation::getProcessName,
-                            flatMapping(
-                                    simulation -> simulation.getEntities().stream()
-                                            .filter(entity -> entity.getType() == HEADCOUNT
-                                                || entity.getType() == HEADCOUNT_SYSTEMIC)
-                                            .flatMap(entity -> entity.getValues().stream()),
-                                    toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity, Integer::sum)
-                            )
+        )
+        .collect(
+            groupingBy(
+                Simulation::getProcessName,
+                flatMapping(
+                    simulation -> simulation.getEntities().stream()
+                        .filter(entity -> entity.getType() == HEADCOUNT
+                            || entity.getType() == HEADCOUNT_SYSTEMIC)
+                        .flatMap(entity -> entity.getValues().stream()),
+                    toMap(quantityByDate -> quantityByDate.getDate().toInstant(),
+                        quantityByDate -> quantityByDate.getQuantity().intValue(),
+                        Integer::sum
                     )
-            );
+                )
+            )
+        );
 
     if (!simulationsByProcessAndDate.isEmpty()) {
 
       final List<RatioAtProcessPathProcessAndDate> ratioAtProcessPathProcessAndDates = getRatioByDateProcessAndProcessPath(
-              input.getWarehouseId(),
-              input.getWorkflow(),
-              simulationsByProcessAndDate
+          input.getWarehouseId(),
+          input.getWorkflow(),
+          simulationsByProcessAndDate
       );
 
       if (!ratioAtProcessPathProcessAndDates.isEmpty()) {
 
         return ratioAtProcessPathProcessAndDates.stream()
-                .map(ratio -> applyRatio(input, ratio, simulationsByProcessAndDate))
-                .filter(Optional::isPresent)
-                .map(Optional::get);
+            .map(ratio -> applyRatio(input, ratio, simulationsByProcessAndDate))
+            .filter(Optional::isPresent)
+            .map(Optional::get);
 
       }
 
@@ -192,59 +194,59 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
       final Map<ProcessName, Map<Instant, Integer>> simulationEntities
   ) {
 
-      final var dateFrom = simulationEntities.values().stream()
-              .flatMap(quantityByDate -> quantityByDate.keySet().stream())
-              .min(Instant::compareTo)
-              .orElseThrow();
+    final var dateFrom = simulationEntities.values().stream()
+        .flatMap(quantityByDate -> quantityByDate.keySet().stream())
+        .min(Instant::compareTo)
+        .orElseThrow();
 
-      final var dateTo = simulationEntities.values().stream()
-              .flatMap(quantityByDate -> quantityByDate.keySet().stream())
-              .max(Instant::compareTo)
-              .orElseThrow();
+    final var dateTo = simulationEntities.values().stream()
+        .flatMap(quantityByDate -> quantityByDate.keySet().stream())
+        .max(Instant::compareTo)
+        .orElseThrow();
 
-      return processPathHeadcountShareService.getHeadcountShareByProcessPath(
-              logisticCenterId,
-              workflow,
-              simulationEntities.keySet(),
-              dateFrom,
-              dateTo,
-              Instant.now()
-              )
-              .entrySet()
-              .stream()
-              .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
-              .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
-                      .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()
-                              .map(ratioByDate -> new RatioAtProcessPathProcessAndDate(processPathMapEntry.getKey(),
-                                      processNameMapEntry.getKey(),
-                                      ratioByDate.getKey(),
-                                      ratioByDate.getValue()))
-                      )
-              ).collect(toList());
+    return processPathHeadcountShareService.getHeadcountShareByProcessPath(
+            logisticCenterId,
+            workflow,
+            simulationEntities.keySet(),
+            dateFrom,
+            dateTo,
+            Instant.now()
+        )
+        .entrySet()
+        .stream()
+        .filter(processPathMapEntry -> processPathMapEntry.getKey() != GLOBAL)
+        .flatMap(processPathMapEntry -> processPathMapEntry.getValue().entrySet().stream()
+            .flatMap(processNameMapEntry -> processNameMapEntry.getValue().entrySet().stream()
+                .map(ratioByDate -> new RatioAtProcessPathProcessAndDate(processPathMapEntry.getKey(),
+                    processNameMapEntry.getKey(),
+                    ratioByDate.getKey(),
+                    ratioByDate.getValue()))
+            )
+        ).collect(toList());
   }
 
-    private Optional<CurrentProcessingDistribution> applyRatio(
-            final SimulationInput input,
-            final RatioAtProcessPathProcessAndDate ratio,
-            final Map<ProcessName, Map<Instant, Integer>> simulationEntities
-    ) {
-        return Optional.ofNullable(simulationEntities)
-                .map(s -> s.get(ratio.processName()))
-                .map(s -> s.get(ratio.date()))
-                .map(quantity -> CurrentProcessingDistribution.builder()
-                        .workflow(input.getWorkflow())
-                        .processPath(ratio.processPath)
-                        .processName(ratio.processName)
-                        .date(ZonedDateTime.ofInstant(ratio.date(), ZoneOffset.UTC))
-                        .quantity(quantity * ratio.ratio())
-                        .logisticCenterId(input.getWarehouseId())
-                        .quantityMetricUnit(WORKERS)
-                        .userId(input.getUserId())
-                        .type(EFFECTIVE_WORKERS)
-                        .isActive(true)
-                        .build()
-                );
-    }
+  private Optional<CurrentProcessingDistribution> applyRatio(
+      final SimulationInput input,
+      final RatioAtProcessPathProcessAndDate ratio,
+      final Map<ProcessName, Map<Instant, Integer>> simulationEntities
+  ) {
+    return Optional.ofNullable(simulationEntities)
+        .map(s -> s.get(ratio.processName()))
+        .map(s -> s.get(ratio.date()))
+        .map(quantity -> CurrentProcessingDistribution.builder()
+            .workflow(input.getWorkflow())
+            .processPath(ratio.processPath)
+            .processName(ratio.processName)
+            .date(ZonedDateTime.ofInstant(ratio.date(), ZoneOffset.UTC))
+            .quantity(quantity * ratio.ratio())
+            .logisticCenterId(input.getWarehouseId())
+            .quantityMetricUnit(WORKERS)
+            .userId(input.getUserId())
+            .type(EFFECTIVE_WORKERS)
+            .isActive(true)
+            .build()
+        );
+  }
 
   record RatioAtProcessPathProcessAndDate(
       ProcessPath processPath,

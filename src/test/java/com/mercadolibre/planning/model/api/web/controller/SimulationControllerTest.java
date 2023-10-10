@@ -133,7 +133,7 @@ public class SimulationControllerTest {
                 EntityType.MAX_CAPACITY,
                 List.of(new QuantityByDate(
                     parse("2022-07-12T08:00:00Z[UTC]"),
-                    9150,
+                    9150D,
                     null
                 ))
             ))

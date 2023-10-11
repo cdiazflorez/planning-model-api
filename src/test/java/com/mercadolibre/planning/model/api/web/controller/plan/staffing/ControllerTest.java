@@ -16,6 +16,7 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.requ
 import static java.util.Collections.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.service.lastupdatedentity.LastEntityModifiedDateService;
+import com.mercadolibre.planning.model.api.domain.service.lastupdatedentity.LastModifiedDates;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
@@ -34,9 +37,13 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
+import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +56,8 @@ import org.springframework.test.web.servlet.ResultActions;
 class ControllerTest {
 
   private static final String BASE_URL = "/logistic_center/{logistic_center_id}/plan/staffing";
+
+  private static final String LAST_UPDATED_URL = BASE_URL + "/last_updated";
 
   private static final ZonedDateTime DATE_FROM = A_DATE_UTC;
 
@@ -70,6 +79,9 @@ class ControllerTest {
 
   @MockBean
   private ActivateSimulationUseCase activateSimulationUseCase;
+
+  @MockBean
+  private LastEntityModifiedDateService lastEntityModifiedService;
 
   private static GetEntityInput throughputInput() {
     return GetEntityInput.builder()
@@ -204,6 +216,66 @@ class ControllerTest {
 
     // THEN
     result.andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testGetLastModifiedDatesOk() throws Exception {
+
+    when(lastEntityModifiedService.getLastEntityDateModified(anyString(), any(), any(), any()))
+        .thenReturn(
+            new LastModifiedDates(A_DATE_UTC.toInstant(),
+                Map.of(
+                    EntityType.HEADCOUNT_SYSTEMIC, A_DATE_UTC.toInstant().plus(1, ChronoUnit.HOURS),
+                    EntityType.HEADCOUNT_NON_SYSTEMIC, A_DATE_UTC.toInstant().plus(2, ChronoUnit.HOURS),
+                    EntityType.PRODUCTIVITY, A_DATE_UTC.toInstant().plus(3, ChronoUnit.HOURS)
+                )
+            )
+        );
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(LAST_UPDATED_URL, LOGISTIC_CENTER_ID)
+            .contentType(APPLICATION_JSON)
+            .param("workflow", "fbm-wms-outbound")
+            .param("entity_types", "headcount_systemic,productivity,headcount_non_systemic")
+            .param("view_date", "2020-08-20T06:00:00Z")
+    );
+
+    result.andExpect(status().isOk())
+        .andExpect(content().json(getResourceAsString("controller/plan/staffing/get_last_modified_dates_request.json")));
+  }
+
+  @Test
+  void testGetLastModifiedDatesError() throws Exception {
+
+    when(lastEntityModifiedService.getLastEntityDateModified(anyString(), any(), any(), any()))
+        .thenThrow(ForecastNotFoundException.class);
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(LAST_UPDATED_URL, LOGISTIC_CENTER_ID)
+            .contentType(APPLICATION_JSON)
+            .param("workflow", "fbm-wms-outbound")
+            .param("view_date", "2020-08-20T06:00:00Z")
+    );
+
+    result.andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testGetLastModifiedDatesBadRequest() throws Exception {
+
+    when(lastEntityModifiedService.getLastEntityDateModified(anyString(), any(), any(), any()))
+        .thenReturn(new LastModifiedDates(Instant.now(), Map.of()));
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        get(LAST_UPDATED_URL, LOGISTIC_CENTER_ID)
+            .contentType(APPLICATION_JSON)
+            .param("workflow", "fbmwms-outbound")
+    );
+
+    result.andExpect(status().isBadRequest());
   }
 
   private EntityOutput entityOutput(

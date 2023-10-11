@@ -107,4 +107,22 @@ public interface CurrentProcessingDistributionRepository extends JpaRepository<C
       @Param("date_to") ZonedDateTime dateTo,
       @Param("view_date") Instant viewDate
   );
+
+  @Query("""
+      SELECT cpd.type AS type, MAX(cpd.dateCreated) AS dateCreated 
+         FROM  CurrentProcessingDistribution cpd  
+       WHERE cpd.logisticCenterId  = :warehouse_id 
+         AND cpd.workflow = :workflow 
+         AND cpd.type IN (:type) 
+         AND cpd.isActive = true 
+       AND cpd.dateCreated >= :date_time
+        GROUP BY cpd.type
+        """)
+  List<CurrentProcessingMaxDateCreatedByType> findDateCreatedByWarehouseIdAndWorkflowAndTypeAndIsActive(
+      @Param("warehouse_id") String warehouseId,
+      @Param("workflow") Workflow workflow,
+      @Param("type") Set<ProcessingType> type,
+      @Param("date_time") ZonedDateTime dateTime
+  );
+
 }

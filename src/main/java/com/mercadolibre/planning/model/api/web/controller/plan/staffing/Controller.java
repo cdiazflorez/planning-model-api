@@ -15,6 +15,8 @@ import static org.springframework.http.HttpStatus.OK;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.service.lastupdatedentity.LastEntityModifiedDateService;
+import com.mercadolibre.planning.model.api.domain.service.lastupdatedentity.LastModifiedDates;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
@@ -24,9 +26,11 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.ge
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.ActivateSimulationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.activate.SimulationInput;
 import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
+import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
+import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.UpdateStaffingPlanRequest;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -36,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
@@ -63,6 +69,8 @@ public class Controller {
       Workflow.FBM_WMS_INBOUND, List.of(CHECK_IN, PUT_AWAY)
   );
 
+  private static final String STAFFING_PLAN = "staffing_plan";
+
   private final GetThroughputUseCase getThroughputUseCase;
 
   private final GetHeadcountEntityUseCase getHeadcountEntityUseCase;
@@ -70,6 +78,8 @@ public class Controller {
   private final GetProductivityEntityUseCase getProductivityEntityUseCase;
 
   private final ActivateSimulationUseCase activateSimulationUseCase;
+
+  private final LastEntityModifiedDateService lastEntityModifiedService;
 
   @GetMapping
   @Trace(dispatcher = true)
@@ -143,11 +153,39 @@ public class Controller {
     return ResponseEntity.status(OK).body(StaffingPlanMapper.adaptThroughputResponse(result));
   }
 
+  @GetMapping("last_updated")
+  @Trace(dispatcher = true)
+  public ResponseEntity<Map<String, Instant>> getLastModifiedDate(@PathVariable final String logisticCenterId,
+                                                                  @RequestParam final Workflow workflow,
+                                                                  @RequestParam(required = false) final Set<EntityType> entityType,
+                                                                  @RequestParam final Instant viewDate
+  ) {
+    final LastModifiedDates lastModifiedDates =
+        lastEntityModifiedService.getLastEntityDateModified(logisticCenterId, workflow, entityType, viewDate);
+
+    return ResponseEntity.status(OK).body(toLastModifiedDatesResponse(lastModifiedDates));
+  }
+
+  private Map<String, Instant> toLastModifiedDatesResponse(final LastModifiedDates lastModifiedDates) {
+
+    final Map<String, Instant> lastDates = new ConcurrentHashMap<>();
+    lastDates.put(STAFFING_PLAN, lastModifiedDates.lastStaffingCreated());
+    lastDates.putAll(lastModifiedDates.lastDateEntitiesUpdate().entrySet().stream().collect(
+        Collectors.toMap(
+            entry -> entry.getKey().toJson(),
+            Map.Entry::getValue
+        )
+    ));
+
+    return lastDates;
+  }
+
   @InitBinder
   public void initBinder(final PropertyEditorRegistry dataBinder) {
     dataBinder.registerCustomEditor(Workflow.class, new WorkflowEditor());
     dataBinder.registerCustomEditor(ProcessPath.class, new ProcessPathEditor());
     dataBinder.registerCustomEditor(ProcessName.class, new ProcessNameEditor());
+    dataBinder.registerCustomEditor(EntityType.class, new EntityTypeEditor());
   }
 
   private GetEntityInput createEntityInput(

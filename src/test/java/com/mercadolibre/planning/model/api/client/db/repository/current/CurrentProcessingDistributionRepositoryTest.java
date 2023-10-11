@@ -4,6 +4,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.WORKE
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DEACTIVATE_DATE_FROM;
@@ -17,10 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.adapter.staffing.GetCreatedMaxDateByType;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -227,6 +232,69 @@ class CurrentProcessingDistributionRepositoryTest {
 
     assertTrue(packing.isPresent());
     assertEquals(10L, packing.get().getQuantity());
+  }
+
+  @Test
+  @Sql("/sql/forecast/load_current_processing_distribution.sql")
+  void testLastCreatedDateOfCurrentProcessingDistribution() {
+    final ZonedDateTime date = ZonedDateTime.of(2023, 9, 28, 0, 0, 0, 0, ZoneOffset.UTC);
+
+    // GIVE
+    final List<CurrentProcessingMaxDateCreatedByType> maxDateEditionByType = List.of(
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS, date.plus(22, ChronoUnit.HOURS)),
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS_NS, date.plus(21, ChronoUnit.HOURS)),
+        new GetCreatedMaxDateByType(PRODUCTIVITY, date.plus(23, ChronoUnit.HOURS))
+    );
+
+
+    final List<CurrentProcessingMaxDateCreatedByType> dateCreated = repository.findDateCreatedByWarehouseIdAndWorkflowAndTypeAndIsActive(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND,
+        Set.of(EFFECTIVE_WORKERS, EFFECTIVE_WORKERS_NS, PRODUCTIVITY),
+        date.minusDays(1)
+    );
+
+    assertEquals(
+        maxDateEditionByType.get(0).getDateCreated().toInstant(),
+        dateCreated.stream()
+            .filter(current -> current.getType() == maxDateEditionByType.get(0).getType())
+            .findFirst().get()
+            .getDateCreated().toInstant()
+    );
+
+    assertEquals(
+        maxDateEditionByType.get(1).getDateCreated().toInstant(),
+        dateCreated.stream()
+            .filter(current -> current.getType() == maxDateEditionByType.get(1).getType())
+            .findFirst().get()
+            .getDateCreated().toInstant()
+    );
+
+    assertEquals(
+        maxDateEditionByType.get(2).getDateCreated().toInstant(),
+        dateCreated.stream()
+            .filter(current -> current.getType() == maxDateEditionByType.get(2).getType())
+            .findFirst().get()
+            .getDateCreated().toInstant()
+    );
+  }
+
+  @Test
+  @Sql("/sql/forecast/load_current_processing_distribution.sql")
+  void testWithoutLastCreatedDateOfCurrentProcessingDistribution() {
+    // GIVE
+    final ZonedDateTime date = ZonedDateTime.of(2023, 9, 28, 0, 0, 0, 0, ZoneOffset.UTC);
+
+
+    final List<CurrentProcessingMaxDateCreatedByType> dateCreated = repository.findDateCreatedByWarehouseIdAndWorkflowAndTypeAndIsActive(
+        WAREHOUSE_ID,
+        FBM_WMS_OUTBOUND,
+        Set.of(EFFECTIVE_WORKERS, EFFECTIVE_WORKERS_NS, PRODUCTIVITY),
+        date.plusDays(1)
+    );
+
+    assertTrue(dateCreated.isEmpty());
+
   }
 
   private void whenCurrentDistributionIsOk(final CurrentProcessingDistribution currentProcessing,

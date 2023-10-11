@@ -21,6 +21,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.E
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
@@ -37,7 +38,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.Inp
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_COSTS;
 import static com.mercadolibre.planning.model.api.domain.entity.inputcatalog.InputId.WORKERS_PARAMETERS;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
-import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.FORECAST;
 import static com.mercadolibre.planning.model.api.web.controller.projection.request.Source.SIMULATION;
@@ -50,6 +50,8 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.mercadolibre.planning.model.api.adapter.staffing.GetCreatedMaxDateByType;
+import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingMaxDateCreatedByType;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
@@ -96,6 +98,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -265,7 +268,7 @@ public final class TestUtils {
   }
 
   public static CurrentProcessingDistribution mockCurrentProdEntity(final ZonedDateTime date,
-                                                                   final long value) {
+                                                                    final long value) {
     return CurrentProcessingDistribution.builder()
         .date(date)
         .isActive(true)
@@ -275,7 +278,7 @@ public final class TestUtils {
         .processPath(GLOBAL)
         .logisticCenterId(WAREHOUSE_ID)
         .workflow(FBM_WMS_OUTBOUND)
-        .type(ProcessingType.PRODUCTIVITY)
+        .type(PRODUCTIVITY)
         .build();
   }
 
@@ -1291,7 +1294,7 @@ public final class TestUtils {
   public static Map<EntityType, Object> mockSearchEntitiesOutput() {
     return Map.of(
         HEADCOUNT, mockHeadcountEntityOutput(),
-        PRODUCTIVITY, mockProductivityEntityOutput(),
+        EntityType.PRODUCTIVITY, mockProductivityEntityOutput(),
         EntityType.REMAINING_PROCESSING, mockGetRemainingProcessingOutput(),
         THROUGHPUT, mockThroughputEntityOutput()
     );
@@ -1412,6 +1415,15 @@ public final class TestUtils {
     inputResult.put(WORKERS_COSTS, List.of());
     inputResult.put(WORKERS_PARAMETERS, List.of());
     return inputResult;
+  }
+
+  public static List<CurrentProcessingMaxDateCreatedByType> mockMaxDateEditionByType() {
+    final ZonedDateTime date = ZonedDateTime.of(2023, 9, 28, 0, 0, 0, 0, ZoneOffset.UTC);
+    return List.of(
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS, date.plus(22, HOURS)),
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS_NS, date.plus(21, HOURS)),
+        new GetCreatedMaxDateByType(PRODUCTIVITY, date.plus(23, HOURS))
+    );
   }
 
 }

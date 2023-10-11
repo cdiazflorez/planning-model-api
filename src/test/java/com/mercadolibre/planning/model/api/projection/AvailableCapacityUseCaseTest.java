@@ -2,6 +2,7 @@ package com.mercadolibre.planning.model.api.projection;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,8 +50,9 @@ public class AvailableCapacityUseCaseTest {
   private static final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> FORECAST_BACKLOG = Map.of(
       DATE_1, Map.of(TOT_MONO, Map.of(SLA_1, 0L)));
   private static final Map<ProcessName, Map<Instant, Integer>> THROUGHPUT = Map.of(
-      PICKING, Map.of(DATE_1, 5000, END_DATE_1, 1000, END_DATE_2, 400, END_DATE_3, 200, END_DATE_4, 80),
-      PACKING, Map.of(DATE_1, 5000, END_DATE_1, 1000, END_DATE_2, 400, END_DATE_3, 200, END_DATE_4, 100)
+      WAVING, Map.of(DATE_1, 500, END_DATE_1, 3000, END_DATE_2, 400, END_DATE_3, 200, END_DATE_4, 80),
+      PICKING, Map.of(DATE_1, 5000, END_DATE_1, 1000, END_DATE_2, 400, END_DATE_3, 200, END_DATE_4, 85),
+      PACKING, Map.of(DATE_1, 5000, END_DATE_1, 2000, END_DATE_2, 200, END_DATE_3, 200, END_DATE_4, 100)
   );
   private static final Map<Instant, Integer> CYCLE_TIME_BY_SLA = Map.of(SLA_1, 30, SLA_2, 30, SLA_3, 30, SLA_4, 30);
   private static final Map<Instant, Instant> CUT_OFF_BY_SLA = Map.of(

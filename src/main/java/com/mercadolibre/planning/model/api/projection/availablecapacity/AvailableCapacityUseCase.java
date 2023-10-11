@@ -1,8 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.availablecapacity;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.util.Collections.emptyMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -63,10 +61,11 @@ public class AvailableCapacityUseCase {
       return new AvailableCapacity(0, projection);
     }
 
-    final Map<Instant, Integer> pickingThroughput = throughput.getOrDefault(PICKING, emptyMap());
+    final Map<Instant, Integer> minimumTphByHour = ThroughputCalculator.getMinimumTphValueByHour(throughput);
+
     final var endDateCutOffTupleStream = getProjectedEndDateByCutOffs(projection.slas(), cycleTimeBySla);
     final Integer capacity = endDateCutOffTupleStream
-        .map(tuple -> ThroughputCalculator.totalWithinRange(pickingThroughput, tuple.projectedEndDate, tuple.cutOff))
+        .map(tuple -> ThroughputCalculator.totalWithinRange(minimumTphByHour, tuple.projectedEndDate, tuple.cutOff))
         .min(Comparator.naturalOrder())
         .orElseThrow();
     return new AvailableCapacity(capacity, projection);

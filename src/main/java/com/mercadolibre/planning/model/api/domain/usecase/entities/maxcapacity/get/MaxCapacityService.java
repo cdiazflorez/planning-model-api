@@ -98,7 +98,8 @@ public class MaxCapacityService {
 
       if (globalThroughputSimulations.size() == EXPECTED_NUMBER_OF_SIMULATIONS) {
         Map<Instant, Integer> simulationDates = globalThroughputSimulations.get(0).stream()
-            .collect(toMap(quantityByDate -> quantityByDate.getDate().toInstant(), QuantityByDate::getQuantity));
+            .collect(
+                toMap(quantityByDate -> quantityByDate.getDate().toInstant(), quantityByDate -> quantityByDate.getQuantity().intValue()));
         capacityByDate.putAll(simulationDates);
       } else {
         throw new BadSimulationRequestException(MAX_CAPACITY.name());

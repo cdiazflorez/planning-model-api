@@ -17,11 +17,11 @@ public class QuantityByDate {
   @NotNull
   private ZonedDateTime date;
 
-  private int quantity;
+  private Double quantity;
 
   private Map<ProcessPath, Double> processPath;
 
   public Backlog toBacklog() {
-    return new Backlog(date, quantity);
+    return new Backlog(date, quantity.intValue());
   }
 }

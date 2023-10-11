@@ -188,7 +188,7 @@ public class MaxCapacityServiceTest {
             EntityType.MAX_CAPACITY,
             of(
                 new QuantityByDate(TRUNCATED_NOW,
-                    130, null))
+                    130D, null))
         ))
     )));
   }
@@ -200,13 +200,13 @@ public class MaxCapacityServiceTest {
                 THROUGHPUT,
                 of(
                     new QuantityByDate(TRUNCATED_NOW,
-                        130, null))
+                        130D, null))
             ),
             new SimulationEntity(
                 THROUGHPUT,
                 of(
                     new QuantityByDate(TRUNCATED_NOW,
-                        130, null))
+                        130D, null))
             ))
     )));
   }

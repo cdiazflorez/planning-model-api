@@ -73,15 +73,15 @@ public class ActivateSimulationUseCaseTest {
     final SimulationInput input = mockSimulationInput(List.of(
         new Simulation(PICKING,
             List.of(new SimulationEntity(HEADCOUNT,
-                List.of(new QuantityByDate(DATE_12, 30, null),
-                    new QuantityByDate(DATE_13, 25, null))
+                List.of(new QuantityByDate(DATE_12, 30D, null),
+                    new QuantityByDate(DATE_13, 25D, null))
             ))),
         new Simulation(PACKING,
             singletonList(new SimulationEntity(PRODUCTIVITY,
-                singletonList(new QuantityByDate(DATE_12, 96, null))))),
+                singletonList(new QuantityByDate(DATE_12, 96D, null))))),
         new Simulation(GLOBAL,
             singletonList(new SimulationEntity(MAX_CAPACITY,
-                singletonList(new QuantityByDate(DATE_12, 96, null)))))
+                singletonList(new QuantityByDate(DATE_12, 96D, null)))))
     ));
 
     final Workflow workflow = input.getWorkflow();
@@ -150,12 +150,12 @@ public class ActivateSimulationUseCaseTest {
     //GIVEN
     final SimulationInput input = mockSimulationInput(
             List.of(
-                    mockSimulation(PICKING, HEADCOUNT, 15, null),
-                    mockSimulation(PICKING, PRODUCTIVITY, 30, null),
-                    mockSimulation(PACKING, HEADCOUNT, 5, null),
-                    mockSimulation(PACKING, PRODUCTIVITY, 35, null),
-                    mockSimulation(PACKING_WALL, HEADCOUNT, 10, null),
-                    mockSimulation(PACKING_WALL, PRODUCTIVITY, 15, null)
+                    mockSimulation(PICKING, HEADCOUNT, 15D, null),
+                    mockSimulation(PICKING, PRODUCTIVITY, 30D, null),
+                    mockSimulation(PACKING, HEADCOUNT, 5D, null),
+                    mockSimulation(PACKING, PRODUCTIVITY, 35D, null),
+                    mockSimulation(PACKING_WALL, HEADCOUNT, 10D, null),
+                    mockSimulation(PACKING_WALL, PRODUCTIVITY, 15D, null)
             )
     );
 
@@ -214,12 +214,12 @@ public class ActivateSimulationUseCaseTest {
     //GIVEN
     final SimulationInput input = mockSimulationInput(
         List.of(
-            mockSimulation(PICKING, HEADCOUNT, 15, Map.of(ProcessPath.TOT_MONO, 10.0, ProcessPath.NON_TOT_MONO, 5.0)),
-            mockSimulation(PICKING, PRODUCTIVITY, 30, Map.of(ProcessPath.TOT_MONO, 12.0, ProcessPath.NON_TOT_MONO, 28.0)),
-            mockSimulation(PACKING, HEADCOUNT, 5, null),
-            mockSimulation(PACKING, PRODUCTIVITY, 35, null),
-            mockSimulation(PACKING_WALL, HEADCOUNT, 10, null),
-            mockSimulation(PACKING_WALL, PRODUCTIVITY, 15, null)
+            mockSimulation(PICKING, HEADCOUNT, 15D, Map.of(ProcessPath.TOT_MONO, 10.0, ProcessPath.NON_TOT_MONO, 5.0)),
+            mockSimulation(PICKING, PRODUCTIVITY, 30D, Map.of(ProcessPath.TOT_MONO, 12.0, ProcessPath.NON_TOT_MONO, 28.0)),
+            mockSimulation(PACKING, HEADCOUNT, 5D, null),
+            mockSimulation(PACKING, PRODUCTIVITY, 35D, null),
+            mockSimulation(PACKING_WALL, HEADCOUNT, 10D, null),
+            mockSimulation(PACKING_WALL, PRODUCTIVITY, 15D, null)
         )
     );
 
@@ -333,7 +333,7 @@ public class ActivateSimulationUseCaseTest {
 
   private Simulation mockSimulation(final ProcessName processName,
                                     final EntityType entityType,
-                                    final int quantity,
+                                    final Double quantity,
                                     final Map<ProcessPath, Double> processPaths) {
       return new Simulation(
               processName,

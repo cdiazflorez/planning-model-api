@@ -128,7 +128,7 @@ public class ProjectionController {
 
     final var backlog = request.getBacklog()
         .stream()
-        .map(quantityAtDate -> new Backlog(quantityAtDate.getDate(), quantityAtDate.getQuantity()))
+        .map(quantityAtDate -> new Backlog(quantityAtDate.getDate(), quantityAtDate.getQuantity().intValue()))
         .collect(toList());
 
     final var dateFrom = request.getDateFrom().truncatedTo(ChronoUnit.HOURS);

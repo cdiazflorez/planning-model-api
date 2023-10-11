@@ -116,7 +116,7 @@ public final class StaffingPlanMapper {
         .get(entity.getDate().withFixedOffsetZone());
     final double originalValue = eo.get(Source.FORECAST).getValue();
     final double value = eo.get(Source.SIMULATION) != null
-        ? eo.get(Source.SIMULATION).getRoundedValue()
+        ? eo.get(Source.SIMULATION).getValue()
         : originalValue;
     return new StaffingPlanMetrics(value, originalValue);
   }

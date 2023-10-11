@@ -101,7 +101,7 @@ public class GetDeliveryPromiseProjectionUseCaseTest {
                 THROUGHPUT,
                 List.of(
                     new QuantityByDate(NOW.truncatedTo(SECONDS),
-                        130,
+                        130D,
                         null))
             ))
         ))

@@ -56,6 +56,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
 
   private Stream<ProductivityOutput> getSimulationProductivity(final GetProductivityInput input) {
 
+    // TODO: revisar si es necesario remover la validación del PP Global y dejar solo la del source.
     if (input.getSource() == FORECAST || !input.getProcessPaths().contains(GLOBAL)) {
         return Stream.empty();
     }
@@ -66,7 +67,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
                     .workflow(input.getWorkflow())
                     .value(sp.getQuantity())
                     .source(SIMULATION)
-                    .processPath(GLOBAL)
+                    .processPath(sp.getProcessPath())
                     .processName(sp.getProcessName())
                     .metricUnit(sp.getQuantityMetricUnit())
                     .date(sp.getDate())

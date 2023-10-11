@@ -1,16 +1,67 @@
 package com.mercadolibre.planning.model.api.projection.availablecapacity;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-
 class ThroughputCalculatorTest {
+
+  private static final Instant DATE = Instant.parse("2023-10-09T10:00:00Z");
+
+  private static final Instant DATE1 = Instant.parse("2023-10-09T11:00:00Z");
+
+  private static final Instant DATE2 = Instant.parse("2023-10-09T12:00:00Z");
+
+  private static final Instant DATE3 = Instant.parse("2023-10-09T13:00:00Z");
+
+  private static final Instant DATE4 = Instant.parse("2023-10-09T14:00:00Z");
+
+  private static final Map<Instant, Integer>[] TPH_BY_HOUR = new HashMap[9];
+
+  static {
+    TPH_BY_HOUR[0] = new HashMap<>();
+    TPH_BY_HOUR[0].put(DATE, 100);
+
+    TPH_BY_HOUR[1] = new HashMap<>();
+    TPH_BY_HOUR[1].put(DATE, 200);
+
+    TPH_BY_HOUR[2] = new HashMap<>();
+    TPH_BY_HOUR[2].put(DATE, 300);
+
+    TPH_BY_HOUR[3] = new HashMap<>();
+    TPH_BY_HOUR[3].put(DATE1, 110);
+
+    TPH_BY_HOUR[4] = new HashMap<>();
+    TPH_BY_HOUR[4].put(DATE1, 120);
+
+    TPH_BY_HOUR[5] = new HashMap<>();
+    TPH_BY_HOUR[5].put(DATE1, 130);
+
+    TPH_BY_HOUR[6] = new HashMap<>();
+    TPH_BY_HOUR[6].put(DATE2, 200);
+    TPH_BY_HOUR[6].put(DATE3, 200);
+    TPH_BY_HOUR[6].put(DATE4, 200);
+
+    TPH_BY_HOUR[7] = new HashMap<>();
+    TPH_BY_HOUR[7].put(DATE2, 100);
+    TPH_BY_HOUR[7].put(DATE3, 200);
+    TPH_BY_HOUR[7].put(DATE4, 300);
+
+    TPH_BY_HOUR[8] = new HashMap<>();
+    TPH_BY_HOUR[8].put(DATE2, 200);
+    TPH_BY_HOUR[8].put(DATE3, 200);
+    TPH_BY_HOUR[8].put(DATE4, 100);
+  }
 
   private static Stream<Arguments> testCases() {
     final Map<Instant, Integer> tphMap = Map.of(
@@ -55,6 +106,31 @@ class ThroughputCalculatorTest {
     );
   }
 
+  private static Stream<Arguments> testCasesHourlyThroughputMinimum() {
+    return Stream.of(
+        Arguments.of(
+            Map.of(WAVING, TPH_BY_HOUR[0], PICKING, TPH_BY_HOUR[1], PACKING, TPH_BY_HOUR[2]),
+            TPH_BY_HOUR[0]
+        ),
+        Arguments.of(
+            Map.of(WAVING, TPH_BY_HOUR[1], PICKING, TPH_BY_HOUR[2], PACKING, TPH_BY_HOUR[0]),
+            TPH_BY_HOUR[0]
+        ),
+        Arguments.of(
+            Map.of(WAVING, TPH_BY_HOUR[1], PICKING, TPH_BY_HOUR[1], PACKING, TPH_BY_HOUR[1]),
+            TPH_BY_HOUR[1]
+        ),
+        Arguments.of(
+            Map.of(WAVING, TPH_BY_HOUR[6], PICKING, TPH_BY_HOUR[7], PACKING, TPH_BY_HOUR[8]),
+            Map.of(
+                DATE2, 100,
+                DATE3, 200,
+                DATE4, 100
+            )
+        )
+    );
+  }
+
   /**
    * Test to calculate the sum of values within a specified range.
    *
@@ -73,5 +149,16 @@ class ThroughputCalculatorTest {
   ) {
     final int actualSum = ThroughputCalculator.totalWithinRange(inputMap, from, to);
     assertEquals(expectedOutput, actualSum);
+  }
+
+  @ParameterizedTest
+  @MethodSource("testCasesHourlyThroughputMinimum")
+  void testHourlyThroughputMinimum(
+      final Map<ProcessName, Map<Instant, Integer>> throughputByProcess,
+      final Map<Instant, Integer> expected) {
+
+    final var response = ThroughputCalculator.getMinimumTphValueByHour(throughputByProcess);
+
+    assertEquals(expected, response);
   }
 }

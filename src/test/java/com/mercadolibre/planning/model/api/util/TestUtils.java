@@ -921,7 +921,7 @@ public final class TestUtils {
             .processName(PACKING)
             .metricUnit(UNITS_PER_HOUR)
             .source(FORECAST)
-            .value(40)
+            .value(0)
             .abilityLevel(2)
             .build(),
         ProductivityOutput.builder()

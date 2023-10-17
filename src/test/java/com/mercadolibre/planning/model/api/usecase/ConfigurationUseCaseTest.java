@@ -14,6 +14,7 @@ import com.mercadolibre.planning.model.api.web.controller.configuration.request.
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +64,11 @@ class ConfigurationUseCaseTest {
         new ConfigurationRequest(UNITS_PER_TOTE_RATIO, UNITS_PER_TOTE_RATIO_NEW_VALUE)
     );
 
-    final Map<ConfigurationId, String> expectedResponse = Map.of(
-        new ConfigurationId(LOGISTIC_CENTER_ID, ORDERS_PER_PALLET_RATIO), ORDERS_PER_PALLET_RATIO_VALUE,
-        new ConfigurationId(LOGISTIC_CENTER_ID, UNITS_PER_ORDER_RATIO), UNITS_PER_ORDER_RATIO_VALUE,
-        new ConfigurationId(LOGISTIC_CENTER_ID, UNITS_PER_TOTE_RATIO), UNITS_PER_TOTE_RATIO_NEW_VALUE
-    );
+    final ConcurrentHashMap<ConfigurationId, String> expectedResponse = new ConcurrentHashMap<>();
+    expectedResponse.put(new ConfigurationId(LOGISTIC_CENTER_ID, ORDERS_PER_PALLET_RATIO), ORDERS_PER_PALLET_RATIO_VALUE);
+    expectedResponse.put(new ConfigurationId(LOGISTIC_CENTER_ID, UNITS_PER_ORDER_RATIO), UNITS_PER_ORDER_RATIO_VALUE);
+    expectedResponse.put(new ConfigurationId(LOGISTIC_CENTER_ID, UNITS_PER_TOTE_RATIO), UNITS_PER_TOTE_RATIO_NEW_VALUE);
+
     //WHEN
     configurationUseCase.upsert(USER_ID, LOGISTIC_CENTER_ID, configurationRequests);
     //THEN

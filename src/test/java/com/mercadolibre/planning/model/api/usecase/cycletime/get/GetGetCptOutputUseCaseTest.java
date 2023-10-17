@@ -41,7 +41,7 @@ public class GetGetCptOutputUseCaseTest {
                 .thenReturn(List.of(
                         Configuration.builder()
                                 .logisticCenterId(WAREHOUSE_ID)
-                                .value(100)
+                                .value("100")
                                 .metricUnit(MINUTES)
                                 .key("cycle_time_17_00")
                                 .build()));
@@ -64,13 +64,13 @@ public class GetGetCptOutputUseCaseTest {
                         Configuration.builder()
                                 .logisticCenterId(WAREHOUSE_ID)
                                 .metricUnit(MINUTES)
-                                .value(100)
+                                .value("100")
                                 .key("cycle_time_10_00")
                                 .build(),
                         Configuration.builder()
                                 .logisticCenterId(WAREHOUSE_ID)
                                 .metricUnit(MINUTES)
-                                .value(240)
+                                .value("240")
                                 .key("cycle_time")
                                 .build()));
 

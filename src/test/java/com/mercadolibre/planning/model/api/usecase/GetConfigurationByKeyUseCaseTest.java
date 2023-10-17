@@ -38,7 +38,7 @@ public class GetConfigurationByKeyUseCaseTest {
         final Configuration configuration = Configuration.builder()
                 .logisticCenterId(LOGISTIC_CENTER_ID)
                 .key(CONFIG_KEY)
-                .value(1)
+                .value("1")
                 .metricUnit(UNITS)
                 .build();
 

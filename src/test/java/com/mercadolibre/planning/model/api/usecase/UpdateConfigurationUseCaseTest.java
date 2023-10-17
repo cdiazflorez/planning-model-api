@@ -38,14 +38,14 @@ public class UpdateConfigurationUseCaseTest {
         final Configuration updatedConfiguration = Configuration.builder()
                 .logisticCenterId(LOGISTIC_CENTER_ID)
                 .key(CONFIG_KEY)
-                .value(60)
+                .value("60")
                 .metricUnit(MINUTES)
                 .build();
 
         final Configuration configuration = Configuration.builder()
                 .logisticCenterId(LOGISTIC_CENTER_ID)
                 .key(CONFIG_KEY)
-                .value(1)
+                .value("1")
                 .metricUnit(UNITS)
                 .build();
 

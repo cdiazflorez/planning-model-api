@@ -80,7 +80,7 @@ public class ConfigurationControllerTest {
     when(getConfiguration.execute(input)).thenReturn(Optional.of(Configuration.builder()
         .logisticCenterId(LOGISTIC_CENTER_ID)
         .key(CONFIG_KEY)
-        .value(1)
+        .value("1")
         .metricUnit(UNITS)
         .build()));
 
@@ -121,7 +121,7 @@ public class ConfigurationControllerTest {
     when(createConfiguration.execute(input)).thenReturn(Configuration.builder()
         .logisticCenterId(LOGISTIC_CENTER_ID)
         .key(CONFIG_KEY)
-        .value(60)
+        .value("60")
         .metricUnit(MINUTES)
         .build());
 
@@ -147,7 +147,7 @@ public class ConfigurationControllerTest {
     when(updateConfiguration.execute(input)).thenReturn(Configuration.builder()
         .logisticCenterId(LOGISTIC_CENTER_ID)
         .key(CONFIG_KEY)
-        .value(180)
+        .value("180")
         .metricUnit(MINUTES)
         .build());
 

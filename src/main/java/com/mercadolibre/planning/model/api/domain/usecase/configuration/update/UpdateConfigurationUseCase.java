@@ -26,7 +26,7 @@ public class UpdateConfigurationUseCase
                 new ConfigurationId(logisticCenterId, key))
                 .orElseThrow(() -> new EntityNotFoundException("CONFIGURATION", configurationId));
 
-        savedConfiguration.setValue(input.getValue());
+        savedConfiguration.setValue(String.valueOf(input.getValue()));
         savedConfiguration.setMetricUnit(input.getMetricUnit());
 
         return configurationRepository.save(savedConfiguration);

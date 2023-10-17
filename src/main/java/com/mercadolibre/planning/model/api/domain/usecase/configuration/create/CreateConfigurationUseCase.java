@@ -30,7 +30,7 @@ public class CreateConfigurationUseCase
         return configurationRepository.save(Configuration.builder()
                         .logisticCenterId(input.getLogisticCenterId())
                         .key(input.getKey())
-                        .value(input.getValue())
+                        .value(String.valueOf(input.getValue()))
                         .metricUnit(input.getMetricUnit())
                         .build()
         );

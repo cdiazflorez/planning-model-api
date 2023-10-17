@@ -217,7 +217,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
     final var regularHeadcount = forecastHeadcount.getValue();
     final var regularProductivity = simulatedRegularProductivity.getValue();
     final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-    final double polyvalentProductivity = simulatedRegularProductivity.getValue() * forecastPolyvalentProductivity.orElse(0.0);
+    final double polyvalentProductivity = simulatedRegularProductivity.getValue() * forecastPolyvalentProductivity.orElse(1D);
     double regularTph = regularHeadcount * regularProductivity + polyvalentHeadcount * polyvalentProductivity;
 
     if (simulatedHeadcount.getValue() <= forecastHeadcount.getValue()

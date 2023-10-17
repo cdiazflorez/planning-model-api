@@ -12,7 +12,6 @@ import com.mercadolibre.planning.model.api.domain.entity.configuration.Configura
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.ConfigurationUseCase;
 import com.mercadolibre.planning.model.api.web.controller.configuration.request.ConfigurationRequest;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;

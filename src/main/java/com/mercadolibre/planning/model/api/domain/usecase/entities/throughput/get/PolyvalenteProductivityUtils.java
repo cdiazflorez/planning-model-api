@@ -12,7 +12,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public final class PolyvalenteProductivityUtils {
-  private PolyvalenteProductivityUtils() {}
+  private PolyvalenteProductivityUtils() {
+  }
 
   static PolyvalentProductivityRatio calculatePolyvalentProductivityRatioByProcessPath(
       final Map<ProcessPath, Map<ProcessName, Map<ZonedDateTime, Map<Source, ProductivityOutput>>>> regularProductivityMap,
@@ -76,7 +77,9 @@ public final class PolyvalenteProductivityUtils {
             .map(polyvalentProductivityByDate -> polyvalentProductivityByDate.get(processName))
             .map(polyvalentProductivityByDate -> polyvalentProductivityByDate.get(date))
             .map(ProductivityOutput::getValue)
-            .map(polyvalentProductivity -> polyvalentProductivity / regularProductivity)
+            .map(polyvalentProductivity -> (polyvalentProductivity == 0
+                ? regularProductivity
+                : polyvalentProductivity) / regularProductivity)
         ).orElse(1D);
   }
 }

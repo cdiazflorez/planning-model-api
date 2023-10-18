@@ -4,8 +4,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.NA;
 
 import com.mercadolibre.planning.model.api.client.db.repository.configuration.ConfigurationRepository;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
-import com.mercadolibre.planning.model.api.web.controller.configuration.request.ConfigurationRequest;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -13,14 +13,14 @@ public class ConfigurationUseCase {
 
   private final ConfigurationRepository configurationRepository;
 
-  public List<Configuration> upsert(final long userId,
-                                    final String logisticCenterId,
-                                    final List<ConfigurationRequest> configurationRequests) {
-    final List<Configuration> configurations = configurationRequests.stream()
-        .map(config -> Configuration.builder()
+  public List<Configuration> save(final long userId,
+                                  final String logisticCenterId,
+                                  final Map<String, String> configByKey) {
+    final List<Configuration> configurations = configByKey.keySet().stream()
+        .map(key -> Configuration.builder()
             .logisticCenterId(logisticCenterId)
-            .key(config.key())
-            .value(config.value())
+            .key(key)
+            .value(configByKey.get(key))
             .metricUnit(NA)
             .lastUserUpdated(userId)
             .build())

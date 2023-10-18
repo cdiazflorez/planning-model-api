@@ -10,8 +10,6 @@ import com.mercadolibre.planning.model.api.client.db.repository.configuration.Co
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.ConfigurationId;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.ConfigurationUseCase;
-import com.mercadolibre.planning.model.api.web.controller.configuration.request.ConfigurationRequest;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,11 +55,10 @@ class ConfigurationUseCaseTest {
                                      .lastUserUpdated(1L)
                                      .build());
 
-    final List<ConfigurationRequest> configurationRequests = List.of(
-        new ConfigurationRequest(ORDERS_PER_PALLET_RATIO, ORDERS_PER_PALLET_RATIO_VALUE),
-        new ConfigurationRequest(UNITS_PER_ORDER_RATIO, UNITS_PER_ORDER_RATIO_VALUE),
-        new ConfigurationRequest(UNITS_PER_TOTE_RATIO, UNITS_PER_TOTE_RATIO_NEW_VALUE)
-    );
+    final ConcurrentHashMap<String, String> configsToSave = new ConcurrentHashMap<>();
+    configsToSave.put(ORDERS_PER_PALLET_RATIO, ORDERS_PER_PALLET_RATIO_VALUE);
+    configsToSave.put(UNITS_PER_ORDER_RATIO, UNITS_PER_ORDER_RATIO_VALUE);
+    configsToSave.put(UNITS_PER_TOTE_RATIO, UNITS_PER_TOTE_RATIO_NEW_VALUE);
 
     final ConcurrentHashMap<ConfigurationId, String> expectedResponse = new ConcurrentHashMap<>();
     expectedResponse.put(new ConfigurationId(LOGISTIC_CENTER_ID, ORDERS_PER_PALLET_RATIO), ORDERS_PER_PALLET_RATIO_VALUE);
@@ -69,7 +66,7 @@ class ConfigurationUseCaseTest {
     expectedResponse.put(new ConfigurationId(LOGISTIC_CENTER_ID, UNITS_PER_TOTE_RATIO), UNITS_PER_TOTE_RATIO_NEW_VALUE);
 
     //WHEN
-    configurationUseCase.upsert(USER_ID, LOGISTIC_CENTER_ID, configurationRequests);
+    configurationUseCase.save(USER_ID, LOGISTIC_CENTER_ID, configsToSave);
     //THEN
     expectedResponse.forEach(
         (id, value) -> {

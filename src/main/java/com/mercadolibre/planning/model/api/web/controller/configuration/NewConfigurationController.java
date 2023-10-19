@@ -9,6 +9,7 @@ import com.mercadolibre.planning.model.api.web.controller.configuration.response
 import com.newrelic.api.agent.Trace;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,16 +34,18 @@ public class NewConfigurationController {
       @RequestParam final long userId,
       @RequestBody @Valid final List<ConfigurationRequestDto> configurationRequests) {
 
-    final Map<String, String> configurationsByKey = configurationRequests.stream()
-        .collect(
-            toMap(
-                ConfigurationRequestDto::key,
-                ConfigurationRequestDto::value,
-                (oldValue, newValue) -> {
-                  throw new DuplicateConfigurationException();
-                }
+    final ConcurrentHashMap<String, String> configurationsByKey = new ConcurrentHashMap<>(
+        configurationRequests.stream()
+            .collect(
+                toMap(
+                    ConfigurationRequestDto::key,
+                    ConfigurationRequestDto::value,
+                    (oldValue, newValue) -> {
+                      throw new DuplicateConfigurationException();
+                    }
+                )
             )
-        );
+    );
 
     return ResponseEntity.ok(
         configurationUseCase.save(userId, logisticCenterId, configurationsByKey)

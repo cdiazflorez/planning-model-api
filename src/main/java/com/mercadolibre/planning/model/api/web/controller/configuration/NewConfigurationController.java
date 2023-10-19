@@ -8,7 +8,6 @@ import com.mercadolibre.planning.model.api.web.controller.configuration.request.
 import com.mercadolibre.planning.model.api.web.controller.configuration.response.ConfigurationResponseDto;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;

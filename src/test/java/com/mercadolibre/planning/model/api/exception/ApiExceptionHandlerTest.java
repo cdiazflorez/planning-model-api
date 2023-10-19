@@ -440,6 +440,25 @@ public class ApiExceptionHandlerTest {
     assertErrorResponse(expectedResponse, response);
   }
 
+  @Test
+  void handleDuplicateConfigurationExceptionTest() {
+    //GIVEN
+    final DuplicateConfigurationException exception =
+        new DuplicateConfigurationException();
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "duplicate_configuration"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleDuplicateConfigurationException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+  }
+
 
   private void assertErrorResponse(final ErrorResponse expectedResponse,
                                    final ResponseEntity<ErrorResponse> response) {

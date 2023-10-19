@@ -59,6 +59,8 @@ public class ApiExceptionHandler {
 
   private static final String ARGUMENT_TYPE_MISMATCH_EXCEPTION = "method_argument_type_mismatch_exception";
 
+  private static final String DUPLICATE_CONFIGURATION = "duplicate_configuration";
+
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
                                                            final HttpServletRequest request) {
@@ -325,4 +327,21 @@ public class ApiExceptionHandler {
     log.error(apiError.getMessage(), ex);
     return ResponseEntity.status(apiError.getStatus()).body(apiError);
   }
+
+  @ExceptionHandler(DuplicateConfigurationException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateConfigurationException(
+        final DuplicateConfigurationException exception,
+        final HttpServletRequest request) {
+
+        final ErrorResponse errorResponse = new ErrorResponse(
+            BAD_REQUEST,
+            exception.getMessage(),
+            DUPLICATE_CONFIGURATION
+        );
+
+        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+        log.error(exception.getMessage(), exception);
+        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+
+    }
 }

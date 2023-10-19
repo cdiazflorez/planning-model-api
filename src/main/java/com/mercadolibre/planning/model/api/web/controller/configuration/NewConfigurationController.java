@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.web.controller.configuration;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.ConfigurationUseCase;
+import com.mercadolibre.planning.model.api.exception.DuplicateConfigurationException;
 import com.mercadolibre.planning.model.api.web.controller.configuration.request.ConfigurationRequestDto;
 import com.mercadolibre.planning.model.api.web.controller.configuration.response.ConfigurationResponseDto;
 import com.newrelic.api.agent.Trace;
@@ -33,7 +34,15 @@ public class NewConfigurationController {
       @RequestBody @Valid final List<ConfigurationRequestDto> configurationRequests) {
 
     final Map<String, String> configurationsByKey = configurationRequests.stream()
-        .collect(toMap(ConfigurationRequestDto::key, ConfigurationRequestDto::value));
+        .collect(
+            toMap(
+                ConfigurationRequestDto::key,
+                ConfigurationRequestDto::value,
+                (oldValue, newValue) -> {
+                  throw new DuplicateConfigurationException();
+                }
+            )
+        );
 
     return ResponseEntity.ok(
         configurationUseCase.save(userId, logisticCenterId, configurationsByKey)

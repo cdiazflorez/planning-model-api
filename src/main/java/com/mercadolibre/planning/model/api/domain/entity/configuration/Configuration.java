@@ -39,6 +39,7 @@ public class Configuration {
     private MetricUnit metricUnit;
 
     @CreationTimestamp
+    @Column(updatable = false)
     private ZonedDateTime dateCreated;
 
     @UpdateTimestamp

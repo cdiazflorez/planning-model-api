@@ -4,6 +4,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -12,6 +13,14 @@ import java.util.stream.Collectors;
 public final class ThroughputCalculator {
 
   private static final double MINUTES_IN_A_HOUR = 60.0;
+
+  private static final Set<ProcessName> TPH_PROCESSES_TO_AVOID = Set.of(
+      ProcessName.WAVING,
+      ProcessName.BATCH_SORTER,
+      ProcessName.WALL_IN,
+      ProcessName.PACKING,
+      ProcessName.PACKING_WALL
+  );
 
   private ThroughputCalculator() {
   }
@@ -32,14 +41,24 @@ public final class ThroughputCalculator {
   }
 
   /**
-   * Obtain hourly tph minimum.
+   * Obtain hourly tph minimum. Needs to combine packing and packing_wall processes and avoid other processes.
    *
    * @param throughputByProcess map of tph by processName and date.
    * @return The minimum tph value among all processes for each hour
    */
   static Map<Instant, Integer> getMinimumTphValueByHour(final Map<ProcessName, Map<Instant, Integer>> throughputByProcess) {
-    return throughputByProcess.values().stream()
-        .flatMap(map -> map.entrySet().stream())
+
+    final Map<Instant, Integer> combinedPackingThroughput = throughputByProcess.entrySet().stream()
+        .filter(entry -> entry.getKey() == ProcessName.PACKING || entry.getKey() == ProcessName.PACKING_WALL)
+        .flatMap(entry -> entry.getValue().entrySet().stream())
+        .collect(Collectors.groupingBy(
+            Map.Entry::getKey,
+            Collectors.summingInt(Map.Entry::getValue)
+        ));
+
+    final Map<Instant, Integer> minimumThroughput = throughputByProcess.entrySet().stream()
+        .filter(entry -> !TPH_PROCESSES_TO_AVOID.contains(entry.getKey()))
+        .flatMap(map -> map.getValue().entrySet().stream())
         .collect(
             Collectors.toMap(
                 Map.Entry::getKey,
@@ -47,6 +66,10 @@ public final class ThroughputCalculator {
                 Math::min
             )
         );
+
+    combinedPackingThroughput.forEach((key, value) -> minimumThroughput.merge(key, value, Integer::min));
+
+    return minimumThroughput;
   }
 
   private static Duration calculateFractionOfHour(final Instant hour, final Instant from, final Instant to) {

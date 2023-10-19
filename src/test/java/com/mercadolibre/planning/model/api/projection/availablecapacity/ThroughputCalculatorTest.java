@@ -1,7 +1,10 @@
 package com.mercadolibre.planning.model.api.projection.availablecapacity;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACKING_WALL;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -45,7 +48,7 @@ class ThroughputCalculatorTest {
     TPH_BY_HOUR[4].put(DATE1, 120);
 
     TPH_BY_HOUR[5] = new HashMap<>();
-    TPH_BY_HOUR[5].put(DATE1, 130);
+    TPH_BY_HOUR[5].put(DATE1, 230);
 
     TPH_BY_HOUR[6] = new HashMap<>();
     TPH_BY_HOUR[6].put(DATE2, 200);
@@ -59,7 +62,7 @@ class ThroughputCalculatorTest {
 
     TPH_BY_HOUR[8] = new HashMap<>();
     TPH_BY_HOUR[8].put(DATE2, 200);
-    TPH_BY_HOUR[8].put(DATE3, 200);
+    TPH_BY_HOUR[8].put(DATE3, 50);
     TPH_BY_HOUR[8].put(DATE4, 100);
   }
 
@@ -109,23 +112,47 @@ class ThroughputCalculatorTest {
   private static Stream<Arguments> testCasesHourlyThroughputMinimum() {
     return Stream.of(
         Arguments.of(
-            Map.of(WAVING, TPH_BY_HOUR[0], PICKING, TPH_BY_HOUR[1], PACKING, TPH_BY_HOUR[2]),
+            Map.of(
+                WAVING, TPH_BY_HOUR[0],
+                PICKING, TPH_BY_HOUR[2],
+                PACKING, TPH_BY_HOUR[3],
+                PACKING_WALL, TPH_BY_HOUR[4],
+                BATCH_SORTER, TPH_BY_HOUR[0],
+                WALL_IN, TPH_BY_HOUR[0]
+            ),
+            Map.of(
+                DATE, 300,
+                DATE1, 230
+            )
+        ),
+        Arguments.of(
+            Map.of(
+                WAVING, TPH_BY_HOUR[1],
+                PICKING, TPH_BY_HOUR[2],
+                PACKING, TPH_BY_HOUR[0],
+                BATCH_SORTER, TPH_BY_HOUR[2]
+            ),
             TPH_BY_HOUR[0]
         ),
         Arguments.of(
-            Map.of(WAVING, TPH_BY_HOUR[1], PICKING, TPH_BY_HOUR[2], PACKING, TPH_BY_HOUR[0]),
-            TPH_BY_HOUR[0]
-        ),
-        Arguments.of(
-            Map.of(WAVING, TPH_BY_HOUR[1], PICKING, TPH_BY_HOUR[1], PACKING, TPH_BY_HOUR[1]),
+            Map.of(
+                WAVING, TPH_BY_HOUR[1],
+                PICKING, TPH_BY_HOUR[1],
+                PACKING, TPH_BY_HOUR[1]
+            ),
             TPH_BY_HOUR[1]
         ),
         Arguments.of(
-            Map.of(WAVING, TPH_BY_HOUR[6], PICKING, TPH_BY_HOUR[7], PACKING, TPH_BY_HOUR[8]),
+            Map.of(
+                WAVING, TPH_BY_HOUR[6],
+                PICKING, TPH_BY_HOUR[7],
+                PACKING, TPH_BY_HOUR[8],
+                PACKING_WALL, TPH_BY_HOUR[8]
+            ),
             Map.of(
                 DATE2, 100,
-                DATE3, 200,
-                DATE4, 100
+                DATE3, 100,
+                DATE4, 200
             )
         )
     );

@@ -213,20 +213,18 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
     final var forecastPolyvalentProductivity =
         polyvalentProductivityRatios.getForProcessPathProcessNameAndDate(processPath, process, dateTime);
 
-    final double tph;
     final var regularHeadcount = forecastHeadcount.getValue();
     final var regularProductivity = simulatedRegularProductivity.getValue();
     final var polyvalentHeadcount = simulatedHeadcount.getValue() - regularHeadcount;
-    final double polyvalentProductivity = simulatedRegularProductivity.getValue() * forecastPolyvalentProductivity.orElse(1D);
+    final double polyvalentProductivity = regularProductivity * forecastPolyvalentProductivity.orElse(1D);
     double regularTph = regularHeadcount * regularProductivity + polyvalentHeadcount * polyvalentProductivity;
+    final double originalTph = regularHeadcount * forecastRegularProductivity.getValue();
 
     if (simulatedHeadcount.getValue() <= forecastHeadcount.getValue()
         || workflow != Workflow.FBM_WMS_OUTBOUND
         || forecastPolyvalentProductivity.isEmpty()
     ) {
-      tph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
-    } else {
-      tph = regularTph;
+      regularTph = simulatedHeadcount.getValue() * simulatedRegularProductivity.getValue();
     }
 
     return Optional.of(
@@ -237,8 +235,8 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
             .date(dateTime)
             .source(simulatedRegularProductivity.getSource())
             .metricUnit(UNITS_PER_HOUR)
-            .value(Math.round(tph))
-            .originalValue(Math.round(regularTph))
+            .value(Math.round(regularTph))
+            .originalValue(Math.round(originalTph))
             .build()
     );
   }

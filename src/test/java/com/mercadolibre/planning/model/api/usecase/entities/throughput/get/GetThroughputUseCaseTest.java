@@ -229,6 +229,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.withFixedOffsetZone(), output1.getDate());
     assertEquals(PICKING, output1.getProcessName());
     assertEquals(4000, output1.getValue());
+    assertEquals(4000, output1.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
     assertEquals(FORECAST, output1.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
@@ -237,6 +238,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output2.getDate());
     assertEquals(PICKING, output2.getProcessName());
     assertEquals(2800, output2.getValue());
+    assertEquals(2800, output2.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
     assertEquals(FORECAST, output2.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
@@ -245,6 +247,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.withFixedOffsetZone(), output3.getDate());
     assertEquals(PACKING, output3.getProcessName());
     assertEquals(5100, output3.getValue());
+    assertEquals(5100, output3.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
     assertEquals(FORECAST, output3.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
@@ -253,6 +256,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output4.getDate());
     assertEquals(PACKING, output4.getProcessName());
     assertEquals(2700, output4.getValue());
+    assertEquals(2700, output4.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output4.getMetricUnit());
     assertEquals(FORECAST, output4.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output4.getWorkflow());
@@ -297,6 +301,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.withFixedOffsetZone(), output1.getDate());
     assertEquals(PICKING, output1.getProcessName());
     assertEquals(4950, output1.getValue());
+    assertEquals(4000, output1.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output1.getMetricUnit());
     assertEquals(SIMULATION, output1.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output1.getWorkflow());
@@ -305,6 +310,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.plusHours(1).withFixedOffsetZone(), output2.getDate());
     assertEquals(PICKING, output2.getProcessName());
     assertEquals(1500, output2.getValue());
+    assertEquals(2800, output2.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output2.getMetricUnit());
     assertEquals(SIMULATION, output2.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output2.getWorkflow());
@@ -313,6 +319,7 @@ class GetThroughputUseCaseTest {
     assertEquals(A_DATE_UTC.withFixedOffsetZone(), output3.getDate());
     assertEquals(PACKING, output3.getProcessName());
     assertEquals(5250, output3.getRoundedValue());
+    assertEquals(5100, output3.getOriginalValue());
     assertEquals(UNITS_PER_HOUR, output3.getMetricUnit());
     assertEquals(SIMULATION, output3.getSource());
     assertEquals(FBM_WMS_OUTBOUND, output3.getWorkflow());
@@ -349,23 +356,23 @@ class GetThroughputUseCaseTest {
 
     // TOT_MONO
     // 30 reps x 15 prod
-    assertEntityOutput(output.get(0), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC, 450D);
+    assertEntityOutput(output.get(0), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC, 450D, 450D);
 
     // 30.5 reps x 10 prod + 2.5 reps x 5 prod (10 x 0.5)
-    assertEntityOutput(output.get(1), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 318D);
+    assertEntityOutput(output.get(1), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 318D, 305D);
 
     // 35 reps x 11 prod with ratio 1.0
-    assertEntityOutput(output.get(2), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(2), 385D);
+    assertEntityOutput(output.get(2), FBM_WMS_OUTBOUND, TOT_MONO, PICKING, A_DATE_UTC.plusHours(2), 385D, 385D);
 
     // NON_TOT_MONO
     // 30 reps x 9 prod with ratio 1.0
-    assertEntityOutput(output.get(3), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC, 270D);
+    assertEntityOutput(output.get(3), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC, 270D, 270D);
 
     // 45.5 reps x 6 prod - 2.5 reps x 6 prod
-    assertEntityOutput(output.get(4), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 258D);
+    assertEntityOutput(output.get(4), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC.plusHours(1), 258D, 273D);
 
     // 35 reps x 10 prod
-    assertEntityOutput(output.get(5), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC.plusHours(2), 350D);
+    assertEntityOutput(output.get(5), FBM_WMS_OUTBOUND, NON_TOT_MONO, PICKING, A_DATE_UTC.plusHours(2), 350D, 350D);
   }
 
   private void assertEntityOutput(
@@ -374,13 +381,15 @@ class GetThroughputUseCaseTest {
       final ProcessPath processPath,
       final ProcessName process,
       final ZonedDateTime date,
-      final Double quantity
+      final Double quantity,
+      final Double originalQuantity
   ) {
     assertEquals(workflow, entity.getWorkflow());
     assertEquals(processPath, entity.getProcessPath());
     assertEquals(process, entity.getProcessName());
     assertEquals(date.withFixedOffsetZone(), entity.getDate().withFixedOffsetZone());
     assertEquals(quantity, entity.getValue());
+    assertEquals(originalQuantity, entity.getOriginalValue());
   }
 
   private GetEntityInput getEntityInput(final List<ProcessPath> processPaths) {

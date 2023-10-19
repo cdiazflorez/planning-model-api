@@ -32,8 +32,8 @@ public class Configuration {
     @Column(name = "`key`", length = 80)
     private String key;
 
-    @Column(name = "`value`", length = 20)
-    private long value;
+    @Column(name = "`value`")
+    private String value;
 
     @Enumerated(EnumType.STRING)
     private MetricUnit metricUnit;
@@ -43,4 +43,6 @@ public class Configuration {
 
     @UpdateTimestamp
     private ZonedDateTime lastUpdated;
+
+    private long lastUserUpdated;
 }

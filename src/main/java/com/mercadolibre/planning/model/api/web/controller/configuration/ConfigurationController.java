@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/planning/model/configuration")
@@ -83,9 +85,17 @@ public class ConfigurationController {
   }
 
   private ConfigurationResponse toResponse(final Configuration configuration) {
-    return new ConfigurationResponse(
-        configuration.getValue(),
-        configuration.getMetricUnit().toJson());
+
+    try {
+      return new ConfigurationResponse(
+          Integer.parseInt(configuration.getValue()),
+          configuration.getMetricUnit().toJson());
+    } catch (NumberFormatException nfe) {
+      log.warn("Could not parse configuration value {} to integer. Returning 0.", configuration.getValue());
+      return new ConfigurationResponse(
+          0,
+          configuration.getMetricUnit().toJson());
+    }
   }
 
   @PostMapping({"/logistic_center/{logisticCenterId}/cycle_time/search", "/logistic_center_id/{logisticCenterId}/cycle_time/search"})

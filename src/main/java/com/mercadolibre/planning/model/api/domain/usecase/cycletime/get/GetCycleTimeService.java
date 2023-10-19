@@ -38,7 +38,7 @@ public class GetCycleTimeService {
           final Long cycleTime = configurations.stream()
               .filter(configuration -> cycleTimeKey.equals(configuration.getKey()))
               .findFirst()
-              .map(Configuration::getValue)
+              .map(config -> Long.parseLong(config.getValue()))
               .orElseGet(() -> getCycleTimeDefault(configurations));
 
           ctByDateOut.put(cptDate, cycleTime);
@@ -55,7 +55,7 @@ public class GetCycleTimeService {
     return configurations.stream()
         .filter(configuration -> DEFAULT_CYCLE_TIME_KEY.equals(configuration.getKey()))
         .findFirst()
-        .map(Configuration::getValue)
+        .map(config -> Long.parseLong(config.getValue()))
         .orElseThrow(() -> new EntityNotFoundException(
             CONFIGURATION_ENTITY, DEFAULT_CYCLE_TIME_KEY));
   }

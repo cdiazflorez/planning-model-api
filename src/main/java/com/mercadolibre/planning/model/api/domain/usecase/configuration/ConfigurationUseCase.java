@@ -7,7 +7,9 @@ import com.mercadolibre.planning.model.api.domain.entity.configuration.Configura
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class ConfigurationUseCase {
 

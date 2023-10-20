@@ -16,7 +16,8 @@ public enum MetricUnit {
     UNITS,
     UNITS_PER_HOUR,
     ORDERS,
-    WORKERS;
+    WORKERS,
+    NA;
 
     private static final Map<String, MetricUnit> LOOKUP = Arrays.stream(values()).collect(
             toMap(MetricUnit::toString, Function.identity())

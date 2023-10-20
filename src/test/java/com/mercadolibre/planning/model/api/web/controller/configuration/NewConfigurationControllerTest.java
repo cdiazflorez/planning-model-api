@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(controllers = NewConfigurationController.class)
-public class NewConfigurationControllerTest {
+class NewConfigurationControllerTest {
 
   private static final String URL = "/logistic_center/%s/configuration";
 
@@ -71,7 +71,7 @@ public class NewConfigurationControllerTest {
     );
     // THEN
     result.andExpect(status().isOk())
-        .andExpect(content().json(getResourceAsString("post_new_configuration_ok.json")));
+        .andExpect(content().json(getResourceAsString("new_configuration_response.json")));
   }
 
   @Test

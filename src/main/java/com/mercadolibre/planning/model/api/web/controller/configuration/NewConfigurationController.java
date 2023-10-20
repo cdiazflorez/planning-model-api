@@ -2,12 +2,13 @@ package com.mercadolibre.planning.model.api.web.controller.configuration;
 
 import static java.util.stream.Collectors.toMap;
 
+import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.ConfigurationUseCase;
 import com.mercadolibre.planning.model.api.exception.DuplicateConfigurationException;
 import com.mercadolibre.planning.model.api.web.controller.configuration.request.ConfigurationRequestDto;
-import com.mercadolibre.planning.model.api.web.controller.configuration.response.ConfigurationResponseDto;
 import com.newrelic.api.agent.Trace;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class NewConfigurationController {
 
   @Trace(dispatcher = true)
   @PostMapping
-  public ResponseEntity<List<ConfigurationResponseDto>> save(
+  public ResponseEntity<Map<String, String>> save(
       @PathVariable final String logisticCenterId,
       @RequestParam final long userId,
       @RequestBody @Valid final List<ConfigurationRequestDto> configurationRequests) {
@@ -49,8 +50,13 @@ public class NewConfigurationController {
     return ResponseEntity.ok(
         configurationUseCase.save(userId, logisticCenterId, configurationsByKey)
             .stream()
-            .map(config -> new ConfigurationResponseDto(config.getKey(), config.getValue()))
-            .toList()
+            .collect(
+                toMap(
+                    Configuration::getKey,
+                    Configuration::getValue,
+                    (o1, o2) -> o2
+                )
+            )
     );
   }
 

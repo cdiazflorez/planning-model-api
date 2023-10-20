@@ -60,8 +60,6 @@ public class ApiExceptionHandler {
 
   private static final String ARGUMENT_TYPE_MISMATCH_EXCEPTION = "method_argument_type_mismatch_exception";
 
-  private static final String DUPLICATE_CONFIGURATION = "duplicate_configuration";
-
   private static final String CONSTRAINT_VIOLATION_EXCEPTION = "constraint_violation_exception";
 
   @ExceptionHandler(BindException.class)

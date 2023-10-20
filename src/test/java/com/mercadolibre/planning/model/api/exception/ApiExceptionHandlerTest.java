@@ -442,25 +442,6 @@ public class ApiExceptionHandlerTest {
   }
 
   @Test
-  void handleDuplicateConfigurationExceptionTest() {
-    //GIVEN
-    final DuplicateConfigurationException exception =
-        new DuplicateConfigurationException();
-
-    final ErrorResponse expectedResponse = new ErrorResponse(
-        BAD_REQUEST,
-        exception.getMessage(),
-        "duplicate_configuration"
-    );
-
-    // WHEN
-    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleDuplicateConfigurationException(exception, request);
-
-    // THEN
-    assertErrorResponse(expectedResponse, response);
-  }
-
-  @Test
   void handleConstraintViolationExceptionTest() {
     //GIVEN
     final ConstraintViolationException exception = new ConstraintViolationException("test", Set.of());

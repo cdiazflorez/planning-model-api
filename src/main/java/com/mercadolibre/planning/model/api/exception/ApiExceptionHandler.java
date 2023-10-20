@@ -331,23 +331,6 @@ public class ApiExceptionHandler {
     return ResponseEntity.status(apiError.getStatus()).body(apiError);
   }
 
-  @ExceptionHandler(DuplicateConfigurationException.class)
-  public ResponseEntity<ErrorResponse> handleDuplicateConfigurationException(
-      final DuplicateConfigurationException exception,
-      final HttpServletRequest request) {
-
-    final ErrorResponse errorResponse = new ErrorResponse(
-        BAD_REQUEST,
-        exception.getMessage(),
-        DUPLICATE_CONFIGURATION
-    );
-
-    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-    log.error(exception.getMessage(), exception);
-    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
-
-  }
-
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolationException(
       final ConstraintViolationException exception,

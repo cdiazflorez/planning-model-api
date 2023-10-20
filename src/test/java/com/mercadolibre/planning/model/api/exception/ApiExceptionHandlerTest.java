@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import org.assertj.core.util.VisibleForTesting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -459,6 +460,23 @@ public class ApiExceptionHandlerTest {
     assertErrorResponse(expectedResponse, response);
   }
 
+  @Test
+  void handleConstraintViolationExceptionTest() {
+    //GIVEN
+    final ConstraintViolationException exception = new ConstraintViolationException("test", Set.of());
+
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "constraint_violation_exception"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleConstraintViolationException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
+  }
 
   private void assertErrorResponse(final ErrorResponse expectedResponse,
                                    final ResponseEntity<ErrorResponse> response) {

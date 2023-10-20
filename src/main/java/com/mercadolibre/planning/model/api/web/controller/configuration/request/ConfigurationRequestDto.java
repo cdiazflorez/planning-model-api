@@ -1,11 +1,11 @@
 package com.mercadolibre.planning.model.api.web.controller.configuration.request;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 
 public record ConfigurationRequestDto(
-    @NotEmpty
+    @NotBlank
     String key,
-    @NotEmpty
+    @NotBlank
     String value
 ) {
 }

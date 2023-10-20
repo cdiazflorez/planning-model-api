@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import com.mercadolibre.fbm.wms.outbound.commons.web.response.ErrorResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,8 @@ public class ApiExceptionHandler {
   private static final String ARGUMENT_TYPE_MISMATCH_EXCEPTION = "method_argument_type_mismatch_exception";
 
   private static final String DUPLICATE_CONFIGURATION = "duplicate_configuration";
+
+  private static final String CONSTRAINT_VIOLATION_EXCEPTION = "constraint_violation_exception";
 
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
@@ -329,19 +332,36 @@ public class ApiExceptionHandler {
   }
 
   @ExceptionHandler(DuplicateConfigurationException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateConfigurationException(
-        final DuplicateConfigurationException exception,
-        final HttpServletRequest request) {
+  public ResponseEntity<ErrorResponse> handleDuplicateConfigurationException(
+      final DuplicateConfigurationException exception,
+      final HttpServletRequest request) {
 
-        final ErrorResponse errorResponse = new ErrorResponse(
-            BAD_REQUEST,
-            exception.getMessage(),
-            DUPLICATE_CONFIGURATION
-        );
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        DUPLICATE_CONFIGURATION
+    );
 
-        request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
-        log.error(exception.getMessage(), exception);
-        return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
 
-    }
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+      final ConstraintViolationException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        CONSTRAINT_VIOLATION_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+
+  }
 }

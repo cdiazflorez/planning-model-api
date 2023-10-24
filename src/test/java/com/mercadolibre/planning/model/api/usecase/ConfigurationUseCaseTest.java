@@ -87,7 +87,7 @@ class ConfigurationUseCaseTest {
 
   @ParameterizedTest
   @MethodSource("provideKeysAndExpectedValues")
-  void getConfigurationTest(final Set<String> keys, final Map<String, String> expectedValues) {
+  void testGetConfiguration(final Set<String> keys, final Map<String, String> expectedValues) {
     //GIVEN
     configurationRepository.saveAll(
         List.of(

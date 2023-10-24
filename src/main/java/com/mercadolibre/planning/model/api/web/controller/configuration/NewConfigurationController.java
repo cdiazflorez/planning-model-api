@@ -44,7 +44,7 @@ public class NewConfigurationController {
   @Trace(dispatcher = true)
   @GetMapping
   public ResponseEntity<Map<String, String>> get(@PathVariable final String logisticCenterId,
-                                                 @RequestParam final Set<String> keys) {
+                                                 @RequestParam(required = false) final Set<String> keys) {
 
     final var configurations = configurationUseCase.get(logisticCenterId, keys);
 

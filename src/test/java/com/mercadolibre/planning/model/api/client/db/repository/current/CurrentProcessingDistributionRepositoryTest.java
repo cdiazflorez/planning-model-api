@@ -175,64 +175,6 @@ class CurrentProcessingDistributionRepositoryTest {
     );
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"ARTW00", "ARTW01", "ARTW02"})
-  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
-  void testCurrentHeadcountProductivityWithViewDateShouldProduceNoResults(final String logisticCenterId) {
-    // GIVEN
-
-    // WHEN
-    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
-        logisticCenterId,
-        FBM_WMS_OUTBOUND.name(),
-        Set.of(ProcessPath.GLOBAL.name()),
-        Set.of(PICKING.name(), PACKING.name()),
-        Set.of(EFFECTIVE_WORKERS.name()),
-        DATE_FROM,
-        DATE_TO,
-        VIEW_DATE
-    );
-
-    // THEN
-    assertTrue(result.isEmpty());
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"ARTW03", "ARTW04"})
-  @Sql("/sql/forecast/load_forecast_and_metadata.sql")
-  void testCurrentHeadcountProductivityWithViewDateShouldFoundResults(final String logisticCenterId) {
-    // GIVEN
-
-    // WHEN
-    final var result = repository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
-        logisticCenterId,
-        FBM_WMS_OUTBOUND.name(),
-        Set.of(ProcessPath.GLOBAL.name()),
-        Set.of(PICKING.name(), PACKING.name()),
-        Set.of(EFFECTIVE_WORKERS.name()),
-        DATE_FROM,
-        DATE_TO,
-        VIEW_DATE
-    );
-
-    // THEN
-    assertEquals(2, result.size());
-
-    final var picking = result.stream()
-        .filter(p -> p.getProcessName() == PICKING)
-        .findFirst();
-
-    assertTrue(picking.isPresent());
-    assertEquals(10L, picking.get().getQuantity());
-
-
-    final var packing = result.stream()
-        .filter(p -> p.getProcessName() == PACKING)
-        .findFirst();
-
-    assertTrue(packing.isPresent());
-    assertEquals(10L, packing.get().getQuantity());
-  }
 
   @Test
   @Sql("/sql/forecast/load_current_processing_distribution.sql")

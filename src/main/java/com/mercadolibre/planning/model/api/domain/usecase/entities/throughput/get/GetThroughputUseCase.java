@@ -71,9 +71,12 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
 
     final List<EntityOutput> headcounts = headcountEntityUseCase.execute(StaffingPlanMapper.createSystemicHeadcountInput(input));
     final List<ProductivityOutput> productivity = productivityEntityUseCase.execute(StaffingPlanMapper.createProductivityInput(input));
+    final List<ProcessPath> processPaths = input.getProcessPaths().isEmpty()
+        ? headcounts.stream().map(EntityOutput::getProcessPath).distinct().toList()
+        : input.getProcessPaths();
 
     allThroughputs.addAll(createThroughput(
-            input.getProcessPaths(),
+            processPaths,
             input.getProcessName(),
             headcounts,
             productivity,

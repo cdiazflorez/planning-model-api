@@ -25,6 +25,7 @@ import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -86,7 +87,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     final var processPathsNames = input.getProcessPaths()
         .stream()
         .map(ProcessPath::name)
-        .collect(toList());
+        .toList();
 
     return processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
         getProcessingTypeAsStringOrNull(input.getProcessingType()),
@@ -135,12 +136,9 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
             .collect(toSet()))
         .orElse(Set.of(EFFECTIVE_WORKERS.name()));
 
-    final var processes = input.getProcessName()
-        .stream()
-        .map(ProcessName::name)
-        .collect(toSet());
+    final var processes = new HashSet<>(input.getProcessNamesAsString());
 
-    final var processPaths = input.getProcessPaths()
+    final var processPathsNames = input.getProcessPaths()
         .stream()
         .map(ProcessPath::name)
         .collect(toSet());
@@ -148,7 +146,7 @@ public class GetHeadcountEntityUseCase implements EntityUseCase<GetHeadcountInpu
     return currentPDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         input.getWarehouseId(),
         input.getWorkflow().name(),
-        processPaths,
+        processPathsNames,
         processes,
         types,
         input.getDateFrom(),

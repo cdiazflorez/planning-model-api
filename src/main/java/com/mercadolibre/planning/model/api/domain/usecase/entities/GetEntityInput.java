@@ -42,10 +42,10 @@ public class GetEntityInput {
   private Instant viewDate;
 
   public List<String> getProcessNamesAsString() {
-    return getProcessName().stream().map(Enum::name).collect(toList());
+    return CollectionUtils.isEmpty(processName) ? List.of() : getProcessName().stream().map(Enum::name).collect(toList());
   }
 
   public List<ProcessPath> getProcessPaths() {
-    return CollectionUtils.isEmpty(processPaths) ? List.of(ProcessPath.GLOBAL) : processPaths;
+    return CollectionUtils.isEmpty(processPaths) ? List.of() : processPaths;
   }
 }

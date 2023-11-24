@@ -1,13 +1,15 @@
 package com.mercadolibre.planning.model.api.web.controller.plan.staffing;
 
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
-import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.AbilityLevel.MAIN;
+import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.AbilityLevel.POLYVALENT;
 import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.Groupers.ABILITY_LEVEL;
 import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.Groupers.HEADCOUNT_TYPE;
+import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.HeadcountType.NON_SYSTEMIC;
+import static com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest.HeadcountType.SYSTEMIC;
 import static java.util.stream.Collectors.groupingBy;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -41,9 +43,6 @@ import org.springframework.stereotype.Component;
 public class StaffingPlanAdapter {
 
   private static final List<EntityType> ALLOWED_ENTITIES = List.of(HEADCOUNT, PRODUCTIVITY, THROUGHPUT, MAX_CAPACITY);
-
-  private static final int MAIN_ABILITY = 1;
-  private static final int POLYVALENT_ABILITY = 2;
 
   private final GetHeadcountEntityUseCase headcountUseCase;
 
@@ -100,6 +99,7 @@ public class StaffingPlanAdapter {
             .dateTo(request.dateTo())
             .processPaths(request.getProcessPathAsEnum())
             .processName(request.processes())
+            .viewDate(request.viewDate())
             .build()
     );
     return createResourceFromEntityOutput(THROUGHPUT, request.groupers(), response);
@@ -114,12 +114,20 @@ public class StaffingPlanAdapter {
 
   private Resource getHeadcountResource(final StaffingPlanRequest request) {
 
-    final var processingTypes = request.groupers().contains(HEADCOUNT_TYPE)
-        ? Set.of(EFFECTIVE_WORKERS, EFFECTIVE_WORKERS_NS)
-        : Set.of(EFFECTIVE_WORKERS);
+    final List<StaffingPlanRequest.HeadcountType> processingTypesFilter = request.headcountTypes().isEmpty()
+        ? List.of(SYSTEMIC)
+        : request.headcountTypes();
+
+    final List<StaffingPlanRequest.HeadcountType> processingTypes = request.groupers().contains(HEADCOUNT_TYPE)
+        ? List.of(SYSTEMIC, NON_SYSTEMIC)
+        : processingTypesFilter;
 
     final List<EntityOutput> result = headcountUseCase.execute(
-        createHeadcountInput(request, processingTypes, request.getProcessPathAsEnum())
+        createHeadcountInput(
+            request,
+            processingTypes.stream().map(StaffingPlanRequest.HeadcountType::getValue).collect(Collectors.toSet()),
+            request.getProcessPathAsEnum()
+        )
     );
 
     return createResourceFromEntityOutput(HEADCOUNT, request.groupers(), result);
@@ -127,9 +135,13 @@ public class StaffingPlanAdapter {
 
   private Resource getProductivityResource(final StaffingPlanRequest request) {
 
-    final var abilityLevels = request.groupers().contains(ABILITY_LEVEL)
-        ? Set.of(MAIN_ABILITY, POLYVALENT_ABILITY)
-        : Set.of(MAIN_ABILITY);
+    final List<StaffingPlanRequest.AbilityLevel> abilityLevelFilter = request.abilityLevels().isEmpty()
+        ? List.of(MAIN)
+        : request.abilityLevels();
+
+    final List<StaffingPlanRequest.AbilityLevel> abilityLevels = request.groupers().contains(ABILITY_LEVEL)
+        ? List.of(MAIN, POLYVALENT)
+        : abilityLevelFilter;
 
     final List<ProductivityOutput> result = productivityUseCase.execute(
         GetProductivityInput.builder()
@@ -140,7 +152,8 @@ public class StaffingPlanAdapter {
             .dateTo(request.dateTo())
             .processPaths(request.getProcessPathAsEnum())
             .processName(request.processes())
-            .abilityLevel(abilityLevels)
+            .source(Source.SIMULATION)
+            .abilityLevel(abilityLevels.stream().map(StaffingPlanRequest.AbilityLevel::getValue).collect(Collectors.toSet()))
             .viewDate(request.viewDate())
             .build()
     );
@@ -169,13 +182,17 @@ public class StaffingPlanAdapter {
   }
 
   private <T extends EntityOutput> ResourceValues createResourceValues(final Map.Entry<Map<String, String>, List<T>> entry) {
-    final var originalValue = entry.getValue().stream()
+    final var originalValueList = entry.getValue().stream()
         .filter(entityOutput -> entityOutput.getSource() == Source.FORECAST)
-        .mapToDouble(EntityOutput::getValue).sum();
+        .toList();
 
     final var valuesList = entry.getValue().stream()
         .filter(entityOutput -> entityOutput.getSource() == Source.SIMULATION)
         .toList();
+
+    final var originalValue = originalValueList.isEmpty()
+        ? valuesList.stream().mapToDouble(EntityOutput::getOriginalValue).sum()
+        : originalValueList.stream().mapToDouble(EntityOutput::getValue).sum();
 
     return new ResourceValues(
         valuesList.isEmpty() ? originalValue : valuesList.stream().mapToDouble(EntityOutput::getValue).sum(),
@@ -199,6 +216,7 @@ public class StaffingPlanAdapter {
         .processPaths(processPaths)
         .processName(request.processes())
         .processingType(processingTypes)
+        .source(Source.SIMULATION)
         .viewDate(request.viewDate())
         .build();
   }

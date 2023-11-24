@@ -214,6 +214,8 @@ class StaffingPlanAdapterTest {
         "ARTW01",
         groupers,
         processPaths,
+        List.of(),
+        List.of(),
         List.of()
     );
   }

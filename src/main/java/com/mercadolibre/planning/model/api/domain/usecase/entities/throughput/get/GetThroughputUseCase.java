@@ -65,7 +65,7 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
 
     //TODO Eliminar cuando ya se esta usando la V2 del agendamiento que contiene los Reps sistemicos de Receiving
     // Esto es temporal hasta que agreguen la columna de Reps Sistemicos de Receiving al forecast
-    if (input.getProcessName().contains(ProcessName.RECEIVING)) {
+    if (input.getProcessName() != null && input.getProcessName().contains(ProcessName.RECEIVING)) {
       allThroughputs = headcountEntityUseCase.execute(createReceivingTph(input));
     }
 
@@ -74,10 +74,13 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
     final List<ProcessPath> processPaths = input.getProcessPaths().isEmpty()
         ? headcounts.stream().map(EntityOutput::getProcessPath).distinct().toList()
         : input.getProcessPaths();
+    final List<ProcessName> processes = input.getProcessNamesAsString().isEmpty()
+        ? headcounts.stream().map(EntityOutput::getProcessName).distinct().toList()
+        : input.getProcessName();
 
     allThroughputs.addAll(createThroughput(
             processPaths,
-            input.getProcessName(),
+            processes,
             headcounts,
             productivity,
             input.getWorkflow(),

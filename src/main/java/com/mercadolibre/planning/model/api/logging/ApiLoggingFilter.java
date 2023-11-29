@@ -62,7 +62,12 @@ public class ApiLoggingFilter implements Filter {
     logMessage(message, exception, response, request);
   }
 
-  private void logMessage(final String message, final Throwable exception, final HttpServletResponse response, final HttpServletRequest request) {
+  private void logMessage(
+      final String message,
+      final Throwable exception,
+      final HttpServletResponse response,
+      final HttpServletRequest request
+  ) {
     if (shouldLogError(response)) {
       getLog().error(message, exception);
     } else if (shouldLogWarn(response)) {

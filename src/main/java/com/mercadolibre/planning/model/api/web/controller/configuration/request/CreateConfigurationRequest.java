@@ -2,27 +2,26 @@ package com.mercadolibre.planning.model.api.web.controller.configuration.request
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.ConfigurationInput;
-import lombok.Value;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import lombok.Value;
 
 @Value
 public class CreateConfigurationRequest {
 
-    @NotEmpty
-    private String logisticCenterId;
+  @NotEmpty
+  String logisticCenterId;
 
-    @NotEmpty
-    private String key;
+  @NotEmpty
+  String key;
 
-    @NotNull
-    private Long value;
+  @NotNull
+  Long value;
 
-    @NotNull
-    private MetricUnit metricUnit;
+  @NotNull
+  MetricUnit metricUnit;
 
-    public ConfigurationInput toConfigurationInput() {
-        return new ConfigurationInput(logisticCenterId, key, value, metricUnit);
-    }
+  public ConfigurationInput toConfigurationInput(final Long userId) {
+    return new ConfigurationInput(logisticCenterId, key, value, metricUnit, userId);
+  }
 }

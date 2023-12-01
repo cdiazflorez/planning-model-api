@@ -6,8 +6,9 @@ import lombok.Value;
 @Value
 public class ConfigurationInput {
 
-    private String logisticCenterId;
-    private String key;
-    private long value;
-    private MetricUnit metricUnit;
+    String logisticCenterId;
+    String key;
+    long value;
+    MetricUnit metricUnit;
+    long userId;
 }

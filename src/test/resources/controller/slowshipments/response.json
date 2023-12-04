@@ -1,11 +1,12 @@
-[
-    {
-        "date": "2023-09-14T12:00:00Z",
-        "available_capacity": 0
-    },
-    {
-        "date": "2023-09-14T13:00:00Z",
-        "available_capacity": 0
-    }
-]
-
+{
+    "capacities": [
+        {
+            "date": "2023-09-14T12:00:00Z",
+            "available_capacity": 0
+        },
+        {
+            "date": "2023-09-14T13:00:00Z",
+            "available_capacity": 0
+        }
+    ]
+}

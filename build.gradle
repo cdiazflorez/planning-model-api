@@ -38,15 +38,9 @@ dependencies {
     implementation "com.mercadolibre:threading"
     implementation "com.mercadolibre.restclient:meli-restclient-default"
     implementation 'com.newrelic.agent.java:newrelic-api'
-    implementation 'commons-io:commons-io:2.6'
     implementation 'com.fury:furyutils'
     implementation 'com.mercadolibre.metrics:metrics-core'
     implementation 'com.mercadolibre.metrics:datadog-metric-wrapper'
-    constraints {
-        implementation('commons-io:commons-io:2.7') {
-            because 'previous versions have a vulnerability CFWPM-57'
-        }
-    }
 
     // force snakeyaml to v2.0 because default one has several vulnerabilities
     implementation 'org.yaml:snakeyaml:2.0'

@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.projection.availablecapacity;
 
-import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
+import java.util.List;
 
-public record AvailableCapacity(int capacity, SlaProjectionResult projection) {
+public record AvailableCapacity(List<CapacityBySLA> capacities) {
 }

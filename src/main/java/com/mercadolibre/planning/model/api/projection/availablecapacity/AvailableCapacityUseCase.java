@@ -51,7 +51,7 @@ public class AvailableCapacityUseCase {
    */
   private static List<Instant> getSlasWithoutCapacity(final List<EndDateCutOffBySLA> endDateCutOffBySLA) {
     return endDateCutOffBySLA.stream()
-        .filter(record -> record.projectedEndDate() == null || record.projectedEndDate().isAfter(record.cutOff()))
+        .filter(each -> each.projectedEndDate() == null || each.projectedEndDate().isAfter(each.cutOff()))
         .map(EndDateCutOffBySLA::date)
         .toList();
   }

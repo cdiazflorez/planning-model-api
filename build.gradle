@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'distribution'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.7.17'
+    id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -47,6 +47,9 @@ dependencies {
             because 'previous versions have a vulnerability CFWPM-57'
         }
     }
+
+    // force snakeyaml to v2.0 because default one has several vulnerabilities
+    implementation 'org.yaml:snakeyaml:2.0'
 
     // Meli unmanaged
     implementation 'com.mercadolibre.fbm.wms.outbound:commons:1.2.0'

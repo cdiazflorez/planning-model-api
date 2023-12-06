@@ -64,10 +64,11 @@ public class ConfigurationController {
   @PostMapping
   @Trace(dispatcher = true)
   public ResponseEntity<ConfigurationResponse> create(
-      @RequestBody @Valid final CreateConfigurationRequest request) {
+      @RequestBody @Valid final CreateConfigurationRequest request,
+      @RequestParam(required = false, defaultValue = "0") final Long userId) {
 
     return ResponseEntity.ok(toResponse(
-        createConfigurationUseCase.execute(request.toConfigurationInput())
+        createConfigurationUseCase.execute(request.toConfigurationInput(userId))
     ));
   }
 
@@ -76,12 +77,13 @@ public class ConfigurationController {
   public ResponseEntity<ConfigurationResponse> update(
       @PathVariable final String logisticCenterId,
       @PathVariable final String key,
+      @RequestParam(required = false, defaultValue = "0") final Long userId,
       @RequestBody @Valid final UpdateConfigurationRequest request) {
 
     return ResponseEntity.ok(
         toResponse(
             updateConfigurationUseCase.execute(
-                request.toConfigurationInput(logisticCenterId, key))));
+                request.toConfigurationInput(logisticCenterId, key, userId))));
   }
 
   private ConfigurationResponse toResponse(final Configuration configuration) {

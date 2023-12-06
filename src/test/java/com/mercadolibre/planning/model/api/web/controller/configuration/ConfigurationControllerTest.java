@@ -30,9 +30,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -41,7 +44,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(controllers = ConfigurationController.class)
-public class ConfigurationControllerTest {
+class ConfigurationControllerTest {
 
   private static final String LOGISTIC_CENTER_ID = "ARBA01";
 
@@ -52,7 +55,10 @@ public class ConfigurationControllerTest {
   private static final String UPDATE_URL = "/planning/model/configuration/%s/%s";
 
   private static final String OLD_CT_PATH = "/logistic_center_id/{lcID}/cycle_time/search";
+
   private static final String CYCLE_TIME_PATH = "/logistic_center/{lc}/cycle_time/search";
+
+  private static final String USER_ID_FIELD = "user_id";
 
   private static final Instant DATE_FROM = A_DATE_UTC.toInstant();
 
@@ -73,8 +79,15 @@ public class ConfigurationControllerTest {
   @MockBean
   private OutboundSlaPropertiesService outboundSlaPropertiesService;
 
+  public static Stream<Arguments> testCreateAndUpdateArguments() {
+    return Stream.of(
+        Arguments.of(null, 0),
+        Arguments.of("123", 123)
+    );
+  }
+
   @Test
-  public void testGetConfiguration() throws Exception {
+  void testGetConfiguration() throws Exception {
     // GIVEN
     final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
     when(getConfiguration.execute(input)).thenReturn(Optional.of(Configuration.builder()
@@ -97,7 +110,7 @@ public class ConfigurationControllerTest {
   }
 
   @Test
-  public void testGetConfigurationNotFound() throws Exception {
+  void testGetConfigurationNotFound() throws Exception {
     // GIVEN
     final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
     when(getConfiguration.execute(input)).thenReturn(Optional.empty());
@@ -112,11 +125,12 @@ public class ConfigurationControllerTest {
     result.andExpect(status().isNotFound());
   }
 
-  @Test
-  public void testCreateConfiguration() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testCreateAndUpdateArguments")
+  void testCreateConfiguration(final String userParam, final long userId) throws Exception {
     // GIVEN
     final ConfigurationInput input = new ConfigurationInput(
-        LOGISTIC_CENTER_ID, KEY, 60, MINUTES);
+        LOGISTIC_CENTER_ID, KEY, 60, MINUTES, userId);
 
     when(createConfiguration.execute(input)).thenReturn(Configuration.builder()
         .logisticCenterId(LOGISTIC_CENTER_ID)
@@ -129,6 +143,7 @@ public class ConfigurationControllerTest {
     final ResultActions result = mvc.perform(
         post(URL)
             .contentType(APPLICATION_JSON)
+            .param(USER_ID_FIELD, userParam)
             .content(getResourceAsString("post_configuration.json"))
     );
 
@@ -138,11 +153,12 @@ public class ConfigurationControllerTest {
         .andExpect(jsonPath("$.metric_unit").value(MINUTES.toJson()));
   }
 
-  @Test
-  public void testUpdateConfiguration() throws Exception {
+  @ParameterizedTest
+  @MethodSource("testCreateAndUpdateArguments")
+  void testUpdateConfiguration(final String userParam, final long userId) throws Exception {
     // GIVEN
     final ConfigurationInput input = new ConfigurationInput(
-        LOGISTIC_CENTER_ID, KEY, 180, MINUTES);
+        LOGISTIC_CENTER_ID, KEY, 180, MINUTES, userId);
 
     when(updateConfiguration.execute(input)).thenReturn(Configuration.builder()
         .logisticCenterId(LOGISTIC_CENTER_ID)
@@ -155,6 +171,7 @@ public class ConfigurationControllerTest {
     final ResultActions result = mvc.perform(
         put(format(UPDATE_URL, LOGISTIC_CENTER_ID, KEY))
             .contentType(APPLICATION_JSON)
+            .param(USER_ID_FIELD, userParam)
             .content(getResourceAsString("put_configuration.json"))
     );
 

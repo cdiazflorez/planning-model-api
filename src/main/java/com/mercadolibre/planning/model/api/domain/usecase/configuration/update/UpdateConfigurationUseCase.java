@@ -12,24 +12,25 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class UpdateConfigurationUseCase
-        implements UseCase<ConfigurationInput, Configuration> {
+    implements UseCase<ConfigurationInput, Configuration> {
 
-    private final ConfigurationRepository configurationRepository;
+  private final ConfigurationRepository configurationRepository;
 
-    @Override
-    public Configuration execute(final ConfigurationInput input) {
-        final String logisticCenterId = input.getLogisticCenterId();
-        final String key = input.getKey();
+  @Override
+  public Configuration execute(final ConfigurationInput input) {
+    final String logisticCenterId = input.getLogisticCenterId();
+    final String key = input.getKey();
 
-        final String configurationId = logisticCenterId + "-" + key;
-        final Configuration savedConfiguration = configurationRepository.findById(
-                new ConfigurationId(logisticCenterId, key))
-                .orElseThrow(() -> new EntityNotFoundException("CONFIGURATION", configurationId));
+    final String configurationId = logisticCenterId + "-" + key;
+    final Configuration savedConfiguration = configurationRepository.findById(
+            new ConfigurationId(logisticCenterId, key))
+        .orElseThrow(() -> new EntityNotFoundException("CONFIGURATION", configurationId));
 
-        savedConfiguration.setValue(String.valueOf(input.getValue()));
-        savedConfiguration.setMetricUnit(input.getMetricUnit());
+    savedConfiguration.setValue(String.valueOf(input.getValue()));
+    savedConfiguration.setMetricUnit(input.getMetricUnit());
+    savedConfiguration.setLastUserUpdated(input.getUserId());
 
-        return configurationRepository.save(savedConfiguration);
-    }
+    return configurationRepository.save(savedConfiguration);
+  }
 }
 

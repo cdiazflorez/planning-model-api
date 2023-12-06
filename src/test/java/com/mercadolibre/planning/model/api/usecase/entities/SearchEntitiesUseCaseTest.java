@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntitiesStrategy;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
@@ -102,6 +103,7 @@ public class SearchEntitiesUseCaseTest {
                         .processName(List.of(PICKING, PACKING))
                         .processingType(Set.of(EFFECTIVE_WORKERS))
                         .entityType(HEADCOUNT)
+                        .processPaths(List.of(ProcessPath.GLOBAL))
                         .build();
 
         final GetProductivityInput productivityEntityInput =
@@ -114,6 +116,7 @@ public class SearchEntitiesUseCaseTest {
                         .processName(List.of(PICKING, PACKING))
                         .abilityLevel(Set.of(1))
                         .entityType(PRODUCTIVITY)
+                        .processPaths(List.of(ProcessPath.GLOBAL))
                         .build();
 
         when(getEntitiesStrategy.getBy(HEADCOUNT))
@@ -173,6 +176,7 @@ public class SearchEntitiesUseCaseTest {
         return GetEntityInput.builder()
                 .warehouseId(WAREHOUSE_ID)
                 .workflow(FBM_WMS_OUTBOUND)
+                .processPaths(List.of(ProcessPath.GLOBAL))
                 .source(FORECAST)
                 .dateFrom(A_DATE_UTC)
                 .dateTo(A_DATE_UTC.plusHours(12))

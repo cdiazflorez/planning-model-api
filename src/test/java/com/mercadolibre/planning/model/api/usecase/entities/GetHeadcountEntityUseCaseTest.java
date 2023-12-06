@@ -42,9 +42,14 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -274,12 +279,13 @@ class GetHeadcountEntityUseCaseTest {
     outputPropertiesEqualTo(output.get(4), ProcessPath.GLOBAL, SIMULATION, 20, A_DATE_UTC.plusHours(1).toInstant());
   }
 
-  @Test
+  @ParameterizedTest
+  @MethodSource("testProcessPaths")
   @DisplayName("Get headcount entity when source is simulation and there area multiple process paths")
-  void testGetHeadcountFromSourceSimulationWithProcessPaths() {
+  void testProcessPaths(List<ProcessPath> processPaths) {
     // GIVEN
     final GetHeadcountInput input = mockGetHeadcountEntityInput(
-        List.of(TOT_MONO, NON_TOT_MONO),
+        processPaths,
         SIMULATION,
         Set.of(EFFECTIVE_WORKERS),
         List.of()
@@ -297,7 +303,9 @@ class GetHeadcountEntityUseCaseTest {
 
     when(processingDistRepository.findByTypeProcessPathProcessNameAndDateInRange(
         Set.of(EFFECTIVE_WORKERS.name()),
-        List.of(TOT_MONO.toString(), NON_TOT_MONO.toString()),
+        processPaths == null || processPaths.isEmpty()
+            ? List.of()
+            : processPaths.stream().map(ProcessPath::toString).toList(),
         input.getProcessNamesAsString(),
         input.getDateFrom(),
         input.getDateTo(),
@@ -307,8 +315,10 @@ class GetHeadcountEntityUseCaseTest {
     when(currentRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
             input.getWarehouseId(),
             FBM_WMS_OUTBOUND.name(),
-            Set.of(TOT_MONO.toString(), NON_TOT_MONO.toString()),
-            Set.of(PICKING.name(), PACKING.name()),
+            processPaths == null || processPaths.isEmpty()
+                ? Set.of()
+                : processPaths.stream().map(ProcessPath::toString).collect(Collectors.toSet()),
+        Set.of(PICKING.name(), PACKING.name()),
             Set.of(EFFECTIVE_WORKERS.name()),
             input.getDateFrom(),
             input.getDateTo(),
@@ -329,6 +339,14 @@ class GetHeadcountEntityUseCaseTest {
     outputPropertiesEqualTo(output.get(5), NON_TOT_MONO, FORECAST, 280, A_DATE_UTC.plusHours(2).toInstant());
     outputPropertiesEqualTo(output.get(6), TOT_MONO, SIMULATION, 40, A_DATE_UTC.plusHours(1).toInstant());
     outputPropertiesEqualTo(output.get(7), NON_TOT_MONO, SIMULATION, 60, A_DATE_UTC.plusHours(1).toInstant());
+  }
+
+  private static Stream<Arguments> testProcessPaths() {
+    return Stream.of(
+        Arguments.of(List.of(TOT_MONO, NON_TOT_MONO)),
+        Arguments.of(List.of()),
+        null
+    );
   }
 
   private List<ProcessingDistributionView> processingDistributions() {

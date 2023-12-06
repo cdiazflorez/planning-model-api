@@ -21,6 +21,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForeca
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.newrelic.api.agent.Trace;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -57,7 +58,7 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
   private Stream<ProductivityOutput> getSimulationProductivity(final GetProductivityInput input) {
 
     // TODO: revisar si es necesario remover la validación del PP Global y dejar solo la del source.
-    if (input.getSource() == FORECAST || !input.getProcessPaths().contains(GLOBAL)) {
+    if (input.getSource() == FORECAST) {
         return Stream.empty();
     }
     final List<ProductivityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
@@ -107,15 +108,17 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
   }
 
   private List<CurrentProcessingDistribution> findCurrentProductivityBy(final GetProductivityInput input) {
-    final var processes = input.getProcessName()
+    final var processPaths = input.getProcessPaths()
         .stream()
-        .map(ProcessName::name)
+        .map(ProcessPath::name)
         .collect(toSet());
+
+    final var processes = new HashSet<>(input.getProcessNamesAsString());
 
     return currentProcessingDistributionRepository.findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
         input.getWarehouseId(),
         input.getWorkflow().name(),
-        input.getProcessPaths().stream().map(ProcessPath::name).collect(toSet()),
+        processPaths,
         processes,
         Set.of(PRODUCTIVITY.name()),
         input.getDateFrom(),

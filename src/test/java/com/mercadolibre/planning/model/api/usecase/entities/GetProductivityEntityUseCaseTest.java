@@ -129,7 +129,7 @@ public class GetProductivityEntityUseCaseTest {
         .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
             WAREHOUSE_ID,
             FBM_WMS_OUTBOUND.name(),
-            Set.of(ProcessName.GLOBAL.name()),
+            Set.of(),
             Set.of(PICKING.name(), PACKING.name()),
             Set.of(PRODUCTIVITY.name()),
             input.getDateFrom(),
@@ -143,7 +143,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
-        List.of(GLOBAL.name()),
+        List.of(),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -184,7 +184,7 @@ public class GetProductivityEntityUseCaseTest {
 
     when(productivityRepository.findBy(
         List.of(PICKING.name(), PACKING.name()),
-        List.of(GLOBAL.name()),
+        List.of(),
         input.getDateFrom(),
         input.getDateTo(),
         forecastIds,
@@ -195,7 +195,7 @@ public class GetProductivityEntityUseCaseTest {
         .findSimulationByWarehouseIdWorkflowTypeProcessNameAndDateInRangeAtViewDate(
             currentProd.getLogisticCenterId(),
             FBM_WMS_OUTBOUND.name(),
-            Set.of(ProcessName.GLOBAL.name()),
+            Set.of(),
             Set.of(PICKING.name(), PACKING.name()),
             Set.of(PRODUCTIVITY.name()),
             input.getDateFrom(),
@@ -247,7 +247,6 @@ public class GetProductivityEntityUseCaseTest {
     // THEN
     assertThat(output).isNotEmpty();
     assertEquals(4, output.size());
-    verifyNoInteractions(processingDistributionRepository);
     outputPropertiesEqualTo(output.get(0), PICKING, FORECAST, 80);
     outputPropertiesEqualTo(output.get(1), PICKING, FORECAST, 85);
     outputPropertiesEqualTo(output.get(2), PACKING, FORECAST, 90);

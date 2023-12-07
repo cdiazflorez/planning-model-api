@@ -28,13 +28,13 @@ public class AvailableCapacityUseCase {
 
   private static List<EndDateCutOffBySLA> getProjectedEndDateByCutOffsAndSLA(
       final List<SlaProjectionResult.Sla> projectionResult,
-      final Map<Instant, Integer> cycleTimeBySla
+      final Map<Instant, Instant> cutOffs
   ) {
     return projectionResult.stream()
         .map(projection -> new EndDateCutOffBySLA(
             projection.date(),
             projection.projectedEndDate(),
-            calculateCutOffFromSla(projection.date(), cycleTimeBySla.getOrDefault(projection.date(), 0))
+            cutOffs.get(projection.date())
         ))
         .toList();
   }
@@ -98,30 +98,30 @@ public class AvailableCapacityUseCase {
       final Map<Instant, Integer> cycleTimeBySla
   ) {
     final Projector projector = new PackingProjectionBuilder();
+    final var cutOffs = getCutOffs(cycleTimeBySla);
     final SlaProjectionResult projection = SLAProjectionService.execute(
         executionDateFrom,
         executionDateTo,
         currentBacklog,
         forecastBacklog,
         throughput,
-        getCutOffs(cycleTimeBySla),
+        cutOffs,
         projector
     );
 
-    final var endDateCutOffBySLA = getProjectedEndDateByCutOffsAndSLA(projection.slas(), cycleTimeBySla);
+    final var endDateCutOffBySLA = getProjectedEndDateByCutOffsAndSLA(projection.slas(), cutOffs);
 
     final var slasWithoutCapacity = getSlasWithoutCapacity(endDateCutOffBySLA);
     final var capacityBySLAWithoutCapacity = slasWithoutCapacity.stream()
         .map(each -> new CapacityBySLA(each, 0));
 
-    final var capacityBySLAWithCapacity = endDateCutOffBySLA.stream()
-        .filter(each -> !slasWithoutCapacity.contains(each.date));
-
     final Map<Instant, Integer> minimumTphByHour = ThroughputCalculator.getMinimumTphValueByHour(throughput);
-    final var capacityBySLAS = capacityBySLAWithCapacity
+    final var capacityBySLAWithCapacity = endDateCutOffBySLA.stream()
+        .filter(each -> !slasWithoutCapacity.contains(each.date))
         .map(tuple -> new CapacityBySLA(tuple.date,
             ThroughputCalculator.totalWithinRange(minimumTphByHour, tuple.projectedEndDate, tuple.cutOff)));
-    final var capacityBySLA = Stream.concat(capacityBySLAS, capacityBySLAWithoutCapacity)
+
+    final var capacityBySLA = Stream.concat(capacityBySLAWithCapacity, capacityBySLAWithoutCapacity)
         .sorted(Comparator.comparing(CapacityBySLA::date))
         .toList();
 

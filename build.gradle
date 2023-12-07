@@ -3,7 +3,7 @@ plugins {
     id 'application'
     id 'distribution'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.7.11'
+    id 'org.springframework.boot' version '2.7.18'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -33,26 +33,23 @@ repositories {
 dependencies {
     // managed by meLi BOM
     implementation 'com.mercadolibre.fbm.flow:projection-tools:2.0.0'
-    implementation platform('com.mercadolibre.library:java-melitk-bom:0.2.6')
+    implementation platform('com.mercadolibre.library:java-melitk-bom:1.1.12')
     implementation "com.mercadolibre:routing"
     implementation "com.mercadolibre:threading"
     implementation "com.mercadolibre.restclient:meli-restclient-default"
     implementation 'com.newrelic.agent.java:newrelic-api'
-    implementation 'commons-io:commons-io:2.6'
     implementation 'com.fury:furyutils'
     implementation 'com.mercadolibre.metrics:metrics-core'
     implementation 'com.mercadolibre.metrics:datadog-metric-wrapper'
-    constraints {
-        implementation('commons-io:commons-io:2.7') {
-            because 'previous versions have a vulnerability CFWPM-57'
-        }
-    }
+
+    // force snakeyaml to v2.0 because default one has several vulnerabilities
+    implementation 'org.yaml:snakeyaml:2.0'
 
     // Meli unmanaged
     implementation 'com.mercadolibre.fbm.wms.outbound:commons:1.2.0'
 
     // managed by spring BOM
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.7'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-configuration-processor'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -71,7 +68,7 @@ dependencies {
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.h2database:h2'
-    testImplementation 'com.mercadolibre.restclient:meli-restclient-core:0.5.4:tests' // TODO omitir versión
+    testImplementation 'com.mercadolibre.restclient:meli-restclient-core:1.0.14:tests' // TODO omitir versión
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.mockito:mockito-inline'
     testImplementation 'org.mockito:mockito-core'

@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.availablecapacity.AvailableCapacityUseCase;
+import com.mercadolibre.planning.model.api.projection.availablecapacity.CapacityBySLA;
 import com.mercadolibre.planning.model.api.projection.builder.Projector;
 import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
 import java.time.Instant;
@@ -85,10 +86,10 @@ public class AvailableCapacityUseCaseTest {
 
   public static Stream<Arguments> testCases() {
     return Stream.of(
-          Arguments.of(
-              new SlaProjectionResult(List.of(new SlaProjectionResult.Sla(SLA_1, END_DATE_1, ZERO))),
-              200
-          ),
+        Arguments.of(
+            new SlaProjectionResult(List.of(new SlaProjectionResult.Sla(SLA_1, END_DATE_1, ZERO))),
+            List.of(new CapacityBySLA(SLA_1, 200))
+        ),
         Arguments.of(
             new SlaProjectionResult(List.of(
                 new SlaProjectionResult.Sla(SLA_1, END_DATE_1, ZERO),
@@ -96,7 +97,7 @@ public class AvailableCapacityUseCaseTest {
                 new SlaProjectionResult.Sla(SLA_3, END_DATE_3, ZERO),
                 new SlaProjectionResult.Sla(SLA_4, END_DATE_4, ZERO)
             )),
-            40
+            List.of(new CapacityBySLA(SLA_1, 40), new CapacityBySLA(SLA_2, 40), new CapacityBySLA(SLA_3, 40), new CapacityBySLA(SLA_4, 40))
         ),
         Arguments.of(
             new SlaProjectionResult(List.of(
@@ -105,17 +106,43 @@ public class AvailableCapacityUseCaseTest {
                 new SlaProjectionResult.Sla(SLA_3, null, 1D),
                 new SlaProjectionResult.Sla(SLA_4, END_DATE_4, ZERO)
             )),
-            0
+            List.of(new CapacityBySLA(SLA_1, 0), new CapacityBySLA(SLA_2, 0), new CapacityBySLA(SLA_3, 0), new CapacityBySLA(SLA_4, 40))
+        ),
+        Arguments.of(
+            new SlaProjectionResult(List.of(
+                new SlaProjectionResult.Sla(SLA_1, null, 55),
+                new SlaProjectionResult.Sla(SLA_2, END_DATE_2, ZERO),
+                new SlaProjectionResult.Sla(SLA_3, END_DATE_3, ZERO),
+                new SlaProjectionResult.Sla(SLA_4, END_DATE_4, ZERO)
+            )),
+            List.of(
+                new CapacityBySLA(SLA_1, 0),
+                new CapacityBySLA(SLA_2, 40),
+                new CapacityBySLA(SLA_3, 40),
+                new CapacityBySLA(SLA_4, 40))
+        ),
+        Arguments.of(
+            new SlaProjectionResult(List.of(
+                new SlaProjectionResult.Sla(SLA_1, END_DATE_1, ZERO),
+                new SlaProjectionResult.Sla(SLA_2, null, 500),
+                new SlaProjectionResult.Sla(SLA_3, END_DATE_3, ZERO),
+                new SlaProjectionResult.Sla(SLA_4, END_DATE_4, ZERO)
+            )),
+            List.of(
+                new CapacityBySLA(SLA_1, 0),
+                new CapacityBySLA(SLA_2, 0),
+                new CapacityBySLA(SLA_3, 40),
+                new CapacityBySLA(SLA_4, 40))
         )
-      );
+    );
   }
 
   @ParameterizedTest
   @MethodSource("testCases")
   void testAvailableCapacity(
       final SlaProjectionResult mockProjectionService,
-      final int expectedCapacity
-      ) {
+      final List<CapacityBySLA> expectedCapacity
+  ) {
     when(SLAProjectionService.execute(
         eq(DATE_1),
         eq(DATE_2),
@@ -133,11 +160,9 @@ public class AvailableCapacityUseCaseTest {
         FORECAST_BACKLOG,
         THROUGHPUT,
         CYCLE_TIME_BY_SLA
-        );
+    );
 
     // THEN
-    assertEquals(expectedCapacity, obtainedCapacity.capacity());
-    assertEquals(mockProjectionService, obtainedCapacity.projection());
-
+    assertEquals(expectedCapacity, obtainedCapacity);
   }
 }

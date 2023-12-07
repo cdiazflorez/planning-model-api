@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
@@ -22,20 +21,75 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class AvailableCapacityUseCase {
 
+  private static Map<Instant, Instant> getCutOffs(final Map<Instant, Integer> cycleTimeBySla) {
+    return cycleTimeBySla.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> calculateCutOffFromSla(entry.getKey(), entry.getValue())));
+  }
+
+  private static List<EndDateCutOffBySLA> getProjectedEndDateByCutOffsAndSLA(
+      final List<SlaProjectionResult.Sla> projectionResult,
+      final Map<Instant, Instant> cutOffs
+  ) {
+    return projectionResult.stream()
+        .map(projection -> new EndDateCutOffBySLA(
+            projection.date(),
+            projection.projectedEndDate(),
+            cutOffs.get(projection.date())
+        ))
+        .toList();
+  }
+
+  private static Instant calculateCutOffFromSla(final Instant sla, final Integer cycleTime) {
+    return sla.minus(cycleTime, MINUTES);
+  }
+
+  /**
+   * A sla that does not have capacity is a sla whose projected end date is null or is after it's cut off.
+   *
+   * @param endDateCutOffBySLA a stream of tuples that must be obtained the slas that do not have capacity.
+   * @return a list of {@link Instant} that represent those sla's with zero capacity.
+   */
+  private static List<Instant> getSlasWithoutCapacity(final List<EndDateCutOffBySLA> endDateCutOffBySLA) {
+    return endDateCutOffBySLA.stream()
+        .filter(each -> each.projectedEndDate() == null || each.projectedEndDate().isAfter(each.cutOff()))
+        .map(EndDateCutOffBySLA::date)
+        .toList();
+  }
+
+  private static List<CapacityBySLA> calculateMinCapacityBySLA(final List<CapacityBySLA> capacityBySLA) {
+    return capacityBySLA.stream()
+        .map(currentHour -> new CapacityBySLA(currentHour.date(), getMinCapBetweenSlaAndFollowingOnes(capacityBySLA, currentHour)))
+        .toList();
+  }
+
+  /**
+   * Obtains the minimum capacity between the Sla received and the following Sla.
+   *
+   * @param capacityBySLA SLA list with its available capacity.
+   * @param sinceSLA      SLA in which the available slow shipment capacity is calculated.
+   * @return a {@link CapacityBySLA} that has the SLA and its available capacity taking into account the following SLAs
+   */
+  private static int getMinCapBetweenSlaAndFollowingOnes(final List<CapacityBySLA> capacityBySLA, final CapacityBySLA sinceSLA) {
+    return capacityBySLA.stream()
+        .filter(sla -> !sla.date().isBefore(sinceSLA.date()))
+        .mapToInt(CapacityBySLA::capacity)
+        .min()
+        .orElse(sinceSLA.capacity());
+  }
+
   /**
    * Executes the projection with the parameters received and then with the projection result calculates the throughput
-   * between the projected end date and the cutoff of the slas and responds with the minimum.
+   * between the projected end date and the cutoff of the slas and responds with the minimum capacity by each SLA.s
+   *
    * @param executionDateFrom lower range of the time to be calculated
-   * @param executionDateTo upper range of the time to be calculated
-   * @param currentBacklog backlog that exists in each process opened by process path and sla
-   * @param forecastBacklog backlog that
-   * @param throughput processing power by operation hour
-   * @param cycleTimeBySla cycle time expressed in minutes for each sla
-   * @return If all sla could finish in the projection. it returns the lowest tph between all the projected end date and te cut off,
-   *     otherwise returns 0.
+   * @param executionDateTo   upper range of the time to be calculated
+   * @param currentBacklog    backlog that exists in each process opened by process path and sla
+   * @param forecastBacklog   backlog that
+   * @param throughput        processing power by operation hour
+   * @param cycleTimeBySla    cycle time expressed in minutes for each sla
+   * @return the minimum capacity calculated by each SLA.
    */
-
-  public AvailableCapacity execute(
+  public List<CapacityBySLA> execute(
       final Instant executionDateFrom,
       final Instant executionDateTo,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
@@ -44,52 +98,36 @@ public class AvailableCapacityUseCase {
       final Map<Instant, Integer> cycleTimeBySla
   ) {
     final Projector projector = new PackingProjectionBuilder();
+    final var cutOffs = getCutOffs(cycleTimeBySla);
     final SlaProjectionResult projection = SLAProjectionService.execute(
         executionDateFrom,
         executionDateTo,
         currentBacklog,
         forecastBacklog,
         throughput,
-        getCutOffs(cycleTimeBySla),
+        cutOffs,
         projector
     );
-    final boolean slasWhereNotFinished = projection.slas().stream()
-        .map(SlaProjectionResult.Sla::projectedEndDate)
-        .anyMatch(Objects::isNull);
 
-    if (slasWhereNotFinished) {
-      return new AvailableCapacity(0, projection);
-    }
+    final var endDateCutOffBySLA = getProjectedEndDateByCutOffsAndSLA(projection.slas(), cutOffs);
+
+    final var slasWithoutCapacity = getSlasWithoutCapacity(endDateCutOffBySLA);
+    final var capacityBySLAWithoutCapacity = slasWithoutCapacity.stream()
+        .map(each -> new CapacityBySLA(each, 0));
 
     final Map<Instant, Integer> minimumTphByHour = ThroughputCalculator.getMinimumTphValueByHour(throughput);
+    final var capacityBySLAWithCapacity = endDateCutOffBySLA.stream()
+        .filter(each -> !slasWithoutCapacity.contains(each.date))
+        .map(tuple -> new CapacityBySLA(tuple.date,
+            ThroughputCalculator.totalWithinRange(minimumTphByHour, tuple.projectedEndDate, tuple.cutOff)));
 
-    final var endDateCutOffTupleStream = getProjectedEndDateByCutOffs(projection.slas(), cycleTimeBySla);
-    final Integer capacity = endDateCutOffTupleStream
-        .map(tuple -> ThroughputCalculator.totalWithinRange(minimumTphByHour, tuple.projectedEndDate, tuple.cutOff))
-        .min(Comparator.naturalOrder())
-        .orElseThrow();
-    return new AvailableCapacity(capacity, projection);
+    final var capacityBySLA = Stream.concat(capacityBySLAWithCapacity, capacityBySLAWithoutCapacity)
+        .sorted(Comparator.comparing(CapacityBySLA::date))
+        .toList();
+
+    return calculateMinCapacityBySLA(capacityBySLA);
   }
 
-  private static Map<Instant, Instant> getCutOffs(final Map<Instant, Integer> cycleTimeBySla) {
-    return cycleTimeBySla.entrySet().stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> calculateCutOffFromSla(entry.getKey(), entry.getValue())));
+  record EndDateCutOffBySLA(Instant date, Instant projectedEndDate, Instant cutOff) {
   }
-
-  private static Stream<EndDateCutOffTuple> getProjectedEndDateByCutOffs(
-      final List<SlaProjectionResult.Sla> projectionResult,
-      final Map<Instant, Integer> cycleTimeBySla
-  ) {
-    return projectionResult.stream()
-        .map(projection -> new EndDateCutOffTuple(
-            projection.projectedEndDate(),
-            calculateCutOffFromSla(projection.date(), cycleTimeBySla.getOrDefault(projection.date(), 0))
-        ));
-  }
-
-  private static Instant calculateCutOffFromSla(final Instant sla, final Integer cycleTime) {
-    return sla.minus(cycleTime, MINUTES);
-  }
-
-  record EndDateCutOffTuple(Instant projectedEndDate, Instant cutOff) {}
 }

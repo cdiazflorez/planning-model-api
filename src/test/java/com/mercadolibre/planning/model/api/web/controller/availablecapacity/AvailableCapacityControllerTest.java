@@ -10,9 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.availablecapacity.AvailableCapacity;
 import com.mercadolibre.planning.model.api.projection.availablecapacity.AvailableCapacityUseCase;
-import com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult;
+import com.mercadolibre.planning.model.api.projection.availablecapacity.CapacityBySLA;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -33,21 +32,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 class AvailableCapacityControllerTest {
   private static final Instant DATE_1 = Instant.parse("2023-09-14T12:00:00Z");
   private static final Instant DATE_2 = Instant.parse("2023-09-14T13:00:00Z");
-
+  public static final List<CapacityBySLA> AVAILABLE_CAPACITY = List.of(new CapacityBySLA(DATE_1, 0), new CapacityBySLA(DATE_2, 0));
   private static final Instant DATE_3 = Instant.parse("2023-09-14T14:00:00Z");
-  public static final AvailableCapacity AVAILABLE_CAPACITY = new AvailableCapacity(
-      7500,
-      new SlaProjectionResult(
-          List.of(
-              new SlaProjectionResult.Sla(
-                  DATE_3,
-                  DATE_2,
-                  0D
-              )
-          )
-      )
-  );
-
   private static final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> FORECAST_BACKLOG = Map.of(
       DATE_1, Map.of(
           TOT_MONO, Map.of(
@@ -151,7 +137,7 @@ class AvailableCapacityControllerTest {
       final Map<Instant, Integer> cycleTimeBySla,
       final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> forecast,
       final String request,
-      final AvailableCapacity capacity,
+      final List<CapacityBySLA> capacity,
       final ResultMatcher responseCode
   ) throws Exception {
     when(

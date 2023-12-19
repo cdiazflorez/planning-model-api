@@ -1,5 +1,9 @@
 package com.mercadolibre.planning.model.api.usecase;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.sla.Canalization;
@@ -14,233 +18,240 @@ import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.Rout
 import com.mercadolibre.planning.model.api.domain.usecase.sla.GetSlaByWarehouseOutboundService;
 import com.mercadolibre.planning.model.api.gateway.RouteCoverageClientGateway;
 import com.mercadolibre.planning.model.api.gateway.RouteEtsGateway;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @SuppressWarnings("PMD.LongVariable")
 @ExtendWith(MockitoExtension.class)
 public class GetSlaByWarehouseOutboundServiceTest {
-    private static final String TIME_ZONE = "America/Argentina/Buenos_Aires";
 
-    private static final ZonedDateTime DAY =
-            ZonedDateTime.parse(
-                    "2021-11-02T00:00:00.000000-00:00" + "[UTC]"); // /LUNES 2021-11-01 A LAS 21
+  private static final String LOGISTIC_CENTER_ID = "ARBA01";
 
-    private static final ZonedDateTime NOW = ZonedDateTime.now();
+  private static final String TIME_ZONE = "America/Argentina/Buenos_Aires";
 
-    @InjectMocks
-    private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
+  private static final String ACTIVE = "active";
 
-    @Mock
-    private RouteEtsGateway routeEtsGateway;
+  private static final String INACTIVE = "inactive";
 
-    @Mock
-    private RouteCoverageClientGateway routeCoverageClientGateway;
+  private static final String SATURDAY = "saturday";
 
-    @Test
-    public void obtainSlaByZonedDate() {
-        // GIVEN
-        final ClientException exception = mock(ClientException.class);
-        when(exception.getSuppressed()).thenReturn(new Throwable[0]); // to avoid bug on logging library
-        when(exception.getMessage()).thenReturn("exception");
+  private static final String MONDAY = "monday";
 
-        when(routeEtsGateway.postRoutEts(
-                RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
-                .thenThrow(exception);
+  private static final String TUESDAY = "tuesday";
 
-        final GetSlaByWarehouseInput input =
-                new GetSlaByWarehouseInput("ARBA01", DAY, DAY.plusDays(1),
-                        List.of(DAY, DAY), TIME_ZONE);
+  private static final String SERVICE_ID_831 = "831";
 
-        // WHEN
-        final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
+  private static final String CPT_08 = "0800";
 
-        // THEN
-        final List<GetSlaByWarehouseOutput> expected = mockCptOutputByZonedDate();
+  private static final String PROCESSING_TIME_0400 = "0400";
 
-        for (int i = 0; i < expected.size(); i++) {
-            assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
-            assertEquals(expected.get(i).getProcessingTime(), actual.get(i).getProcessingTime());
-        }
+  private static final String CPT = "cpt";
+
+  private static final String ROUTE_ID = "ARBA01_I_931";
+
+  private static final String CANALIZATION_X = "X";
+
+  private static final ZonedDateTime UTC_DAY =
+      ZonedDateTime.parse(
+          "2021-11-02T00:00:00.000000-00:00" + "[UTC]");
+
+  private static final ZonedDateTime NOW = ZonedDateTime.now();
+
+  private static final Date DATE_1 = new Date(2020, 1, 20);
+
+  private static final Date DATE_2 = new Date(2021, 1, 21);
+
+  private static final Map<String, List<DayDto>> FIXED_ETS_BY_DAY = Map.of(
+      MONDAY,
+      List.of(
+          new DayDto(MONDAY, "2100", PROCESSING_TIME_0400, CPT, false),
+          new DayDto(MONDAY, "2200", "0200", "ets", false)),
+      TUESDAY,
+      List.of(
+          new DayDto(TUESDAY, CPT_08, "0600", CPT, false),
+          new DayDto(TUESDAY, CPT_08, PROCESSING_TIME_0400, CPT, false),
+          new DayDto(TUESDAY, CPT_08, "0500", CPT, false)),
+      SATURDAY,
+      List.of(new DayDto(SATURDAY, CPT_08, PROCESSING_TIME_0400, CPT, false)));
+
+  @InjectMocks
+  private GetSlaByWarehouseOutboundService getSlaByWarehouseOutboundService;
+
+  @Mock
+  private RouteEtsGateway routeEtsGateway;
+
+  @Mock
+  private RouteCoverageClientGateway routeCoverageClientGateway;
+
+  @Test
+  public void obtainSlaByZonedDate() {
+    // GIVEN
+    final ClientException exception = mock(ClientException.class);
+    when(exception.getSuppressed()).thenReturn(new Throwable[0]);
+    when(exception.getMessage()).thenReturn("exception");
+
+    when(routeEtsGateway.postRoutEts(
+        RouteEtsRequest.builder().fromFilter(List.of(LOGISTIC_CENTER_ID)).build()))
+        .thenThrow(exception);
+
+    final GetSlaByWarehouseInput input =
+        new GetSlaByWarehouseInput(LOGISTIC_CENTER_ID, UTC_DAY, UTC_DAY.plusDays(1),
+            List.of(UTC_DAY, UTC_DAY), TIME_ZONE);
+
+    // WHEN
+    final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
+
+    // THEN
+    final List<GetSlaByWarehouseOutput> expected = mockCptOutputByZonedDate();
+
+    for (int i = 0; i < expected.size(); i++) {
+      assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
+      assertEquals(expected.get(i).getProcessingTime(), actual.get(i).getProcessingTime());
     }
+  }
 
-    @Test
-    public void obtainCpt() {
-        // GIVEN
-        when(routeEtsGateway.postRoutEts(
-                RouteEtsRequest.builder().fromFilter(List.of("ARBA01")).build()))
-                .thenReturn(mockResponse());
+  @Test
+  public void obtainCpt() {
+    // GIVEN
+    when(routeEtsGateway.postRoutEts(
+        RouteEtsRequest.builder().fromFilter(List.of(LOGISTIC_CENTER_ID)).build()))
+        .thenReturn(mockResponse());
 
-        when(routeCoverageClientGateway.get("ARBA01"))
-                .thenReturn(mockResponseCoverageWithResult());
+    when(routeCoverageClientGateway.get(LOGISTIC_CENTER_ID))
+        .thenReturn(mockResponseCoverageWithResult());
 
-        final List<ZonedDateTime> backlog = List.of(NOW, DAY);
+    final List<ZonedDateTime> backlog = List.of(NOW, UTC_DAY);
 
-        final GetSlaByWarehouseInput input =
-                new GetSlaByWarehouseInput("ARBA01", DAY, DAY.plusDays(1), backlog, TIME_ZONE);
+    final GetSlaByWarehouseInput input =
+        new GetSlaByWarehouseInput(LOGISTIC_CENTER_ID, UTC_DAY, UTC_DAY.plusDays(1), backlog, TIME_ZONE);
 
-        // WHEN
-        final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
+    // WHEN
+    final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
 
-        // THEN
-        final List<GetSlaByWarehouseOutput> expected = mockCptOutput();
+    // THEN
+    final List<GetSlaByWarehouseOutput> expected = mockCptOutput();
 
-        assertEquals(expected.size(), actual.size());
+    assertEquals(expected.size(), actual.size());
 
-        for (int i = 0; i < expected.size(); i++) {
-            assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
-            assertEquals(expected.get(i).getProcessingTime(), actual.get(i).getProcessingTime());
-        }
+    for (int i = 0; i < expected.size(); i++) {
+      assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
+      assertEquals(expected.get(i).getProcessingTime(), actual.get(i).getProcessingTime());
     }
+  }
 
-    private List<GetSlaByWarehouseOutput> mockCptOutput() {
-        final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
-                GetSlaByWarehouseOutput.builder()
-                        .logisticCenterId("ARBA01")
-                        .date(DAY)
-                        .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
-                        .build();
+  private List<GetSlaByWarehouseOutput> mockCptOutput() {
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+        GetSlaByWarehouseOutput.builder()
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(UTC_DAY)
+            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .build();
 
-        final GetSlaByWarehouseOutput getSlaByWarehouseOutput2 =
-                GetSlaByWarehouseOutput.builder()
-                        .logisticCenterId("ARBA01")
-                        .date(DAY.plusHours(1))
-                        .processingTime(new ProcessingTime(120, MetricUnit.MINUTES))
-                        .build();
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput2 =
+        GetSlaByWarehouseOutput.builder()
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(UTC_DAY.plusHours(1))
+            .processingTime(new ProcessingTime(120, MetricUnit.MINUTES))
+            .build();
 
-        final GetSlaByWarehouseOutput getSlaByWarehouseOutput3 =
-                GetSlaByWarehouseOutput.builder()
-                        .logisticCenterId("ARBA01")
-                        .date(DAY.plusHours(11))
-                        .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
-                        .build();
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput3 =
+        GetSlaByWarehouseOutput.builder()
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(UTC_DAY.plusHours(11))
+            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .build();
 
-        final GetSlaByWarehouseOutput getSlaByWarehouseOutput4 =
-                GetSlaByWarehouseOutput.builder()
-                        .logisticCenterId("ARBA01")
-                        .date(NOW)
-                        .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
-                        .build();
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput4 =
+        GetSlaByWarehouseOutput.builder()
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(NOW)
+            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .build();
 
-        return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
-                getSlaByWarehouseOutput3, getSlaByWarehouseOutput4);
-    }
+    return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
+        getSlaByWarehouseOutput3, getSlaByWarehouseOutput4);
+  }
 
-    private List<GetSlaByWarehouseOutput> mockCptOutputByZonedDate() {
+  private List<GetSlaByWarehouseOutput> mockCptOutputByZonedDate() {
 
-        final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
-                GetSlaByWarehouseOutput.builder()
-                        .serviceId(null)
-                        .canalizationId(null)
-                        .logisticCenterId("ARBA01")
-                        .date(DAY)
-                        .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
-                        .build();
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+        GetSlaByWarehouseOutput.builder()
+            .serviceId(null)
+            .canalizationId(null)
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(UTC_DAY)
+            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .build();
 
-        return List.of(getSlaByWarehouseOutput);
-    }
+    return List.of(getSlaByWarehouseOutput);
+  }
 
-    private List<RouteEtsDto> mockResponse() {
+  private List<RouteEtsDto> mockResponse() {
 
-        final RouteEtsDto routeEtsDto =
-                new RouteEtsDto(
-                        "ARBA01_X_931",
-                        "ARBA01",
-                        "X",
-                        "831",
-                        Map.of(
-                                "monday",
-                                List.of(
-                                        new DayDto("monday", "2100", "0400", "cpt", false),
-                                        new DayDto("monday", "2200", "0200", "ets", false)),
-                                "tuesday",
-                                List.of(
-                                        new DayDto("tuesday", "0800", "0600", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0400", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0500", "cpt", false)),
-                                "saturday",
-                                List.of(new DayDto("saturday", "0800", "0400", "cpt", false))),
-                        new Date(2020, 1, 20),
-                        new Date(2021, 1, 21));
+    final RouteEtsDto routeEtsDto =
+        new RouteEtsDto(
+            "ARBA01_X_931",
+            LOGISTIC_CENTER_ID,
+            CANALIZATION_X,
+            SERVICE_ID_831,
+            FIXED_ETS_BY_DAY,
+            DATE_1,
+            DATE_2,
+            ACTIVE);
 
-        final RouteEtsDto routeEtsDtoBadCanalization =
-                new RouteEtsDto(
-                        "ARBA01_I_931",
-                        "ARBA01",
-                        "X",
-                        "831",
-                        Map.of(
-                                "monday",
-                                List.of(
-                                        new DayDto("monday", "2100", "0400", "cpt", false),
-                                        new DayDto("monday", "2200", "0200", "ets", false)),
-                                "tuesday",
-                                List.of(
-                                        new DayDto("tuesday", "0800", "0600", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0400", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0500", "cpt", false)),
-                                "saturday",
-                                List.of(new DayDto("saturday", "0800", "0400", "cpt", false))),
-                        new Date(2020, 1, 20),
-                        new Date(2021, 1, 21));
+    final RouteEtsDto routeEtsDtoBadCanalization =
+        new RouteEtsDto(
+            ROUTE_ID,
+            LOGISTIC_CENTER_ID,
+            CANALIZATION_X,
+            SERVICE_ID_831,
+            FIXED_ETS_BY_DAY,
+            DATE_1,
+            DATE_2,
+            ACTIVE);
 
-        final RouteEtsDto routeEtsDtoBadServiceId =
-                new RouteEtsDto(
-                        "ARBA01_I_931",
-                        "ARBA01",
-                        "X",
-                        "8312",
-                        Map.of(
-                                "monday",
-                                List.of(
-                                        new DayDto("monday", "2100", "0400", "cpt", false),
-                                        new DayDto("monday", "2200", "0200", "ets", false)),
-                                "tuesday",
-                                List.of(
-                                        new DayDto("tuesday", "0800", "0600", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0400", "cpt", false),
-                                        new DayDto("tuesday", "0800", "0500", "cpt", false)),
-                                "saturday",
-                                List.of(new DayDto("saturday", "0800", "0400", "cpt", false))),
-                        new Date(2020, 1, 20),
-                        new Date(2021, 1, 21));
+    final RouteEtsDto routeEtsDtoBadServiceId =
+        new RouteEtsDto(
+            ROUTE_ID,
+            LOGISTIC_CENTER_ID,
+            CANALIZATION_X,
+            "8312",
+            FIXED_ETS_BY_DAY,
+            DATE_1,
+            DATE_2,
+            ACTIVE);
 
-        return List.of(routeEtsDto, routeEtsDto,
-                routeEtsDtoBadCanalization, routeEtsDtoBadServiceId);
-    }
+    return List.of(routeEtsDto, routeEtsDto,
+        routeEtsDtoBadCanalization, routeEtsDtoBadServiceId);
+  }
 
 
-    private List<RouteCoverageResult> mockResponseCoverageWithResult() {
+  private List<RouteCoverageResult> mockResponseCoverageWithResult() {
 
-        return List.of(
-                new RouteCoverageResult(
-                        new Canalization("X",
-                                List.of(
-                                        new CarrierServiceId("831"))),
-                        "active"),
-                new RouteCoverageResult(
-                        new Canalization("X",
-                                List.of(
-                                        new CarrierServiceId("123"))),
-                        "active"),
-                new RouteCoverageResult(
-                        new Canalization("12345",
-                                List.of(
-                                        new CarrierServiceId("158663"))),
-                        "inactive"));
+    return List.of(
+        new RouteCoverageResult(
+            new Canalization(CANALIZATION_X,
+                List.of(
+                    new CarrierServiceId(SERVICE_ID_831))),
+            ACTIVE),
+        new RouteCoverageResult(
+            new Canalization(CANALIZATION_X,
+                List.of(
+                    new CarrierServiceId("123"))),
+            ACTIVE),
+        new RouteCoverageResult(
+            new Canalization("12345",
+                List.of(
+                    new CarrierServiceId("158663"))),
+            INACTIVE));
 
-    }
+  }
 
 }

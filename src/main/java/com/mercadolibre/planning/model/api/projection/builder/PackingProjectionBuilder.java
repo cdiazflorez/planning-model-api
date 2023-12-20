@@ -6,21 +6,19 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PACK
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WALL_IN;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVING;
+import static com.mercadolibre.planning.model.api.projection.builder.ProjectorUtils.buildBaseContextHolder;
+import static com.mercadolibre.planning.model.api.projection.builder.ProjectorUtils.buildOrderAssemblyProcessor;
+import static com.mercadolibre.planning.model.api.projection.builder.ProjectorUtils.buildOrderedBacklogByDateBasedProcessesContexts;
+import static com.mercadolibre.planning.model.api.projection.builder.ProjectorUtils.buildPiecewiseUpstream;
 import static com.mercadolibre.planning.model.api.projection.builder.SlaProjectionResult.Sla;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.flatMapping;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toMap;
 
-import com.mercadolibre.flow.projection.tools.services.entities.context.Backlog;
 import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogHelper;
 import com.mercadolibre.flow.projection.tools.services.entities.context.BacklogState;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
-import com.mercadolibre.flow.projection.tools.services.entities.context.DelegateAssistant;
 import com.mercadolibre.flow.projection.tools.services.entities.context.Merger;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
 import com.mercadolibre.flow.projection.tools.services.entities.context.ProcessedBacklogState;
@@ -31,25 +29,17 @@ import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogby
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.BacklogByDateHelper;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.helpers.OrderedBacklogByDateMerger;
 import com.mercadolibre.flow.projection.tools.services.entities.orderedbacklogbydate.utils.OrderedBacklogByDateUtils;
-import com.mercadolibre.flow.projection.tools.services.entities.process.ParallelProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.Processor;
-import com.mercadolibre.flow.projection.tools.services.entities.process.SequentialProcess;
 import com.mercadolibre.flow.projection.tools.services.entities.process.SimpleProcess;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
-import com.mercadolibre.planning.model.api.projection.BacklogProjection;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.DistributionBasedConsumer;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.ProcessPathMerger;
-import com.mercadolibre.planning.model.api.projection.waverless.idleness.ProcessPathSplitter;
-import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,18 +51,13 @@ public class PackingProjectionBuilder implements Projector {
 
   private static final String GLOBAL_PROCESS = "order_assembly";
 
-  private static final String CONSOLIDATION_PROCESS_GROUP = "consolidation_group";
-
   private static final String PACKING_PROCESS_GROUP = "packing_group";
+
+  private static final Set<ProcessName> PROCESS_NAME = Set.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
 
   private static final Merger BACKLOG_BY_DATE_MERGER = new OrderedBacklogByDateMerger();
 
   private static final OrderedBacklogByDateConsumer BACKLOG_BY_DATE_CONSUMER = new OrderedBacklogByDateConsumer();
-
-  private static final BacklogHelper BACKLOG_BY_DATE_HELPER = new BacklogByDateHelper(
-      BACKLOG_BY_DATE_CONSUMER,
-      BACKLOG_BY_DATE_MERGER
-  );
 
   private static final double MIN_THROUGHPUT_PERCENTAGE = 0.05;
 
@@ -81,59 +66,8 @@ public class PackingProjectionBuilder implements Projector {
       new ProcessPathMerger(BACKLOG_BY_DATE_MERGER)
   );
 
-  private static final ParallelProcess.Context.Assistant ASSISTANT = new DelegateAssistant(
-      new ProcessPathSplitter(BacklogProjection::toOrderedBacklogByDate),
-      BACKLOG_BY_DATE_MERGER
-  );
 
   private static final Set<ProcessName> POST_PICKING_PROCESSES = Set.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL);
-
-  private static Map<ProcessName, SimpleProcess.Context> buildOrderedBacklogByDateBasedProcessesContexts(
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
-      final Map<ProcessName, Map<Instant, Integer>> throughput
-  ) {
-    final var backlogQuantityByProcess = buildOrderedBacklogByDateBasedProcessesBacklogs(backlog);
-
-    return POST_PICKING_PROCESSES.stream()
-        .collect(
-            toMap(
-                Function.identity(),
-                process -> new SimpleProcess.Context(
-                    new ThroughputPerHour(throughput.getOrDefault(process, emptyMap())),
-                    BACKLOG_BY_DATE_HELPER,
-                    backlogQuantityByProcess.getOrDefault(process, OrderedBacklogByDate.emptyBacklog())
-                )
-            )
-        );
-  }
-
-  private static Map<ProcessName, Backlog> buildOrderedBacklogByDateBasedProcessesBacklogs(
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog
-  ) {
-    return backlog.entrySet()
-        .stream()
-        .filter(process -> process.getKey() != PICKING)
-        .collect(
-            toMap(Map.Entry::getKey, entry -> asOrderedBacklogByDate(entry.getValue().values()))
-        );
-  }
-
-  private static Backlog asOrderedBacklogByDate(final Collection<Map<Instant, Long>> backlogsByDate) {
-    final Map<Instant, OrderedBacklogByDate.Quantity> backlogQuantityByDate = backlogsByDate.stream()
-        .map(Map::entrySet)
-        .flatMap(Set::stream)
-        .collect(
-            Collectors.groupingBy(
-                Map.Entry::getKey,
-                mapping(
-                    Map.Entry::getValue,
-                    collectingAndThen(reducing(0L, Long::sum), OrderedBacklogByDate.Quantity::new)
-                )
-            )
-        );
-
-    return new OrderedBacklogByDate(backlogQuantityByDate);
-  }
 
   private static SimpleProcess.Context buildPickingProcessContext(
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
@@ -170,24 +104,7 @@ public class PackingProjectionBuilder implements Projector {
    */
   @Override
   public Processor buildGraph() {
-    return SequentialProcess.builder()
-        .name(GLOBAL_PROCESS)
-        .process(new SimpleProcess(PICKING.getName()))
-        .process(
-            ParallelProcess.builder()
-                .name(PACKING_PROCESS_GROUP)
-                .processor(new SimpleProcess(PACKING.getName()))
-                .processor(
-                    SequentialProcess.builder()
-                        .name(CONSOLIDATION_PROCESS_GROUP)
-                        .process(new SimpleProcess(BATCH_SORTER.getName()))
-                        .process(new SimpleProcess(WALL_IN.getName()))
-                        .process(new SimpleProcess(PACKING_WALL.getName()))
-                        .build()
-                )
-                .build()
-        )
-        .build();
+    return buildOrderAssemblyProcessor();
   }
 
   /**
@@ -207,17 +124,12 @@ public class PackingProjectionBuilder implements Projector {
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
       final Map<ProcessName, Map<Instant, Integer>> throughput
   ) {
-    final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(backlog, throughput);
-    final var pickingContext = buildPickingProcessContext(backlog, throughput);
+      final var contexts = buildOrderedBacklogByDateBasedProcessesContexts(backlog, throughput, PROCESS_NAME);
+      final var pickingContext = buildPickingProcessContext(backlog, throughput);
 
-    return ContextsHolder.builder()
-        .oneProcessContext(PICKING.getName(), pickingContext)
-        .oneProcessContext(BATCH_SORTER.getName(), contexts.get(BATCH_SORTER))
-        .oneProcessContext(WALL_IN.getName(), contexts.get(WALL_IN))
-        .oneProcessContext(PACKING.getName(), contexts.get(PACKING))
-        .oneProcessContext(PACKING_WALL.getName(), contexts.get(PACKING_WALL))
-        .oneProcessContext(PACKING_PROCESS_GROUP, new ParallelProcess.Context(ASSISTANT))
-        .build();
+      return buildBaseContextHolder(contexts)
+              .oneProcessContext(PICKING.getName(), pickingContext)
+              .build();
   }
 
   /**
@@ -229,24 +141,7 @@ public class PackingProjectionBuilder implements Projector {
    */
   @Override
   public PiecewiseUpstream toUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> forecastedBacklog) {
-    if (forecastedBacklog.isEmpty()) {
-      return new PiecewiseUpstream(emptyMap());
-    }
-
-    final var firstHour = Collections.min(forecastedBacklog.keySet());
-    final var lastHour = Collections.max(forecastedBacklog.keySet());
-
-    final var upstreamByHour = DateUtils.instantRange(firstHour, lastHour.plus(1L, HOURS), HOURS)
-        .collect(
-            toMap(
-                Function.identity(),
-                date -> OrderedBacklogByProcessPath.from(
-                    forecastedBacklog.getOrDefault(date, emptyMap())
-                )
-            )
-        );
-
-    return new PiecewiseUpstream(upstreamByHour);
+    return buildPiecewiseUpstream(forecastedBacklog);
   }
 
   /**
@@ -303,7 +198,7 @@ public class PackingProjectionBuilder implements Projector {
 
     return new SlaProjectionResult(results);
   }
-  
+
   @Override
   public Map<Instant, Long> getRemainingQuantity(final ContextsHolder updatedContext, final Map<Instant, Instant> cutOff) {
     final Set<String> processes = updatedContext.getProcessContextByProcessName().keySet();

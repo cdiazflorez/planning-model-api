@@ -219,7 +219,7 @@ public class ApiExceptionHandler {
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
   }
 
-  @ExceptionHandler({InvalidDateRangeException.class, DateRangeException.class})
+  @ExceptionHandler({InvalidDateRangeException.class, DateRangeException.class, DateRangeBoundsException.class})
   public ResponseEntity<ErrorResponse> handleInvalidDateRangeException(
       final Exception exception,
       final HttpServletRequest request) {

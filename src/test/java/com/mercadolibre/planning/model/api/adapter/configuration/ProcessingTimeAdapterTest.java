@@ -9,9 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
-import com.mercadolibre.planning.model.api.adapter.configuration.ProcessingTimeAdapter.EtdProcessingTimeData;
 import com.mercadolibre.planning.model.api.client.db.repository.configuration.OutboundProcessingTimeRepository;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.OutboundProcessingTime;
+import com.mercadolibre.planning.model.api.domain.service.configuration.DayAndHourProcessingTime;
+import com.mercadolibre.planning.model.api.domain.service.configuration.SlaProcessingTimes.SlaProperties;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.DayDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsDto;
 import com.mercadolibre.planning.model.api.domain.usecase.deferral.routeets.RouteEtsRequest;
@@ -23,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,6 +81,17 @@ class ProcessingTimeAdapterTest {
 
   private static final Instant DATE_TO_MONDAY = Instant.parse("2023-11-20T10:00:00Z");
 
+  private static final Instant SLA_DATE_16_0000 = Instant.parse("2023-11-16T00:00:00Z");
+
+  private static final Instant SLA_DATE_18_1600 = Instant.parse("2023-11-18T16:00:00Z");
+
+  private static final Instant SLA_DATE_19_0000 = Instant.parse("2023-11-19T00:00:00Z");
+
+  private static final Instant SLA_DATE_20_0600 = Instant.parse("2023-11-20T06:00:00Z");
+
+  private static final Instant SLA_DATE_20_0800 = Instant.parse("2023-11-20T08:00:00Z");
+
+
   private static final ZoneId ZONE_ID = ZoneId.of("America/Buenos_Aires");
 
   private static final Date DATE_1 = new Date(2021, Calendar.OCTOBER, 21);
@@ -96,18 +109,6 @@ class ProcessingTimeAdapterTest {
       new OutboundProcessingTime(LOGISTIC_CENTER_ID, TUESDAY, CPT_10, PROCESSING_TIME_240, true)
   );
 
-  private static final List<EtdProcessingTimeData> EXPECTED_OUTBOUND_PROCESSING_TIMES = List.of(
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, MONDAY, CPT_03, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, MONDAY, CPT_05, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, WEDNESDAY, CPT_21, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, SATURDAY, CPT_13, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, SATURDAY, CPT_21, PROCESSING_TIME_240)
-  );
-
-  private static final List<EtdProcessingTimeData> EXPECTED_SAME_DAY_OUTBOUND_PROCESSING_TIMES = List.of(
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, MONDAY, CPT_05, PROCESSING_TIME_240)
-  );
-
   private static final List<OutboundProcessingTime> OUTBOUND_PROCESSING_TIMES_ROUTES = List.of(
       new OutboundProcessingTime(LOGISTIC_CENTER_ID, MONDAY, CPT_13, 165, true),
       new OutboundProcessingTime(LOGISTIC_CENTER_ID, MONDAY, CPT_21, PROCESSING_TIME_240, true),
@@ -116,12 +117,24 @@ class ProcessingTimeAdapterTest {
       new OutboundProcessingTime(LOGISTIC_CENTER_ID, SATURDAY, CPT_21, PROCESSING_TIME_240, true)
   );
 
-  private static final List<EtdProcessingTimeData> ETD_PROCESSING_TIME_DATA = List.of(
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, MONDAY, CPT_13, 165),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, MONDAY, CPT_21, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, TUESDAY, CPT_08, 300),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, TUESDAY, CPT_10, PROCESSING_TIME_240),
-      new EtdProcessingTimeData(LOGISTIC_CENTER_ID, SATURDAY, CPT_21, PROCESSING_TIME_240)
+  private static final Stream<SlaProperties> EXPECTED_SLA_PROPERTIES = Stream.of(
+      new SlaProperties(SLA_DATE_16_0000, PROCESSING_TIME_240),
+      new SlaProperties(SLA_DATE_18_1600, PROCESSING_TIME_240),
+      new SlaProperties(SLA_DATE_19_0000, PROCESSING_TIME_240),
+      new SlaProperties(SLA_DATE_20_0600, PROCESSING_TIME_240),
+      new SlaProperties(SLA_DATE_20_0800, PROCESSING_TIME_240)
+  );
+
+  private static final Stream<SlaProperties> EXPECTED_SAME_DAY_SLA_PROPERTIES = Stream.of(
+      new SlaProperties(SLA_DATE_20_0800, PROCESSING_TIME_240)
+  );
+
+  private static final List<DayAndHourProcessingTime> ETD_PROCESSING_TIME_DATA = List.of(
+      new DayAndHourProcessingTime(LOGISTIC_CENTER_ID, MONDAY, CPT_13, 165),
+      new DayAndHourProcessingTime(LOGISTIC_CENTER_ID, MONDAY, CPT_21, PROCESSING_TIME_240),
+      new DayAndHourProcessingTime(LOGISTIC_CENTER_ID, TUESDAY, CPT_08, 300),
+      new DayAndHourProcessingTime(LOGISTIC_CENTER_ID, TUESDAY, CPT_10, PROCESSING_TIME_240),
+      new DayAndHourProcessingTime(LOGISTIC_CENTER_ID, SATURDAY, CPT_21, PROCESSING_TIME_240)
   );
 
   private static final Map<String, List<DayDto>> FIXED_ETS_BY_DAY = Map.of(
@@ -177,9 +190,9 @@ class ProcessingTimeAdapterTest {
 
   private static Stream<Arguments> provideArgumentsAndExpectedProcessingTimes() {
     return Stream.of(
-        Arguments.of(OUTBOUND_PROCESSING_TIMES, EXPECTED_OUTBOUND_PROCESSING_TIMES, DATE_FROM_THURSDAY, DATE_TO_MONDAY),
-        Arguments.of(OUTBOUND_PROCESSING_TIMES, EXPECTED_SAME_DAY_OUTBOUND_PROCESSING_TIMES, DATE_FROM_MONDAY, DATE_TO_MONDAY),
-        Arguments.of(List.of(), List.of(), DATE_FROM_MONDAY, DATE_TO_MONDAY)
+        Arguments.of(OUTBOUND_PROCESSING_TIMES, EXPECTED_SLA_PROPERTIES, DATE_FROM_THURSDAY, DATE_TO_MONDAY),
+        Arguments.of(OUTBOUND_PROCESSING_TIMES, EXPECTED_SAME_DAY_SLA_PROPERTIES, DATE_FROM_MONDAY, DATE_TO_MONDAY),
+        Arguments.of(List.of(), Stream.of(), DATE_FROM_MONDAY, DATE_TO_MONDAY)
     );
   }
 
@@ -194,7 +207,7 @@ class ProcessingTimeAdapterTest {
   @MethodSource("provideArgumentsAndExpectedProcessingTimes")
   void testGetOutboundProcessingTimeByCpt(
       final List<OutboundProcessingTime> processingTimes,
-      final List<EtdProcessingTimeData> expectedProcessingTimes,
+      final Stream<SlaProperties> expectedProcessingTimes,
       final Instant dateFrom,
       final Instant dateTo
   ) {
@@ -204,7 +217,7 @@ class ProcessingTimeAdapterTest {
         .thenReturn(processingTimes);
 
     // WHEN
-    final List<EtdProcessingTimeData> result = processingTimeAdapter.getOutboundProcessingTimeByCptInRange(
+    final Stream<SlaProperties> result = processingTimeAdapter.getOutboundProcessingTimeByCptInRange(
         LOGISTIC_CENTER_ID,
         dateFrom,
         dateTo,
@@ -212,8 +225,7 @@ class ProcessingTimeAdapterTest {
     );
 
     // THEN
-    assertEquals(expectedProcessingTimes.size(), result.size());
-    assertEquals(expectedProcessingTimes, result);
+    assertEquals(expectedProcessingTimes.collect(Collectors.toSet()), result.collect(Collectors.toSet()));
     verify(outboundProcessingTimeRepository, times(1)).findByLogisticCenterAndIsActive(LOGISTIC_CENTER_ID);
   }
 
@@ -221,7 +233,7 @@ class ProcessingTimeAdapterTest {
   @MethodSource("provideArgumentsAndExpectedRouteProcessingTimes")
   void testGetOutboundProcessingTimeByLogisticCenterFromRouteClient(
       final List<RouteEtsDto> routeEtsProcessingTimes,
-      final List<EtdProcessingTimeData> expectedProcessingTimes
+      final List<DayAndHourProcessingTime> expectedProcessingTimes
   ) {
 
     // GIVEN
@@ -229,7 +241,7 @@ class ProcessingTimeAdapterTest {
         .thenReturn(routeEtsProcessingTimes);
 
     // WHEN
-    final List<EtdProcessingTimeData> result = processingTimeAdapter
+    final List<DayAndHourProcessingTime> result = processingTimeAdapter
         .getOutboundProcessingTimeByLogisticCenterFromRouteClient(LOGISTIC_CENTER_ID);
 
     // THEN
@@ -244,7 +256,7 @@ class ProcessingTimeAdapterTest {
         .thenReturn(OUTBOUND_PROCESSING_TIMES_ROUTES);
 
     // WHEN
-    final List<EtdProcessingTimeData> result = processingTimeAdapter
+    final List<DayAndHourProcessingTime> result = processingTimeAdapter
         .updateOutboundProcessingTimesForLogisticCenter(LOGISTIC_CENTER_ID, ETD_PROCESSING_TIME_DATA);
 
     // THEN

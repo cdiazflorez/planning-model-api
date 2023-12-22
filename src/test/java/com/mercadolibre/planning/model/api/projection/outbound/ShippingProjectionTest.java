@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.shipping;
+package com.mercadolibre.planning.model.api.projection.outbound;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;

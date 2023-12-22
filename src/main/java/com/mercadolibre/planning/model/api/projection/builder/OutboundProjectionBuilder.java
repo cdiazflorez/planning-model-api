@@ -33,61 +33,61 @@ import java.util.stream.Collectors;
 
 public class OutboundProjectionBuilder implements Projector {
 
-    static final String OUTBOUND_PROCESS_GROUP = "outbound_group";
+  static final String OUTBOUND_PROCESS_GROUP = "outbound_group";
 
-    static final Set<ProcessName> PROCESS_NAMES = Set.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL, HU_ASSEMBLY, SALES_DISPATCH);
+  static final Set<ProcessName> PROCESS_NAMES = Set.of(PACKING, BATCH_SORTER, WALL_IN, PACKING_WALL, HU_ASSEMBLY, SALES_DISPATCH);
 
-    static final Set<ProcessName> PRE_PICKING_PROCESS = Set.of(WAVING, PICKING);
+  static final Set<ProcessName> PRE_PICKING_PROCESS = Set.of(WAVING, PICKING);
 
 
-    /**
-     * Builds Outbound projection Processes graph.
-     *
-     * @return graph.
-     */
-    @Override
-    public Processor buildGraph() {
-        return SequentialProcess.builder()
-                .name(OUTBOUND_PROCESS_GROUP)
-                .process(buildSimpleProcess(WAVING))
-                .process(buildOrderAssemblyProcessor())
-                .process(buildExpeditionProcessor())
-                .build();
-    }
+  /**
+   * Builds Outbound projection Processes graph.
+   *
+   * @return graph.
+   */
+  @Override
+  public Processor buildGraph() {
+    return SequentialProcess.builder()
+        .name(OUTBOUND_PROCESS_GROUP)
+        .process(buildSimpleProcess(WAVING))
+        .process(buildOrderAssemblyProcessor())
+        .process(buildExpeditionProcessor())
+        .build();
+  }
 
-    @Override
-    public ContextsHolder buildContextHolder(final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
-                                             final Map<ProcessName, Map<Instant, Integer>> throughput) {
-        final var wavingThroughput = new InstantThroughput(throughput.getOrDefault(WAVING, emptyMap()));
-        final var wavingContext = buildOrderedBacklogByProcessPathProcessContexts(backlog, WAVING, wavingThroughput);
+  @Override
+  public ContextsHolder buildContextHolder(final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlog,
+                                           final Map<ProcessName, Map<Instant, Integer>> throughput) {
+    final var wavingThroughput = new InstantThroughput(throughput.getOrDefault(WAVING, emptyMap()));
+    final var wavingContext = buildOrderedBacklogByProcessPathProcessContexts(backlog, WAVING, wavingThroughput);
 
-        final var pickingThroughput = new ThroughputPerHour(throughput.getOrDefault(PICKING, emptyMap()));
-        final var pickingContext = buildOrderedBacklogByProcessPathProcessContexts(backlog, PICKING, pickingThroughput);
+    final var pickingThroughput = new ThroughputPerHour(throughput.getOrDefault(PICKING, emptyMap()));
+    final var pickingContext = buildOrderedBacklogByProcessPathProcessContexts(backlog, PICKING, pickingThroughput);
 
-        final var postPickingBacklog = backlog.entrySet().stream()
-                .filter(entry -> !PRE_PICKING_PROCESS.contains(entry.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    final var postPickingBacklog = backlog.entrySet().stream()
+        .filter(entry -> !PRE_PICKING_PROCESS.contains(entry.getKey()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        final var postPickingContext = buildOrderedBacklogByDateBasedProcessesContexts(postPickingBacklog, throughput, PROCESS_NAMES);
+    final var postPickingContext = buildOrderedBacklogByDateBasedProcessesContexts(postPickingBacklog, throughput, PROCESS_NAMES);
 
-        return buildBaseContextHolder(postPickingContext)
-                .oneProcessContext(WAVING.getName(), wavingContext)
-                .oneProcessContext(PICKING.getName(), pickingContext)
-                .build();
-    }
+    return buildBaseContextHolder(postPickingContext)
+        .oneProcessContext(WAVING.getName(), wavingContext)
+        .oneProcessContext(PICKING.getName(), pickingContext)
+        .build();
+  }
 
-    @Override
-    public PiecewiseUpstream toUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> forecast) {
-        return buildPiecewiseUpstream(forecast);
-    }
+  @Override
+  public PiecewiseUpstream toUpstream(final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> forecast) {
+    return buildPiecewiseUpstream(forecast);
+  }
 
-    @Override
-    public SlaProjectionResult calculateProjectedEndDate(List<Instant> slas, ContextsHolder holder) {
-        return new SlaProjectionResult(List.of());
-    }
+  @Override
+  public SlaProjectionResult calculateProjectedEndDate(List<Instant> slas, ContextsHolder holder) {
+    return new SlaProjectionResult(List.of());
+  }
 
-    @Override
-    public Map<Instant, Long> getRemainingQuantity(ContextsHolder updatedContext, Map<Instant, Instant> cutOff) {
-        return Map.of();
-    }
+  @Override
+  public Map<Instant, Long> getRemainingQuantity(ContextsHolder updatedContext, Map<Instant, Instant> cutOff) {
+    return Map.of();
+  }
 }

@@ -161,7 +161,6 @@ public final class ShippingProjection {
   }
 
   private static Map<ProcessName, Map<Instant, Map<Instant, Integer>>> mapProjections(ContextsHolder processedContexts) {
-
     return PROCESSES.stream()
         .collect(
             toMap(

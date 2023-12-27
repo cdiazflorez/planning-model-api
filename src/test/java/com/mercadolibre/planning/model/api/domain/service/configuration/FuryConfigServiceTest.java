@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class FuryConfigServiceTest {
 
-  private static final String DEFAULT_VALUES_FILENAME = "default-values";
+  private static final String DEFAULT_VALUES_FILENAME = "default-values.json";
 
   private static final String ARBA_01 = "ARBA01";
 
@@ -33,8 +33,8 @@ class FuryConfigServiceTest {
   private static final int PT_165 = 165;
 
   private static final String DEFAULT_VALUES_JSON = """
-        {
-        "processingTimes": {
+      {
+        "processing_times": {
           "default": 240,
           "ARTW01": 165
         }

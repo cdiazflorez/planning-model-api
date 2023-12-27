@@ -1,0 +1,5 @@
+{
+  "status": "BAD_REQUEST",
+  "message": "Date range boundaries exceeded: The date range must not exceed 7 days.",
+  "error": "invalid_date_range"
+}

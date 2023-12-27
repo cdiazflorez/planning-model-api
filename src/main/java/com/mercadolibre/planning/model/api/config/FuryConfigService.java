@@ -1,5 +1,6 @@
 package com.mercadolibre.planning.model.api.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.configurationservice.sdk.client.ProfileManager;
 import com.mercadolibre.planning.model.api.domain.service.configuration.ProcessingTimeService.FuryConfigServiceGateway;
@@ -26,7 +27,7 @@ public class FuryConfigService implements FuryConfigServiceGateway {
 
   public void loadDefaultValues() {
     try {
-      defaultValues = parse(profileManager.read("default-values"));
+      defaultValues = parse(profileManager.read("default-values.json"));
     } catch (IOException e) {
       throw new ReadFuryConfigException(e.getMessage(), e);
     }
@@ -44,7 +45,10 @@ public class FuryConfigService implements FuryConfigServiceGateway {
     return processingTimes.getOrDefault(logisticCenterId, processingTimes.get(DEFAULT_KEY));
   }
 
-  private record DefaultValues(Map<String, Integer> processingTimes) {
+  private record DefaultValues(
+      @JsonProperty("processing_times")
+      Map<String, Integer> processingTimes
+  ) {
   }
 
 }

@@ -44,7 +44,7 @@ public class ProcessingTimeEventController {
   @PostMapping("/event")
   @Trace(dispatcher = true)
   public ResponseEntity<ProcessingTimeConsumerResponse> saveEvent(@RequestBody @Valid final ConsumerMessageDTO request) {
-    final ProcessingTimeConsumerResponse response = updateProcessingTime(request.message());
+    final ProcessingTimeConsumerResponse response = updateProcessingTime(request.data());
 
     return ResponseEntity.status(response.status()).body(response);
   }

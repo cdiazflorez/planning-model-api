@@ -3,10 +3,10 @@ package com.mercadolibre.planning.model.api.web.consumer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ConsumerMessageDTO(
-    @JsonProperty("id")
+    @JsonProperty("message_id")
     String id,
-    @JsonProperty("msg")
-    ProcessingTimeToUpdate message,
+    @JsonProperty("data")
+    ProcessingTimeToUpdate data,
     @JsonProperty("publish_time")
     Long publishTime
 ) {

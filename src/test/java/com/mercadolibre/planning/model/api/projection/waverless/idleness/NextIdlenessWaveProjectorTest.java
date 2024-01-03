@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mockStatic;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
-import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
 import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
@@ -33,6 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 class NextIdlenessWaveProjectorTest {
+
+  private static final String WAREHOUSE = "ARBA01";
 
   private static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-29T00:00:00Z");
 
@@ -125,25 +126,13 @@ class NextIdlenessWaveProjectorTest {
 
     final var pendingBacklog = new PendingBacklog(readyToWave, emptyMap());
 
-    final var upperLimits = Map.of(
-        PICKING, throughput(3000, 3000, 3000, 3000, 3000, 3000),
-        PACKING, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        BATCH_SORTER, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        WALL_IN, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        PACKING_WALL, throughput(6000, 6000, 6000, 6000, 6000, 6000)
-    );
-
-    final var lowerLimits = Map.of(
-        PICKING, throughput(1100, 1100, 1100, 1100, 1100, 1100)
-    );
-
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
+        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
-        new BacklogLimits(lowerLimits, upperLimits),
         emptyMap(),
         emptyList()
     );
@@ -154,19 +143,19 @@ class NextIdlenessWaveProjectorTest {
 
     final var wave = result.get();
 
-    final var expectedWaveDate = Instant.parse("2023-03-29T01:20:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-29T01:10:00Z");
     assertEquals(expectedWaveDate, wave.getExecutionDate());
     assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
     final var confs = wave.getWave().get().getConfiguration();
-    assertEquals(699, confs.get(TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(TOT_MONO).getLowerBound());
 
-    assertEquals(699, confs.get(NON_TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(NON_TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(NON_TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(NON_TOT_MONO).getLowerBound());
 
-    assertEquals(699, confs.get(TOT_MULTI_BATCH).getUpperBound());
-    assertEquals(240, confs.get(TOT_MULTI_BATCH).getLowerBound());
+    assertEquals(720, confs.get(TOT_MULTI_BATCH).getUpperBound());
+    assertEquals(480, confs.get(TOT_MULTI_BATCH).getLowerBound());
   }
 
   @Test
@@ -199,25 +188,13 @@ class NextIdlenessWaveProjectorTest {
 
     final var pendingBacklog = new PendingBacklog(readyToWave, emptyMap());
 
-    final var upperLimits = Map.of(
-        PICKING, throughput(3000, 3000, 3000, 3000, 3000, 3000),
-        PACKING, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        BATCH_SORTER, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        WALL_IN, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        PACKING_WALL, throughput(10, 10, 10, 10, 10, 10)
-    );
-
-    final var lowerLimits = Map.of(
-        PICKING, throughput(1100, 1100, 1100, 1100, 1100, 1100)
-    );
-
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
+        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
-        new BacklogLimits(lowerLimits, upperLimits),
         emptyMap(),
         emptyList()
     );
@@ -228,19 +205,19 @@ class NextIdlenessWaveProjectorTest {
 
     final var wave = result.get();
 
-    final var expectedWaveDate = Instant.parse("2023-03-29T01:20:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-29T01:10:00Z");
     assertEquals(expectedWaveDate, wave.getExecutionDate());
     assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
     final var confs = wave.getWave().get().getConfiguration();
-    assertEquals(928, confs.get(TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(TOT_MONO).getLowerBound());
 
-    assertEquals(928, confs.get(NON_TOT_MONO).getUpperBound());
-    assertEquals(240, confs.get(NON_TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(NON_TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(NON_TOT_MONO).getLowerBound());
 
-    assertEquals(252, confs.get(TOT_MULTI_BATCH).getUpperBound());
-    assertEquals(240, confs.get(TOT_MULTI_BATCH).getLowerBound());
+    assertEquals(720, confs.get(TOT_MULTI_BATCH).getUpperBound());
+    assertEquals(480, confs.get(TOT_MULTI_BATCH).getLowerBound());
   }
 
   @Test
@@ -273,25 +250,14 @@ class NextIdlenessWaveProjectorTest {
 
     final var pendingBacklog = new PendingBacklog(readyToWave, emptyMap());
 
-    final var upperLimits = Map.of(
-        PICKING, throughput(13000, 13000, 13000, 13000, 13000, 13000),
-        PACKING, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        BATCH_SORTER, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        WALL_IN, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        PACKING_WALL, throughput(6000, 6000, 6000, 6000, 6000, 6000)
-    );
-
-    final var lowerLimits = Map.of(
-        PICKING, throughput(10000, 10000, 10000, 10000, 10000, 10000)
-    );
 
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
+        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
-        new BacklogLimits(lowerLimits, upperLimits),
         emptyMap(),
         emptyList()
     );
@@ -302,18 +268,18 @@ class NextIdlenessWaveProjectorTest {
 
     final var wave = result.get();
 
-    final var expectedWaveDate = Instant.parse("2023-03-29T00:00:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-29T01:10:00Z");
     assertEquals(expectedWaveDate, wave.getExecutionDate());
     assertEquals(TriggerName.IDLENESS, wave.getWave().get().getReason());
 
     final var confs = wave.getWave().get().getConfiguration();
-    assertEquals(2433, confs.get(TOT_MONO).getUpperBound());
-    assertEquals(1573, confs.get(TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(TOT_MONO).getLowerBound());
 
-    assertEquals(2433, confs.get(NON_TOT_MONO).getUpperBound());
-    assertEquals(1573, confs.get(NON_TOT_MONO).getLowerBound());
+    assertEquals(720, confs.get(NON_TOT_MONO).getUpperBound());
+    assertEquals(480, confs.get(NON_TOT_MONO).getLowerBound());
 
-    assertEquals(2433, confs.get(TOT_MULTI_BATCH).getUpperBound());
-    assertEquals(1573, confs.get(TOT_MULTI_BATCH).getLowerBound());
+    assertEquals(720, confs.get(TOT_MULTI_BATCH).getUpperBound());
+    assertEquals(480, confs.get(TOT_MULTI_BATCH).getLowerBound());
   }
 }

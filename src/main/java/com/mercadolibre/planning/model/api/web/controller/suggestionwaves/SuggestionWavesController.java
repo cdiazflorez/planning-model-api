@@ -3,7 +3,6 @@ package com.mercadolibre.planning.model.api.web.controller.suggestionwaves;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
-import com.mercadolibre.planning.model.api.projection.waverless.ForecastedUnitsByProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave.WaveConfiguration;
 import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator;
 import com.mercadolibre.planning.model.api.projection.waverless.WavesCalculator.TriggerProjection;
@@ -95,9 +94,8 @@ public class SuggestionWavesController {
         request.getViewDate(),
         request.getProcessPathConfigurations(),
         getBacklogFiltered(request.getBacklogs(), processPath),
-        getForecastFiltered(request.getForecast(), processPath),
+        List.of(),
         request.getIntThroughput(),
-        request.getBacklogLimits(),
         request.getPrecalculatedWavesAsEntities(),
         logisticCenterId
     );
@@ -108,13 +106,6 @@ public class SuggestionWavesController {
                                                                 final Set<ProcessPath> processPaths) {
     return backlog.stream()
         .filter(processPathAndProcess -> processPaths.contains(processPathAndProcess.getProcessPath()))
-        .collect(Collectors.toList());
-  }
-
-  private List<ForecastedUnitsByProcessPath> getForecastFiltered(final List<ForecastedUnitsByProcessPath> forecast,
-                                                                 final Set<ProcessPath> processPaths) {
-    return forecast.stream()
-        .filter(unitsByProcessPath -> processPaths.contains(unitsByProcessPath.getProcessPath()))
         .collect(Collectors.toList());
   }
 

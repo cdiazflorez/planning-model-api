@@ -1,5 +1,13 @@
 package com.mercadolibre.planning.model.api.projection.waverless;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MULTI_ORDER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_SINGLE_SKU;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_ORDER;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_SINGLE_SKU;
 import static com.mercadolibre.planning.model.api.domain.entity.TriggerName.SLA;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildContextHolder;
 import static com.mercadolibre.planning.model.api.projection.waverless.PickingProjectionBuilder.buildGraph;
@@ -12,8 +20,8 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.idleness.DateWaveSupplier;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +35,45 @@ import lombok.Value;
 
 public final class SlaWaveCalculator {
 
-  private static final String WH = "ARBA01";
+  private static final String WH_ARBA = "ARBA01";
+  private static final String WH_BRBA = "BRBA01";
+  private static final String WH_MXYU = "MXYU01";
+
+  public static final Map<String, Map<ProcessPath, Integer>> MIN_CYCLE_TIME_HACK_BY_WAREHOUSE = Map.of(
+      WH_ARBA, Map.of(
+          TOT_MONO, 90,
+          NON_TOT_MULTI_ORDER, 120,
+          TOT_SINGLE_SKU, 90,
+          NON_TOT_MONO, 90,
+          TOT_MULTI_BATCH, 150,
+          NON_TOT_SINGLE_SKU, 90,
+          TOT_MULTI_ORDER, 120),
+      WH_BRBA, Map.of(
+          NON_TOT_MULTI_ORDER, 120,
+          TOT_SINGLE_SKU, 90,
+          NON_TOT_MONO, 90,
+          TOT_MONO, 90,
+          TOT_MULTI_BATCH, 150,
+          NON_TOT_MULTI_BATCH, 150,
+          NON_TOT_SINGLE_SKU, 120,
+          TOT_MULTI_ORDER, 120
+      ),
+      WH_MXYU, Map.of(
+          TOT_SINGLE_SKU, 120,
+          NON_TOT_MULTI_BATCH, 120,
+          TOT_MULTI_BATCH, 120,
+          TOT_MONO, 120,
+          TOT_MULTI_ORDER, 120,
+          NON_TOT_MULTI_ORDER, 120,
+          NON_TOT_MONO, 120,
+          NON_TOT_SINGLE_SKU, 120
+      )
+  );
+
+  private static final Map<String, List<LocalTime>> SAME_DAY_CPT = Map.of(
+      WH_ARBA, List.of(LocalTime.of(17, 0)),
+      WH_BRBA, List.of(LocalTime.of(17, 0)),
+      WH_MXYU, List.of(LocalTime.of(17, 0), LocalTime.of(18, 0), LocalTime.of(19, 0), LocalTime.of(21, 0)));
 
   private SlaWaveCalculator() {
   }
@@ -68,13 +114,13 @@ public final class SlaWaveCalculator {
     final var slas = pendingBacklog.calculateSlasByProcessPath();
 
     final var deadlines = calculateDeadlines(slas, minCycleTimes);
-    final var pessimisticDeadlines = pessimisticCalculateDeadlines(slas, minCycleTimes);
+    final var pessimisticDeadlines = pessimisticCalculateDeadlines(slas, minCycleTimes, logisticCenterId);
 
     final var processPaths = new ArrayList<>(throughput.keySet());
     final var graph = buildGraph(processPaths);
 
     final var simulationContext = new SimulationContext(
-        WH.equals(logisticCenterId) ? pessimisticDeadlines : deadlines,
+        pessimisticDeadlines,
         processPaths,
         graph,
         inflectionPoints,
@@ -233,7 +279,8 @@ public final class SlaWaveCalculator {
 
   private static Map<ProcessPath, Map<Instant, Instant>> pessimisticCalculateDeadlines(
       final Map<ProcessPath, Set<Instant>> slas,
-      final Map<ProcessPath, Integer> minCycleTime
+      final Map<ProcessPath, Integer> minCycleTime,
+      final String logisticCenterId
   ) {
     return slas.keySet()
         .stream()
@@ -243,7 +290,7 @@ public final class SlaWaveCalculator {
                     .stream()
                     .collect(Collectors.toMap(
                             Function.identity(),
-                            sla -> sla.minus(calculateMinutesToSubtract(sla, minCycleTime, pp), ChronoUnit.MINUTES)
+                            sla -> sla.minus(calculateMinutesToSubtract(logisticCenterId, sla, minCycleTime, pp), ChronoUnit.MINUTES)
                         )
                     )
             )
@@ -251,24 +298,17 @@ public final class SlaWaveCalculator {
   }
 
   private static int calculateMinutesToSubtract(
+      final String logisticCenterId,
       final Instant sla,
       final Map<ProcessPath, Integer> minCycleTime,
       final ProcessPath processPath) {
 
     final int cycleTime = minCycleTime.get(processPath);
+    final int cycleTimeHack = MIN_CYCLE_TIME_HACK_BY_WAREHOUSE.getOrDefault(logisticCenterId, Map.of())
+        .getOrDefault(processPath, cycleTime);
+    final LocalTime localTime = LocalTime.ofInstant(sla, ZoneOffset.UTC);
 
-    if (ProcessPath.TOT_MULTI_BATCH.equals(processPath)) {
-      return cycleTime;
-    }
-    final int sameDayMinutes = 0;
-    final int notSameDayMinutes = 80;
-    final int sameDaySla = 17;
-
-    final ZonedDateTime zonedDateTime = sla.atZone(ZoneOffset.UTC);
-    return zonedDateTime.getHour() == sameDaySla
-        ? cycleTime + sameDayMinutes
-        : cycleTime + notSameDayMinutes;
-
+    return SAME_DAY_CPT.getOrDefault(logisticCenterId, List.of()).contains(localTime) ? cycleTime : cycleTimeHack;
   }
 
   private static Map<ProcessPath, List<Instant>> filterWavedSlasWithProjectedEndDateAfterDeadline(

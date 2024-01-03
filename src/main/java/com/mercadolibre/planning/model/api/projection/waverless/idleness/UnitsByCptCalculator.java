@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.projection.waverless.idleness;
 
 import static com.mercadolibre.planning.model.api.domain.entity.TriggerName.IDLENESS;
+import static com.mercadolibre.planning.model.api.domain.entity.TriggerName.SLA;
 import static java.util.stream.Collectors.toMap;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -10,9 +11,11 @@ import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 
@@ -51,7 +54,19 @@ final class UnitsByCptCalculator {
     // max backlog to wave by process path and cpt
     final var paths = new ArrayList<>(upperBounds.keySet());
     final var availableBacklog = pendingBacklog.availableBacklogAt(waveDate, paths, previousWaves);
-
+    final var cptWavesSla = previousWaves.stream()
+        .filter(m -> m.getReason() == SLA)
+        .map(Wave::getConfiguration)
+        .map(Map::entrySet)
+        .flatMap(Set::stream)
+        .collect(toMap(
+            Map.Entry::getKey,
+            m -> m.getValue().getWavedUnitsByCpt().keySet(),
+            (o, n) -> {
+              var join = new HashSet<>(o);
+              join.addAll(n);
+              return join;
+            }));
     final var currentWaveIndex = (int) previousWaves.stream().filter(wave -> wave.getReason() == IDLENESS).count();
 
     return paths.stream()
@@ -63,7 +78,8 @@ final class UnitsByCptCalculator {
                     precalculatedWaves.get(pp),
                     upperBounds.get(pp),
                     lowerBounds.get(pp),
-                    availableBacklog.get(pp)
+                    availableBacklog.get(pp),
+                    cptWavesSla.getOrDefault(pp, Set.of())
                 )
             )
         );
@@ -74,13 +90,14 @@ final class UnitsByCptCalculator {
       final List<PrecalculatedWave> waves,
       final int upperBound,
       final int lowerBound,
-      final Map<Instant, Long> availableBacklog
+      final Map<Instant, Long> availableBacklog,
+      final Set<Instant> cptWavesSla
   ) {
     final Optional<PrecalculatedWave> distribution = Optional.ofNullable(waves)
         .filter(pw -> currentWaveIndex < pw.size())
         .map(pw -> pw.get(currentWaveIndex));
 
-    return distribution.map(wave -> calculateApplicableBacklogToWave(wave, upperBound, lowerBound))
+    return distribution.map(wave -> calculateApplicableBacklogToWave(wave, upperBound, lowerBound, cptWavesSla))
         .map(wave -> limitWavedUnitsByCptWithAvailableBacklog(wave, availableBacklog))
         .orElseGet(() -> splitBacklogToWaveBySla(upperBound, availableBacklog));
   }
@@ -88,9 +105,14 @@ final class UnitsByCptCalculator {
   private static Map<Instant, Long> calculateApplicableBacklogToWave(
       final PrecalculatedWave wave,
       final Integer upperBound,
-      final Integer lowerBound
+      final Integer lowerBound,
+      final Set<Instant> cptWavesSla
   ) {
-    final var distribution = wave.getUnitsBySla();
+    final var distribution = wave.getUnitsBySla()
+        .entrySet()
+        .stream()
+        .filter(m -> !cptWavesSla.contains(m.getKey()))
+        .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     final var wavedUnits = distribution.values().stream().reduce(0L, Long::sum);
 
     if (lowerBound <= wavedUnits && wavedUnits <= upperBound) {

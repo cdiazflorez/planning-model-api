@@ -42,7 +42,6 @@ public final class WavesCalculator {
       final List<UnitsByProcessPathAndProcess> backlogs,
       final List<ForecastedUnitsByProcessPath> forecast,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
-      final BacklogLimits backlogLimits,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves,
       final String logisticCenterId
   ) {
@@ -69,11 +68,11 @@ public final class WavesCalculator {
       );
 
       final Optional<DateWaveSupplier> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
+          logisticCenterId,
           inflectionPoints,
           pendingBacklog,
           currentBacklog,
           throughput,
-          backlogLimits,
           precalculatedWaves,
           waves
       );

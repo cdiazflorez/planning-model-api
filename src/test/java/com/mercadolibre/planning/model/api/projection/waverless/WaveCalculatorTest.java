@@ -114,19 +114,6 @@ class WaveCalculatorTest {
             PICKING, throughput(1200, 1200, 1200, 1200, 1200, 1200)
         )
     );
-
-    final var upperLimits = Map.of(
-        PICKING, throughput(9000, 9000, 9000, 9000, 9000, 9000),
-        PACKING, throughput(9000, 9000, 9000, 9000, 9000, 9000),
-        BATCH_SORTER, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        WALL_IN, throughput(6000, 6000, 6000, 6000, 6000, 6000),
-        PACKING_WALL, throughput(6000, 6000, 6000, 6000, 6000, 6000)
-    );
-
-    final var lowerLimits = Map.of(
-        PICKING, throughput(1100, 1100, 1100, 1100, 1100, 1100)
-    );
-
     // WHEN
     final var triggers = WavesCalculator.waves(
         FIRST_INFLECTION_POINT,
@@ -134,16 +121,13 @@ class WaveCalculatorTest {
         backlog,
         FORECAST,
         throughput,
-        new BacklogLimits(lowerLimits, upperLimits),
         emptyMap(),
         WH
     );
-
     // THEN
     final var result = triggers.getWaves();
 
-    assertEquals(6, result.size());
-
+    assertEquals(4, result.size());
     // first wave
     final var firstWave = result.get(0);
     final var firstWaveExpectedDate = Instant.parse("2023-03-29T00:00:00Z");
@@ -160,23 +144,23 @@ class WaveCalculatorTest {
     assertEquals(TriggerName.IDLENESS, fourthWave.getReason());
 
     final var fourthWaveTotMonoConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
-    assertEquals(600L, fourthWaveTotMonoConf.getLowerBound());
-    assertEquals(630L, fourthWaveTotMonoConf.getUpperBound());
+    assertEquals(1200L, fourthWaveTotMonoConf.getLowerBound());
+    assertEquals(1800L, fourthWaveTotMonoConf.getUpperBound());
 
     final var fourthWaveNonTotMonoConf = fourthWave.getConfiguration().get(NON_TOT_MONO);
-    assertEquals(600L, fourthWaveNonTotMonoConf.getLowerBound());
-    assertEquals(630L, fourthWaveNonTotMonoConf.getUpperBound());
+    assertEquals(1200L, fourthWaveNonTotMonoConf.getLowerBound());
+    assertEquals(1800L, fourthWaveNonTotMonoConf.getUpperBound());
 
     final var fourthWaveTotMultiBatchConf = fourthWave.getConfiguration().get(TOT_MULTI_BATCH);
-    assertEquals(600L, fourthWaveTotMultiBatchConf.getLowerBound());
-    assertEquals(630L, fourthWaveTotMultiBatchConf.getUpperBound());
+    assertEquals(1200L, fourthWaveTotMultiBatchConf.getLowerBound());
+    assertEquals(1800L, fourthWaveTotMultiBatchConf.getUpperBound());
 
     // projections
     assertEquals(72, triggers.getProjectedBacklogs().get(PICKING).size());
 
-    assertEquals(1374, triggers.getProjectedBacklogs().get(PICKING).get(fourthWaveExpectedDate));
+    assertEquals(1811, triggers.getProjectedBacklogs().get(PICKING).get(fourthWaveExpectedDate));
     final var nextInflectionPointAfterFirstWave = Instant.parse("2023-03-29T01:25:00Z");
-    assertEquals(6134, triggers.getProjectedBacklogs().get(PICKING).get(nextInflectionPointAfterFirstWave));
+    assertEquals(8521, triggers.getProjectedBacklogs().get(PICKING).get(nextInflectionPointAfterFirstWave));
 
   }
 }

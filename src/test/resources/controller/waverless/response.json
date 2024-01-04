@@ -23,501 +23,45 @@
       "reason": "SLA"
     },
     {
-      "date": "2023-03-29T00:05:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 166,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 166
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:10:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:15:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:20:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 166,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 166
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:25:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:30:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:35:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 166,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 166
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:40:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:45:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:50:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 166,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 166
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T00:55:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T01:00:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 167,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T03:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T03:00:00Z",
-              "quantity": 167
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T01:15:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 2000,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T04:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T04:00:00Z",
-              "quantity": 2000
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T01:45:00Z",
-      "waves": [
-        {
-          "process_path": "tot_multi_batch",
-          "lower_bound": 2000,
-          "upper_bound": -1,
-          "sla_dates": [
-            "2023-03-29T04:00:00Z"
-          ],
-          "units": [
-            {
-              "sla": "2023-03-29T04:00:00Z",
-              "quantity": 2000
-            }
-          ]
-        }
-      ],
-      "reason": "SLA"
-    },
-    {
-      "date": "2023-03-29T02:45:00Z",
+      "date": "2023-03-29T02:15:00Z",
       "waves": [
         {
           "process_path": "tot_multi_batch",
           "lower_bound": 1000,
-          "upper_bound": -1,
+          "upper_bound": 3000,
           "sla_dates": [
-            "2023-03-29T04:00:00Z"
+            "2023-03-29T04:00:00Z",
+            "2023-03-29T05:00:00Z"
           ],
           "units": [
             {
               "sla": "2023-03-29T04:00:00Z",
               "quantity": 1000
+            },
+            {
+              "sla": "2023-03-29T05:00:00Z",
+              "quantity": 500
             }
           ]
         }
       ],
-      "reason": "SLA"
+      "reason": "IDLENESS"
+    },
+    {
+      "date": "2023-03-29T03:00:00Z",
+      "waves": [
+        {
+          "process_path": "tot_multi_batch",
+          "lower_bound": 1000,
+          "upper_bound": 3000,
+          "sla_dates": [],
+          "units": []
+        }
+      ],
+      "reason": "IDLENESS"
     }
   ],
   "projected_backlogs": {
-    "packing_wall": [
-      {
-        "date": "2023-03-29T00:05:00Z",
-        "quantity": 17726
-      },
-      {
-        "date": "2023-03-29T00:10:00Z",
-        "quantity": 17642
-      },
-      {
-        "date": "2023-03-29T00:15:00Z",
-        "quantity": 17558
-      },
-      {
-        "date": "2023-03-29T00:20:00Z",
-        "quantity": 17474
-      },
-      {
-        "date": "2023-03-29T00:25:00Z",
-        "quantity": 17390
-      },
-      {
-        "date": "2023-03-29T00:30:00Z",
-        "quantity": 17306
-      },
-      {
-        "date": "2023-03-29T00:35:00Z",
-        "quantity": 17222
-      },
-      {
-        "date": "2023-03-29T00:40:00Z",
-        "quantity": 17138
-      },
-      {
-        "date": "2023-03-29T00:45:00Z",
-        "quantity": 17054
-      },
-      {
-        "date": "2023-03-29T00:50:00Z",
-        "quantity": 16970
-      },
-      {
-        "date": "2023-03-29T00:55:00Z",
-        "quantity": 16886
-      },
-      {
-        "date": "2023-03-29T01:00:00Z",
-        "quantity": 16802
-      },
-      {
-        "date": "2023-03-29T01:05:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:10:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:15:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:20:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:25:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:30:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:35:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:40:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:45:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:50:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T01:55:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T02:00:00Z",
-        "quantity": 16801
-      },
-      {
-        "date": "2023-03-29T02:05:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:10:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:15:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:20:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:25:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:30:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:35:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:40:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:45:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:50:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T02:55:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:00:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:05:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:10:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:15:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:20:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:25:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:30:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:35:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:40:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:45:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:50:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T03:55:00Z",
-        "quantity": 16792
-      },
-      {
-        "date": "2023-03-29T04:00:00Z",
-        "quantity": 16792
-      }
-    ],
     "picking": [
       {
         "date": "2023-03-29T00:05:00Z",
@@ -525,191 +69,191 @@
       },
       {
         "date": "2023-03-29T00:10:00Z",
-        "quantity": 5334
+        "quantity": 5168
       },
       {
         "date": "2023-03-29T00:15:00Z",
-        "quantity": 5335
+        "quantity": 5002
       },
       {
         "date": "2023-03-29T00:20:00Z",
-        "quantity": 5336
+        "quantity": 4836
       },
       {
         "date": "2023-03-29T00:25:00Z",
-        "quantity": 5336
+        "quantity": 4670
       },
       {
         "date": "2023-03-29T00:30:00Z",
-        "quantity": 5337
+        "quantity": 4504
       },
       {
         "date": "2023-03-29T00:35:00Z",
-        "quantity": 5338
+        "quantity": 4338
       },
       {
         "date": "2023-03-29T00:40:00Z",
-        "quantity": 5338
+        "quantity": 4172
       },
       {
         "date": "2023-03-29T00:45:00Z",
-        "quantity": 5339
+        "quantity": 4006
       },
       {
         "date": "2023-03-29T00:50:00Z",
-        "quantity": 5340
+        "quantity": 3840
       },
       {
         "date": "2023-03-29T00:55:00Z",
-        "quantity": 5340
+        "quantity": 3674
       },
       {
         "date": "2023-03-29T01:00:00Z",
-        "quantity": 5341
+        "quantity": 3508
       },
       {
         "date": "2023-03-29T01:05:00Z",
-        "quantity": 5342
+        "quantity": 3342
       },
       {
         "date": "2023-03-29T01:10:00Z",
-        "quantity": 5176
+        "quantity": 3176
       },
       {
         "date": "2023-03-29T01:15:00Z",
-        "quantity": 5010
+        "quantity": 3010
       },
       {
         "date": "2023-03-29T01:20:00Z",
-        "quantity": 6844
+        "quantity": 2844
       },
       {
         "date": "2023-03-29T01:25:00Z",
-        "quantity": 6678
+        "quantity": 2678
       },
       {
         "date": "2023-03-29T01:30:00Z",
-        "quantity": 6512
+        "quantity": 2512
       },
       {
         "date": "2023-03-29T01:35:00Z",
-        "quantity": 6346
+        "quantity": 2346
       },
       {
         "date": "2023-03-29T01:40:00Z",
-        "quantity": 6180
+        "quantity": 2180
       },
       {
         "date": "2023-03-29T01:45:00Z",
-        "quantity": 6014
+        "quantity": 2014
       },
       {
         "date": "2023-03-29T01:50:00Z",
-        "quantity": 7848
+        "quantity": 1848
       },
       {
         "date": "2023-03-29T01:55:00Z",
-        "quantity": 7682
+        "quantity": 1682
       },
       {
         "date": "2023-03-29T02:00:00Z",
-        "quantity": 7516
+        "quantity": 1516
       },
       {
         "date": "2023-03-29T02:05:00Z",
-        "quantity": 7350
+        "quantity": 1350
       },
       {
         "date": "2023-03-29T02:10:00Z",
-        "quantity": 7184
+        "quantity": 1184
       },
       {
         "date": "2023-03-29T02:15:00Z",
-        "quantity": 7018
+        "quantity": 1018
       },
       {
         "date": "2023-03-29T02:20:00Z",
-        "quantity": 6852
+        "quantity": 2352
       },
       {
         "date": "2023-03-29T02:25:00Z",
-        "quantity": 6686
+        "quantity": 2186
       },
       {
         "date": "2023-03-29T02:30:00Z",
-        "quantity": 6520
+        "quantity": 2020
       },
       {
         "date": "2023-03-29T02:35:00Z",
-        "quantity": 6354
+        "quantity": 1854
       },
       {
         "date": "2023-03-29T02:40:00Z",
-        "quantity": 6188
+        "quantity": 1688
       },
       {
         "date": "2023-03-29T02:45:00Z",
-        "quantity": 6022
+        "quantity": 1522
       },
       {
         "date": "2023-03-29T02:50:00Z",
-        "quantity": 6856
+        "quantity": 1356
       },
       {
         "date": "2023-03-29T02:55:00Z",
-        "quantity": 6690
+        "quantity": 1190
       },
       {
         "date": "2023-03-29T03:00:00Z",
-        "quantity": 6524
+        "quantity": 1024
       },
       {
         "date": "2023-03-29T03:05:00Z",
-        "quantity": 6358
+        "quantity": 858
       },
       {
         "date": "2023-03-29T03:10:00Z",
-        "quantity": 6192
+        "quantity": 692
       },
       {
         "date": "2023-03-29T03:15:00Z",
-        "quantity": 6026
+        "quantity": 526
       },
       {
         "date": "2023-03-29T03:20:00Z",
-        "quantity": 5860
+        "quantity": 360
       },
       {
         "date": "2023-03-29T03:25:00Z",
-        "quantity": 5694
+        "quantity": 194
       },
       {
         "date": "2023-03-29T03:30:00Z",
-        "quantity": 5528
+        "quantity": 28
       },
       {
         "date": "2023-03-29T03:35:00Z",
-        "quantity": 5362
+        "quantity": 0
       },
       {
         "date": "2023-03-29T03:40:00Z",
-        "quantity": 5196
+        "quantity": 0
       },
       {
         "date": "2023-03-29T03:45:00Z",
-        "quantity": 5030
+        "quantity": 0
       },
       {
         "date": "2023-03-29T03:50:00Z",
-        "quantity": 4864
+        "quantity": 0
       },
       {
         "date": "2023-03-29T03:55:00Z",
-        "quantity": 4698
+        "quantity": 0
       },
       {
         "date": "2023-03-29T04:00:00Z",
-        "quantity": 4532
+        "quantity": 0
       }
     ],
     "wall_in": [
@@ -906,200 +450,6 @@
         "quantity": 7514
       }
     ],
-    "batch_sorter": [
-      {
-        "date": "2023-03-29T00:05:00Z",
-        "quantity": 6282
-      },
-      {
-        "date": "2023-03-29T00:10:00Z",
-        "quantity": 6230
-      },
-      {
-        "date": "2023-03-29T00:15:00Z",
-        "quantity": 6178
-      },
-      {
-        "date": "2023-03-29T00:20:00Z",
-        "quantity": 6126
-      },
-      {
-        "date": "2023-03-29T00:25:00Z",
-        "quantity": 6074
-      },
-      {
-        "date": "2023-03-29T00:30:00Z",
-        "quantity": 6022
-      },
-      {
-        "date": "2023-03-29T00:35:00Z",
-        "quantity": 5970
-      },
-      {
-        "date": "2023-03-29T00:40:00Z",
-        "quantity": 5918
-      },
-      {
-        "date": "2023-03-29T00:45:00Z",
-        "quantity": 5866
-      },
-      {
-        "date": "2023-03-29T00:50:00Z",
-        "quantity": 5814
-      },
-      {
-        "date": "2023-03-29T00:55:00Z",
-        "quantity": 5762
-      },
-      {
-        "date": "2023-03-29T01:00:00Z",
-        "quantity": 5710
-      },
-      {
-        "date": "2023-03-29T01:05:00Z",
-        "quantity": 5682
-      },
-      {
-        "date": "2023-03-29T01:10:00Z",
-        "quantity": 5654
-      },
-      {
-        "date": "2023-03-29T01:15:00Z",
-        "quantity": 5626
-      },
-      {
-        "date": "2023-03-29T01:20:00Z",
-        "quantity": 5598
-      },
-      {
-        "date": "2023-03-29T01:25:00Z",
-        "quantity": 5570
-      },
-      {
-        "date": "2023-03-29T01:30:00Z",
-        "quantity": 5542
-      },
-      {
-        "date": "2023-03-29T01:35:00Z",
-        "quantity": 5514
-      },
-      {
-        "date": "2023-03-29T01:40:00Z",
-        "quantity": 5486
-      },
-      {
-        "date": "2023-03-29T01:45:00Z",
-        "quantity": 5458
-      },
-      {
-        "date": "2023-03-29T01:50:00Z",
-        "quantity": 5430
-      },
-      {
-        "date": "2023-03-29T01:55:00Z",
-        "quantity": 5402
-      },
-      {
-        "date": "2023-03-29T02:00:00Z",
-        "quantity": 5374
-      },
-      {
-        "date": "2023-03-29T02:05:00Z",
-        "quantity": 5346
-      },
-      {
-        "date": "2023-03-29T02:10:00Z",
-        "quantity": 5318
-      },
-      {
-        "date": "2023-03-29T02:15:00Z",
-        "quantity": 5290
-      },
-      {
-        "date": "2023-03-29T02:20:00Z",
-        "quantity": 5262
-      },
-      {
-        "date": "2023-03-29T02:25:00Z",
-        "quantity": 5234
-      },
-      {
-        "date": "2023-03-29T02:30:00Z",
-        "quantity": 5206
-      },
-      {
-        "date": "2023-03-29T02:35:00Z",
-        "quantity": 5178
-      },
-      {
-        "date": "2023-03-29T02:40:00Z",
-        "quantity": 5150
-      },
-      {
-        "date": "2023-03-29T02:45:00Z",
-        "quantity": 5122
-      },
-      {
-        "date": "2023-03-29T02:50:00Z",
-        "quantity": 5094
-      },
-      {
-        "date": "2023-03-29T02:55:00Z",
-        "quantity": 5066
-      },
-      {
-        "date": "2023-03-29T03:00:00Z",
-        "quantity": 5038
-      },
-      {
-        "date": "2023-03-29T03:05:00Z",
-        "quantity": 5010
-      },
-      {
-        "date": "2023-03-29T03:10:00Z",
-        "quantity": 4982
-      },
-      {
-        "date": "2023-03-29T03:15:00Z",
-        "quantity": 4954
-      },
-      {
-        "date": "2023-03-29T03:20:00Z",
-        "quantity": 4926
-      },
-      {
-        "date": "2023-03-29T03:25:00Z",
-        "quantity": 4898
-      },
-      {
-        "date": "2023-03-29T03:30:00Z",
-        "quantity": 4870
-      },
-      {
-        "date": "2023-03-29T03:35:00Z",
-        "quantity": 4842
-      },
-      {
-        "date": "2023-03-29T03:40:00Z",
-        "quantity": 4814
-      },
-      {
-        "date": "2023-03-29T03:45:00Z",
-        "quantity": 4786
-      },
-      {
-        "date": "2023-03-29T03:50:00Z",
-        "quantity": 4758
-      },
-      {
-        "date": "2023-03-29T03:55:00Z",
-        "quantity": 4730
-      },
-      {
-        "date": "2023-03-29T04:00:00Z",
-        "quantity": 4702
-      }
-    ],
     "packing": [
       {
         "date": "2023-03-29T00:05:00Z",
@@ -1292,6 +642,394 @@
       {
         "date": "2023-03-29T04:00:00Z",
         "quantity": 0
+      }
+    ],
+    "packing_wall": [
+      {
+        "date": "2023-03-29T00:05:00Z",
+        "quantity": 17726
+      },
+      {
+        "date": "2023-03-29T00:10:00Z",
+        "quantity": 17642
+      },
+      {
+        "date": "2023-03-29T00:15:00Z",
+        "quantity": 17558
+      },
+      {
+        "date": "2023-03-29T00:20:00Z",
+        "quantity": 17474
+      },
+      {
+        "date": "2023-03-29T00:25:00Z",
+        "quantity": 17390
+      },
+      {
+        "date": "2023-03-29T00:30:00Z",
+        "quantity": 17306
+      },
+      {
+        "date": "2023-03-29T00:35:00Z",
+        "quantity": 17222
+      },
+      {
+        "date": "2023-03-29T00:40:00Z",
+        "quantity": 17138
+      },
+      {
+        "date": "2023-03-29T00:45:00Z",
+        "quantity": 17054
+      },
+      {
+        "date": "2023-03-29T00:50:00Z",
+        "quantity": 16970
+      },
+      {
+        "date": "2023-03-29T00:55:00Z",
+        "quantity": 16886
+      },
+      {
+        "date": "2023-03-29T01:00:00Z",
+        "quantity": 16802
+      },
+      {
+        "date": "2023-03-29T01:05:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:10:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:15:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:20:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:25:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:30:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:35:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:40:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:45:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:50:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T01:55:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T02:00:00Z",
+        "quantity": 16801
+      },
+      {
+        "date": "2023-03-29T02:05:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:10:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:15:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:20:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:25:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:30:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:35:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:40:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:45:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:50:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T02:55:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:00:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:05:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:10:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:15:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:20:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:25:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:30:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:35:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:40:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:45:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:50:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T03:55:00Z",
+        "quantity": 16792
+      },
+      {
+        "date": "2023-03-29T04:00:00Z",
+        "quantity": 16792
+      }
+    ],
+    "batch_sorter": [
+      {
+        "date": "2023-03-29T00:05:00Z",
+        "quantity": 6282
+      },
+      {
+        "date": "2023-03-29T00:10:00Z",
+        "quantity": 6230
+      },
+      {
+        "date": "2023-03-29T00:15:00Z",
+        "quantity": 6178
+      },
+      {
+        "date": "2023-03-29T00:20:00Z",
+        "quantity": 6126
+      },
+      {
+        "date": "2023-03-29T00:25:00Z",
+        "quantity": 6074
+      },
+      {
+        "date": "2023-03-29T00:30:00Z",
+        "quantity": 6022
+      },
+      {
+        "date": "2023-03-29T00:35:00Z",
+        "quantity": 5970
+      },
+      {
+        "date": "2023-03-29T00:40:00Z",
+        "quantity": 5918
+      },
+      {
+        "date": "2023-03-29T00:45:00Z",
+        "quantity": 5866
+      },
+      {
+        "date": "2023-03-29T00:50:00Z",
+        "quantity": 5814
+      },
+      {
+        "date": "2023-03-29T00:55:00Z",
+        "quantity": 5762
+      },
+      {
+        "date": "2023-03-29T01:00:00Z",
+        "quantity": 5710
+      },
+      {
+        "date": "2023-03-29T01:05:00Z",
+        "quantity": 5682
+      },
+      {
+        "date": "2023-03-29T01:10:00Z",
+        "quantity": 5654
+      },
+      {
+        "date": "2023-03-29T01:15:00Z",
+        "quantity": 5626
+      },
+      {
+        "date": "2023-03-29T01:20:00Z",
+        "quantity": 5598
+      },
+      {
+        "date": "2023-03-29T01:25:00Z",
+        "quantity": 5570
+      },
+      {
+        "date": "2023-03-29T01:30:00Z",
+        "quantity": 5542
+      },
+      {
+        "date": "2023-03-29T01:35:00Z",
+        "quantity": 5514
+      },
+      {
+        "date": "2023-03-29T01:40:00Z",
+        "quantity": 5486
+      },
+      {
+        "date": "2023-03-29T01:45:00Z",
+        "quantity": 5458
+      },
+      {
+        "date": "2023-03-29T01:50:00Z",
+        "quantity": 5430
+      },
+      {
+        "date": "2023-03-29T01:55:00Z",
+        "quantity": 5402
+      },
+      {
+        "date": "2023-03-29T02:00:00Z",
+        "quantity": 5374
+      },
+      {
+        "date": "2023-03-29T02:05:00Z",
+        "quantity": 5346
+      },
+      {
+        "date": "2023-03-29T02:10:00Z",
+        "quantity": 5318
+      },
+      {
+        "date": "2023-03-29T02:15:00Z",
+        "quantity": 5290
+      },
+      {
+        "date": "2023-03-29T02:20:00Z",
+        "quantity": 5262
+      },
+      {
+        "date": "2023-03-29T02:25:00Z",
+        "quantity": 5234
+      },
+      {
+        "date": "2023-03-29T02:30:00Z",
+        "quantity": 5206
+      },
+      {
+        "date": "2023-03-29T02:35:00Z",
+        "quantity": 5178
+      },
+      {
+        "date": "2023-03-29T02:40:00Z",
+        "quantity": 5150
+      },
+      {
+        "date": "2023-03-29T02:45:00Z",
+        "quantity": 5122
+      },
+      {
+        "date": "2023-03-29T02:50:00Z",
+        "quantity": 5094
+      },
+      {
+        "date": "2023-03-29T02:55:00Z",
+        "quantity": 5066
+      },
+      {
+        "date": "2023-03-29T03:00:00Z",
+        "quantity": 5038
+      },
+      {
+        "date": "2023-03-29T03:05:00Z",
+        "quantity": 5010
+      },
+      {
+        "date": "2023-03-29T03:10:00Z",
+        "quantity": 4982
+      },
+      {
+        "date": "2023-03-29T03:15:00Z",
+        "quantity": 4954
+      },
+      {
+        "date": "2023-03-29T03:20:00Z",
+        "quantity": 4926
+      },
+      {
+        "date": "2023-03-29T03:25:00Z",
+        "quantity": 4898
+      },
+      {
+        "date": "2023-03-29T03:30:00Z",
+        "quantity": 4870
+      },
+      {
+        "date": "2023-03-29T03:35:00Z",
+        "quantity": 4842
+      },
+      {
+        "date": "2023-03-29T03:40:00Z",
+        "quantity": 4676
+      },
+      {
+        "date": "2023-03-29T03:45:00Z",
+        "quantity": 4482
+      },
+      {
+        "date": "2023-03-29T03:50:00Z",
+        "quantity": 4288
+      },
+      {
+        "date": "2023-03-29T03:55:00Z",
+        "quantity": 4094
+      },
+      {
+        "date": "2023-03-29T04:00:00Z",
+        "quantity": 3900
       }
     ]
   }

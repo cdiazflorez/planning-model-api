@@ -10,13 +10,11 @@ import static java.util.stream.Collectors.toMap;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.BacklogProjection;
-import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -24,15 +22,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class NextIdlenessWaveProjector {
 
-  public static final int WAVE_LOWER_BOUND_IN_MINUTES = 30;
-  public static final double LOWER_BOUND_PERCENTAGE = 1.05;
+  private static final String WH_ARBA = "ARBA01";
+  private static final String WH_BRBA = "BRBA01";
+  private static final String WH_MXYU = "MXYU01";
+  private static final Map<String, Integer> MIN_TPH_IN_MINUTES_BY_WAREHOUSE = Map.of(WH_ARBA, 60, WH_BRBA, 45, WH_MXYU, 30);
+  private static final Map<String, Integer> MAX_TPH_IN_MINUTES_BY_WAREHOUSE = Map.of(WH_ARBA, 90, WH_BRBA, 75, WH_MXYU, 45);
+  private static final Map<String, Integer> MIN_TPH_IN_MINUTES_BY_WAREHOUSE_TRIGGER = Map.of(WH_ARBA, 30, WH_BRBA, 30, WH_MXYU, 30);
+  private static final int MINUTES_IN_HOUR = 60;
 
   private NextIdlenessWaveProjector() {
 
@@ -45,30 +47,34 @@ public final class NextIdlenessWaveProjector {
    * configured limits. If it is projected that the backlogs will be under its limits then a wave is configured by obtaining the
    * lower bounds, upper bounds and units to wave by Process Path.
    *
+   * @param logisticCenterId   logistic center.
    * @param inflectionPoints   points to time in which backlogs must be evaluated.
    * @param pendingBacklog     backlog in ready to wave and forecasted.
    * @param backlogs           current backlogs by process and process path and cpt.
    * @param throughput         tph by process and process path.
-   * @param backlogLimits      upper and lower backlog limits for all processes.
    * @param precalculatedWaves precalculated wave distributions by process path.
    * @param previousWaves      previously calculated waves.
    * @return if found, a wave for idleness.
    */
   @Trace
   public static Optional<DateWaveSupplier> calculateNextWave(
+      final String logisticCenterId,
       final List<Instant> inflectionPoints,
       final PendingBacklog pendingBacklog,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
-      final BacklogLimits backlogLimits,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves,
       final List<Wave> previousWaves
   ) {
     final var backlogsStates = calculateBacklogStates(inflectionPoints, backlogs, throughput, previousWaves);
-
-    final var pickingLowerLimits = backlogLimits.getLower().get(PICKING);
+    final var lowerBoundInMinutes = MIN_TPH_IN_MINUTES_BY_WAREHOUSE.getOrDefault(logisticCenterId, 30);
+    final var upperBoundInMinutes = MAX_TPH_IN_MINUTES_BY_WAREHOUSE.getOrDefault(logisticCenterId, 90);
+    final var minimumBacklog = getMinimumBacklog(
+        throughput.get(ProcessPath.GLOBAL).get(PICKING),
+        MIN_TPH_IN_MINUTES_BY_WAREHOUSE_TRIGGER.getOrDefault(logisticCenterId, 30)
+    );
     final var pickingBacklogs = backlogsStates.get(PICKING);
-    final var waveDate = calculateWaveDate(pickingLowerLimits, pickingBacklogs);
+    final var waveDate = calculateWaveDate(minimumBacklog, pickingBacklogs);
 
     return waveDate.filter(date -> isAfterPreviousWavesByIdleness(date, previousWaves))
         .map(date ->
@@ -78,37 +84,15 @@ public final class NextIdlenessWaveProjector {
                     IDLENESS,
                     getConfigurations(
                         date,
-                        inflectionPoints,
                         previousWaves,
                         pendingBacklog,
-                        backlogs,
-                        backlogsStates,
+                        lowerBoundInMinutes,
+                        upperBoundInMinutes,
                         throughput,
-                        backlogLimits,
                         precalculatedWaves
                     )
                 )
             ));
-  }
-
-  private static boolean isAfterPreviousWavesByIdleness(final Instant waveDate, final List<Wave> previousWaves) {
-    final var maxWaveDate = previousWaves.stream()
-        .filter(wave -> wave.getReason() == IDLENESS)
-        .map(Wave::getDate)
-        .max(Comparator.naturalOrder());
-
-    if (maxWaveDate.isEmpty()) {
-      return true;
-    }
-
-    final var previousWaveDate = maxWaveDate.get();
-    final var isAfter = waveDate.isAfter(previousWaveDate);
-
-    if (!isAfter) {
-      log.error("calculated idleness wave date is not after the previous one. new: {}, previous: {}", waveDate, previousWaveDate);
-    }
-
-    return isAfter;
   }
 
   public static Map<ProcessName, Map<Instant, Long>> calculateBacklogStates(
@@ -136,41 +120,104 @@ public final class NextIdlenessWaveProjector {
         );
   }
 
+  private static Map<ProcessName, Map<Instant, Long>> buildCurrentBacklogs(
+      final Instant date,
+      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs
+  ) {
+    return backlogs.entrySet()
+        .stream()
+        .collect(
+            toMap(
+                Map.Entry::getKey,
+                entry -> Map.of(
+                    date,
+                    entry.getValue()
+                        .values()
+                        .stream()
+                        .map(Map::values)
+                        .flatMap(Collection::stream)
+                        .reduce(0L, Long::sum)
+                )
+            )
+        );
+  }
+
+  private static Map<Instant, Integer> getMinimumBacklog(final Map<Instant, Integer> throughput, int tphTime) {
+    return throughput.entrySet()
+        .stream()
+        .collect(toMap(
+            Map.Entry::getKey,
+            entry -> (entry.getValue() * tphTime) / MINUTES_IN_HOUR
+        ));
+  }
+
+  private static Optional<Instant> calculateWaveDate(
+      final Map<Instant, Integer> minimumBacklog,
+      final Map<Instant, Long> pickingBacklogs
+  ) {
+    final var minWaveDate = pickingBacklogs.keySet()
+        .stream()
+        .min(Comparator.naturalOrder())
+        .orElseThrow();
+
+    final var idlenessDate = pickingBacklogs.entrySet()
+        .stream()
+        .filter(backlog -> backlog.getValue() < minimumBacklog.get(backlog.getKey().truncatedTo(HOURS)))
+        .map(Map.Entry::getKey)
+        .filter(date -> date.isAfter(minWaveDate))
+        .min(Comparator.naturalOrder());
+
+    return idlenessDate.map(id -> pickingBacklogs.keySet()
+        .stream()
+        .filter(date -> date.isBefore(id))
+        .max(Comparator.naturalOrder())
+        .orElse(minWaveDate)
+    );
+  }
+
+  private static boolean isAfterPreviousWavesByIdleness(final Instant waveDate, final List<Wave> previousWaves) {
+    final var maxWaveDate = previousWaves.stream()
+        .filter(wave -> wave.getReason() == IDLENESS)
+        .map(Wave::getDate)
+        .max(Comparator.naturalOrder());
+
+    if (maxWaveDate.isEmpty()) {
+      return true;
+    }
+
+    final var previousWaveDate = maxWaveDate.get();
+    final var isAfter = waveDate.isAfter(previousWaveDate);
+
+    if (!isAfter) {
+      log.error("calculated idleness wave date is not after the previous one. new: {}, previous: {}", waveDate, previousWaveDate);
+    }
+
+    return isAfter;
+  }
+
   private static Map<ProcessPath, Wave.WaveConfiguration> getConfigurations(
       final Instant waveExecutionDate,
-      final List<Instant> inflectionPoints,
       final List<Wave> previousWaves,
       final PendingBacklog pendingBacklog,
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentBacklog,
-      final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
+      final int lowerBoundInMinutes,
+      final int upperBoundInMinutes,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughputByProcessPath,
-      final BacklogLimits backlogLimits,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves
   ) {
-    final var globalThroughput = throughputByProcessPath.get(ProcessPath.GLOBAL);
+
     final var pickingThroughput = getPickingThroughputByProcessPath(throughputByProcessPath);
 
-    final var lowerBounds = calculateLowerBounds(
+    final var lowerBounds = BoundsCalculator.execute(
+        lowerBoundInMinutes,
         waveExecutionDate,
-        projectedBacklog,
-        throughputByProcessPath,
-        backlogLimits.getLower().get(PICKING)
+        pickingThroughput
     );
 
-    final var upperBounds = validateUpperBound(
-        lowerBounds,
-        UpperBoundsCalculator.calculate(
-            waveExecutionDate,
-            inflectionPoints,
-            previousWaves,
-            pendingBacklog,
-            currentBacklog,
-            projectedBacklog,
-            globalThroughput,
-            pickingThroughput,
-            backlogLimits.getUpper(),
-            lowerBounds
-        ));
+    final var upperBounds = BoundsCalculator.execute(
+        upperBoundInMinutes,
+        waveExecutionDate,
+        pickingThroughput
+    );
 
     final var wavedUnitsByCptAndProcessPath = UnitsByCptCalculator.calculateBacklogToWave(
         waveExecutionDate,
@@ -194,93 +241,6 @@ public final class NextIdlenessWaveProjector {
                 )
             )
         );
-  }
-
-  private static Map<ProcessPath, Integer> validateUpperBound(final Map<ProcessPath, Integer> lower,
-                                                              final Map<ProcessPath, Integer> upper) {
-
-    return upper.entrySet().stream()
-        .collect(toMap(
-            Map.Entry::getKey,
-            entry -> lower.get(entry.getKey()).equals(entry.getValue())
-                ? (int) (entry.getValue() * LOWER_BOUND_PERCENTAGE)
-                : entry.getValue()));
-
-  }
-
-  private static Map<ProcessName, Map<Instant, Long>> buildCurrentBacklogs(
-      final Instant date,
-      final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs
-  ) {
-    return backlogs.entrySet()
-        .stream()
-        .collect(
-            toMap(
-                Map.Entry::getKey,
-                entry -> Map.of(
-                    date,
-                    entry.getValue()
-                        .values()
-                        .stream()
-                        .map(Map::values)
-                        .flatMap(Collection::stream)
-                        .reduce(0L, Long::sum)
-                )
-            )
-        );
-  }
-
-  private static Optional<Instant> calculateWaveDate(
-      final Map<Instant, Integer> pickingLowerLimits,
-      final Map<Instant, Long> pickingBacklogs
-  ) {
-    final var minWaveDate = pickingBacklogs.keySet()
-        .stream()
-        .min(Comparator.naturalOrder())
-        .orElseThrow();
-
-    final var idlenessDate = pickingBacklogs.entrySet()
-        .stream()
-        .filter(backlog -> backlog.getValue() < pickingLowerLimits.get(backlog.getKey().truncatedTo(HOURS)))
-        .map(Map.Entry::getKey)
-        .filter(date -> date.isAfter(minWaveDate))
-        .min(Comparator.naturalOrder());
-
-    return idlenessDate.map(id -> pickingBacklogs.keySet()
-        .stream()
-        .filter(date -> date.isBefore(id))
-        .max(Comparator.naturalOrder())
-        .orElse(minWaveDate)
-    );
-  }
-
-  private static Map<ProcessPath, Integer> calculateLowerBounds(
-      final Instant waveExecutionDate,
-      final Map<ProcessName, Map<Instant, Long>> projectedBacklog,
-      final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughputByProcessPath,
-      final Map<Instant, Integer> pickingLowerLimits
-  ) {
-    final var waveExecutionHour = waveExecutionDate.truncatedTo(HOURS);
-    final var maxLowerLimitLookupDate = waveExecutionDate.plus(WAVE_LOWER_BOUND_IN_MINUTES, ChronoUnit.MINUTES)
-        .truncatedTo(HOURS);
-
-    final var maxLowerLimitInRange = LongStream.rangeClosed(0L, HOURS.between(waveExecutionHour, maxLowerLimitLookupDate))
-        .mapToObj(shift -> waveExecutionHour.plus(shift, HOURS))
-        .map(date -> pickingLowerLimits.getOrDefault(date, 0))
-        .max(Integer::compare)
-        .orElse(0);
-
-    final var backlog = projectedBacklog.get(PICKING)
-        .get(waveExecutionDate);
-
-    final var unitsToReachLowerLimit = (int) Math.max(maxLowerLimitInRange - backlog, 0);
-
-    return LowerBoundCalculator.lowerBounds(
-        WAVE_LOWER_BOUND_IN_MINUTES,
-        unitsToReachLowerLimit,
-        waveExecutionDate,
-        throughputByProcessPath
-    );
   }
 
   private static Map<ProcessPath, Map<Instant, Integer>> getPickingThroughputByProcessPath(

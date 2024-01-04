@@ -76,7 +76,7 @@ class NextSlaWaveProjectorTest {
     // THEN
     assertTrue(result.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:00:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T00:15:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getExecutionDate());
@@ -84,7 +84,7 @@ class NextSlaWaveProjectorTest {
     final var units = wave.getWave().get().getConfiguration();
     assertEquals(1, units.size());
     assertEquals(5L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_1));
-    assertEquals(110L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
+    assertEquals(125L, units.get(TOT_MONO).getWavedUnitsByCpt().get(SLA_2));
     assertFalse(units.get(TOT_MONO).getWavedUnitsByCpt().containsKey(SLA_3));
   }
 
@@ -132,7 +132,7 @@ class NextSlaWaveProjectorTest {
 
     // THEN
     assertTrue(result.isPresent());
-    final var expectedWaveDate = Instant.parse("2023-03-06T01:10:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T02:00:00Z");
 
     final var wave = result.get();
     assertEquals(expectedWaveDate, wave.getExecutionDate());

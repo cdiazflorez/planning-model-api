@@ -193,8 +193,8 @@ class SlaWaveCalculatorTest {
     assertTrue(resultARBA.isPresent());
     assertTrue(resultBRBA.isPresent());
 
-    final var expectedWaveDate = Instant.parse("2023-03-06T00:30:00Z");
-    final var expectedWaveDateBRBA = Instant.parse("2023-03-06T01:50:00Z");
+    final var expectedWaveDate = Instant.parse("2023-03-06T01:20:00Z");
+    final var expectedWaveDateBRBA = Instant.parse("2023-03-06T01:20:00Z");
 
     final var wave = resultARBA.get();
     final var waveBRBA = resultBRBA.get();

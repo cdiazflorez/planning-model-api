@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.shipping;
+package com.mercadolibre.planning.model.api.projection;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
@@ -16,7 +16,9 @@ import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.projection.builder.OutboundProjectionBuilder;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
@@ -24,11 +26,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ShippingProjectionTest {
+class BacklogProjectionServiceTest {
   private static final Instant EXECUTION_DATE_FROM = Instant.parse("2023-03-29T00:00:00Z");
 
   private static final Instant EXECUTION_DATE_TO = Instant.parse("2023-03-29T06:00:00Z");
@@ -45,17 +46,14 @@ class ShippingProjectionTest {
 
   private static final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> EXPECTED_BACKLOG =
       Map.of(Instant.parse("2023-03-29T01:00:00Z"), Map.of(
-          PACKING, Map.of(DATES[0], 3198),
+          PACKING, Map.of(DATES[0], 3193),
           SALES_DISPATCH, Map.of(DATES[0], 430),
-          PICKING, Map.of(DATES[0], 2412),
-          BATCH_SORTER, Map.of(DATES[0], 1317),
+          PICKING, Map.of(DATES[0], 2418),
+          BATCH_SORTER, Map.of(DATES[0], 1315),
           HU_ASSEMBLY, Map.of(DATES[0], 3233),
           PACKING_WALL, Map.of(DATES[0], 670),
           WALL_IN, Map.of(DATES[0], 360)
       ));
-
-  @InjectMocks
-  ShippingProjection shippingProjection;
 
   private static Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> currentShippingBacklogs() {
     return Map.of(
@@ -190,12 +188,16 @@ class ShippingProjectionTest {
       final Map<ProcessName, Map<Instant, Integer>> getShippingThroughput,
       final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> expected
   ) {
-    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectedBacklogs = ShippingProjection.calculateShippingProjection(
+    final var projector = new OutboundProjectionBuilder();
+    final var processes = List.of(PICKING, BATCH_SORTER, WALL_IN, PACKING, PACKING_WALL, HU_ASSEMBLY, SALES_DISPATCH);
+    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectedBacklogs = BacklogProjectionService.execute(
         dateFrom,
         dateTo,
         currentShippingBacklogs,
         upstream,
-        getShippingThroughput
+        getShippingThroughput,
+        processes,
+        projector
     );
     var resultBacklogAtFirstHour = projectedBacklogs.get(Instant.parse("2023-03-29T01:00:00Z"));
     expected.forEach((key, value) -> value.forEach(

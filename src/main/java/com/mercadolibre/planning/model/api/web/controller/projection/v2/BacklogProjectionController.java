@@ -14,7 +14,7 @@ import com.mercadolibre.planning.model.api.projection.dto.response.ProcessPathRe
 import com.mercadolibre.planning.model.api.projection.dto.response.Sla;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.BacklogProjectionTotalResponse;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.SlaTotal;
-import com.mercadolibre.planning.model.api.projection.shipping.ShippingProjection;
+import com.mercadolibre.planning.model.api.projection.outbound.ShippingProjection;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.Collections;

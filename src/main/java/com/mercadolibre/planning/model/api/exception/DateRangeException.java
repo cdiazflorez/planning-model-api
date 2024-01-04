@@ -6,8 +6,8 @@ import java.time.Instant;
 
 public class DateRangeException extends RuntimeException {
 
-  public static final String MESSAGE_PATTERN = "The range of dates of entry or exit is not present. "
-      + "dateFrom: %s, dateTo: %s";
+  public static final String MESSAGE_PATTERN = "date_to must be greater than date_from. "
+      + "date_from: %s, date_to: %s";
 
   private static final long serialVersionUID = 5800500956721253975L;
 

@@ -62,6 +62,10 @@ public class ApiExceptionHandler {
 
   private static final String CONSTRAINT_VIOLATION_EXCEPTION = "constraint_violation_exception";
 
+  private static final String READ_FURY_CONFIG_EXCEPTION = "read_fury_config_exception";
+
+  private static final String PROCESSING_TIME_EXCEPTION = "processing_time_exception";
+
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
                                                            final HttpServletRequest request) {
@@ -219,7 +223,7 @@ public class ApiExceptionHandler {
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
   }
 
-  @ExceptionHandler({InvalidDateRangeException.class, DateRangeException.class})
+  @ExceptionHandler({InvalidDateRangeException.class, DateRangeException.class, DateRangeBoundsException.class})
   public ResponseEntity<ErrorResponse> handleInvalidDateRangeException(
       final Exception exception,
       final HttpServletRequest request) {
@@ -344,5 +348,39 @@ public class ApiExceptionHandler {
     log.error(exception.getMessage(), exception);
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
 
+  }
+
+  @ExceptionHandler(ProcessingTimeException.class)
+  public ResponseEntity<ErrorResponse> handleProcessingTimeException(
+      final ProcessingTimeException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        CONFLICT,
+        exception.getMessage(),
+        PROCESSING_TIME_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+
+    log.error(PROCESSING_TIME_EXCEPTION, exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(ReadFuryConfigException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidReadConfigException(
+      final ReadFuryConfigException exception,
+      final HttpServletRequest request
+  ) {
+    final ErrorResponse errorResponse = new ErrorResponse(
+        CONFLICT,
+        exception.getMessage(),
+        READ_FURY_CONFIG_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
   }
 }

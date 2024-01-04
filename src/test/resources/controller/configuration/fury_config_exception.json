@@ -1,0 +1,5 @@
+{
+  "status": "CONFLICT",
+  "message": "The input obtained from the FuryConfig is invalid: Fury Config Error",
+  "error": "read_fury_config_exception"
+}

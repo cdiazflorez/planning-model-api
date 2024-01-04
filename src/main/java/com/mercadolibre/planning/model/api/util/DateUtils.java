@@ -8,6 +8,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.stream.Stream.iterate;
 
+import com.mercadolibre.planning.model.api.exception.DateRangeBoundsException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -156,6 +158,24 @@ public final class DateUtils {
    */
   public static boolean validateDatesRanges(final Instant dateFrom, final Instant dateTo) {
     return dateFrom.isBefore(dateTo);
+  }
+
+
+  /**
+   * Validates that the date range between {@code dateFrom} and {@code dateTo} does not exceed a specified maximum number of days.
+   *
+   * @param dateFrom The starting date of the range.
+   * @param dateTo   The ending date of the range.
+   * @param maxDays     The maximum allowed number of days for the date range.
+   * @throws DateRangeBoundsException If the date range exceeds the specified maximum number of days.
+   */
+  public static void validateDateRangeIsMaxDays(final Instant dateFrom, final Instant dateTo, final int maxDays) {
+    final Duration rangeDuration = Duration.between(dateFrom, dateTo);
+    final Duration maxWeekDuration = Duration.ofDays(maxDays);
+
+    if (rangeDuration.compareTo(maxWeekDuration) > 0) {
+      throw new DateRangeBoundsException(format("The date range must not exceed %s days.", maxDays));
+    }
   }
 
 }

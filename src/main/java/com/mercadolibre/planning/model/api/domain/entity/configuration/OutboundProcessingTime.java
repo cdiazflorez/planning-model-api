@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,6 +52,9 @@ public class OutboundProcessingTime {
   @Column(name = "is_active", nullable = false)
   private boolean isActive;
 
+  @Transient
+  private Integer parsedEtdHour;
+
   public OutboundProcessingTime(
       final String logisticCenterID,
       final String etdDay,
@@ -63,5 +67,13 @@ public class OutboundProcessingTime {
     this.etdHour = etdHour;
     this.etdProcessingTime = etdProcessingTime;
     this.isActive = isActive;
+  }
+
+  public Integer getParsedEtdHour() {
+    if (parsedEtdHour == null && etdHour != null) {
+      parsedEtdHour = Integer.parseInt(etdHour);
+    }
+
+    return parsedEtdHour;
   }
 }

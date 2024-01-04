@@ -22,8 +22,8 @@ configurations {
 }
 
 repositories {
-		maven { url "https://maven.artifacts.furycloud.io/repository/all" }
-	}
+    maven { url "https://maven.artifacts.furycloud.io/repository/all" }
+}
 
 //dependencyManagement {
 //    imports {
@@ -39,6 +39,7 @@ dependencies {
     implementation "com.mercadolibre.restclient:meli-restclient-default"
     implementation 'com.newrelic.agent.java:newrelic-api'
     implementation 'com.fury:furyutils'
+    implementation 'com.mercadolibre.library:configuration-service-sdk:0.1.3'
     implementation 'com.mercadolibre.metrics:metrics-core'
     implementation 'com.mercadolibre.metrics:datadog-metric-wrapper'
 

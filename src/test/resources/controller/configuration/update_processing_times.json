@@ -1,0 +1,30 @@
+[
+  {
+    "logistic_center_id": "ARBA01",
+    "etd_day": "wednesday",
+    "etd_hour": "2100",
+    "etd_processing_time": 240,
+    "day_of_week": "WEDNESDAY"
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "etd_day": "monday",
+    "etd_hour": "1830",
+    "etd_processing_time": 240,
+    "day_of_week": "MONDAY"
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "etd_day": "monday",
+    "etd_hour": "1300",
+    "etd_processing_time": 240,
+    "day_of_week": "MONDAY"
+  },
+  {
+    "logistic_center_id": "ARBA01",
+    "etd_day": "tuesday",
+    "etd_hour": "1000",
+    "etd_processing_time": 240,
+    "day_of_week": "TUESDAY"
+  }
+]

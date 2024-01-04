@@ -1,4 +1,4 @@
-package com.mercadolibre.planning.model.api.projection.shipping;
+package com.mercadolibre.planning.model.api.projection.outbound;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.BATCH_SORTER;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.HU_ASSEMBLY;
@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Deprecated
 public final class ShippingProjection {
 
   private static final int INFLECTION_WINDOW_SIZE_IN_MINUTES = 5;
@@ -161,7 +162,6 @@ public final class ShippingProjection {
   }
 
   private static Map<ProcessName, Map<Instant, Map<Instant, Integer>>> mapProjections(ContextsHolder processedContexts) {
-
     return PROCESSES.stream()
         .collect(
             toMap(

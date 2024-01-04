@@ -50,6 +50,10 @@ import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.mercadolibre.json.JsonUtils;
+import com.mercadolibre.json_jackson.JsonJackson;
 import com.mercadolibre.planning.model.api.adapter.staffing.GetCreatedMaxDateByType;
 import com.mercadolibre.planning.model.api.client.db.repository.current.CurrentProcessingMaxDateCreatedByType;
 import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
@@ -1424,6 +1428,17 @@ public final class TestUtils {
         new GetCreatedMaxDateByType(EFFECTIVE_WORKERS_NS, date.plus(21, HOURS)),
         new GetCreatedMaxDateByType(PRODUCTIVITY, date.plus(23, HOURS))
     );
+  }
+
+  /**
+   * build an object instance to use in tests.
+   *
+   * @return and {@link ObjectMapper} instance
+   */
+  public static ObjectMapper objectMapper() {
+    return ((JsonJackson) JsonUtils.INSTANCE.getEngine())
+        .getMapper()
+        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
   }
 
 }

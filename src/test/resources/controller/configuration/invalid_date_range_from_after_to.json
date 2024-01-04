@@ -1,0 +1,5 @@
+{
+  "status": "BAD_REQUEST",
+  "message": "date_to must be greater than date_from. date_from: 2023-12-14T23:59:00Z, date_to: 2023-12-11T15:00:00Z",
+  "error": "invalid_date_range"
+}

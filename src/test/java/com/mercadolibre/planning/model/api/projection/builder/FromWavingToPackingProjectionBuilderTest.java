@@ -11,6 +11,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,10 +27,13 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 public class FromWavingToPackingProjectionBuilderTest {
@@ -37,23 +41,36 @@ public class FromWavingToPackingProjectionBuilderTest {
     private static final String PRE_EXPEDITION_GROUP = "pre_expedition_group";
     private static final Instant FIRST_DATE = Instant.parse("2022-10-03T00:00:00.00Z");
     private static final Instant LAST_DATE = Instant.parse("2022-10-03T02:00:00.00Z");
-  private static final Instant[] DATES = {
-      Instant.parse("2023-03-29T00:00:00Z"),
-      Instant.parse("2023-03-29T01:00:00Z"),
-      Instant.parse("2023-03-29T02:00:00Z"),
-      Instant.parse("2023-03-29T03:00:00Z"),
-      Instant.parse("2023-03-29T04:00:00Z"),
-      Instant.parse("2023-03-29T05:00:00Z"),
-      Instant.parse("2023-03-29T06:00:00Z"),
-  };
+    private static final Instant[] DATES = {
+            Instant.parse("2023-03-29T00:00:00Z"),
+            Instant.parse("2023-03-29T01:00:00Z"),
+            Instant.parse("2023-03-29T02:00:00Z"),
+            Instant.parse("2023-03-29T03:00:00Z"),
+            Instant.parse("2023-03-29T04:00:00Z"),
+            Instant.parse("2023-03-29T05:00:00Z"),
+            Instant.parse("2023-03-29T06:00:00Z"),
+    };
 
-  private static final Instant[] SLAS = {
-      Instant.parse("2023-03-29T10:00:00Z"),
-      Instant.parse("2023-03-29T11:00:00Z"),
-      Instant.parse("2023-03-29T12:00:00Z"),
-      Instant.parse("2023-03-29T13:00:00Z"),
-      Instant.parse("2023-03-29T14:00:00Z"),
-  };
+    private static final Instant[] SLAS = {
+            Instant.parse("2023-03-29T10:00:00Z"),
+            Instant.parse("2023-03-29T11:00:00Z"),
+            Instant.parse("2023-03-29T12:00:00Z"),
+            Instant.parse("2023-03-29T13:00:00Z"),
+            Instant.parse("2023-03-29T14:00:00Z"),
+    };
+
+    private static final Map<Instant, Instant> CUT_OFF = Map.of(SLAS[0], DATES[0], SLAS[1], DATES[2]);
+
+    private static final Instant[] SLAS_FROM_WAVING = {
+            Instant.parse("2023-03-29T10:00:00Z"),
+            Instant.parse("2023-03-29T12:00:00Z"),
+            Instant.parse("2023-03-29T13:00:00Z"),
+    };
+
+    private static final Map<Instant, Instant> EXPECTED_END_DATES_WITH_UPSTREAM = Map.of(
+            SLAS_FROM_WAVING[0], Instant.parse("2023-03-29T05:25:00Z"),
+            SLAS_FROM_WAVING[1], Instant.parse("2023-03-29T05:06:00Z")
+    );
 
     private static final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> FORECAST = Map.of(
             DATES[0], Map.of(
@@ -169,8 +186,71 @@ public class FromWavingToPackingProjectionBuilderTest {
         assertContextsHolder(contextsHolder);
     }
 
+    @Test
+    void testBacklogProjection() {
+        // GIVEN
+        final var builder = new FromWavingToPackingProjectionBuilder();
+
+        final PiecewiseUpstream upstream = builder.toUpstream(FORECAST);
+
+        final ContextsHolder holder = builder.buildContextHolder(BACKLOG, createThroughputTestData());
+
+        final Processor graph = builder.buildGraph();
+
+        final List<Instant> inflectionPoints = DateUtils.generateInflectionPoints(DATES[0], DATES[6], 5);
+
+        final var updatedContext = graph.accept(holder, upstream, inflectionPoints);
+
+        // WHEN
+        final var result = builder.calculateProjectedEndDate(Arrays.asList(SLAS), updatedContext);
+
+        // THEN
+        assertNotNull(result);
+
+        final var projectedEndDateBySla = result.slas()
+                .stream()
+                .filter(r -> r.projectedEndDate() != null)
+                .collect(
+                        Collectors.toMap(
+                                SlaProjectionResult.Sla::date,
+                                r -> r.projectedEndDate().truncatedTo(ChronoUnit.MINUTES)
+                        )
+                );
+
+
+        for (final Instant sla : SLAS) {
+            assertEquals(EXPECTED_END_DATES_WITH_UPSTREAM.get(sla), projectedEndDateBySla.get(sla));
+        }
+    }
+
+    @Test
+    void testGetRemainingQuantity() {
+        // GIVEN
+        final FromWavingToPackingProjectionBuilder builder = new FromWavingToPackingProjectionBuilder();
+
+        final PiecewiseUpstream upstream = builder.toUpstream(FORECAST);
+
+        final ContextsHolder initialContext = builder.buildContextHolder(BACKLOG, createThroughputTestData());
+
+        final Processor graph = builder.buildGraph();
+
+        final List<Instant> inflectionPoints = DateUtils.generateInflectionPoints(DATES[0], DATES[6], 5);
+
+        final ContextsHolder updatedContext = graph.accept(initialContext, upstream, inflectionPoints);
+
+        // WHEN
+        final Map<Instant, Long> remainingQuantity = builder.getRemainingQuantity(updatedContext, CUT_OFF);
+
+        // THEN
+        assertNotNull(remainingQuantity);
+        assertFalse(remainingQuantity.isEmpty());
+
+        assertEquals(6820, remainingQuantity.get(SLAS[0]));
+        assertEquals(4561, remainingQuantity.get(SLAS[1]));
+    }
+
     private void assertPreExpeditionGroup(final Processor graph) {
-        assertTrue(graph instanceof SequentialProcess);
+        assertInstanceOf(SequentialProcess.class, graph);
         final SequentialProcess sequentialProcess = (SequentialProcess) graph;
         assertEquals(PRE_EXPEDITION_GROUP, sequentialProcess.getName());
         assertEquals(2, sequentialProcess.getProcesses().size());

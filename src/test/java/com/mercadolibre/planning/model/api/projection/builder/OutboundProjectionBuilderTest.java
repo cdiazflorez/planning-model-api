@@ -14,8 +14,8 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.flow.projection.tools.services.entities.context.ContextsHolder;
 import com.mercadolibre.flow.projection.tools.services.entities.context.PiecewiseUpstream;
@@ -29,10 +29,13 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.backlogmanager.OrderedBacklogByProcessPath;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 public class OutboundProjectionBuilderTest {
@@ -59,6 +62,13 @@ public class OutboundProjectionBuilderTest {
             Instant.parse("2023-03-29T14:00:00Z"),
     };
 
+    private static final Map<Instant, Instant> CUT_OFF = Map.of(SLAS[0], DATES[0], SLAS[1], DATES[2]);
+
+    private static final Map<Instant, Instant> EXPECTED_END_DATES_WITH_UPSTREAM = Map.of(
+            SLAS[0], Instant.parse("2023-03-29T04:50:00Z"),
+            SLAS[1], Instant.parse("2023-03-29T05:51:00Z")
+    );
+
     private static final Map<Instant, Map<ProcessPath, Map<Instant, Long>>> FORECAST = Map.of(
             DATES[0], Map.of(
                     TOT_MONO, Map.of(
@@ -79,31 +89,31 @@ public class OutboundProjectionBuilderTest {
 
     private static final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> BACKLOG = Map.of(
             WAVING, Map.of(
-                    TOT_MONO, Map.of(SLAS[0], 1000L, SLAS[1], 1000L),
+                    TOT_MONO, Map.of(SLAS[0], 100L, SLAS[1], 1000L),
                     NON_TOT_MONO, Map.of(SLAS[0], 250L),
                     TOT_MULTI_BATCH, Map.of(SLAS[1], 500L)
             ),
             PICKING, Map.of(
-                    TOT_MONO, Map.of(SLAS[0], 1000L, SLAS[1], 1000L),
+                    TOT_MONO, Map.of(SLAS[0], 100L, SLAS[1], 1000L),
                     NON_TOT_MONO, Map.of(SLAS[0], 250L),
                     TOT_MULTI_BATCH, Map.of(SLAS[1], 500L)
             ),
             PACKING, Map.of(
-                    TOT_MONO, Map.of(SLAS[0], 1000L, SLAS[2], 500L),
+                    TOT_MONO, Map.of(SLAS[0], 100L, SLAS[2], 500L),
                     NON_TOT_MONO, Map.of(SLAS[0], 100L)
             ),
             PACKING_WALL, Map.of(
-                    TOT_MONO, Map.of(SLAS[0], 1000L, SLAS[2], 500L),
+                    TOT_MONO, Map.of(SLAS[0], 100L, SLAS[2], 500L),
                     NON_TOT_MONO, Map.of(SLAS[0], 100L)
             ),
             BATCH_SORTER, Map.of(
-                    TOT_MULTI_BATCH, Map.of(SLAS[0], 1000L, SLAS[2], 500L)
+                    TOT_MULTI_BATCH, Map.of(SLAS[0], 100L, SLAS[2], 500L)
             ),
             HU_ASSEMBLY, Map.of(
-                    TOT_MULTI_BATCH, Map.of(SLAS[0], 1000L, SLAS[2], 500L)
+                    TOT_MULTI_BATCH, Map.of(SLAS[0], 100L, SLAS[2], 500L)
             ),
             SALES_DISPATCH, Map.of(
-                    TOT_MULTI_BATCH, Map.of(SLAS[0], 1000L, SLAS[2], 500L)
+                    TOT_MULTI_BATCH, Map.of(SLAS[0], 100L, SLAS[2], 500L)
             ),
             WALL_IN, Map.of()
     );
@@ -188,6 +198,69 @@ public class OutboundProjectionBuilderTest {
         assertNotNull(piecewiseUpstream);
     }
 
+    @Test
+    void testBacklogProjection() {
+        // GIVEN
+        final OutboundProjectionBuilder builder = new OutboundProjectionBuilder();
+
+        final PiecewiseUpstream upstream = builder.toUpstream(FORECAST);
+
+        final ContextsHolder holder = builder.buildContextHolder(BACKLOG, createThroughputTestData());
+
+        final Processor graph = builder.buildGraph();
+
+        final List<Instant> inflectionPoints = DateUtils.generateInflectionPoints(DATES[0], DATES[6], 5);
+
+        final ContextsHolder updatedContext = graph.accept(holder, upstream, inflectionPoints);
+
+        // WHEN
+        final SlaProjectionResult result = builder.calculateProjectedEndDate(Arrays.asList(SLAS), updatedContext);
+
+        // THEN
+        assertNotNull(result);
+
+        final Map<Instant, Instant> projectedEndDateBySla = result.slas()
+                .stream()
+                .filter(r -> r.projectedEndDate() != null)
+                .collect(
+                        Collectors.toMap(
+                                SlaProjectionResult.Sla::date,
+                                r -> r.projectedEndDate().truncatedTo(ChronoUnit.MINUTES)
+                        )
+                );
+
+        for (final Instant sla : SLAS) {
+            assertEquals(EXPECTED_END_DATES_WITH_UPSTREAM.get(sla), projectedEndDateBySla.get(sla));
+        }
+    }
+
+    @Test
+    void testGetRemainingQuantity() {
+        // GIVEN
+        final OutboundProjectionBuilder builder = new OutboundProjectionBuilder();
+
+        final PiecewiseUpstream upstream = builder.toUpstream(FORECAST);
+
+        final ContextsHolder initialContext = builder.buildContextHolder(BACKLOG, createThroughputTestData());
+
+        final Processor graph = builder.buildGraph();
+
+        final List<Instant> inflectionPoints = DateUtils.generateInflectionPoints(DATES[0], DATES[6], 5);
+
+        final ContextsHolder updatedContext = graph.accept(initialContext, upstream, inflectionPoints);
+
+        // WHEN
+        final Map<Instant, Long> remainingQuantity = builder.getRemainingQuantity(updatedContext, CUT_OFF);
+
+        // THEN
+        assertNotNull(remainingQuantity);
+        assertFalse(remainingQuantity.isEmpty());
+
+        assertEquals(1720, remainingQuantity.get(SLAS[0]));
+        assertEquals(3718, remainingQuantity.get(SLAS[1]));
+    }
+
+
     private void assertContextsHolder(final ContextsHolder contextsHolder) {
         assertNotNull(contextsHolder);
 
@@ -200,7 +273,7 @@ public class OutboundProjectionBuilderTest {
     }
 
     private void assertOutboundGroup(final Processor graph) {
-        assertTrue(graph instanceof SequentialProcess);
+        assertInstanceOf(SequentialProcess.class, graph);
         final SequentialProcess sequentialProcess = (SequentialProcess) graph;
         assertEquals(OUTBOUND_PROCESS_GROUP, sequentialProcess.getName());
         assertEquals(3, sequentialProcess.getProcesses().size());

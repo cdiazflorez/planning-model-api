@@ -14,7 +14,7 @@ import com.mercadolibre.planning.model.api.projection.dto.response.ProcessPathRe
 import com.mercadolibre.planning.model.api.projection.dto.response.Sla;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.BacklogProjectionTotalResponse;
 import com.mercadolibre.planning.model.api.projection.dto.response.total.SlaTotal;
-import com.mercadolibre.planning.model.api.projection.outbound.ShippingProjection;
+import com.mercadolibre.planning.model.api.projection.outbound.OutboundProjectionUseCase;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.Collections;
@@ -88,7 +88,7 @@ public class BacklogProjectionController {
       @PathVariable final String logisticCenterId,
       @RequestBody final BacklogProjection backlogProjection) {
 
-    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionResult = ShippingProjection.calculateShippingProjection(
+    final Map<Instant, Map<ProcessName, Map<Instant, Integer>>> projectionResult = OutboundProjectionUseCase.execute(
         backlogProjection.getDateFrom(),
         backlogProjection.getDateTo(),
         backlogProjection.mapBacklogs(),

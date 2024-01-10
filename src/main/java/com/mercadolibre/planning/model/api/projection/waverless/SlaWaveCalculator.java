@@ -45,7 +45,7 @@ public final class SlaWaveCalculator {
           NON_TOT_MULTI_ORDER, 120,
           TOT_SINGLE_SKU, 90,
           NON_TOT_MONO, 90,
-          TOT_MULTI_BATCH, 150,
+          TOT_MULTI_BATCH, 180,
           NON_TOT_SINGLE_SKU, 90,
           TOT_MULTI_ORDER, 120),
       WH_BRBA, Map.of(
@@ -53,8 +53,8 @@ public final class SlaWaveCalculator {
           TOT_SINGLE_SKU, 90,
           NON_TOT_MONO, 90,
           TOT_MONO, 90,
-          TOT_MULTI_BATCH, 150,
-          NON_TOT_MULTI_BATCH, 150,
+          TOT_MULTI_BATCH, 210,
+          NON_TOT_MULTI_BATCH, 210,
           NON_TOT_SINGLE_SKU, 120,
           TOT_MULTI_ORDER, 120
       ),
@@ -71,9 +71,9 @@ public final class SlaWaveCalculator {
   );
 
   private static final Map<String, List<LocalTime>> SAME_DAY_CPT = Map.of(
-      WH_ARBA, List.of(LocalTime.of(17, 0)),
-      WH_BRBA, List.of(LocalTime.of(17, 0)),
-      WH_MXYU, List.of(LocalTime.of(17, 0), LocalTime.of(18, 0), LocalTime.of(19, 0), LocalTime.of(21, 0)));
+      WH_ARBA, List.of(),
+      WH_BRBA, List.of(),
+      WH_MXYU, List.of());
 
   private SlaWaveCalculator() {
   }

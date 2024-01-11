@@ -42,6 +42,10 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseService {
 
+  private static final String ARBA01 = "ARBA01";
+
+  private static final int SAME_DAY_CPT_ARBA = 17;
+
   private static final int MINUTES_IN_HOUR = 60;
 
   private static final int SECONDS = 60;
@@ -66,7 +70,6 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
         .addBacklogInSlaInOrder(generateSlaByBacklog(input), slasRoute);
   }
 
-
   private List<ProcessingTimeByDate> generateSlaByWarehouse(final GetSlaByWarehouseInput input) {
     try {
       return getRouteEtd(input);
@@ -79,18 +82,33 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
   private List<GetSlaByWarehouseOutput> generateSlaByBacklog(
       final GetSlaByWarehouseInput input) {
 
+    final ProcessingTime arbaPtDefault = new ProcessingTime(MINUTES_IN_HOUR, MetricUnit.MINUTES);
+
     final ProcessingTime ptDefault = new ProcessingTime(240, MetricUnit.MINUTES);
 
     return input.getDafaultSlas() == null
         ? Collections.emptyList()
         : input.getDafaultSlas().stream()
         .sorted()
-        .map(item -> GetSlaByWarehouseOutput.builder()
-            .date(item)
-            .processingTime(ptDefault)
-            .logisticCenterId(input.getLogisticCenterId())
-            .build())
-        .collect(Collectors.toList());
+        .map(item -> {
+              GetSlaByWarehouseOutput slaByWarehouseOutput;
+              if (ARBA01.equals(input.getLogisticCenterId()) && item.getHour() == SAME_DAY_CPT_ARBA) {
+                slaByWarehouseOutput = GetSlaByWarehouseOutput.builder()
+                    .date(item)
+                    .processingTime(arbaPtDefault)
+                    .logisticCenterId(input.getLogisticCenterId())
+                    .build();
+              } else {
+                slaByWarehouseOutput = GetSlaByWarehouseOutput.builder()
+                    .date(item)
+                    .processingTime(ptDefault)
+                    .logisticCenterId(input.getLogisticCenterId())
+                    .build();
+              }
+              return slaByWarehouseOutput;
+            }
+        )
+        .toList();
   }
 
   private List<ProcessingTimeByDate> getRouteEtd(final GetSlaByWarehouseInput input) {
@@ -205,7 +223,7 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
             DateUtils.isBetweenInclusive(cpt.getDate(), input.getCptFrom(), input.getCptTo())
         )
         .sorted(Comparator.comparing(GetSlaByWarehouseOutput::getDate))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private GetSlaByWarehouseOutput generateCptByWarehouseOutput(

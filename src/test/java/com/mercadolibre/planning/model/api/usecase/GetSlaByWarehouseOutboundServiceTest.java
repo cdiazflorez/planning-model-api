@@ -22,8 +22,12 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,6 +37,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class GetSlaByWarehouseOutboundServiceTest {
 
   private static final String LOGISTIC_CENTER_ID = "ARBA01";
+
+  private static final String LOGISTIC_CENTER_ID_NOT_ARBA = "ARTW01";
 
   private static final String TIME_ZONE = "America/Argentina/Buenos_Aires";
 
@@ -90,27 +96,26 @@ public class GetSlaByWarehouseOutboundServiceTest {
   @Mock
   private RouteCoverageClientGateway routeCoverageClientGateway;
 
-  @Test
-  public void obtainSlaByZonedDate() {
+  @ParameterizedTest
+  @MethodSource("obtainSlaByZonedDataSupplier")
+  public void obtainSlaByZonedDate(String logisticCenterId, List<GetSlaByWarehouseOutput> expected) {
     // GIVEN
     final ClientException exception = mock(ClientException.class);
     when(exception.getSuppressed()).thenReturn(new Throwable[0]);
     when(exception.getMessage()).thenReturn("exception");
 
     when(routeEtsGateway.postRoutEts(
-        RouteEtsRequest.builder().fromFilter(List.of(LOGISTIC_CENTER_ID)).build()))
+        RouteEtsRequest.builder().fromFilter(List.of(logisticCenterId)).build()))
         .thenThrow(exception);
 
     final GetSlaByWarehouseInput input =
-        new GetSlaByWarehouseInput(LOGISTIC_CENTER_ID, UTC_DAY, UTC_DAY.plusDays(1),
+        new GetSlaByWarehouseInput(logisticCenterId, UTC_DAY, UTC_DAY.plusDays(1),
             List.of(UTC_DAY, UTC_DAY), TIME_ZONE);
 
     // WHEN
     final List<GetSlaByWarehouseOutput> actual = getSlaByWarehouseOutboundService.execute(input);
 
     // THEN
-    final List<GetSlaByWarehouseOutput> expected = mockCptOutputByZonedDate();
-
     for (int i = 0; i < expected.size(); i++) {
       assertEquals(expected.get(i).getDate(), actual.get(i).getDate());
       assertEquals(expected.get(i).getProcessingTime(), actual.get(i).getProcessingTime());
@@ -127,7 +132,7 @@ public class GetSlaByWarehouseOutboundServiceTest {
     when(routeCoverageClientGateway.get(LOGISTIC_CENTER_ID))
         .thenReturn(mockResponseCoverageWithResult());
 
-    final List<ZonedDateTime> backlog = List.of(NOW, UTC_DAY);
+    final List<ZonedDateTime> backlog = List.of(NOW, UTC_DAY, UTC_DAY.plusHours(17));
 
     final GetSlaByWarehouseInput input =
         new GetSlaByWarehouseInput(LOGISTIC_CENTER_ID, UTC_DAY, UTC_DAY.plusDays(1), backlog, TIME_ZONE);
@@ -175,22 +180,16 @@ public class GetSlaByWarehouseOutboundServiceTest {
             .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
             .build();
 
-    return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
-        getSlaByWarehouseOutput3, getSlaByWarehouseOutput4);
-  }
 
-  private List<GetSlaByWarehouseOutput> mockCptOutputByZonedDate() {
-
-    final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput5 =
         GetSlaByWarehouseOutput.builder()
-            .serviceId(null)
-            .canalizationId(null)
             .logisticCenterId(LOGISTIC_CENTER_ID)
-            .date(UTC_DAY)
-            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .date(UTC_DAY.plusHours(17))
+            .processingTime(new ProcessingTime(60, MetricUnit.MINUTES))
             .build();
 
-    return List.of(getSlaByWarehouseOutput);
+    return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
+        getSlaByWarehouseOutput3, getSlaByWarehouseOutput5, getSlaByWarehouseOutput4);
   }
 
   private List<RouteEtsDto> mockResponse() {
@@ -252,6 +251,27 @@ public class GetSlaByWarehouseOutboundServiceTest {
                     new CarrierServiceId("158663"))),
             INACTIVE));
 
+  }
+
+  private static Stream<Arguments> obtainSlaByZonedDataSupplier() {
+    return Stream.of(
+        Arguments.of(LOGISTIC_CENTER_ID, mockCptOutputByZonedDate()),
+        Arguments.of(LOGISTIC_CENTER_ID_NOT_ARBA, mockCptOutputByZonedDate())
+    );
+  }
+
+  private static List<GetSlaByWarehouseOutput> mockCptOutputByZonedDate() {
+
+    final GetSlaByWarehouseOutput getSlaByWarehouseOutput =
+        GetSlaByWarehouseOutput.builder()
+            .serviceId(null)
+            .canalizationId(null)
+            .logisticCenterId(LOGISTIC_CENTER_ID)
+            .date(UTC_DAY)
+            .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
+            .build();
+
+    return List.of(getSlaByWarehouseOutput);
   }
 
 }

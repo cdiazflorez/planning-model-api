@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.consumer;
 
-import static com.mercadolibre.planning.model.api.web.consumer.ConsumerMessageDTO.ProcessingTimeToUpdate;
+import static com.mercadolibre.planning.model.api.web.consumer.ConsumerMessageDto.ProcessingTimeToUpdate;
 
 import com.mercadolibre.planning.model.api.domain.service.configuration.DayAndHourProcessingTime;
 import com.mercadolibre.planning.model.api.domain.service.configuration.ProcessingTimeService;
@@ -8,6 +8,8 @@ import com.newrelic.api.agent.Trace;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/consumer/processing_time")
 public class ProcessingTimeEventController {
 
+  private static final String LC_PATTERN = "[A-Z]{4}[0-9]{2}";
+
+  private static final Pattern REGEX_PATTERN = Pattern.compile(LC_PATTERN);
+
   private static final String PROCESSING_TIME_PREFIX = "[processing_time_event] ";
 
-  private static final String START_MESSAGE = "the processing time update is started with the following values: %s";
+  private static final String INVALID_LC_TYPE_MESSAGE = "Logistic Center %s is not a valid Flow FC to run the process.";
 
   private static final String INVALID_EVENT_TYPE_MESSAGE = "Event %s is not valid to run the process, only %s is allowed.";
 
@@ -43,7 +49,8 @@ public class ProcessingTimeEventController {
 
   @PostMapping("/event")
   @Trace(dispatcher = true)
-  public ResponseEntity<ProcessingTimeConsumerResponse> saveEvent(@RequestBody @Valid final ConsumerMessageDTO request) {
+  public ResponseEntity<ProcessingTimeConsumerResponse> saveEvent(@RequestBody @Valid final ConsumerMessageDto request) {
+
     final ProcessingTimeConsumerResponse response = updateProcessingTime(request.data());
 
     return ResponseEntity.status(response.status()).body(response);
@@ -51,33 +58,50 @@ public class ProcessingTimeEventController {
 
   private ProcessingTimeConsumerResponse updateProcessingTime(final ProcessingTimeToUpdate processingTimeToUpdate) {
 
-    log.info(PROCESSING_TIME_PREFIX.concat(START_MESSAGE), processingTimeToUpdate);
+    if (!matchFlowLogisticCenterPattern(processingTimeToUpdate.logisticCenterId())) {
+      final String logMessage = String.format(
+          PROCESSING_TIME_PREFIX.concat(INVALID_LC_TYPE_MESSAGE),
+          processingTimeToUpdate.logisticCenterId()
+      );
+      log.info(logMessage);
+      return new ProcessingTimeConsumerResponse(NO_CONTENT_RESPONSE, logMessage);
+    }
 
     if (!EventType.exists(processingTimeToUpdate.eventType())) {
-      log.info(PROCESSING_TIME_PREFIX.concat(INVALID_EVENT_TYPE_MESSAGE), processingTimeToUpdate.eventType(), EVENT_TYPE_ALLOWED);
-      return new ProcessingTimeConsumerResponse(
-          NO_CONTENT_RESPONSE,
-          String.format(PROCESSING_TIME_PREFIX.concat(INVALID_EVENT_TYPE_MESSAGE), processingTimeToUpdate.eventType(), EVENT_TYPE_ALLOWED)
+      final String logMessage = String.format(
+          PROCESSING_TIME_PREFIX.concat(INVALID_EVENT_TYPE_MESSAGE),
+          processingTimeToUpdate.eventType(),
+          EVENT_TYPE_ALLOWED
       );
+      log.info(logMessage);
+      return new ProcessingTimeConsumerResponse(NO_CONTENT_RESPONSE, logMessage);
     }
 
     final List<DayAndHourProcessingTime> outboundProcessingTimes =
         outboundProcessingTimeService.updateProcessingTimeForCptsByLogisticCenter(processingTimeToUpdate.logisticCenterId());
 
     if (outboundProcessingTimes.isEmpty()) {
-      log.info(PROCESSING_TIME_PREFIX.concat(NO_INFORMATION_MESSAGE), processingTimeToUpdate.logisticCenterId());
-      return new ProcessingTimeConsumerResponse(
-          NO_CONTENT_RESPONSE,
-          String.format(PROCESSING_TIME_PREFIX.concat(NO_INFORMATION_MESSAGE), processingTimeToUpdate.logisticCenterId())
+      final String logMessage = String.format(
+          PROCESSING_TIME_PREFIX.concat(NO_INFORMATION_MESSAGE),
+          processingTimeToUpdate.logisticCenterId()
       );
+      log.info(logMessage);
+      return new ProcessingTimeConsumerResponse(NO_CONTENT_RESPONSE, logMessage);
     }
 
-    log.info(PROCESSING_TIME_PREFIX.concat(SUCCESS_MESSAGE), processingTimeToUpdate.logisticCenterId(), outboundProcessingTimes);
-
-    return new ProcessingTimeConsumerResponse(
-        OK_RESPONSE,
-        String.format(PROCESSING_TIME_PREFIX.concat(SUCCESS_MESSAGE), processingTimeToUpdate.logisticCenterId(), outboundProcessingTimes)
+    final String logMessage = String.format(
+        PROCESSING_TIME_PREFIX.concat(SUCCESS_MESSAGE),
+        processingTimeToUpdate.logisticCenterId(),
+        outboundProcessingTimes
     );
+
+    log.info(logMessage);
+    return new ProcessingTimeConsumerResponse(OK_RESPONSE, logMessage);
+  }
+
+  public static boolean matchFlowLogisticCenterPattern(final String logisticCenterId) {
+    final Matcher matcher = REGEX_PATTERN.matcher(logisticCenterId);
+    return matcher.matches();
   }
 
   private enum EventType {

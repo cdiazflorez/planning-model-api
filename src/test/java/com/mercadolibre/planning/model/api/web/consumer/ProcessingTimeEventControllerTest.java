@@ -1,6 +1,6 @@
 package com.mercadolibre.planning.model.api.web.consumer;
 
-import static com.mercadolibre.planning.model.api.web.consumer.ConsumerMessageDTO.ProcessingTimeToUpdate;
+import static com.mercadolibre.planning.model.api.web.consumer.ConsumerMessageDto.ProcessingTimeToUpdate;
 import static org.mockito.Mockito.lenient;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -57,12 +57,23 @@ public class ProcessingTimeEventControllerTest {
 
   private static final Long DATE = 1830L;
 
+  private static final ProcessingTimeToUpdate NO_FLOW_WH_TYPE = new ProcessingTimeToUpdate(
+      ID,
+      "SS01",
+      UPDATE_ETS
+  );
+
   private static final ProcessingTimeToUpdate NO_VALID_EVENT_TYPE = new ProcessingTimeToUpdate(
       ID,
       LOGISTIC_CENTER_ID,
       EVENT_TYPE_NO_VALID
   );
-  private static final ConsumerMessageDTO CUSTOMER_RESPONSE_INVALID_EVENT = new ConsumerMessageDTO(
+  private static final ConsumerMessageDto CUSTOMER_RESPONSE_INVALID_WH = new ConsumerMessageDto(
+      ID,
+      NO_FLOW_WH_TYPE,
+      DATE
+  );
+  private static final ConsumerMessageDto CUSTOMER_RESPONSE_INVALID_EVENT = new ConsumerMessageDto(
       ID,
       NO_VALID_EVENT_TYPE,
       DATE
@@ -72,7 +83,7 @@ public class ProcessingTimeEventControllerTest {
       LOGISTIC_CENTER_ID,
       CREATE_ETS
   );
-  private static final ConsumerMessageDTO CUSTOMER_RESPONSE_CREATE = new ConsumerMessageDTO(
+  private static final ConsumerMessageDto CUSTOMER_RESPONSE_CREATE = new ConsumerMessageDto(
       ID,
       CREATE_ETS_DTO,
       DATE
@@ -82,7 +93,7 @@ public class ProcessingTimeEventControllerTest {
       LOGISTIC_CENTER_ID,
       DELETE_ETS
   );
-  private static final ConsumerMessageDTO CUSTOMER_RESPONSE_DELETE = new ConsumerMessageDTO(
+  private static final ConsumerMessageDto CUSTOMER_RESPONSE_DELETE = new ConsumerMessageDto(
       ID,
       DELETE_ETS_DTO,
       DATE
@@ -92,7 +103,7 @@ public class ProcessingTimeEventControllerTest {
       LOGISTIC_CENTER_ID,
       UPDATE_ETS
   );
-  private static final ConsumerMessageDTO CUSTOMER_RESPONSE_UPDATE = new ConsumerMessageDTO(
+  private static final ConsumerMessageDto CUSTOMER_RESPONSE_UPDATE = new ConsumerMessageDto(
       ID,
       UPDATE_ETS_DTO,
       DATE
@@ -111,6 +122,10 @@ public class ProcessingTimeEventControllerTest {
       HttpStatus.OK.value(),
       String.format("[processing_time_event] Update of warehouse ARBA01 successfully performed, new data are %s", getMockOk())
   );
+  private static final ProcessingTimeConsumerResponse EXPECTED_NO_VALID_WH = new ProcessingTimeConsumerResponse(
+      HttpStatus.NO_CONTENT.value(),
+      "[processing_time_event] Logistic Center SS01 is not a valid Flow FC to run the process."
+  );
   private static final ProcessingTimeConsumerResponse EXPECTED_NO_VALID_EVENT_TYPE = new ProcessingTimeConsumerResponse(
       HttpStatus.NO_CONTENT.value(),
       "[processing_time_event] Event UpdateSpecialDate is not valid to run the process, "
@@ -127,7 +142,7 @@ public class ProcessingTimeEventControllerTest {
   @MockBean
   private ProcessingTimeService processingTimeService;
 
-  private static String fromDtoToString(final ConsumerMessageDTO consumerResponse) throws JsonProcessingException {
+  private static String fromDtoToString(final ConsumerMessageDto consumerResponse) throws JsonProcessingException {
     ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
     return ow.writeValueAsString(consumerResponse);
   }
@@ -143,6 +158,10 @@ public class ProcessingTimeEventControllerTest {
 
   public static Stream<Arguments> testArguments() throws JsonProcessingException {
     return Stream.of(
+        Arguments.of(MOCK_EMPTY,
+            fromDtoToString(CUSTOMER_RESPONSE_INVALID_WH),
+            HttpStatus.NO_CONTENT,
+            fromDtoToString(EXPECTED_NO_VALID_WH)),
         Arguments.of(MOCK_EMPTY,
             fromDtoToString(CUSTOMER_RESPONSE_INVALID_EVENT),
             HttpStatus.NO_CONTENT,

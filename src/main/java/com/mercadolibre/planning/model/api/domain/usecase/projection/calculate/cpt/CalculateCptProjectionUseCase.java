@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.domain.usecase.projection.calculate.cpt;
 
 import static com.mercadolibre.planning.model.api.util.DateUtils.ignoreMinutes;
+import static com.mercadolibre.planning.model.api.util.MapUtils.mapWithSize;
 import static java.lang.Math.min;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -15,9 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -26,7 +26,8 @@ public final class CalculateCptProjectionUseCase {
 
   private static final int HOUR_IN_MINUTES = 60;
 
-  private CalculateCptProjectionUseCase() { }
+  private CalculateCptProjectionUseCase() {
+  }
 
   public static List<CptCalculationOutput> execute(final SlaProjectionInput input) {
     final Map<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate = getUnitsByDateOutAndDate(input);
@@ -47,6 +48,12 @@ public final class CalculateCptProjectionUseCase {
     final Map<ZonedDateTime, Integer> originalCapacityByDate = new HashMap<>(capacityByDate);
     final Map<ZonedDateTime, Integer> projectionEndMinutes = new HashMap<>();
 
+    final ZonedDateTime firstHour = ignoreMinutes(input.getDateFrom());
+
+    final var operationHours = Stream.concat(Stream.of(input.getCurrentDate()), dateRange(firstHour, input.getDateTo()))
+        .sorted()
+        .toList();
+
     // Iteration by dateOut (cpt)
     input.getSlaByWarehouse().forEach(sla -> {
 
@@ -60,9 +67,10 @@ public final class CalculateCptProjectionUseCase {
       final boolean cptFound = unitsByDate != null;
 
       if (cptFound) {
+        final var truncatedSla = sla.getDate().truncatedTo(HOURS);
 
         // Iteration by operation hour
-        for (final ZonedDateTime operationHour : unitsByDate.getTotalBacklogByOperationHour().keySet()) {
+        for (final ZonedDateTime operationHour : operationHours) {
 
           final int capacity = capacityByDate.getOrDefault(operationHour, 0);
           final int unitsToProcess = unitsByDate.getTotalBacklogByOperationHour().getOrDefault(operationHour, 0);
@@ -94,7 +102,7 @@ public final class CalculateCptProjectionUseCase {
 
           calculationDetails.add(new CptCalculationDetailOutput(operationHour, unitsBeingProcessed, currentBacklog));
 
-          if (sla.getDate().truncatedTo(HOURS).isEqual(operationHour)) {
+          if (truncatedSla.isEqual(operationHour)) {
             final int minutes = (int) MINUTES.between(operationHour, sla.getDate());
             unitsBeingProcessed = minutes * unitsBeingProcessed / HOUR_IN_MINUTES;
             remainingQuantity = currentBacklog - unitsBeingProcessed;
@@ -119,7 +127,7 @@ public final class CalculateCptProjectionUseCase {
     return cptCalculationOutputs;
   }
 
-  private static SortedMap<ZonedDateTime, BacklogDetail> getUnitsByDateOutAndDate(final SlaProjectionInput input) {
+  private static Map<ZonedDateTime, BacklogDetail> getUnitsByDateOutAndDate(final SlaProjectionInput input) {
 
     final Map<ZonedDateTime, Map<ZonedDateTime, Integer>> expectedUnitsByDateInByDateOut = getExpectedUnits(input.getPlannedUnits());
 
@@ -134,10 +142,12 @@ public final class CalculateCptProjectionUseCase {
     final TreeSet<ZonedDateTime> datesOut = new TreeSet<>(expectedUnitsByDateInByDateOut.keySet());
     datesOut.addAll(currentUnitsBacklogByDateOut.keySet());
 
-    final SortedMap<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate = new TreeMap<>();
+    final Map<ZonedDateTime, BacklogDetail> unitsByDateOutAndDate = mapWithSize(datesOut.size());
+
+    final var hours = dateRange(firstHour, input.getDateTo()).toList();
 
     datesOut.forEach(dateOut -> {
-      final Map<ZonedDateTime, Integer> unitsByDate = new TreeMap<>();
+      final Map<ZonedDateTime, Integer> unitsByDate = mapWithSize(hours.size() + 1);
       final Integer totalCurrentBacklog = currentUnitsBacklogByDateOut.getOrDefault(dateOut, 0);
       final Map<ZonedDateTime, Integer> expectedUnitsByDateOut = expectedUnitsByDateInByDateOut.getOrDefault(dateOut, emptyMap());
 
@@ -148,17 +158,12 @@ public final class CalculateCptProjectionUseCase {
           input.getCurrentDate().getMinute()));
 
       // Process next hours (excluded first hour)
-      iterate(firstHour.plusHours(1), date -> date.plusHours(1))
-          .limit(HOURS.between(firstHour, input.getDateTo()))
-          .forEach(dateTime -> {
-            final Integer expectedQty =
-                expectedUnitsByDateOut.getOrDefault(dateTime, 0);
+      hours.forEach(dateTime -> {
+        final Integer expectedQty = expectedUnitsByDateOut.getOrDefault(dateTime, 0);
+        unitsByDate.put(dateTime, expectedQty);
+      });
 
-            unitsByDate.put(dateTime, expectedQty);
-          });
-
-      final int totalPlannedBacklog = unitsByDate.values().stream().reduce(0, Integer::sum) - totalCurrentBacklog;
-      unitsByDateOutAndDate.put(dateOut, new BacklogDetail(totalCurrentBacklog, totalPlannedBacklog, unitsByDate));
+      unitsByDateOutAndDate.put(dateOut, new BacklogDetail(totalCurrentBacklog, 0, unitsByDate));
     });
 
     return unitsByDateOutAndDate;
@@ -204,5 +209,10 @@ public final class CalculateCptProjectionUseCase {
 
     final int remainingMinutes = HOUR_IN_MINUTES - currentDate.getMinute();
     capacity.put(currentDate, currentDateCapacity * remainingMinutes / HOUR_IN_MINUTES);
+  }
+
+  private static Stream<ZonedDateTime> dateRange(final ZonedDateTime firstHour, final ZonedDateTime lastHour) {
+    return iterate(firstHour.plusHours(1), date -> date.plusHours(1))
+        .limit(HOURS.between(firstHour, lastHour));
   }
 }

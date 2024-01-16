@@ -1,9 +1,5 @@
 package com.mercadolibre.planning.model.api.domain.usecase.sla;
 
-import static com.mercadolibre.planning.model.api.domain.usecase.sla.ExecutionMetrics.USES_OF_PROCESSING_TIME_DEFAULT;
-import static com.mercadolibre.planning.model.api.domain.usecase.sla.ExecutionMetrics.withCPTHour;
-import static com.mercadolibre.planning.model.api.domain.usecase.sla.ExecutionMetrics.withLogisticCenterID;
-
 import com.mercadolibre.fbm.wms.outbound.commons.rest.exception.ClientException;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.sla.Canalization;
@@ -109,11 +105,7 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
                     .logisticCenterId(input.getLogisticCenterId())
                     .build();
               }
-              USES_OF_PROCESSING_TIME_DEFAULT.count(
-                  withLogisticCenterID(input.getLogisticCenterId()),
-                  withCPTHour(item)
-              );
-              return slaByWarehouseOutput;
+          return slaByWarehouseOutput;
             }
         )
         .toList();

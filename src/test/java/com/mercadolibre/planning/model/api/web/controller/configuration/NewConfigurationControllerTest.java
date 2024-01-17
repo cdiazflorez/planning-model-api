@@ -50,6 +50,14 @@ class NewConfigurationControllerTest {
 
   private static final String VALUE_2 = "2.0";
 
+  private static final String KEY_3 = "configuration_03";
+
+  private static final String VALUE_3 = "palabra";
+
+  private static final String KEY_4 = "configuration_04";
+
+  private static final String VALUE_4 = "{\"parameter\": \"e}";
+
   private static final List<Configuration> CONFIGURATIONS = List.of(
       Configuration.builder()
           .logisticCenterId(LOGISTIC_CENTER_ID)
@@ -60,6 +68,16 @@ class NewConfigurationControllerTest {
           .logisticCenterId(LOGISTIC_CENTER_ID)
           .key(KEY_2)
           .value(VALUE_2)
+          .build(),
+      Configuration.builder()
+          .logisticCenterId(LOGISTIC_CENTER_ID)
+          .key(KEY_3)
+          .value(VALUE_3)
+          .build(),
+      Configuration.builder()
+          .logisticCenterId(LOGISTIC_CENTER_ID)
+          .key(KEY_4)
+          .value(VALUE_4)
           .build()
   );
 
@@ -167,12 +185,30 @@ class NewConfigurationControllerTest {
   @MockBean
   private ProcessingTimeService processingTimeService;
 
+  private static Stream<Arguments> provideGetConfiguration() {
+    return Stream.of(
+        Arguments.of(CONFIGURATIONS),
+        Arguments.of(List.of())
+    );
+  }
+
+  public static Stream<Arguments> testProcessingTimeForCptInDateRangeExceptionsProvider() {
+    return Stream.of(
+        Arguments.of(PT_DATE_TO_PLUS_DAYS, PT_DATE_FROM, JSON_FROM_AFTER_TO, BAD_REQUEST, PROCESSING_TIME_EXCEPTION),
+        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_WEEK, JSON_MORE_THAN_WEEK, BAD_REQUEST, PROCESSING_TIME_EXCEPTION),
+        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_DAYS, JSON_PROCESSING_TIME_EXCEPTION, CONFLICT, PROCESSING_TIME_EXCEPTION),
+        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_DAYS, JSON_FURY_CONFIG_EXCEPTION, CONFLICT, FURY_CONFIG_EXCEPTION)
+    );
+  }
+
   @Test
   void testConfigurationSaveOk() throws Exception {
     // GIVEN
     final Map<String, String> configurations = Map.of(
         KEY_1, VALUE_1,
-        KEY_2, VALUE_2
+        KEY_2, VALUE_2,
+        KEY_3, VALUE_3,
+        KEY_4, VALUE_4
     );
     when(configurationUseCase.save(USER_ID, LOGISTIC_CENTER_ID, configurations)).thenReturn(CONFIGURATIONS);
     // WHEN
@@ -213,7 +249,7 @@ class NewConfigurationControllerTest {
         get(URL)
             .contentType(APPLICATION_JSON)
             .param("logistic_center_id", LOGISTIC_CENTER_ID)
-            .param("keys", KEY_1, KEY_2)
+            .param("keys", KEY_1, KEY_2, KEY_3, KEY_4)
     );
     // THEN
     if (configurations.isEmpty()) {
@@ -310,22 +346,6 @@ class NewConfigurationControllerTest {
     //THEN
     result.andExpect(status().is(CONFLICT))
         .andExpect(content().json(getResourceAsString(JSON_PROCESSING_TIME_EXCEPTION)));
-  }
-
-  private static Stream<Arguments> provideGetConfiguration() {
-    return Stream.of(
-        Arguments.of(CONFIGURATIONS),
-        Arguments.of(List.of())
-    );
-  }
-
-  public static Stream<Arguments> testProcessingTimeForCptInDateRangeExceptionsProvider() {
-    return Stream.of(
-        Arguments.of(PT_DATE_TO_PLUS_DAYS, PT_DATE_FROM, JSON_FROM_AFTER_TO, BAD_REQUEST, PROCESSING_TIME_EXCEPTION),
-        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_WEEK, JSON_MORE_THAN_WEEK, BAD_REQUEST, PROCESSING_TIME_EXCEPTION),
-        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_DAYS, JSON_PROCESSING_TIME_EXCEPTION, CONFLICT, PROCESSING_TIME_EXCEPTION),
-        Arguments.of(PT_DATE_FROM, PT_DATE_TO_PLUS_DAYS, JSON_FURY_CONFIG_EXCEPTION, CONFLICT, FURY_CONFIG_EXCEPTION)
-    );
   }
 
 }

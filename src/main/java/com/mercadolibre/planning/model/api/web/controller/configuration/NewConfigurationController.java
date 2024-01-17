@@ -4,6 +4,10 @@ import static com.mercadolibre.planning.model.api.util.DateUtils.validateDateRan
 import static com.mercadolibre.planning.model.api.util.DateUtils.validateDatesRanges;
 import static java.util.stream.Collectors.toMap;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.mercadolibre.planning.model.api.domain.entity.configuration.Configuration;
 import com.mercadolibre.planning.model.api.domain.service.configuration.DayAndHourProcessingTime;
 import com.mercadolibre.planning.model.api.domain.service.configuration.ProcessingTimeService;
@@ -43,7 +47,7 @@ public class NewConfigurationController {
 
   @Trace(dispatcher = true)
   @PostMapping
-  public ResponseEntity<Map<String, String>> save(
+  public ResponseEntity<Map<String, JsonNode>> save(
       @PathVariable final String logisticCenterId,
       @RequestParam final long userId,
       @RequestBody @Valid final Map<@NotBlank String, @NotBlank String> configurations) {
@@ -55,8 +59,8 @@ public class NewConfigurationController {
 
   @Trace(dispatcher = true)
   @GetMapping
-  public ResponseEntity<Map<String, String>> get(@PathVariable final String logisticCenterId,
-                                                 @RequestParam(required = false, defaultValue = "") final Set<String> keys) {
+  public ResponseEntity<Map<String, JsonNode>> get(@PathVariable final String logisticCenterId,
+                                                   @RequestParam(required = false, defaultValue = "") final Set<String> keys) {
 
     final var configurations = configurationUseCase.get(logisticCenterId, keys);
 
@@ -90,12 +94,19 @@ public class NewConfigurationController {
     return ResponseEntity.ok(processingTimeService.updateProcessingTimeForCptsByLogisticCenter(logisticCenterId));
   }
 
-  private Map<String, String> toResponse(final List<Configuration> configurations) {
+  private Map<String, JsonNode> toResponse(final List<Configuration> configurations) {
+    ObjectMapper objectMapper = new ObjectMapper();
     return configurations.stream()
         .collect(
             toMap(
                 Configuration::getKey,
-                Configuration::getValue,
+                config -> {
+                  try {
+                    return objectMapper.readTree(config.getValue());
+                  } catch (JsonProcessingException e) {
+                    return new TextNode(config.getValue());
+                  }
+                },
                 (o1, o2) -> o2
             )
         );

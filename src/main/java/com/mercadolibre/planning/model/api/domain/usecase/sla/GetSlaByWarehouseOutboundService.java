@@ -105,7 +105,7 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
                     .logisticCenterId(input.getLogisticCenterId())
                     .build();
               }
-              return slaByWarehouseOutput;
+          return slaByWarehouseOutput;
             }
         )
         .toList();

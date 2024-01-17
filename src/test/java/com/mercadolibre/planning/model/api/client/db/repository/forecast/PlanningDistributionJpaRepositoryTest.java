@@ -1,8 +1,10 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import static com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistributionMetadata.builder;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -17,9 +19,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class PlanningDistributionJpaRepositoryTest {
 
   private static final ZonedDateTime DATE = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
@@ -31,11 +35,11 @@ public class PlanningDistributionJpaRepositoryTest {
   public void testCreate() {
 
     // GIVEN
-    final Forecast forecast = new Forecast();
+    final Forecast forecast = mockSimpleForecast();
     entityManager.persist(forecast);
 
     final PlanningDistributionJpaRepository repository =
-        new PlanningDistributionJpaRepositoryMock(entityManager);
+        new PlanningDistributionJpaRepository(entityManager);
 
     final PlanningDistribution entity = PlanningDistribution.builder()
         .dateIn(DATE)
@@ -66,14 +70,10 @@ public class PlanningDistributionJpaRepositoryTest {
                  persistedEntities.get(0).getQuantityMetricUnit());
 
     assertEquals(3, persistedMetadata.size());
-    IntStream.range(0, 3).forEach(index -> {
-      assertEquals(
-          entity.getMetadatas().get(index).getKey(),
-          persistedMetadata.get(index).getKey());
-      assertEquals(
-          entity.getMetadatas().get(index).getValue(),
-          persistedMetadata.get(index).getValue());
-    });
+    assertTrue(
+        entity.getMetadatas().containsAll(persistedMetadata)
+        && persistedMetadata.containsAll(entity.getMetadatas())
+    );
   }
 
   private List<PlanningDistribution> getPlanningDistributions() {

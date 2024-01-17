@@ -1,6 +1,7 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static java.util.Arrays.fill;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -17,9 +18,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class ProcessingDistributionJpaRepositoryTest {
 
   private static final ZonedDateTime DATE = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
@@ -30,7 +33,7 @@ class ProcessingDistributionJpaRepositoryTest {
   @Test
   void testCreate() {
     // GIVEN
-    final Forecast forecast = new Forecast();
+    final Forecast forecast = mockSimpleForecast();
     entityManager.persist(forecast);
 
     final ProcessingDistributionJpaRepository repository = new ProcessingDistributionJpaRepository(entityManager);

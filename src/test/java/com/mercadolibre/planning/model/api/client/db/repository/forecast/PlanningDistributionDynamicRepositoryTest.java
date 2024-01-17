@@ -14,19 +14,23 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
-@SpringBootTest
+@DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ActiveProfiles("development")
 public class PlanningDistributionDynamicRepositoryTest {
 
   private static final Instant DATE_IN_FROM = Instant.parse("2022-11-10T00:00:00Z");
@@ -41,12 +45,19 @@ public class PlanningDistributionDynamicRepositoryTest {
 
   private static final String SQL = "/sql/forecast/load_planning_distribution.sql";
 
-  @Autowired
   private PlanningDistributionDynamicRepository planningDistributionDynamicRepository;
+
+  @Autowired
+  private TestEntityManager entityManager;
+
+  @BeforeEach
+  void setUp() {
+    planningDistributionDynamicRepository = new PlanningDistributionDynamicRepository(entityManager.getEntityManager());
+  }
 
   @ParameterizedTest
   @MethodSource("provideProcessPathsArguments")
-  @Sql({SQL})
+  @Sql(SQL)
   void testGetPlanningDistribution(final Instant dateInFrom,
                                    final Instant dateInTo,
                                    final Set<ProcessPath> processPaths,
@@ -71,7 +82,7 @@ public class PlanningDistributionDynamicRepositoryTest {
   }
 
   @Test
-  @Sql({SQL})
+  @Sql(SQL)
   void testGetPlanningDistributionForecastIdFake() {
     //WHEN
     final var result = planningDistributionDynamicRepository.findByForecastIdsAndDynamicFilters(

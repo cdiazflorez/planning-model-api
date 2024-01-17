@@ -1,13 +1,12 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
-import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecast;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountProd;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockPlanningDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProcessingDist;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,30 +92,30 @@ public class ForecastRepositoryTest {
   }
 
   private Forecast persistForecast() {
-    final HeadcountDistribution headcountDistribution = mockHeadcountDist(null);
-    entityManager.persistAndFlush(headcountDistribution);
-
-    final HeadcountProductivity headcountProductivity = mockHeadcountProd(null);
-    entityManager.persistAndFlush(headcountProductivity);
-
-    final PlanningDistribution planningDistribution = mockPlanningDist(null);
-    entityManager.persistAndFlush(planningDistribution);
-
-    final ProcessingDistribution processingDistribution = mockProcessingDist(null);
-    entityManager.persistAndFlush(processingDistribution);
-
-    final Forecast forecast = mockForecast(
-        Set.of(headcountDistribution),
-        Set.of(headcountProductivity),
-        Set.of(planningDistribution),
-        Set.of(processingDistribution),
-        null,
-        USER_ID);
+    final Forecast forecast = mockSimpleForecast();
 
     entityManager.persistAndFlush(forecast);
 
     final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
     entityManager.persistAndFlush(forecastMetadata);
+
+    final HeadcountDistribution headcountDistribution = mockHeadcountDist(forecast);
+    entityManager.persistAndFlush(headcountDistribution);
+
+    final HeadcountProductivity headcountProductivity = mockHeadcountProd(forecast);
+    entityManager.persistAndFlush(headcountProductivity);
+
+    final PlanningDistribution planningDistribution = mockPlanningDist(forecast);
+    entityManager.persistAndFlush(planningDistribution);
+
+    final ProcessingDistribution processingDistribution = mockProcessingDist(forecast);
+    entityManager.persistAndFlush(processingDistribution);
+
+    forecast.setHeadcountDistributions(Set.of(headcountDistribution));
+    forecast.setHeadcountProductivities(Set.of(headcountProductivity));
+    forecast.setPlanningDistributions(Set.of(planningDistribution));
+    forecast.setProcessingDistributions(Set.of(processingDistribution));
+    forecast.setMetadatas(Set.of(forecastMetadata));
 
     return forecast;
   }

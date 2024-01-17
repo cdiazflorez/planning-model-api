@@ -7,7 +7,7 @@ VALUES (1, 'FBM_WMS_OUTBOUND', 'ARTW01', '33-2022', '2022-09-08 12:31:00', '2022
        (6, 'FBM_WMS_OUTBOUND', 'ARTW02', '34-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100),
        (7, 'FBM_WMS_OUTBOUND', 'ARTW02', '35-2022', '2022-09-08 12:30:00', '2022-09-08 12:31:00', 100);
 
-INSERT INTO current_forecast_deviation(id, logistic_center_id, date_from, date_to, "value", is_active, workflow, user_id, date_created, last_updated)
+INSERT INTO current_forecast_deviation(id, logistic_center_id, date_from, date_to, `value`, is_active, workflow, user_id, date_created, last_updated)
 VALUES
     (1, 'ARTW01', '2022-09-08 12:30:00', '2022-09-09 12:40:00', 0.7, 0, 'FBM_WMS_OUTBOUND', 0, '2022-09-08 12:30:00', '2022-09-08 12:45:00'), -- there is no deviation as it was deactivated before view_date
     (2, 'ARTW01', '2022-09-08 12:30:00', '2022-09-09 12:40:00', 0.7, 0, 'FBM_WMS_OUTBOUND', 0, '2022-09-08 13:15:00', '2022-09-08 13:15:00'),
@@ -37,7 +37,7 @@ VALUES (11, '2022-09-08 11:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'PICKING', 10, 
        (20, '2022-09-08 12:30:00', 'ARTW04', 'FBM_WMS_OUTBOUND', 'PICKING', 09, 'UNITS_PER_HOUR', 1, '2022-09-08 10:45:00', '2022-09-08 10:45:00', 1);
 
 
-INSERT INTO current_processing_distribution(id, date, logistic_center_id, workflow, process_path, process_name, quantity, quantity_metric_unit, "type", is_active, date_created, last_updated, user_id)
+INSERT INTO current_processing_distribution(id, date, logistic_center_id, workflow, process_path, process_name, quantity, quantity_metric_unit, `type`, is_active, date_created, last_updated, user_id)
 VALUES (1, '2022-09-08 11:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'GLOBAL', 'PICKING', 10, 'UNITS_PER_HOUR', 'EFFECTIVE_WORKERS', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1), -- there are simulations out of date range
        (2, '2022-09-08 14:30:00', 'ARTW01', 'FBM_WMS_OUTBOUND', 'GLOBAL', 'PACKING', 10, 'UNITS_PER_HOUR', 'EFFECTIVE_WORKERS', 1, '2022-09-08 10:00:00', '2022-09-08 10:00:00', 1),
 

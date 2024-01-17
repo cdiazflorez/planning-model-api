@@ -1,0 +1,15 @@
+FROM mysql:8
+
+ENV MYSQL_DATABASE modellocal
+ENV MYSQL_ROOT_HOST localhost
+ENV MYSQL_ALLOW_EMPTY_PASSWORD true
+
+COPY sql/*.sql /docker-entrypoint-initdb.d/
+COPY migrations/mysql/modelprod/*.sql /docker-entrypoint-initdb.d/
+
+# removes duplicate file
+RUN rm /docker-entrypoint-initdb.d/20201110185450285_add_dates.sql
+RUN rm /docker-entrypoint-initdb.d/20210422124346538_create_current_planning_distribution.sql
+RUN rm /docker-entrypoint-initdb.d/20221013130413744_add_process_path_column_on_headcount_productivity_table.sql
+RUN rm /docker-entrypoint-initdb.d/20221013132501298_add_process_path_column_on_processing_distribution_table.sql
+RUN rm /docker-entrypoint-initdb.d/20231018160812091_add_current_processing_distribution_idx_lc_workflow_type_date.sql

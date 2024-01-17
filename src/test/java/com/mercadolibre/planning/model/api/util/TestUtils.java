@@ -182,6 +182,8 @@ public final class TestUtils {
         .workflow(FBM_WMS_OUTBOUND)
         .dateCreated(A_DATE_UTC)
         .lastUpdated(A_DATE_UTC)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
+        .week(WEEK)
         .userId(CALLER_ID);
   }
 
@@ -195,7 +197,8 @@ public final class TestUtils {
         .dateOut(DATE_OUT)
         .quantity(1200)
         .metadatas(emptyList())
-        .quantityMetricUnit(UNITS);
+        .quantityMetricUnit(UNITS)
+        .processPath(GLOBAL);
   }
 
   public static HeadcountDistribution.HeadcountDistributionBuilder headcountDistBuilder() {
@@ -217,7 +220,8 @@ public final class TestUtils {
         .productivity(80)
         .productivityMetricUnit(PERCENTAGE)
         .processName(PACKING)
-        .date(A_DATE_UTC);
+        .date(A_DATE_UTC)
+        .processPath(GLOBAL);
   }
 
   public static HeadcountProductivity mockHeadcountProd(final Forecast forecast) {
@@ -227,6 +231,7 @@ public final class TestUtils {
   public static ProcessingDistribution.ProcessingDistBuilder processDistBuilder() {
     return ProcessingDistribution.builder()
         .processName(WAVING)
+        .processPath(GLOBAL)
         .quantity(1000)
         .quantityMetricUnit(UNITS)
         .type(REMAINING_PROCESSING)
@@ -311,6 +316,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
@@ -321,6 +327,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
@@ -331,6 +338,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_INBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
@@ -341,6 +349,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build()
     );
   }
@@ -1314,6 +1323,7 @@ public final class TestUtils {
         .userId(USER_ID)
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(true)
+        .type(DeviationType.UNITS)
         .build();
   }
 

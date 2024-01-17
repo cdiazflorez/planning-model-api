@@ -5,7 +5,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.GLOB
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.NON_TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MONO;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessPath.TOT_MULTI_BATCH;
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockProcessingDist;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -84,11 +83,12 @@ class ProcessingDistributionRepositoryTest {
     // GIVEN
     final Forecast forecast = mockSimpleForecast();
     entityManager.persistAndFlush(forecast);
-    entityManager.persistAndFlush(mockProcessingDist(forecast));
+    final ProcessingDistribution processingDistribution = mockProcessingDist(forecast);
+    entityManager.persistAndFlush(processingDistribution);
 
     // WHEN
     final Optional<ProcessingDistribution> optProcessingDistribution =
-        repository.findById(1L);
+        repository.findById(processingDistribution.getId());
 
     // THEN
     assertTrue(optProcessingDistribution.isPresent());
@@ -96,16 +96,16 @@ class ProcessingDistributionRepositoryTest {
     final ProcessingDistribution foundProcessingDistribution =
         optProcessingDistribution.get();
 
-    assertEquals(1L, foundProcessingDistribution.getId());
-    assertEquals(A_DATE_UTC, foundProcessingDistribution.getDate());
-    assertEquals(1000, foundProcessingDistribution.getQuantity());
-    assertEquals("UNITS", foundProcessingDistribution.getQuantityMetricUnit().name());
-    assertEquals("WAVING", foundProcessingDistribution.getProcessName().name());
-    assertEquals("REMAINING_PROCESSING", foundProcessingDistribution.getType().name());
+    assertEquals(processingDistribution.getId(), foundProcessingDistribution.getId());
+    assertEquals(processingDistribution.getDate(), foundProcessingDistribution.getDate());
+    assertEquals(processingDistribution.getQuantity(), foundProcessingDistribution.getQuantity());
+    assertEquals(processingDistribution.getQuantityMetricUnit().name(), foundProcessingDistribution.getQuantityMetricUnit().name());
+    assertEquals(processingDistribution.getProcessName().name(), foundProcessingDistribution.getProcessName().name());
+    assertEquals(processingDistribution.getType().name(), foundProcessingDistribution.getType().name());
 
     final Forecast foundForecast = foundProcessingDistribution.getForecast();
-    assertEquals(1L, foundForecast.getId());
-    assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
+    assertEquals(forecast.getId(), foundForecast.getId());
+    assertEquals(forecast.getWorkflow().name(), foundForecast.getWorkflow().name());
   }
 
   @Test

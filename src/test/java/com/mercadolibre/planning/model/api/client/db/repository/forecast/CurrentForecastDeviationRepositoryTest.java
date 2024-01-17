@@ -6,10 +6,13 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviation;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCurrentForecastDeviationWithPath;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockListOfCurrentForecastDeviations;
+import static java.time.ZoneOffset.UTC;
+import static java.time.temporal.ChronoUnit.HOURS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,9 +21,7 @@ import com.mercadolibre.planning.model.api.domain.entity.DeviationType;
 import com.mercadolibre.planning.model.api.domain.entity.Path;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.CurrentForecastDeviation;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -30,12 +31,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class CurrentForecastDeviationRepositoryTest {
 
@@ -81,19 +84,19 @@ class CurrentForecastDeviationRepositoryTest {
   @DisplayName("Find currentForecastDeviation active and unexpired by warehouse id and workflow and currentDate")
   void findByLogisticCenterIdAndWorkflowAndIsActiveAndDateToIsGreaterThanCurrentDateOk() {
     // GIVEN
-    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(UTC);
 
     // Active and expired deviations
     entityManager.persistAndFlush(
         mockCurrentForecastDeviation(
-            currentDate.minus(3, ChronoUnit.HOURS),
-            currentDate.minus(2, ChronoUnit.HOURS),
+            currentDate.minus(3, HOURS),
+            currentDate.minus(2, HOURS),
             true
         )
     );
     entityManager.persistAndFlush(
         mockCurrentForecastDeviation(
-            currentDate.minus(3, ChronoUnit.HOURS),
+            currentDate.minus(3, HOURS),
             currentDate,
             true
         )
@@ -101,8 +104,8 @@ class CurrentForecastDeviationRepositoryTest {
     // inactive deviation
     entityManager.persistAndFlush(
         mockCurrentForecastDeviation(
-            currentDate.minus(1, ChronoUnit.HOURS),
-            currentDate.plus(1, ChronoUnit.HOURS),
+            currentDate.minus(1, HOURS),
+            currentDate.plus(1, HOURS),
             false
         )
     );
@@ -110,7 +113,7 @@ class CurrentForecastDeviationRepositoryTest {
     entityManager.persistAndFlush(
         mockCurrentForecastDeviation(
             currentDate,
-            currentDate.plus(2, ChronoUnit.HOURS),
+            currentDate.plus(2, HOURS),
             true
         )
     );
@@ -137,10 +140,13 @@ class CurrentForecastDeviationRepositoryTest {
     currentForecastDeviation.forEach(a -> entityManager.persist(a));
     entityManager.flush();
     final CurrentForecastDeviation newEntityToPersist = CurrentForecastDeviation.builder()
+        .dateFrom(DATE_FROM.truncatedTo(HOURS).atZone(UTC))
+        .dateTo(DATE_TO.truncatedTo(HOURS).atZone(UTC))
         .isActive(Boolean.TRUE)
         .workflow(FBM_WMS_INBOUND)
         .logisticCenterId(WAREHOUSE_ID)
         .type(DeviationType.UNITS)
+        .userId(USER_ID)
         .build();
     // WHEN
     repository.disableDeviation(WAREHOUSE_ID, FBM_WMS_INBOUND, DeviationType.UNITS, null);
@@ -206,7 +212,7 @@ class CurrentForecastDeviationRepositoryTest {
   @Test
   void testFindCurrentActiveDeviationsWithoutPath() {
 
-    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(UTC);
 
     mockEntitiesToPersistWithoutPath(currentDate);
 
@@ -230,7 +236,7 @@ class CurrentForecastDeviationRepositoryTest {
   @Test
   void testFindCurrentActiveDeviationsWithPath() {
 
-    final ZonedDateTime currentDate = Instant.now().truncatedTo(ChronoUnit.HOURS).atZone(ZoneOffset.UTC);
+    final ZonedDateTime currentDate = Instant.now().truncatedTo(HOURS).atZone(UTC);
 
     mockPathEntitiesToPersistWithPath(currentDate);
     final Set<Path> paths = Set.of(Path.FTL, Path.COLLECT, Path.SPD);
@@ -264,8 +270,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.UNITS,
             true,
             0.1,
-            currentDate.minus(12, ChronoUnit.HOURS),
-            currentDate.minus(8, ChronoUnit.HOURS)
+            currentDate.minus(12, HOURS),
+            currentDate.minus(8, HOURS)
         )
 
     );
@@ -277,8 +283,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.UNITS,
             true,
             0.1,
-            currentDate.minus(3, ChronoUnit.HOURS),
-            currentDate.plus(3, ChronoUnit.HOURS)
+            currentDate.minus(3, HOURS),
+            currentDate.plus(3, HOURS)
         )
     );
 
@@ -293,8 +299,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.MINUTES,
             true,
             80,
-            currentDate.minus(5, ChronoUnit.HOURS),
-            currentDate.minus(3, ChronoUnit.HOURS)
+            currentDate.minus(5, HOURS),
+            currentDate.minus(3, HOURS)
         )
 
     );
@@ -306,8 +312,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.MINUTES,
             true,
             80,
-            currentDate.minus(8, ChronoUnit.HOURS),
-            currentDate.minus(4, ChronoUnit.HOURS)
+            currentDate.minus(8, HOURS),
+            currentDate.minus(4, HOURS)
         )
 
     );
@@ -319,8 +325,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.MINUTES,
             true,
             80,
-            currentDate.minus(12, ChronoUnit.HOURS),
-            currentDate.minus(8, ChronoUnit.HOURS)
+            currentDate.minus(12, HOURS),
+            currentDate.minus(8, HOURS)
         )
 
     );
@@ -332,8 +338,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.MINUTES,
             true,
             30,
-            currentDate.minus(3, ChronoUnit.HOURS),
-            currentDate.plus(3, ChronoUnit.HOURS)
+            currentDate.minus(3, HOURS),
+            currentDate.plus(3, HOURS)
         )
     );
 
@@ -344,8 +350,8 @@ class CurrentForecastDeviationRepositoryTest {
             DeviationType.MINUTES,
             true,
             30,
-            currentDate.minus(3, ChronoUnit.HOURS),
-            currentDate.plus(3, ChronoUnit.HOURS)
+            currentDate.minus(3, HOURS),
+            currentDate.plus(3, HOURS)
         )
     );
   }

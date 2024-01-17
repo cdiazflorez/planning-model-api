@@ -20,19 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mercadolibre.planning.model.api.adapter.staffing.GetCreatedMaxDateByType;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -51,8 +46,6 @@ class CurrentProcessingDistributionRepositoryTest {
 
   public static final ZonedDateTime DATE_TO = ZonedDateTime.parse("2022-09-08T14:00:00Z");
 
-  public static final Instant VIEW_DATE = Instant.parse("2022-09-08T10:30:00Z");
-
   @Autowired
   private CurrentProcessingDistributionRepository repository;
 
@@ -63,14 +56,11 @@ class CurrentProcessingDistributionRepositoryTest {
   @DisplayName("Looking for a current processing distribution that exists, returns it")
   void testFindCurrentProcessingDistributionById() {
     // GIVEN
-    final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(
-        A_DATE_UTC, 35L);
-
-    entityManager.persistAndFlush(currentProcessingDist);
+    final CurrentProcessingDistribution currentProcessingDist = entityManager.persistAndFlush(mockCurrentProcDist(A_DATE_UTC, 35L));
 
     // WHEN
     final Optional<CurrentProcessingDistribution> optCurrentProcessingDist =
-        repository.findById(1L);
+        repository.findById(currentProcessingDist.getId());
 
     // THEN
     assertTrue(optCurrentProcessingDist.isPresent());
@@ -119,8 +109,9 @@ class CurrentProcessingDistributionRepositoryTest {
   @DisplayName("Deactivate processing distribution")
   void testDeactivateProcessingDistribution() {
     // GIVEN
-    final CurrentProcessingDistribution currentProcessingDist = mockCurrentProcDist(A_DATE_UTC, 35L);
-    entityManager.persistAndFlush(currentProcessingDist);
+    final CurrentProcessingDistribution currentProcessingDistribution = entityManager.persistAndFlush(
+        mockCurrentProcDist(A_DATE_UTC, 35L)
+    );
 
     // WHEN
     repository.deactivateProcessingDistribution(
@@ -133,7 +124,7 @@ class CurrentProcessingDistributionRepositoryTest {
         WORKERS
     );
 
-    final Optional<CurrentProcessingDistribution> result = repository.findById(1L);
+    final Optional<CurrentProcessingDistribution> result = repository.findById(currentProcessingDistribution.getId());
 
     // THEN
     assertTrue(result.isPresent());
@@ -183,9 +174,9 @@ class CurrentProcessingDistributionRepositoryTest {
 
     // GIVE
     final List<CurrentProcessingMaxDateCreatedByType> maxDateEditionByType = List.of(
-        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS, date.plus(22, ChronoUnit.HOURS)),
-        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS_NS, date.plus(21, ChronoUnit.HOURS)),
-        new GetCreatedMaxDateByType(PRODUCTIVITY, date.plus(23, ChronoUnit.HOURS))
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS, date.plusHours(22)),
+        new GetCreatedMaxDateByType(EFFECTIVE_WORKERS_NS, date.plusHours(21)),
+        new GetCreatedMaxDateByType(PRODUCTIVITY, date.plusHours(23))
     );
 
 

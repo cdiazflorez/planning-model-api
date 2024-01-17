@@ -1,22 +1,23 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistribution;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class HeadcountDistributionJpaRepositoryTest {
 
     @Autowired
@@ -26,7 +27,7 @@ public class HeadcountDistributionJpaRepositoryTest {
     public void testCreate() {
 
         // GIVEN
-        final Forecast forecast = new Forecast();
+        final Forecast forecast = mockSimpleForecast();
         entityManager.persist(forecast);
 
         final HeadcountDistributionJpaRepository repository =

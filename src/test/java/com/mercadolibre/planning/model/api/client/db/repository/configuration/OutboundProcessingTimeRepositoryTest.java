@@ -11,12 +11,16 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ActiveProfiles("development")
 class OutboundProcessingTimeRepositoryTest {
 
   private static final String LOGISTIC_CENTER_ID = "COCU01";
@@ -48,7 +52,6 @@ class OutboundProcessingTimeRepositoryTest {
 
     //WHEN
     outboundProcessingTimeRepository.deactivateByLogisticCenterAndCpt(LOGISTIC_CENTER_ID, ETD_DAY, ETD_HOUR);
-
     final Optional<OutboundProcessingTime> updatedRecord = outboundProcessingTimeRepository.findById(3L);
 
     //THEN
@@ -145,8 +148,10 @@ class OutboundProcessingTimeRepositoryTest {
     // THEN
     assertFalse(result.isEmpty());
     assertTrue(result.stream().allMatch(OutboundProcessingTime::isActive));
-    assertEquals(logisticCenterId, result.get(0).getLogisticCenterID());
-    assertEquals(ETD_DAY, result.get(0).getEtdDay());
-    assertEquals(ETD_HOUR, result.get(0).getEtdHour());
+    assertTrue(result.stream().allMatch(processingTime -> processingTime.getLogisticCenterID().equals(logisticCenterId)));
+    assertTrue(
+        result.stream().anyMatch(processingTime -> ETD_DAY.equals(processingTime.getEtdDay())
+            && ETD_HOUR.equals(processingTime.getEtdHour()))
+    );
   }
 }

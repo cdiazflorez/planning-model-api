@@ -5,13 +5,12 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProdu
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
-
 import java.util.Optional;
 
-import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountProd;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class HeadcountProductivityRepositoryTest {
 
@@ -39,22 +39,22 @@ public class HeadcountProductivityRepositoryTest {
         entityManager.persistAndFlush(productivity);
 
         // WHEN
-        final Optional<HeadcountProductivity> optHeadcountProd = repository.findById(1L);
+        final Optional<HeadcountProductivity> optHeadcountProd = repository.findById(productivity.getId());
 
         // THEN
         assertTrue(optHeadcountProd.isPresent());
 
         final HeadcountProductivity foundHeadcountProd = optHeadcountProd.get();
-        assertEquals(1L, foundHeadcountProd.getId());
-        assertEquals(1L, foundHeadcountProd.getAbilityLevel());
-        assertEquals("PACKING", foundHeadcountProd.getProcessName().name());
-        assertEquals("PERCENTAGE", foundHeadcountProd.getProductivityMetricUnit().name());
-        assertEquals(80L, foundHeadcountProd.getProductivity());
-        assertEquals(A_DATE_UTC, foundHeadcountProd.getDate());
+        assertEquals(productivity.getId(), foundHeadcountProd.getId());
+        assertEquals(productivity.getAbilityLevel(), foundHeadcountProd.getAbilityLevel());
+        assertEquals(productivity.getProcessName().name(), foundHeadcountProd.getProcessName().name());
+        assertEquals(productivity.getProductivityMetricUnit().name(), foundHeadcountProd.getProductivityMetricUnit().name());
+        assertEquals(productivity.getProductivity(), foundHeadcountProd.getProductivity());
+        assertEquals(productivity.getDate(), foundHeadcountProd.getDate());
 
         final Forecast foundForecast = foundHeadcountProd.getForecast();
-        assertEquals(1L, foundForecast.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
+        assertEquals(forecast.getId(), foundForecast.getId());
+        assertEquals(forecast.getWorkflow().name(), foundForecast.getWorkflow().name());
     }
 
     @Test

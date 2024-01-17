@@ -69,7 +69,7 @@ class ProcessingDistributionJpaRepositoryTest {
   @Test
   void testCreateWithTags() {
     // GIVEN
-    final Forecast forecast = new Forecast();
+    final Forecast forecast = mockSimpleForecast();
     entityManager.persist(forecast);
 
     final ProcessingDistributionJpaRepository repository = new ProcessingDistributionJpaRepository(entityManager);

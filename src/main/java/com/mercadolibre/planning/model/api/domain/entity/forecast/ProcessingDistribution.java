@@ -49,6 +49,8 @@ public class ProcessingDistribution {
   @Enumerated(EnumType.STRING)
   private ProcessingType type;
 
+  private String tags;
+
   @ManyToOne
   @JoinColumn(name = "forecast_id")
   @Fetch(FetchMode.SELECT)

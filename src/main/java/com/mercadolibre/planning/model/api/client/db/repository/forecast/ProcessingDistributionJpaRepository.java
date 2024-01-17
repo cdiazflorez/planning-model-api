@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class ProcessingDistributionJpaRepository implements ProcessingDistributionGateway {
-  private static final String COLUMN_NAMES = "forecast_id, date, process_path, process_name, quantity, quantity_metric_unit, type";
+  private static final String COLUMN_NAMES = "forecast_id, date, process_path, process_name, quantity, quantity_metric_unit, type, tags";
 
-  private static final String COLUMN_PLACEHOLDERS = "(?,?,?,?,?,?,?),";
+  private static final String COLUMN_PLACEHOLDERS = "(?,?,?,?,?,?,?,?),";
 
   private static final int INSERT_SIZE = 1000;
 
@@ -40,6 +40,7 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
         query.setParameter(paramIndex++, entity.getQuantity());
         query.setParameter(paramIndex++, entity.getQuantityMetricUnit().name());
         query.setParameter(paramIndex++, entity.getType().name());
+        query.setParameter(paramIndex++, entity.getTags());
       }
       query.executeUpdate();
     });

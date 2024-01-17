@@ -65,4 +65,36 @@ class ProcessingDistributionJpaRepositoryTest {
     assertEquals(entity.getQuantity(), persistedEntities.get(0).getQuantity());
     assertEquals(entity.getQuantityMetricUnit(), persistedEntities.get(0).getQuantityMetricUnit());
   }
+
+  @Test
+  void testCreateWithTags() {
+    // GIVEN
+    final Forecast forecast = new Forecast();
+    entityManager.persist(forecast);
+
+    final ProcessingDistributionJpaRepository repository = new ProcessingDistributionJpaRepository(entityManager);
+
+    final ProcessingDistribution entity = ProcessingDistribution.builder()
+        .date(DATE)
+        .processPath(ProcessPath.GLOBAL)
+        .processName(ProcessName.PICKING)
+        .quantity(10)
+        .quantityMetricUnit(MetricUnit.UNITS)
+        .type(EFFECTIVE_WORKERS)
+        .tags("{\"process_name\": \"PICKING\", \"process_path\": \"TOT_SINGLE_SKU\", \"headcount_type\": \"systemic\"}")
+        .build();
+
+    repository.create(List.of(entity), forecast.getId());
+
+
+    final Query query = entityManager.createNativeQuery(
+        "select * from processing_distribution",
+        ProcessingDistribution.class
+    );
+
+    final List<ProcessingDistribution> persistedEntities = query.getResultList();
+    assertEquals(1, persistedEntities.size());
+    assertEquals(entity.getTags(), persistedEntities.get(0).getTags());
+  }
+
 }

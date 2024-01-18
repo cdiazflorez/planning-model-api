@@ -66,8 +66,7 @@ public class GetSlaByWarehouseOutboundService implements GetSlaByWarehouseServic
 
     //TODO: if addBacklogInSlaInOrder will not be used in inbound,
     // move code to this method and delete util
-    return GetSlaByWarehouseUtils
-        .addBacklogInSlaInOrder(generateSlaByBacklog(input), slasRoute);
+    return GetSlaByWarehouseUtils.addBacklogInSlaInOrder(generateSlaByBacklog(input), slasRoute);
   }
 
   private List<ProcessingTimeByDate> generateSlaByWarehouse(final GetSlaByWarehouseInput input) {

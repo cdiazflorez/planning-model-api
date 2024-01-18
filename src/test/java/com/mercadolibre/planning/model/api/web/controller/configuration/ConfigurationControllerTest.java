@@ -1,7 +1,6 @@
 package com.mercadolibre.planning.model.api.web.controller.configuration;
 
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
-import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.UNITS;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.CONFIG_KEY;
@@ -10,7 +9,6 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsSt
 import static java.lang.String.format;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,20 +21,16 @@ import com.mercadolibre.planning.model.api.domain.service.sla.SlaProperties;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.ConfigurationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -53,8 +47,6 @@ class ConfigurationControllerTest {
   private static final String URL = "/planning/model/configuration";
 
   private static final String UPDATE_URL = "/planning/model/configuration/%s/%s";
-
-  private static final String OLD_CT_PATH = "/logistic_center_id/{lcID}/cycle_time/search";
 
   private static final String CYCLE_TIME_PATH = "/logistic_center/{lc}/cycle_time/search";
 
@@ -84,45 +76,6 @@ class ConfigurationControllerTest {
         Arguments.of(null, 0),
         Arguments.of("123", 123)
     );
-  }
-
-  @Test
-  void testGetConfiguration() throws Exception {
-    // GIVEN
-    final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
-    when(getConfiguration.execute(input)).thenReturn(Optional.of(Configuration.builder()
-        .logisticCenterId(LOGISTIC_CENTER_ID)
-        .key(CONFIG_KEY)
-        .value("1")
-        .metricUnit(UNITS)
-        .build()));
-
-    // WHEN
-    final ResultActions result = mvc.perform(get(URL)
-        .param("logistic_center_id", LOGISTIC_CENTER_ID)
-        .param("key", KEY)
-    );
-
-    // THEN
-    result.andExpect(status().isOk())
-        .andExpect(jsonPath("$.value").value(1))
-        .andExpect(jsonPath("$.metric_unit").value(UNITS.toJson()));
-  }
-
-  @Test
-  void testGetConfigurationNotFound() throws Exception {
-    // GIVEN
-    final GetConfigurationInput input = new GetConfigurationInput(LOGISTIC_CENTER_ID, KEY);
-    when(getConfiguration.execute(input)).thenReturn(Optional.empty());
-
-    // WHEN
-    final ResultActions result = mvc.perform(get(URL)
-        .param("logistic_center_id", LOGISTIC_CENTER_ID)
-        .param("key", KEY)
-    );
-
-    // THEN
-    result.andExpect(status().isNotFound());
   }
 
   @ParameterizedTest
@@ -181,12 +134,8 @@ class ConfigurationControllerTest {
         .andExpect(jsonPath("$.metric_unit").value(MINUTES.toJson()));
   }
 
-  @DisplayName("Get Outbound Cycle Time Ok")
-  @ParameterizedTest
-  @ValueSource(strings = {OLD_CT_PATH, CYCLE_TIME_PATH})
-  void testGetOutboundCycleTimeOk(
-      final String cycleTimePath
-  ) throws Exception {
+  @Test
+  void testGetOutboundCycleTimeOk() throws Exception {
     // GIVEN
     when(outboundSlaPropertiesService.get(
         new OutboundSlaPropertiesService.Input(
@@ -208,7 +157,7 @@ class ConfigurationControllerTest {
 
     // WHEN
     final ResultActions result = mvc.perform(
-        post(URL + cycleTimePath, "ARBA01")
+        post(URL + CYCLE_TIME_PATH, "ARBA01")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("search_cycle_times.json"))
     );

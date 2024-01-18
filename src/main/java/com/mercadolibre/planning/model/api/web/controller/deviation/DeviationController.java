@@ -61,22 +61,6 @@ public class DeviationController {
 
   private final GetForecastDeviationUseCase getForecastDeviationUseCase;
 
-
-  @PostMapping("/save/all")
-  @Trace(dispatcher = true)
-  public ResponseEntity<DeviationResponse> saveAll(
-      @PathVariable final Workflow workflow,
-      @RequestBody @Valid final List<SaveDeviationRequest> request) {
-
-    final var input = request.stream()
-        .map(SaveDeviationRequest::toDeviationInput)
-        .collect(Collectors.toList());
-
-    return ResponseEntity.ok(
-        saveDeviationUseCase.execute(input)
-    );
-  }
-
   @PostMapping
   @Trace(dispatcher = true)
   public ResponseEntity<DeviationResponse> saveDeviations(

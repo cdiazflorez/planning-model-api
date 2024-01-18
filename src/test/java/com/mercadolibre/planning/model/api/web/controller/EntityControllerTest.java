@@ -8,21 +8,14 @@ import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.
 import static com.mercadolibre.planning.model.api.domain.usecase.entities.input.EntitySearchFilters.PROCESSING_TYPE;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
-import static com.mercadolibre.planning.model.api.util.TestUtils.getMockOutputCapacities;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetPerformedProcessingOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockGetRemainingProcessingOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockHeadcountEntityOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockProductivityEntityOutput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSearchEntitiesOutput;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockThroughputEntityOutput;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.HEADCOUNT;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.REMAINING_PROCESSING;
 import static com.mercadolibre.planning.model.api.web.controller.entity.EntityType.THROUGHPUT;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -31,7 +24,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mercadolibre.planning.model.api.domain.usecase.entities.GetEntityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.SearchEntitiesUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
@@ -42,7 +34,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.search.SearchEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityController;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -129,61 +120,6 @@ public class EntityControllerTest {
     result.andExpect(status().isNotFound());
   }
 
-  @DisplayName("Get productivity entity works ok")
-  @Test
-  public void testGetProductivityEntityOk() throws Exception {
-    // GIVEN
-    final var viewDate = Instant.parse("2020-08-19T17:00:00Z");
-
-    when(getProductivityEntityUseCase.execute(argThat(input ->
-            input.getViewDate().equals(viewDate) && "ARBA01".equals(input.getWarehouseId())
-        ))
-    ).thenReturn(mockProductivityEntityOutput());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL, "fbm-wms-outbound", "productivity")
-            .contentType(APPLICATION_JSON)
-            .param("warehouse_id", "ARBA01")
-            .param("source", "forecast")
-            .param("date_from", A_DATE_UTC.toString())
-            .param("date_to", A_DATE_UTC.plusHours(1).toString())
-            .param("process_name", "picking,packing")
-            .param("view_date", viewDate.toString())
-    );
-
-    // THEN
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getThroughputUseCase);
-    result.andExpect(status().isOk())
-        .andExpect(content().json(getResourceAsString("get_productivity_response.json")));
-  }
-
-  @DisplayName("Get throughput entity works ok")
-  @Test
-  public void testGetThroughputEntityOk() throws Exception {
-    // GIVEN
-    when(getThroughputUseCase.execute(any(GetEntityInput.class)))
-        .thenReturn(mockThroughputEntityOutput());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL, "fbm-wms-outbound", "throughput")
-            .contentType(APPLICATION_JSON)
-            .param("warehouse_id", "ARBA01")
-            .param("source", "forecast")
-            .param("date_from", A_DATE_UTC.toString())
-            .param("date_to", A_DATE_UTC.plusHours(1).toString())
-            .param("process_name", "picking,packing")
-    );
-
-    // THEN
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getProductivityEntityUseCase);
-    result.andExpect(status().isOk())
-        .andExpect(content().json(getResourceAsString("get_throughput_response.json")));
-  }
-
   @DisplayName("Get headcount with simulations works ok")
   @Test
   public void testGetHeadcountWithSimulationsOk() throws Exception {
@@ -204,106 +140,6 @@ public class EntityControllerTest {
     verifyNoInteractions(searchEntityUseCase);
     result.andExpect(status().isOk())
         .andExpect(content().json(getResourceAsString("get_headcount_response.json")));
-  }
-
-  @DisplayName("Get Remaining_processing entity works ok")
-  @Test
-  public void testGetRemainingProcessingEntityOk() throws Exception {
-    // GIVEN
-    when(searchEntityUseCase.execute(any(GetEntityInput.class)))
-        .thenReturn(mockGetRemainingProcessingOutput());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL, "fbm-wms-outbound", "remaining_processing")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_remaining_processing_request.json"))
-    );
-
-    // THEN
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getProductivityEntityUseCase);
-    verifyNoInteractions(getThroughputUseCase);
-    result.andExpect(status().isOk())
-        .andExpect(content()
-            .json(getResourceAsString("post_remaining_processing_response.json")));
-  }
-
-  @DisplayName("Get Performed_processing entity works ok")
-  @Test
-  public void testGetPerformedProcessingEntityOk() throws Exception {
-    // GIVEN
-    when(searchEntityUseCase.execute(any(GetEntityInput.class)))
-        .thenReturn(mockGetPerformedProcessingOutput());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL, "fbm-wms-outbound", "performed_processing")
-            .param("warehouse_id", "ARBA01")
-            .param("date_from", A_DATE_UTC.toString())
-            .param("date_to", A_DATE_UTC.plusHours(1).toString())
-            .param("process_name", "waving")
-    );
-
-    // THEN
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getProductivityEntityUseCase);
-    verifyNoInteractions(getThroughputUseCase);
-    result.andExpect(status().isOk())
-        .andExpect(content()
-            .json(getResourceAsString("get_performed_processing_response.json")));
-  }
-
-  @DisplayName("Get TPH by warehouse entity works ok")
-  @Test
-  public void testGetMaxCapacityByWarehouseEntityOk() throws Exception {
-    // GIVEN
-    when(getMaxCapacityByWarehouseEntityUseCase.execute(
-        WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusHours(72)))
-        .thenReturn(getMockOutputCapacities());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL, "fbm-wms-outbound", "tph")
-            .param("warehouse", WAREHOUSE_ID)
-            .param("date_from", A_DATE_UTC.toString())
-            .param("date_to", A_DATE_UTC.plusHours(72).toString())
-    );
-
-    // THEN
-    verifyNoInteractions(searchEntityUseCase);
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getProductivityEntityUseCase);
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verify(getMaxCapacityByWarehouseEntityUseCase).execute(WAREHOUSE_ID, A_DATE_UTC, A_DATE_UTC.plusHours(72));
-    result.andExpect(status().isOk())
-        .andExpect(content()
-            .string(getResourceAsString("get_tph_response.json").trim()));
-  }
-
-  @DisplayName("Get Max_capacities entity works ok")
-  @Test
-  public void testGetMaxCapacitiesEntityOk() throws Exception {
-    // GIVEN
-    when(getMaxCapacityEntityUseCase.execute(
-        FBM_WMS_OUTBOUND, A_DATE_UTC, A_DATE_UTC.plusHours(1)))
-        .thenReturn(getMockOutputCapacities());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        get(URL, "fbm-wms-outbound", "max_capacity")
-            .param("date_from", A_DATE_UTC.toString())
-            .param("date_to", A_DATE_UTC.plusHours(1).toString())
-    );
-
-    // THEN
-    verifyNoInteractions(searchEntityUseCase);
-    verifyNoInteractions(getHeadcountEntityUseCase);
-    verifyNoInteractions(getProductivityEntityUseCase);
-    verifyNoInteractions(getThroughputUseCase);
-    result.andExpect(status().isOk())
-        .andExpect(content()
-            .string(getResourceAsString("get_max_capacity_response.csv").trim()));
   }
 
   @DisplayName("Search entities returns all entities")

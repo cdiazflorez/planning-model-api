@@ -7,7 +7,6 @@ import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.INBOUND_TRANSFER;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_IN;
 import static com.mercadolibre.planning.model.api.util.TestUtils.DATE_OUT;
-import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockDisableForecastDeviationInput;
@@ -67,8 +66,6 @@ class DeviationControllerTest {
   private static final String LOGISTIC_CENTER_LABEL = "logistic_center_id";
 
   private static final String VIEW_DATE_LABEL = "view_date";
-
-  private static final String SAVE_ALL = "/save/all";
 
   private static final String DISABLE_ALL = "/disable/all";
 
@@ -223,49 +220,6 @@ class DeviationControllerTest {
             .contentType(APPLICATION_JSON)
             .param(LOGISTIC_CENTER_LABEL, WAREHOUSE_ID)
             .content(getResourceAsString("post_disable_all_deviation.json"))
-    );
-
-    // THEN
-    result.andExpect(status().isOk());
-  }
-
-  @DisplayName("Save all ok")
-  @Test
-  void saveAllOk() throws Exception {
-    // GIVEN
-    final List<SaveDeviationInput> inputs = List.of(
-        SaveDeviationInput
-            .builder()
-            .warehouseId(WAREHOUSE_ID)
-            .workflow(INBOUND)
-            .deviationType(DeviationType.UNITS)
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(0.1)
-            .userId(USER_ID)
-            .paths(List.of(Path.SPD, Path.COLLECT))
-            .build(),
-        SaveDeviationInput
-            .builder()
-            .warehouseId(WAREHOUSE_ID)
-            .workflow(INBOUND_TRANSFER)
-            .deviationType(DeviationType.UNITS)
-            .dateFrom(DATE_IN)
-            .dateTo(DATE_OUT)
-            .value(0.1)
-            .userId(USER_ID)
-            .paths(emptyList())
-            .build()
-    );
-
-    when(saveDeviationUseCase.execute(inputs))
-        .thenReturn(new DeviationResponse(200));
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + SAVE_ALL, INBOUND_WORKFLOW)
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("post_save_all_deviation.json"))
     );
 
     // THEN

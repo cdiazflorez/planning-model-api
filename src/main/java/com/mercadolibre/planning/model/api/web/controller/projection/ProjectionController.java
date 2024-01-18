@@ -21,17 +21,12 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetDeliveryPromiseProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.input.GetSlaProjectionInput;
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.output.DeferralProjectionOutput;
-import com.mercadolibre.planning.model.api.projection.CalculateProjectionService;
-import com.mercadolibre.planning.model.api.projection.dto.ProjectionRequest;
-import com.mercadolibre.planning.model.api.projection.dto.ProjectionResult;
 import com.mercadolibre.planning.model.api.web.controller.editor.ProjectionTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
-import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionByAreaRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.BacklogProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.CptProjectionRequest;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.ProjectionType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
-import com.mercadolibre.planning.model.api.web.controller.projection.response.BacklogProjectionByAreaDto;
 import com.newrelic.api.agent.Trace;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -66,11 +61,8 @@ public class ProjectionController {
 
   private final BacklogProjectionUseCaseFactory backlogProjectionUseCaseFactory;
 
-  private final BacklogProjectionAdapter backlogProjectionAdapter;
-
   private final QueueProjectionService queueProjectionService;
 
-  private final CalculateProjectionService calculateProjectionService;
 
   @PostMapping("/cpts")
   @Trace(dispatcher = true)
@@ -170,37 +162,6 @@ public class ProjectionController {
         .processNames(request.getProcessName())
         .packingWallRatios(request.getPackingWallRatios())
         .build()));
-  }
-
-  @PostMapping("/backlogs/grouped/area")
-  @Trace(dispatcher = true)
-  public ResponseEntity<List<BacklogProjectionByAreaDto>> getBacklogByAreaProjections(
-      @PathVariable final Workflow workflow,
-      @Valid @RequestBody final BacklogProjectionByAreaRequest request) {
-
-    final var projections = backlogProjectionAdapter.projectionByArea(
-        request.getDateFrom(),
-        request.getDateTo(),
-        workflow,
-        request.getProcessName(),
-        request.getThroughput(),
-        request.getPlanningUnits(),
-        request.getCurrentBacklog(),
-        request.getAreaDistributions()
-    );
-
-    return ResponseEntity.ok(projections);
-  }
-
-  @PostMapping("/cpts/new")
-  @Trace(dispatcher = true)
-  public ResponseEntity<List<ProjectionResult>> getCalculationProjection(
-      @PathVariable Workflow workflow,
-      @Valid @RequestBody final ProjectionRequest projectionRequest) {
-
-    return ResponseEntity.ok(
-        calculateProjectionService.execute(workflow, projectionRequest)
-    );
   }
 
   @InitBinder

@@ -1,23 +1,25 @@
 package com.mercadolibre.planning.model.api.client.db.repository.current;
 
-import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import static com.mercadolibre.planning.model.api.domain.entity.MetricUnit.MINUTES;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.USER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingTime;
+import java.time.ZonedDateTime;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class CurrentProcessingTimeRepositoryTest {
 
     @Autowired
@@ -72,6 +74,7 @@ public class CurrentProcessingTimeRepositoryTest {
                 .cptTo(cptTo)
                 .value(300)
                 .metricUnit(MINUTES)
+                .userId(USER_ID)
                 .build();
     }
 }

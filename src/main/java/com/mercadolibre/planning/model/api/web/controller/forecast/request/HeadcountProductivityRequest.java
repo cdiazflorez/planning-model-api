@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.web.controller.forecast.request;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountProductivity;
 import java.util.List;
@@ -14,7 +15,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Value;
 
 @Value
-public class HeadcountProductivityRequest {
+public class HeadcountProductivityRequest implements TagsBuilder {
 
   @NotNull
   ProcessPath processPath;
@@ -82,5 +83,15 @@ public class HeadcountProductivityRequest {
         productivityData.getProductivity(),
         productivityData.getDayTime()
     );
+  }
+
+  @Override
+  public String getHeadcountType() {
+    return null;
+  }
+
+  @Override
+  public ProcessingType getType() {
+    return ProcessingType.PRODUCTIVITY;
   }
 }

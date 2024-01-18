@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 import lombok.Value;
 
 @Value
-public class ProcessingDistributionRequest {
+public class ProcessingDistributionRequest implements TagsBuilder {
   @NotNull
   ProcessPath processPath;
 
@@ -47,5 +47,14 @@ public class ProcessingDistributionRequest {
     );
 
     return processingDistributions;
+  }
+
+  public String getHeadcountType() {
+    return type.toJson().contains("_ns") ? "non_systemic" : "systemic";
+  }
+
+  @Override
+  public int getAbilityLevel() {
+    return 0;
   }
 }

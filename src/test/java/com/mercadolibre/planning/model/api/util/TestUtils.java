@@ -79,7 +79,8 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get
 import com.mercadolibre.planning.model.api.domain.usecase.entities.maxcapacity.get.MaxCapacityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.web.controller.forecast.CreateForecastAdapter;
+import com.mercadolibre.planning.model.api.web.controller.forecast.dto.CreateForecastInputDto;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.disable.DisableForecastDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.deviation.save.SaveDeviationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.GetPlanningDistributionInput;
@@ -87,6 +88,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.g
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanDistribution;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.AreaRequest;
+import com.mercadolibre.planning.model.api.web.controller.forecast.request.CreateForecastRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountDistributionRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityDataRequest;
 import com.mercadolibre.planning.model.api.web.controller.forecast.request.HeadcountProductivityRequest;
@@ -182,6 +184,8 @@ public final class TestUtils {
         .workflow(FBM_WMS_OUTBOUND)
         .dateCreated(A_DATE_UTC)
         .lastUpdated(A_DATE_UTC)
+        .logisticCenterId(LOGISTIC_CENTER_ID)
+        .week(WEEK)
         .userId(CALLER_ID);
   }
 
@@ -195,7 +199,8 @@ public final class TestUtils {
         .dateOut(DATE_OUT)
         .quantity(1200)
         .metadatas(emptyList())
-        .quantityMetricUnit(UNITS);
+        .quantityMetricUnit(UNITS)
+        .processPath(GLOBAL);
   }
 
   public static HeadcountDistribution.HeadcountDistributionBuilder headcountDistBuilder() {
@@ -217,7 +222,8 @@ public final class TestUtils {
         .productivity(80)
         .productivityMetricUnit(PERCENTAGE)
         .processName(PACKING)
-        .date(A_DATE_UTC);
+        .date(A_DATE_UTC)
+        .processPath(GLOBAL);
   }
 
   public static HeadcountProductivity mockHeadcountProd(final Forecast forecast) {
@@ -227,6 +233,7 @@ public final class TestUtils {
   public static ProcessingDistribution.ProcessingDistBuilder processDistBuilder() {
     return ProcessingDistribution.builder()
         .processName(WAVING)
+        .processPath(GLOBAL)
         .quantity(1000)
         .quantityMetricUnit(UNITS)
         .type(REMAINING_PROCESSING)
@@ -311,6 +318,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
@@ -321,6 +329,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(1, DAYS))
@@ -331,6 +340,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_INBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build(),
         CurrentProcessingDistribution.builder()
             .date(DEACTIVATE_DATE_FROM.plus(4, DAYS))
@@ -341,6 +351,7 @@ public final class TestUtils {
             .type(EFFECTIVE_WORKERS)
             .workflow(FBM_WMS_OUTBOUND)
             .logisticCenterId(WAREHOUSE_ID)
+            .processPath(GLOBAL)
             .build()
     );
   }
@@ -479,36 +490,53 @@ public final class TestUtils {
     );
   }
 
-  public static CreateForecastInput mockCreateForecastInput() {
-    return CreateForecastInput.builder()
-        .workflow(FBM_WMS_OUTBOUND)
-        .logisticCenterId(LOGISTIC_CENTER_ID)
-        .headcountDistributions(mockHeadcounts())
-        .headcountProductivities(mockProductivities())
-        .planningDistributions(mockPlanningDistributions())
-        .processingDistributions(mockProcessingDistributions())
-        .polyvalentProductivities(mockPolyvalentProductivities())
-        .backlogLimits(mockBacklogLimits())
-        .metadata(mockMetadatas())
-        .week(WEEK)
-        .userId(CALLER_ID)
-        .build();
+  public static CreateForecastInputDto mockCreateForecastInput(final Workflow workflow) {
+    final CreateForecastRequest request = new CreateForecastRequest(
+        LOGISTIC_CENTER_ID,
+        mockMetadatas(),
+        mockProcessingDistributions(),
+        mockHeadcounts(),
+        mockPolyvalentProductivities(),
+        mockProductivities(),
+        mockPlanningDistributions(),
+        mockBacklogLimits(),
+        WEEK,
+        CALLER_ID
+    );
+    return CreateForecastAdapter.createStaffingPlan(workflow, request);
   }
 
-  public static CreateForecastInput mockCreateForecastInputWithTotalWorkersNsType() {
-    return CreateForecastInput.builder()
-        .workflow(FBM_WMS_OUTBOUND)
-        .logisticCenterId(LOGISTIC_CENTER_ID)
-        .headcountDistributions(mockHeadcounts())
-        .headcountProductivities(mockProductivities())
-        .planningDistributions(mockPlanningDistributions())
-        .processingDistributions(mockProcessingDistributionsWithActiveWorkersNsType())
-        .polyvalentProductivities(mockPolyvalentProductivities())
-        .backlogLimits(mockBacklogLimits())
-        .metadata(mockMetadatas())
-        .week(WEEK)
-        .userId(CALLER_ID)
-        .build();
+  public static CreateForecastRequest mockCreateForecastRequest(
+      final List<ProcessingDistributionRequest> processingDistributions
+  ) {
+    return new CreateForecastRequest(
+        LOGISTIC_CENTER_ID,
+        mockMetadatas(),
+        processingDistributions,
+        mockHeadcounts(),
+        mockPolyvalentProductivities(),
+        mockProductivities(),
+        mockPlanningDistributions(),
+        mockBacklogLimits(),
+        WEEK,
+        CALLER_ID
+    );
+  }
+
+  public static CreateForecastInputDto mockCreateForecastInputWithTotalWorkersNsType() {
+    final var request = new CreateForecastRequest(
+        LOGISTIC_CENTER_ID,
+        mockMetadatas(),
+        mockProcessingDistributionsWithActiveWorkersNsType(),
+        mockHeadcounts(),
+        mockPolyvalentProductivities(),
+        List.of(),
+        mockPlanningDistributions(),
+        List.of(),
+        WEEK,
+        CALLER_ID
+    );
+    return CreateForecastAdapter.createStaffingPlan(FBM_WMS_OUTBOUND, request);
   }
 
   public static SaveDeviationInput mockSaveForecastDeviationInput() {
@@ -1049,7 +1077,7 @@ public final class TestUtils {
   private static List<ProcessingDistributionRequest> mockProcessingDistributionsWithActiveWorkersNsType() {
     return List.of(
         new ProcessingDistributionRequest(
-            ProcessPath.TOT_MONO,
+            GLOBAL,
             WAVING,
             PERFORMED_PROCESSING,
             UNITS,
@@ -1314,6 +1342,7 @@ public final class TestUtils {
         .userId(USER_ID)
         .logisticCenterId(WAREHOUSE_ID)
         .isActive(true)
+        .type(DeviationType.UNITS)
         .build();
   }
 

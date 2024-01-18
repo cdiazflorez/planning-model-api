@@ -7,6 +7,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistri
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class PlanningMetadataRepositoryTest {
 
@@ -49,15 +51,15 @@ public class PlanningMetadataRepositoryTest {
 
         // WHEN
         final Optional<PlanningDistributionMetadata> optPlanningMetadata = repository
-                .findById(mockPlanningMetadataId());
+                .findById(new PlanningDistributionMetadataId(planningMetadata.getPlanningDistributionId(), planningMetadata.getKey()));
 
         // THEN
         assertTrue(optPlanningMetadata.isPresent());
 
         final PlanningDistributionMetadata foundPlanningMetadata = optPlanningMetadata.get();
-        assertEquals(1L, foundPlanningMetadata.getPlanningDistributionId());
-        assertEquals(PLANNING_METADATA_KEY, foundPlanningMetadata.getKey());
-        assertEquals(PLANNING_METADATA_VALUE, foundPlanningMetadata.getValue());
+        assertEquals(planningMetadata.getPlanningDistributionId(), foundPlanningMetadata.getPlanningDistributionId());
+        assertEquals(planningMetadata.getKey(), foundPlanningMetadata.getKey());
+        assertEquals(planningMetadata.getValue(), foundPlanningMetadata.getValue());
     }
 
     @Test

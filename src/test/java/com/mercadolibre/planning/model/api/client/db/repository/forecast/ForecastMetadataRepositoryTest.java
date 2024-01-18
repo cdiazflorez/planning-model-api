@@ -6,6 +6,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetada
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ForecastMetadataRepositoryTest {
 
@@ -34,22 +36,20 @@ public class ForecastMetadataRepositoryTest {
     @DisplayName("Looking for a forecast metadata that exists, returns it")
     public void testFindForecastMetadataById() {
         // GIVEN
-        final Forecast forecast = mockSimpleForecast();
-        entityManager.persistAndFlush(forecast);
+        final Forecast forecast = entityManager.persistAndFlush(mockSimpleForecast());
 
-        final ForecastMetadata forecastMetadata = mockForecastMetadata(forecast);
+       final ForecastMetadata forecastMetadata = entityManager.persistAndFlush(mockForecastMetadata(forecast));
 
-        entityManager.persistAndFlush(forecastMetadata);
+       final ForecastMetadataId forecastMetadataId = new ForecastMetadataId(forecastMetadata.getForecastId(), forecastMetadata.getKey());
 
         // WHEN
-        final Optional<ForecastMetadata> optForecastMetadata = repository
-                .findById(mockForecastMetadataId());
+        final Optional<ForecastMetadata> optForecastMetadata = repository.findById(forecastMetadataId);
 
         // THEN
         assertTrue(optForecastMetadata.isPresent());
 
         final ForecastMetadata foundForecastMetadata = optForecastMetadata.get();
-        assertEquals(1L, foundForecastMetadata.getForecastId());
+        assertEquals(forecast.getId(), foundForecastMetadata.getForecastId());
         assertEquals(FORECAST_METADATA_KEY, foundForecastMetadata.getKey());
         assertEquals(FORECAST_METADATA_VALUE, foundForecastMetadata.getValue());
     }

@@ -1,8 +1,8 @@
-INSERT INTO forecast(id, workflow, date_created, last_updated, user_id)
-VALUES (1, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
-       (2, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
-       (3, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100),
-       (4, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100);
+INSERT INTO forecast(id, workflow, date_created, last_updated, user_id, logistic_center_id, week)
+VALUES (1, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100, 'ARTW01', '45-2022'),
+       (2, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100, 'ARTW01', '45-2022'),
+       (3, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100, 'ARTW01', '45-2022'),
+       (4, 'FBM_WMS_OUTBOUND', '2022-09-08 12:31:00', '2022-09-08 12:31:00', 100, 'ARTW01', '45-2022');
 
 INSERT INTO planning_distribution(id, forecast_id, date_in, date_out, quantity, quantity_metric_unit, process_path)
 VALUES (1, 1, '2022-11-09 10:00:00', '2022-11-11 10:00:00', 100.0, 'UNITS', 'TOT_MONO'),

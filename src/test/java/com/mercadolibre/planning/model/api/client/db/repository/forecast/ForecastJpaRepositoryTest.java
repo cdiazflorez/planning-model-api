@@ -2,45 +2,41 @@ package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.LIMIT;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockForecastMetadata;
-import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
+import static java.time.ZoneOffset.UTC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.mercadolibre.planning.model.api.domain.entity.forecast.Forecast;
-import com.mercadolibre.planning.model.api.domain.entity.forecast.ForecastMetadata;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import javax.persistence.EntityManager;
 
 import java.util.List;
+import org.springframework.test.context.jdbc.Sql;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class ForecastJpaRepositoryTest {
+
+    private static final String LOAD_FORECAST = "/sql/forecast/load_forecast.sql";
+
+    private static final ZonedDateTime DATE_TIME = ZonedDateTime.of(2024, 1, 9, 12, 0, 0, 0, ZoneId.of("UTC"));
 
     @Autowired
     private EntityManager entityManager;
 
     @Test
+    @Sql(LOAD_FORECAST)
     public void testDeleteOlderThan() {
         // GIVEN
         final ForecastJpaRepository repository = new ForecastJpaRepository(entityManager);
 
-        final Forecast firstForecast = mockSimpleForecast();
-        entityManager.persist(firstForecast);
-
-        final ForecastMetadata firstForecastMetadata = mockForecastMetadata(firstForecast);
-        entityManager.persist(firstForecastMetadata);
-
-        final Forecast secondForecast = mockSimpleForecast();
-        entityManager.persist(secondForecast);
-
-        final ForecastMetadata secondForecastMetadata = mockForecastMetadata(secondForecast);
-        entityManager.persist(secondForecastMetadata);
-
         // WHEN
-        repository.deleteOlderThan(FBM_WMS_OUTBOUND, secondForecast.getLastUpdated(), LIMIT);
+        repository.deleteOlderThan(FBM_WMS_OUTBOUND, DATE_TIME, LIMIT);
 
         // THEN
         final List<Forecast> result =
@@ -48,6 +44,6 @@ public class ForecastJpaRepositoryTest {
                         .getResultList();
 
         assertEquals(1,result.size());
-        assertEquals(secondForecast.getLastUpdated(), result.get(0).getLastUpdated());
+        assertEquals(DATE_TIME.withZoneSameInstant(UTC), result.get(0).getLastUpdated().withZoneSameInstant(UTC));
     }
 }

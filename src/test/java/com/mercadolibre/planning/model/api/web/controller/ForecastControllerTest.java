@@ -9,9 +9,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
+import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.web.controller.forecast.dto.CreateForecastInputDto;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
 import com.mercadolibre.planning.model.api.exception.BadRequestException;
@@ -48,7 +49,7 @@ public class ForecastControllerTest {
     @MethodSource("workflowValues")
     public void createForecastOk(final String workflow) throws Exception {
         // GIVEN
-        final CreateForecastInput input = mockCreateForecastInput();
+        final CreateForecastInputDto input = mockCreateForecastInput(Workflow.FBM_WMS_OUTBOUND);
         when(createForecastUseCase.execute(input)).thenReturn(new CreateForecastOutput(1));
 
         // WHEN

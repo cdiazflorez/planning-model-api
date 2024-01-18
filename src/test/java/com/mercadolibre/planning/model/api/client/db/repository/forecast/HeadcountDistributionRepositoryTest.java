@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.HeadcountDistr
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class HeadcountDistributionRepositoryTest {
 
@@ -34,24 +36,25 @@ public class HeadcountDistributionRepositoryTest {
         final Forecast forecast = mockSimpleForecast();
         entityManager.persistAndFlush(forecast);
 
-        entityManager.persistAndFlush(mockHeadcountDist(forecast));
+        final HeadcountDistribution headcountDistribution = mockHeadcountDist(forecast);
+        entityManager.persistAndFlush(headcountDistribution);
 
         // WHEN
-        final Optional<HeadcountDistribution> optHeadcountDist = repository.findById(1L);
+        final Optional<HeadcountDistribution> optHeadcountDist = repository.findById(headcountDistribution.getId());
 
         // THEN
         assertTrue(optHeadcountDist.isPresent());
 
         final HeadcountDistribution foundHeadcountDistribution = optHeadcountDist.get();
-        assertEquals(1L, foundHeadcountDistribution.getId());
-        assertEquals("MZ", foundHeadcountDistribution.getArea());
-        assertEquals("PICKING", foundHeadcountDistribution.getProcessName().name());
-        assertEquals(40, foundHeadcountDistribution.getQuantity());
-        assertEquals("WORKERS", foundHeadcountDistribution.getQuantityMetricUnit().name());
+        assertEquals(headcountDistribution.getId(), foundHeadcountDistribution.getId());
+        assertEquals(headcountDistribution.getArea(), foundHeadcountDistribution.getArea());
+        assertEquals(headcountDistribution.getProcessName().name(), foundHeadcountDistribution.getProcessName().name());
+        assertEquals(headcountDistribution.getQuantity(), foundHeadcountDistribution.getQuantity());
+        assertEquals(headcountDistribution.getQuantityMetricUnit().name(), foundHeadcountDistribution.getQuantityMetricUnit().name());
 
         final Forecast foundForecast = foundHeadcountDistribution.getForecast();
-        assertEquals(1L, foundForecast.getId());
-        assertEquals("FBM_WMS_OUTBOUND", foundForecast.getWorkflow().name());
+        assertEquals(forecast.getId(), foundForecast.getId());
+        assertEquals(forecast.getWorkflow().name(), foundForecast.getWorkflow().name());
     }
 
     @Test

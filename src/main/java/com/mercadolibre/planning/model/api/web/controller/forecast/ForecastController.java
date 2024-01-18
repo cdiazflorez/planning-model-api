@@ -4,9 +4,9 @@ import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
-import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.web.controller.forecast.dto.CreateForecastInputDto;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.MetricUnitEditor;
@@ -44,7 +44,7 @@ public class ForecastController {
             @PathVariable final Workflow workflow,
             @Valid @RequestBody final CreateForecastRequest createForecastRequest) {
 
-        final CreateForecastInput input = createForecastRequest.toCreateForecastInput(workflow);
+        final CreateForecastInputDto input = CreateForecastAdapter.createStaffingPlan(workflow, createForecastRequest);
 
         final CreateForecastOutput output = createForecastUseCase.execute(input);
 

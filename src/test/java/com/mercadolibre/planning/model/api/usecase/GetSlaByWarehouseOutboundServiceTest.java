@@ -64,11 +64,9 @@ public class GetSlaByWarehouseOutboundServiceTest {
 
   private static final String CANALIZATION_X = "X";
 
-  private static final ZonedDateTime UTC_DAY =
-      ZonedDateTime.parse(
-          "2021-11-02T00:00:00.000000-00:00" + "[UTC]");
+  private static final ZonedDateTime UTC_DAY = ZonedDateTime.parse("2021-11-02T00:00:00.000000-00:00" + "[UTC]");
 
-  private static final ZonedDateTime NOW = ZonedDateTime.now();
+  private static final ZonedDateTime UTC_DAY_2 = ZonedDateTime.parse("2021-11-03T00:00:00.000000-00:00" + "[UTC]");
 
   private static final Date DATE_1 = new Date(2020, 1, 20);
 
@@ -132,7 +130,7 @@ public class GetSlaByWarehouseOutboundServiceTest {
     when(routeCoverageClientGateway.get(LOGISTIC_CENTER_ID))
         .thenReturn(mockResponseCoverageWithResult());
 
-    final List<ZonedDateTime> backlog = List.of(NOW, UTC_DAY, UTC_DAY.plusHours(17));
+    final List<ZonedDateTime> backlog = List.of(UTC_DAY_2, UTC_DAY, UTC_DAY.plusHours(17));
 
     final GetSlaByWarehouseInput input =
         new GetSlaByWarehouseInput(LOGISTIC_CENTER_ID, UTC_DAY, UTC_DAY.plusDays(1), backlog, TIME_ZONE);
@@ -176,7 +174,7 @@ public class GetSlaByWarehouseOutboundServiceTest {
     final GetSlaByWarehouseOutput getSlaByWarehouseOutput4 =
         GetSlaByWarehouseOutput.builder()
             .logisticCenterId(LOGISTIC_CENTER_ID)
-            .date(NOW)
+            .date(UTC_DAY_2)
             .processingTime(new ProcessingTime(240, MetricUnit.MINUTES))
             .build();
 
@@ -188,8 +186,12 @@ public class GetSlaByWarehouseOutboundServiceTest {
             .processingTime(new ProcessingTime(60, MetricUnit.MINUTES))
             .build();
 
-    return List.of(getSlaByWarehouseOutput, getSlaByWarehouseOutput2,
-        getSlaByWarehouseOutput3, getSlaByWarehouseOutput5, getSlaByWarehouseOutput4);
+    return List.of(
+        getSlaByWarehouseOutput,
+        getSlaByWarehouseOutput2,
+        getSlaByWarehouseOutput3,
+        getSlaByWarehouseOutput5,
+        getSlaByWarehouseOutput4);
   }
 
   private List<RouteEtsDto> mockResponse() {

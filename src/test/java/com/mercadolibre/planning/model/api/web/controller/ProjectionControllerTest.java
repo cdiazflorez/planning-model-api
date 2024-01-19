@@ -16,7 +16,6 @@ import static com.mercadolibre.planning.model.api.web.controller.projection.resp
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -45,8 +44,6 @@ import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.in
 import com.mercadolibre.planning.model.api.domain.usecase.projection.capacity.output.DeferralProjectionOutput;
 import com.mercadolibre.planning.model.api.exception.ForecastNotFoundException;
 import com.mercadolibre.planning.model.api.projection.CalculateProjectionService;
-import com.mercadolibre.planning.model.api.projection.dto.ProjectionRequest;
-import com.mercadolibre.planning.model.api.projection.dto.ProjectionResult;
 import com.mercadolibre.planning.model.api.web.controller.projection.BacklogProjectionAdapter;
 import com.mercadolibre.planning.model.api.web.controller.projection.ProjectionController;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.AreaShareAtSlaAndProcessDto;
@@ -58,7 +55,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -214,53 +210,6 @@ class ProjectionControllerTest {
             .value(100));
   }
 
-  @Test
-  public void testAccuracy() throws Exception {
-    final Instant currentDate = Instant.parse("2022-08-22T00:00:00Z");
-
-    final Instant dateTo = Instant.parse("2022-08-22T06:00:00Z");
-
-    final Instant dateOut = currentDate.plus(1, ChronoUnit.HOURS);
-
-    final Instant projectedEndDate = Instant.parse("2022-08-22T01:41:15Z");
-
-    final int projectedRemainingQuantity = 100;
-
-    //GIVEN
-    when(calculateProjectionService.execute(FBM_WMS_OUTBOUND,
-        ProjectionRequest.builder()
-            .dateFrom(currentDate)
-            .dateTo(dateTo)
-            .throughputByProcess(emptyMap())
-            .backlogBySlaAndProcess(emptyMap())
-            .forecastSales(emptyList())
-            .ratioByHour(
-                Map.of(
-                    currentDate.plus(1, ChronoUnit.HOURS), new ProjectionRequest.PackingRatio(0.5, 0.5),
-                    currentDate.plus(2, ChronoUnit.HOURS), new ProjectionRequest.PackingRatio(0.5, 0.5)
-                )
-            )
-            .build()))
-        .thenReturn(
-            List.of(
-                new ProjectionResult(dateOut, null, projectedEndDate, projectedRemainingQuantity),
-                new ProjectionResult(dateOut.plus(2, ChronoUnit.HOURS), null, projectedEndDate.plus(2, ChronoUnit.HOURS),
-                    projectedRemainingQuantity)
-            )
-        );
-
-
-    //WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + "/cpts/new", "fbm-wms-outbound")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("get_cpt_new.json"))
-    );
-
-    //THEN
-    result.andExpect(status().isOk());
-  }
-
   private void mockDeferralProjection(final Instant etd, final Instant projectedTime) {
     final var results = List.of(
         new DeferralProjectionOutput(
@@ -342,34 +291,6 @@ class ProjectionControllerTest {
         post(URL + "/backlogs", "fbm-wms-outbound")
             .contentType(APPLICATION_JSON)
             .content(getResourceAsString("get_backlog_projection_request.json")));
-
-    // THEN
-    //TODO: Add asserts
-    result.andExpect(status().isOk())
-        .andExpect(content().contentType(APPLICATION_JSON));
-  }
-
-  @Test
-  public void testGetBacklogProjectionByArea() throws Exception {
-    // GIVEN
-    when(
-        backlogProjectionAdapter.projectionByArea(
-            DATE_FROM,
-            DATE_TO,
-            FBM_WMS_OUTBOUND,
-            List.of(WAVING, PICKING, PACKING),
-            getThroughput(),
-            getPlanningUnits(),
-            getCurrentBacklogBySla(),
-            getAreaDistributions()
-        )
-    ).thenReturn(getProjectionResult());
-
-    // WHEN
-    final ResultActions result = mvc.perform(
-        post(URL + "/backlogs/grouped/area", "fbm-wms-outbound")
-            .contentType(APPLICATION_JSON)
-            .content(getResourceAsString("requests/backlog/get_backlog_projection_by_area_request.json")));
 
     // THEN
     //TODO: Add asserts

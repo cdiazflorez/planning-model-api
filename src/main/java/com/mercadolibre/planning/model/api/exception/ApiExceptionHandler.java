@@ -66,6 +66,8 @@ public class ApiExceptionHandler {
 
   private static final String PROCESSING_TIME_EXCEPTION = "processing_time_exception";
 
+  private static final String INVALID_ARGUMENTS_EXCEPTION = "invalid_arguments";
+
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
                                                            final HttpServletRequest request) {
@@ -280,6 +282,22 @@ public class ApiExceptionHandler {
         BAD_REQUEST,
         exception.getMessage(),
         INVALID_DATE_RANGE_TO_SAVE_DEVIATION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(InvalidArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidArgumentException(
+      final InvalidArgumentException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        INVALID_ARGUMENTS_EXCEPTION
     );
 
     request.setAttribute(EXCEPTION_ATTRIBUTE, exception);

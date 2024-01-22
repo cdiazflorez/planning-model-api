@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.exception.TagsParsingException;
 import com.mercadolibre.planning.model.api.web.controller.forecast.dto.CreateForecastInputDto;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.remove.DeleteForecastUseCase;
@@ -100,6 +101,25 @@ public class ForecastControllerTest {
 
         // THEN
         result.andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("workflowValues")
+    void createForecastWithTagsParsingException(final String workflow) throws Exception {
+        // GIVEN
+        final CreateForecastInputDto input = mockCreateForecastInput(Workflow.FBM_WMS_OUTBOUND);
+        when(createForecastUseCase.execute(input)).thenThrow(TagsParsingException.class);
+
+        // WHEN
+        final ResultActions result = mvc.perform(
+            post(URL, workflow)
+                .contentType(APPLICATION_JSON)
+                .content(getResourceAsString("post_forecast.json"))
+        );
+
+        // THEN
+        result.andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.message").value("Error parsing tags: null as JSON"));
     }
 
     private static Stream<Arguments> workflowValues() {

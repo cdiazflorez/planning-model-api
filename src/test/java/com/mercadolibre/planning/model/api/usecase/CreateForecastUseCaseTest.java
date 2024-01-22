@@ -13,6 +13,7 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.WAVI
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PERFORMED_PROCESSING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.THROUGHPUT;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_INBOUND;
 import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
@@ -24,13 +25,17 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.WEEK;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInput;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockCreateForecastInputWithTotalWorkersNsType;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockMetadatas;
+import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
@@ -43,6 +48,7 @@ import com.mercadolibre.planning.model.api.domain.entity.forecast.PlanningDistri
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.create.CreateForecastUseCase;
+import com.mercadolibre.planning.model.api.exception.TagsParsingException;
 import com.mercadolibre.planning.model.api.web.controller.forecast.dto.CreateForecastInputDto;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationOfWeek;
 import com.mercadolibre.planning.model.api.domain.usecase.simulation.deactivate.DeactivateSimulationService;
@@ -51,16 +57,17 @@ import com.mercadolibre.planning.model.api.gateway.HeadcountDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.HeadcountProductivityGateway;
 import com.mercadolibre.planning.model.api.gateway.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
+import com.mercadolibre.planning.model.api.web.controller.forecast.dto.StaffingPlanDto;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -267,7 +274,7 @@ public class CreateForecastUseCaseTest {
 
   @Test
   @DisplayName("A forecast is created successfully")
-  public void createSaveWithTotalWorkersNsTypeOk() {
+  public void createSaveWithTotalWorkersNsTypeOk() throws JsonProcessingException {
     // GIVEN
     final Forecast forecast = new Forecast();
     forecast.setWorkflow(FBM_WMS_OUTBOUND);
@@ -344,6 +351,20 @@ public class CreateForecastUseCaseTest {
     assertEquals(1L, output.getId());
   }
 
+  @Test
+  void testTagParsingException() throws JsonProcessingException {
+    ObjectMapper om = Mockito.spy(new ObjectMapper());
+    when(om.writeValueAsString(any())).thenThrow(new JsonProcessingException("") {});
+
+    final var staffingPlan = new StaffingPlanDto(
+        THROUGHPUT,
+        Map.of(DATE_KEY, DATE_IN.toString()),
+        UNITS_PER_HOUR,
+        124
+    );
+    assertThrows(TagsParsingException.class, () -> staffingPlan.toProcessingDists(mockSimpleForecast(), om));
+  }
+
   private List<ForecastMetadata> getForecastMetadatas() {
     return List.of(
         new ForecastMetadata(0, "mono_order_distribution", "58"),
@@ -351,36 +372,7 @@ public class CreateForecastUseCaseTest {
     );
   }
 
-  private List<ProcessingDistribution> getProcessingDists(final Forecast forecast) {
-    return List.of(
-        createProcessingDistribution(
-            DATE_IN, ProcessPath.TOT_MONO, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
-        ),
-        createProcessingDistribution(
-            DATE_IN.plusHours(1), ProcessPath.TOT_MONO, WAVING, 295, UNITS, PERFORMED_PROCESSING, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
-        ),
-        createProcessingDistribution(
-            DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
-        ),
-        createProcessingDistribution(
-            DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
-        )
-    );
-  }
-
-  private List<ProcessingDistribution> getProcessingDistsWithTotalWorkersNSType(final Forecast forecast) {
+  private List<ProcessingDistribution> getProcessingDistsWithTotalWorkersNSType(final Forecast forecast) throws JsonProcessingException {
     return List.of(
         createProcessingDistribution(
                 DATE_IN, ProcessPath.GLOBAL, WAVING, 172, UNITS, PERFORMED_PROCESSING, forecast,
@@ -424,15 +416,11 @@ public class CreateForecastUseCaseTest {
         ),
         createProcessingDistribution(
                 DATE_IN, ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
+            Map.of()
         ),
         createProcessingDistribution(
                 DATE_IN.plusHours(1), ProcessPath.GLOBAL, GLOBAL, 1000, UNITS_PER_HOUR, MAX_CAPACITY, forecast,
-            Map.of(
-                PROCESS_KEY, GLOBAL.toJson()
-            )
+            Map.of()
         )
     );
   }
@@ -446,7 +434,9 @@ public class CreateForecastUseCaseTest {
       final ProcessingType processingType,
       final Forecast forecast,
       final Map<String, String> tags
-  ) {
+  ) throws JsonProcessingException {
+    final ObjectMapper om = new ObjectMapper();
+    String tagsString = om.writeValueAsString(tags);
     return ProcessingDistribution.builder()
         .date(date)
         .processPath(processPath)
@@ -455,7 +445,7 @@ public class CreateForecastUseCaseTest {
         .quantityMetricUnit(metricUnit)
         .type(processingType)
         .forecast(forecast)
-        .tags(tags.toString())
+        .tags(tagsString)
         .build();
   }
 

@@ -17,7 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,7 +164,7 @@ public final class CreateForecastAdapter {
     PROCESS(
         Tags::getProcess,
         Set.of(Workflow.values()),
-        List.of(ProcessingType.values())
+        Stream.of(ProcessingType.values()).filter(pt -> pt != ProcessingType.MAX_CAPACITY).toList()
     ),
     PROCESS_PATH(
         Tags::getProcessPath,

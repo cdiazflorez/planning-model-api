@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +36,8 @@ public class GetDeferredTest {
         Arguments.of(
             List.of(
                 new GetDeferred.DeferralStatus(DATE_OUT_1, DeferralType.CASCADE),
-                new GetDeferred.DeferralStatus(DATE_OUT_2, DeferralType.CAP_MAX)
+                new GetDeferred.DeferralStatus(DATE_OUT_2, DeferralType.CAP_MAX),
+                new GetDeferred.DeferralStatus(VIEW_DATE.minus(1, ChronoUnit.HOURS), DeferralType.CAP_MAX)
             ),
             List.of(
                 new GetDeferred.DeferralStatus(DATE_OUT_1, DeferralType.CASCADE),

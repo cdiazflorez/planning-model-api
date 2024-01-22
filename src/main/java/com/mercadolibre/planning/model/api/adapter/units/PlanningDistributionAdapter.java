@@ -1,12 +1,13 @@
 package com.mercadolibre.planning.model.api.adapter.units;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionDynamicRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlannedUnitsService.Input;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlannedUnitsService.TaggedUnit;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionGateway;
+import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.step.PlanningDistributionSupplierBuilder.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.exception.InvalidArgumentException;
 import com.mercadolibre.planning.model.api.util.DateUtils;
 import java.time.Instant;
@@ -26,14 +27,14 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 @AllArgsConstructor
-public class PlanningDistributionAdapter {
+public class PlanningDistributionAdapter implements PlanningDistributionGateway {
 
   private static final String MISSING_OPTIONS_MSG =
       "At least one of (date_in_from, date_out_from) and one of (date_in_to, date_out_to) are required as an option.";
 
   private final GetForecastUseCase getForecastUseCase;
 
-  private final PlanningDistributionGateway planningDistributionGateway;
+  private final PlanningDistributionDynamicRepository planningDistributionRepository;
 
   private static Instant getDate(final Map<String, String> options, final String key) {
     return Optional.of(options)
@@ -106,7 +107,7 @@ public class PlanningDistributionAdapter {
       final Set<Long> forecastIds,
       final DateRanges dateRanges
   ) {
-    final List<PlanDistribution> dirtyPlanDistribution = planningDistributionGateway.findByForecastIdsAndDynamicFilters(
+    final List<PlanDistribution> dirtyPlanDistribution = planningDistributionRepository.findByForecastIdsAndDynamicFilters(
         dateRanges.dateInFrom,
         dateRanges.dateInTo,
         dateRanges.dateOutFrom,

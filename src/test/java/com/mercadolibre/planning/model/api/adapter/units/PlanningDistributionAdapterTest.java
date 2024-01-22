@@ -12,13 +12,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.mercadolibre.planning.model.api.client.db.repository.forecast.PlanningDistributionDynamicRepository;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanDistribution;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlannedUnitsService.Input;
 import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlannedUnitsService.TaggedUnit;
-import com.mercadolibre.planning.model.api.domain.usecase.planningdistribution.get.PlanningDistributionGateway;
 import com.mercadolibre.planning.model.api.exception.InvalidArgumentException;
 import java.time.Instant;
 import java.util.List;
@@ -84,7 +84,7 @@ class PlanningDistributionAdapterTest {
   private GetForecastUseCase getForecastUseCase;
 
   @Mock
-  private PlanningDistributionGateway planningDistributionGateway;
+  private PlanningDistributionDynamicRepository planningDistributionRepository;
 
   private static TaggedUnit taggedUnits(
       final double quantity,
@@ -202,7 +202,7 @@ class PlanningDistributionAdapterTest {
     ).thenReturn(List.of(1L, 2L));
 
     when(
-        planningDistributionGateway.findByForecastIdsAndDynamicFilters(
+        planningDistributionRepository.findByForecastIdsAndDynamicFilters(
             planningDistributionGatewayInput.dateInFrom,
             planningDistributionGatewayInput.dateInTo,
             planningDistributionGatewayInput.dateOutFrom,
@@ -232,7 +232,7 @@ class PlanningDistributionAdapterTest {
     verify(getForecastUseCase, never())
         .execute(any());
 
-    verify(planningDistributionGateway, never())
+    verify(planningDistributionRepository, never())
         .findByForecastIdsAndDynamicFilters(any(), any(), any(), any(), any(), any());
   }
 

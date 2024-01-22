@@ -13,7 +13,9 @@ public class GetDeferred {
   private DeferredGateway deferredGateway;
 
   public List<DeferralStatus> getDeferred(final String logisticCenterID, final Workflow workflow, final Instant viewDate) {
-    return deferredGateway.getDeferredWithStatus(logisticCenterID, workflow, viewDate);
+    return deferredGateway.getDeferredWithStatus(logisticCenterID, workflow, viewDate)
+        .stream().filter(deferral -> deferral.date.compareTo(viewDate) > 0)
+        .toList();
   }
 
   /**

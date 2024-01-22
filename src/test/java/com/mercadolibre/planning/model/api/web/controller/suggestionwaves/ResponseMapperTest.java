@@ -26,7 +26,7 @@ class ResponseMapperTest {
     WaverlessResponse response = mapToDto(WH, VIEW_DATE, dataTrigger());
     assertNotNull(response);
     assertEquals(2, response.getSuggestions().size());
-    assertEquals(5, response.getSuggestions().get(0).getWaves().size());
+    assertEquals(7, response.getSuggestions().get(0).getWaves().size());
 
 
   }

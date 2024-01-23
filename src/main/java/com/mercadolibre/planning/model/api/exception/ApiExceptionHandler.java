@@ -65,6 +65,9 @@ public class ApiExceptionHandler {
   private static final String READ_FURY_CONFIG_EXCEPTION = "read_fury_config_exception";
 
   private static final String PROCESSING_TIME_EXCEPTION = "processing_time_exception";
+  private static final String TAGS_PARSING_EXCEPTION = "tags_parsing_exception";
+
+  private static final String INVALID_ARGUMENTS_EXCEPTION = "invalid_arguments";
 
   @ExceptionHandler(BindException.class)
   public ResponseEntity<ErrorResponse> handleBindException(final BindException exception,
@@ -287,6 +290,22 @@ public class ApiExceptionHandler {
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
   }
 
+  @ExceptionHandler(InvalidArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidArgumentException(
+      final InvalidArgumentException exception,
+      final HttpServletRequest request) {
+
+    final ErrorResponse errorResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        INVALID_ARGUMENTS_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
   @ExceptionHandler(UnexpiredDeviationPresentException.class)
   public ResponseEntity<ErrorResponse> handlePercentageDeviationUnexpiredException(
       final UnexpiredDeviationPresentException exception,
@@ -381,6 +400,22 @@ public class ApiExceptionHandler {
     request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
     log.error(exception.getMessage(), exception);
 
+    return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
+  }
+
+  @ExceptionHandler(TagsParsingException.class)
+  public ResponseEntity<ErrorResponse> handleTagsParsingException(
+      final TagsParsingException exception,
+      final HttpServletRequest request
+  ) {
+    final ErrorResponse errorResponse = new ErrorResponse(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        exception.getMessage(),
+        TAGS_PARSING_EXCEPTION
+    );
+
+    request.setAttribute(EXCEPTION_ATTRIBUTE, exception);
+    log.error(exception.getMessage(), exception);
     return new ResponseEntity<>(errorResponse, new HttpHeaders(), errorResponse.getStatus());
   }
 }

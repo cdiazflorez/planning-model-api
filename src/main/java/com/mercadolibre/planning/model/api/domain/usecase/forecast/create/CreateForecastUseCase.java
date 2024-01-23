@@ -3,6 +3,7 @@ package com.mercadolibre.planning.model.api.domain.usecase.forecast.create;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
@@ -92,7 +93,7 @@ public class CreateForecastUseCase {
     if (isEmpty(input)) {
       return;
     }
-    final var distributions = input.stream().map(sp -> sp.toProcessingDists(forecast)).toList();
+    final var distributions = input.stream().map(sp -> sp.toProcessingDists(forecast, new ObjectMapper())).toList();
     processingDistributionGateway.create(distributions, forecast.getId());
   }
 

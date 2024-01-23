@@ -34,7 +34,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class ApiExceptionHandlerTest {
 
   private static final String EXCEPTION_ATTRIBUTE = "application.exception";
+
   private ApiExceptionHandler apiExceptionHandler;
+
   private HttpServletRequest request;
 
   @BeforeEach
@@ -354,8 +356,25 @@ public class ApiExceptionHandlerTest {
 
     // THEN
     assertErrorResponse(expectedResponse, response);
+  }
 
+  @Test
+  @DisplayName("Handle InvalidArgumentException")
+  void handleInvalidArgumentExceptionTest() {
+    //GIVEN
+    final var exception = new InvalidArgumentException("Invalid argument");
 
+    final ErrorResponse expectedResponse = new ErrorResponse(
+        BAD_REQUEST,
+        exception.getMessage(),
+        "invalid_arguments"
+    );
+
+    // WHEN
+    final ResponseEntity<ErrorResponse> response = apiExceptionHandler.handleInvalidArgumentException(exception, request);
+
+    // THEN
+    assertErrorResponse(expectedResponse, response);
   }
 
   @Test

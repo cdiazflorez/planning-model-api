@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 public final class ResponseMapper {
 
-  private static final int FIRST_CONDITION = 2;
-  private static final int SECOND_CONDITION = 4;
-  private static final int THIRD_CONDITION = 5;
+  private static final int FIRST_CONDITION = 3;
+  private static final int SECOND_CONDITION = 5;
+  private static final int THIRD_CONDITION = 6;
   private static final int SECOND_LIMIT = 2;
   private static final int THIRD_LIMIT = 3;
   private static final int SECONDS_TO_HOUR = 3600;
@@ -122,7 +122,7 @@ public final class ResponseMapper {
       double diffSeconds = sla.getEpochSecond() - initialDate.getEpochSecond();
       double diffHours = diffSeconds / (SECONDS_TO_HOUR);
 
-      if (diffHours < FIRST_CONDITION) {
+      if (diffHours <= FIRST_CONDITION) {
         parentList.add(List.of(sla));
       } else if (diffHours <= SECOND_CONDITION) {
         limitTwo = true;

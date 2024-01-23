@@ -20,9 +20,11 @@ import static org.mockito.Mockito.mockStatic;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.domain.entity.TriggerName;
+import com.mercadolibre.planning.model.api.projection.waverless.ConfigurationValue;
 import com.mercadolibre.planning.model.api.projection.waverless.ExecutionMetrics;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog.AvailableBacklog;
+import com.mercadolibre.planning.model.api.projection.waverless.WaveSizeConfig;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +35,9 @@ import org.mockito.MockedStatic;
 
 class NextIdlenessWaveProjectorTest {
 
-  private static final String WAREHOUSE = "ARBA01";
+  private static final String TAG = "process_path";
+
+  private static final String DEFAULT = "default";
 
   private static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-29T00:00:00Z");
 
@@ -71,7 +75,10 @@ class NextIdlenessWaveProjectorTest {
           NON_TOT_MONO, Map.of(DATES[0], 800L)
       )
   );
-
+  private static final WaveSizeConfig BOUNDS_CONFIGURATIONS = new WaveSizeConfig(
+      List.of(new ConfigurationValue(60, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(60, Map.of(TAG, DEFAULT))),
+      List.of(new ConfigurationValue(90, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(90, Map.of(TAG, DEFAULT))),
+      List.of(new ConfigurationValue(30, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(30, Map.of(TAG, DEFAULT))));
   private MockedStatic<ExecutionMetrics.DataDogMetricsWrapper> wrapper;
 
   private static Map<Instant, Integer> throughput(int v1, int v2, int v3, int v4, int v5, int v6) {
@@ -128,13 +135,13 @@ class NextIdlenessWaveProjectorTest {
 
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
-        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
         emptyMap(),
-        emptyList()
+        emptyList(),
+        BOUNDS_CONFIGURATIONS
     );
 
     // THEN
@@ -190,13 +197,13 @@ class NextIdlenessWaveProjectorTest {
 
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
-        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
         emptyMap(),
-        emptyList()
+        emptyList(),
+        BOUNDS_CONFIGURATIONS
     );
 
     // THEN
@@ -253,13 +260,13 @@ class NextIdlenessWaveProjectorTest {
 
     // WHEN
     final var result = NextIdlenessWaveProjector.calculateNextWave(
-        WAREHOUSE,
         INFLECTION_POINTS,
         pendingBacklog,
         BACKLOGS,
         throughput,
         emptyMap(),
-        emptyList()
+        emptyList(),
+        BOUNDS_CONFIGURATIONS
     );
 
     // THEN

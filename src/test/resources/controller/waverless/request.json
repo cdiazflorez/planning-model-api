@@ -272,5 +272,49 @@
         "start_time": "2023-03-29T06:49:55Z"
       }
     ]
+  },
+  "wave_size_config": {
+    "tph_minutes_for_lower_limit": [
+      {
+        "value": 30,
+        "tags": {
+          "process_path": "default"
+        }
+      },
+      {
+        "value": 30,
+        "tags": {
+          "process_path": "tot_multi_order"
+        }
+      }
+    ],
+    "tph_minutes_for_idleness": [
+      {
+        "value": 30,
+        "tags": {
+          "process_path": "default"
+        }
+      },
+      {
+        "value": 30,
+        "tags": {
+          "process_path": "tot_multi_order"
+        }
+      }
+    ],
+    "tph_minutes_for_upper_limit": [
+      {
+        "value": 90,
+        "tags": {
+          "process_path": "default"
+        }
+      },
+      {
+        "value": 90,
+        "tags": {
+          "process_path": "tot_multi_order"
+        }
+      }
+    ]
   }
 }

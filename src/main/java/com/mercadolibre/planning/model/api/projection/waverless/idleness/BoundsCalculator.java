@@ -26,7 +26,7 @@ final class BoundsCalculator {
    * @return Map of bounds mapped by Process Path.
    */
   public static Map<ProcessPath, Integer> execute(
-      final int minutesToProcess,
+      final Map<String, Integer> minutesToProcess,
       final Instant waveExecutionDate,
       final Map<ProcessPath, Map<Instant, Integer>> throughputByProcessPath
   ) {
@@ -37,7 +37,9 @@ final class BoundsCalculator {
                 Map.Entry::getKey,
                 entry -> Optional.of(entry)
                     .map(Map.Entry::getValue)
-                    .map(tph -> calculateBound(minutesToProcess, waveExecutionDate, tph))
+                    .map(tph -> calculateBound(
+                        minutesToProcess.getOrDefault(entry.getKey().toJson(), minutesToProcess.get("default")),
+                        waveExecutionDate, tph))
                     .orElse(0)
             )
         );

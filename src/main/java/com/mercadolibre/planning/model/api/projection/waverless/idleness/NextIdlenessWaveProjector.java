@@ -10,9 +10,11 @@ import static java.util.stream.Collectors.toMap;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.BacklogProjection;
+import com.mercadolibre.planning.model.api.projection.waverless.ConfigurationValue;
 import com.mercadolibre.planning.model.api.projection.waverless.PendingBacklog;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
 import com.mercadolibre.planning.model.api.projection.waverless.Wave;
+import com.mercadolibre.planning.model.api.projection.waverless.WaveSizeConfig;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
 import java.util.Collection;
@@ -28,13 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class NextIdlenessWaveProjector {
 
-  private static final String WH_ARBA = "ARBA01";
-  private static final String WH_BRBA = "BRBA01";
-  private static final String WH_MXYU = "MXYU01";
-  private static final Map<String, Integer> MIN_TPH_IN_MINUTES_BY_WAREHOUSE = Map.of(WH_ARBA, 60, WH_BRBA, 45, WH_MXYU, 30);
-  private static final Map<String, Integer> MAX_TPH_IN_MINUTES_BY_WAREHOUSE = Map.of(WH_ARBA, 90, WH_BRBA, 75, WH_MXYU, 45);
-  private static final Map<String, Integer> MIN_TPH_IN_MINUTES_BY_WAREHOUSE_TRIGGER = Map.of(WH_ARBA, 30, WH_BRBA, 30, WH_MXYU, 30);
   private static final int MINUTES_IN_HOUR = 60;
+  private static final int DEFAULT_MINUTES = 30;
+  private static final String PP = "process_path";
 
   private NextIdlenessWaveProjector() {
 
@@ -47,31 +45,37 @@ public final class NextIdlenessWaveProjector {
    * configured limits. If it is projected that the backlogs will be under its limits then a wave is configured by obtaining the
    * lower bounds, upper bounds and units to wave by Process Path.
    *
-   * @param logisticCenterId   logistic center.
    * @param inflectionPoints   points to time in which backlogs must be evaluated.
    * @param pendingBacklog     backlog in ready to wave and forecasted.
    * @param backlogs           current backlogs by process and process path and cpt.
    * @param throughput         tph by process and process path.
    * @param precalculatedWaves precalculated wave distributions by process path.
    * @param previousWaves      previously calculated waves.
+   * @param waveSizeConfig     tph time settings in minutes for bounds.
    * @return if found, a wave for idleness.
    */
   @Trace
   public static Optional<DateWaveSupplier> calculateNextWave(
-      final String logisticCenterId,
       final List<Instant> inflectionPoints,
       final PendingBacklog pendingBacklog,
       final Map<ProcessName, Map<ProcessPath, Map<Instant, Long>>> backlogs,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves,
-      final List<Wave> previousWaves
+      final List<Wave> previousWaves,
+      final WaveSizeConfig waveSizeConfig
   ) {
     final var backlogsStates = calculateBacklogStates(inflectionPoints, backlogs, throughput, previousWaves);
-    final var lowerBoundInMinutes = MIN_TPH_IN_MINUTES_BY_WAREHOUSE.getOrDefault(logisticCenterId, 30);
-    final var upperBoundInMinutes = MAX_TPH_IN_MINUTES_BY_WAREHOUSE.getOrDefault(logisticCenterId, 90);
+
+    int minIdlenessTph = waveSizeConfig.getTphMinutesForIdleness()
+        .stream()
+        .filter(value -> "default".equalsIgnoreCase(value.getTags().get(PP)))
+        .mapToInt(ConfigurationValue::getValue)
+        .findFirst()
+        .orElse(DEFAULT_MINUTES);
+
     final var minimumBacklog = getMinimumBacklog(
         throughput.get(ProcessPath.GLOBAL).get(PICKING),
-        MIN_TPH_IN_MINUTES_BY_WAREHOUSE_TRIGGER.getOrDefault(logisticCenterId, 30)
+        minIdlenessTph
     );
     final var pickingBacklogs = backlogsStates.get(PICKING);
     final var waveDate = calculateWaveDate(minimumBacklog, pickingBacklogs);
@@ -86,8 +90,7 @@ public final class NextIdlenessWaveProjector {
                         date,
                         previousWaves,
                         pendingBacklog,
-                        lowerBoundInMinutes,
-                        upperBoundInMinutes,
+                        waveSizeConfig,
                         throughput,
                         precalculatedWaves
                     )
@@ -199,13 +202,18 @@ public final class NextIdlenessWaveProjector {
       final Instant waveExecutionDate,
       final List<Wave> previousWaves,
       final PendingBacklog pendingBacklog,
-      final int lowerBoundInMinutes,
-      final int upperBoundInMinutes,
+      final WaveSizeConfig waveSizeConfig,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughputByProcessPath,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves
   ) {
 
     final var pickingThroughput = getPickingThroughputByProcessPath(throughputByProcessPath);
+
+    final var lowerBoundInMinutes = waveSizeConfig.getTphMinutesForLowerLimit()
+        .stream().collect(toMap(value -> value.getTags().get(PP), ConfigurationValue::getValue));
+
+    final var upperBoundInMinutes = waveSizeConfig.getTphMinutesForUpperLimit()
+        .stream().collect(toMap(value -> value.getTags().get(PP), ConfigurationValue::getValue));
 
     final var lowerBounds = BoundsCalculator.execute(
         lowerBoundInMinutes,

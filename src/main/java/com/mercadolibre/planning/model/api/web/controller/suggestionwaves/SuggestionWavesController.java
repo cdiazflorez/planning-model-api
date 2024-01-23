@@ -45,7 +45,8 @@ public class SuggestionWavesController {
         List.of(),
         request.getIntThroughput(),
         request.getPrecalculatedWavesAsEntities(),
-        logisticCenterId
+        logisticCenterId,
+        request.getWaveSizeConfig()
     );
     return ResponseEntity.ok(mapToDto(logisticCenterId, request.getViewDate(), waves));
   }

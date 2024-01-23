@@ -5,6 +5,7 @@ import com.mercadolibre.planning.model.api.domain.entity.ProcessPath;
 import com.mercadolibre.planning.model.api.projection.ProcessPathConfiguration;
 import com.mercadolibre.planning.model.api.projection.UnitsByProcessPathAndProcess;
 import com.mercadolibre.planning.model.api.projection.waverless.BacklogLimits;
+import com.mercadolibre.planning.model.api.projection.waverless.WaveSizeConfig;
 import com.mercadolibre.planning.model.api.projection.waverless.ForecastedUnitsByProcessPath;
 import com.mercadolibre.planning.model.api.projection.waverless.PrecalculatedWave;
 import java.time.Instant;
@@ -31,6 +32,8 @@ public class Request {
   BacklogLimits backlogLimits;
 
   Map<ProcessPath, List<PrecalculatedWaveDto>> precalculatedWaves;
+
+  WaveSizeConfig waveSizeConfig;
 
   private static Map<ProcessName, Map<Instant, Integer>> mapProcessNamesTph(final Map<ProcessName, Map<Instant, Float>> tph) {
     final Function<Map<Instant, Float>, Map<Instant, Integer>> asIntMap = map -> map.entrySet()

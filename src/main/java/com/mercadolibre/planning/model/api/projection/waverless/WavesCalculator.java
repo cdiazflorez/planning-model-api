@@ -43,7 +43,8 @@ public final class WavesCalculator {
       final List<ForecastedUnitsByProcessPath> forecast,
       final Map<ProcessPath, Map<ProcessName, Map<Instant, Integer>>> throughput,
       final Map<ProcessPath, List<PrecalculatedWave>> precalculatedWaves,
-      final String logisticCenterId
+      final String logisticCenterId,
+      final WaveSizeConfig waveSizeConfig
   ) {
     final List<Instant> inflectionPoints = calculateInflectionPoints(executionDate, throughput);
 
@@ -68,13 +69,13 @@ public final class WavesCalculator {
       );
 
       final Optional<DateWaveSupplier> byIdleness = NextIdlenessWaveProjector.calculateNextWave(
-          logisticCenterId,
           inflectionPoints,
           pendingBacklog,
           currentBacklog,
           throughput,
           precalculatedWaves,
-          waves
+          waves,
+          waveSizeConfig
       );
 
       final var wave = bySla.map(

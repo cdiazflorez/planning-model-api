@@ -72,24 +72,33 @@ class BoundsCalculatorTest {
     );
   }
 
+  private static Map<String, Integer> minutesByPP(int value) {
+    return Map.of(
+        TOT_MONO.toJson(), value,
+        NON_TOT_MONO.toJson(), value,
+        TOT_MULTI_ORDER.toJson(), value,
+        TOT_MULTI_BATCH.toJson(), value
+    );
+  }
+
   static Stream<Arguments> parameters() {
     return Stream.of(
-        arguments("2023-04-12T03:10:00Z", 20, expected(166, 11, 6, 0)),
-        arguments("2023-04-12T03:45:00Z", 30, expected(325, 19, 41, 0)),
-        arguments("2023-04-12T02:10:00Z", 40, expected(200, 51, 16, 666)),
-        arguments("2023-04-12T03:00:00Z", 50, expected(416, 27, 15, 0)),
-        arguments("2023-04-12T02:45:00Z", 60, expected(450, 43, 20, 250)),
-        arguments("2023-04-12T03:10:00Z", 70, expected(682, 42, 65, 0)),
-        arguments("2023-04-12T03:45:00Z", 80, expected(930, 53, 179, 9)),
-        arguments("2023-04-12T02:10:00Z", 90, expected(583, 86, 32, 833)),
-        arguments("2023-04-12T03:00:00Z", 100, expected(1033, 63, 119, 0)),
-        arguments("2023-04-12T02:45:00Z", 110, expected(1041, 78, 112, 250))
+        arguments("2023-04-12T03:10:00Z", minutesByPP(20), expected(166, 11, 6, 0)),
+        arguments("2023-04-12T03:45:00Z", minutesByPP(30), expected(325, 19, 41, 0)),
+        arguments("2023-04-12T02:10:00Z", minutesByPP(40), expected(200, 51, 16, 666)),
+        arguments("2023-04-12T03:00:00Z", minutesByPP(50), expected(416, 27, 15, 0)),
+        arguments("2023-04-12T02:45:00Z", minutesByPP(60), expected(450, 43, 20, 250)),
+        arguments("2023-04-12T03:10:00Z", minutesByPP(70), expected(682, 42, 65, 0)),
+        arguments("2023-04-12T03:45:00Z", minutesByPP(80), expected(930, 53, 179, 9)),
+        arguments("2023-04-12T02:10:00Z", minutesByPP(90), expected(583, 86, 32, 833)),
+        arguments("2023-04-12T03:00:00Z", minutesByPP(100), expected(1033, 63, 119, 0)),
+        arguments("2023-04-12T02:45:00Z", minutesByPP(110), expected(1041, 78, 112, 250))
     );
   }
 
   @ParameterizedTest
   @MethodSource("parameters")
-  void test(final String waveDate, final int minutes, final Map<ProcessPath, Integer> expected) {
+  void test(final String waveDate, final Map<String, Integer> minutes, final Map<ProcessPath, Integer> expected) {
     // GIVEN
     final var date = parse(waveDate);
 

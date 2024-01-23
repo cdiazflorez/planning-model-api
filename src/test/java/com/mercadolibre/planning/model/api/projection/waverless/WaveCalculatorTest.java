@@ -28,7 +28,17 @@ import org.mockito.MockedStatic;
 
 class WaveCalculatorTest {
   private static final Instant FIRST_INFLECTION_POINT = Instant.parse("2023-03-29T00:00:00Z");
+
   private static final String WH = "ARBA01";
+
+  private static final String TAG = "process_path";
+
+  private static final String DEFAULT = "default";
+
+  private static final WaveSizeConfig BOUNDS_CONFIGURATIONS = new WaveSizeConfig(
+      List.of(new ConfigurationValue(60, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(60, Map.of(TAG, DEFAULT))),
+      List.of(new ConfigurationValue(90, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(90, Map.of(TAG, DEFAULT))),
+      List.of(new ConfigurationValue(30, Map.of(TAG, TOT_MULTI_BATCH.toJson())), new ConfigurationValue(30, Map.of(TAG, DEFAULT))));
 
   private static final Instant[] DATES = {
       Instant.parse("2023-03-29T00:00:00Z"),
@@ -122,7 +132,8 @@ class WaveCalculatorTest {
         FORECAST,
         throughput,
         emptyMap(),
-        WH
+        WH,
+        BOUNDS_CONFIGURATIONS
     );
     // THEN
     final var result = triggers.getWaves();

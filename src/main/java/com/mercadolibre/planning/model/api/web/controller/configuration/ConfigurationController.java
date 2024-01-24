@@ -88,15 +88,12 @@ public class ConfigurationController {
       @RequestBody @Valid final CycleTimeRequest request
   ) {
 
-    if (request.getWorkflows().contains(FBM_WMS_OUTBOUND)) {
+    if (request.workflows().contains(FBM_WMS_OUTBOUND)) {
       final var result = outboundSlaPropertiesService.get(
           new OutboundSlaPropertiesService.Input(
               logisticCenterId,
               FBM_WMS_OUTBOUND,
-              request.getDateFrom(),
-              request.getDateTo(),
-              request.getSlas(),
-              request.getTimeZone()
+              request.slas()
           )
       );
 

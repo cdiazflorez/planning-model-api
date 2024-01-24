@@ -1,8 +1,4 @@
 package com.mercadolibre.planning.model.api.domain.service.sla;
 
-import lombok.Value;
-
-@Value
-public class SlaProperties {
-  long cycleTime;
+public record SlaProperties(long cycleTime) {
 }

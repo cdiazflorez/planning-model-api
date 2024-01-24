@@ -14,6 +14,15 @@ import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.E
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.MAX_CAPACITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PRODUCTIVITY;
 import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.THROUGHPUT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DATE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.HEADCOUNT_TYPE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.MAIN;
+import static com.mercadolibre.planning.model.api.util.TestUtils.NON_SYSTEMIC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.POLYVALENCE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.POLYVALENT;
+import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_NAME;
+import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_PATH;
+import static com.mercadolibre.planning.model.api.util.TestUtils.SYSTEMIC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.mockSimpleForecast;
 import static com.mercadolibre.planning.model.api.util.TestUtils.objectMapper;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -52,24 +61,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 class ProcessingDistributionJpaRepositoryTest {
 
   private static final ZonedDateTime DATE_TIME = ZonedDateTime.now().truncatedTo(HOURS);
-
-  private static final String SYSTEMIC = "systemic";
-
-  private static final String NON_SYSTEMIC = "non_systemic";
-
-  private static final String HEADCOUNT_TYPE = "headcount_type";
-
-  private static final String POLYVALENCE = "polyvalence";
-
-  private static final String PROCESS_NAME = "process_name";
-
-  private static final String PROCESS_PATH = "process_path";
-
-  private static final String DATE = "date";
-
-  private static final Integer MAIN = 1;
-
-  private static final Integer POLYVALENT = 2;
 
   @Autowired
   private EntityManager entityManager;

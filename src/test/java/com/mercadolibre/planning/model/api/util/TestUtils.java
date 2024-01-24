@@ -156,6 +156,24 @@ public final class TestUtils {
 
   public static final Integer LIMIT = 1;
 
+  public static final String SYSTEMIC = "systemic";
+
+  public static final String NON_SYSTEMIC = "non_systemic";
+
+  public static final String HEADCOUNT_TYPE = "headcount_type";
+
+  public static final String POLYVALENCE = "polyvalence";
+
+  public static final String PROCESS_NAME = "process_name";
+
+  public static final String PROCESS_PATH = "process_path";
+
+  public static final String DATE = "date";
+
+  public static final Integer MAIN = 1;
+
+  public static final Integer POLYVALENT = 2;
+
   private TestUtils() {
   }
 

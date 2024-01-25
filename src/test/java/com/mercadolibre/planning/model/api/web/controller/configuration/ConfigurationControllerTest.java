@@ -7,6 +7,8 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.CONFIG_KEY;
 import static com.mercadolibre.planning.model.api.util.TestUtils.WAREHOUSE_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static java.lang.String.format;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,7 +22,6 @@ import com.mercadolibre.planning.model.api.domain.service.sla.OutboundSlaPropert
 import com.mercadolibre.planning.model.api.domain.service.sla.SlaProperties;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.ConfigurationInput;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.create.CreateConfigurationUseCase;
-import com.mercadolibre.planning.model.api.domain.usecase.configuration.get.GetConfigurationByKeyUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.configuration.update.UpdateConfigurationUseCase;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -54,13 +55,8 @@ class ConfigurationControllerTest {
 
   private static final Instant DATE_FROM = A_DATE_UTC.toInstant();
 
-  private static final Instant DATE_TO = DATE_FROM.plus(3, ChronoUnit.HOURS);
-
   @Autowired
   private MockMvc mvc;
-
-  @MockBean
-  private GetConfigurationByKeyUseCase getConfiguration;
 
   @MockBean
   private CreateConfigurationUseCase createConfiguration;
@@ -106,6 +102,37 @@ class ConfigurationControllerTest {
         .andExpect(jsonPath("$.metric_unit").value(MINUTES.toJson()));
   }
 
+  @Test
+  void testCreateConfigurationThrowsException() throws Exception {
+    // GIVEN
+    final ConfigurationInput input = new ConfigurationInput(
+        LOGISTIC_CENTER_ID, KEY, 60, MINUTES, 123);
+
+    when(createConfiguration.execute(input)).thenReturn(Configuration.builder()
+        .logisticCenterId(LOGISTIC_CENTER_ID)
+        .key(CONFIG_KEY)
+        .value("ASD")
+        .metricUnit(MINUTES)
+        .build());
+
+    // WHEN
+    mvc.perform(
+        post(URL)
+            .contentType(APPLICATION_JSON)
+            .param(USER_ID_FIELD, "123")
+            .content(getResourceAsString("post_configuration.json"))
+    );
+
+    // THEN
+    Exception exception = assertThrows(NumberFormatException.class, () -> {
+      Integer.parseInt("ASD");
+    });
+    String expectedMessage = "For input string:";
+    String actualMessage = exception.getMessage();
+    assertTrue(actualMessage.contains(expectedMessage));
+
+  }
+
   @ParameterizedTest
   @MethodSource("testCreateAndUpdateArguments")
   void testUpdateConfiguration(final String userParam, final long userId) throws Exception {
@@ -141,10 +168,7 @@ class ConfigurationControllerTest {
         new OutboundSlaPropertiesService.Input(
             WAREHOUSE_ID,
             FBM_WMS_OUTBOUND,
-            DATE_FROM,
-            DATE_TO,
-            List.of(DATE_FROM, DATE_FROM.plus(1, ChronoUnit.HOURS), DATE_FROM.plus(2, ChronoUnit.HOURS)),
-            "UTC"
+            List.of(DATE_FROM, DATE_FROM.plus(1, ChronoUnit.HOURS), DATE_FROM.plus(2, ChronoUnit.HOURS))
         )
     )).thenReturn(
         Map.of(
@@ -165,5 +189,20 @@ class ConfigurationControllerTest {
     // THEN
     result.andExpect(status().isOk())
         .andExpect(content().json(getResourceAsString("search_cycle_times_response.json")));
+  }
+
+  @Test
+  void testGetInboundCycleTimeOk() throws Exception {
+
+    // WHEN
+    final ResultActions result = mvc.perform(
+        post(URL + CYCLE_TIME_PATH, "ARBA01")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("search_cycle_times_inbound_request.json"))
+    );
+
+    // THEN
+    result.andExpect(status().isUnprocessableEntity())
+        .andExpect(content().json("{}"));
   }
 }

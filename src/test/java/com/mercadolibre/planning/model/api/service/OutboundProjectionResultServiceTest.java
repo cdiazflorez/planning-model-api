@@ -61,13 +61,9 @@ public class OutboundProjectionResultServiceTest {
     final var input = new OutboundSlaPropertiesService.Input(
         WAREHOUSE_ID,
         Workflow.FBM_WMS_OUTBOUND,
-        SLAS.get(0).toInstant(),
-        SLAS.get(4).toInstant(),
-        defaults(),
-        TIME_ZONE
+        defaults()
     );
 
-    mockGetSlasWarehouseOutboundService();
     mockCycleTimes();
 
     // WHEN
@@ -84,36 +80,14 @@ public class OutboundProjectionResultServiceTest {
   }
 
   @Test
-  void testGetSlasWarehouseOutboundServiceError() {
-    // GIVEN
-    final var input = new OutboundSlaPropertiesService.Input(
-        WAREHOUSE_ID,
-        Workflow.FBM_WMS_OUTBOUND,
-        SLAS.get(0).toInstant(),
-        SLAS.get(4).toInstant(),
-        defaults(),
-        TIME_ZONE
-    );
-
-    when(getSlaByWarehouseOutboundService.execute(any())).thenThrow(RuntimeException.class);
-
-    // WHEN
-    assertThrows(RuntimeException.class, () -> useCase.get(input));
-  }
-
-  @Test
   void testCycleTimeServiceError() {
     // GIVEN
     final var input = new OutboundSlaPropertiesService.Input(
         WAREHOUSE_ID,
         Workflow.FBM_WMS_OUTBOUND,
-        SLAS.get(0).toInstant(),
-        SLAS.get(4).toInstant(),
-        defaults(),
-        TIME_ZONE
+        defaults()
     );
 
-    mockGetSlasWarehouseOutboundService();
     when(getCycleTimeService.execute(any())).thenThrow(RuntimeException.class);
 
     // WHEN
@@ -122,7 +96,7 @@ public class OutboundProjectionResultServiceTest {
 
   private void assertSla(final int slaIndex, final long expected, final Map<Instant, SlaProperties> results) {
     final var sla = SLAS.get(slaIndex).toInstant();
-    assertEquals(expected, results.get(sla).getCycleTime());
+    assertEquals(expected, results.get(sla).cycleTime());
   }
 
   private void mockGetSlasWarehouseOutboundService() {
@@ -157,7 +131,7 @@ public class OutboundProjectionResultServiceTest {
   }
 
   private void mockCycleTimes() {
-    final var input = new GetCycleTimeInput(WAREHOUSE_ID, SLAS);
+    final var input = new GetCycleTimeInput(WAREHOUSE_ID, SLAS.subList(1, 3));
 
     when(getCycleTimeService.execute(input))
         .thenReturn(

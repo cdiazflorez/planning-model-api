@@ -1,19 +1,17 @@
 package com.mercadolibre.planning.model.api.client.db.repository.forecast;
 
+import static com.mercadolibre.planning.model.api.client.db.repository.util.StaffingPlanUtil.adaptResultToStaffingPlan;
+import static com.mercadolibre.planning.model.api.client.db.repository.util.StaffingPlanUtil.buildColumnClause;
+import static com.mercadolibre.planning.model.api.client.db.repository.util.StaffingPlanUtil.buildWhereClauseWithJsonExtract;
 import static com.mercadolibre.planning.model.api.util.EntitiesUtil.paginate;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 
-import com.mercadolibre.planning.model.api.domain.entity.MetricUnit;
-import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.forecast.ProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.entity.plan.StaffingPlan;
 import com.mercadolibre.planning.model.api.domain.entity.plan.StaffingPlanInput;
 import com.mercadolibre.planning.model.api.gateway.ProcessingDistributionGateway;
 import com.newrelic.api.agent.Trace;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import lombok.AllArgsConstructor;
@@ -24,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class ProcessingDistributionJpaRepository implements ProcessingDistributionGateway {
   private static final String COLUMN_NAMES = "forecast_id, date, process_path, process_name, quantity, quantity_metric_unit, type, tags";
 
-  private static final String DEFAULT_COLUMNS = "forecast_id, sum(quantity) as quantity, quantity_metric_unit, type %s";
+  private static final String DEFAULT_COLUMNS = "sum(quantity) as quantity, quantity_metric_unit, type %s, forecast_id";
 
   private static final String DEFAULT_WHERE = "forecast_id in (:forecastIds) and date between :dateFrom and :dateTo and type = :type";
 
@@ -32,24 +30,6 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
 
   private static final String DEFAULT_PARTITION_BY =
       "ROW_NUMBER() OVER (PARTITION BY quantity_metric_unit, type %s ORDER BY forecast_id DESC) AS r";
-
-  private static final String DATE_COLUMN = "date";
-
-  private static final String TAGS_COLUMN = "tags ->>'$.%s'";
-
-  private static final String COMMA_SEPARATOR = ", ";
-
-  private static final String EMPTY_STRING = "";
-
-  private static final int COLUMN_FORECAST_ID = 0;
-
-  private static final int COLUMN_QUANTITY = 1;
-
-  private static final int COLUMN_QUANTITY_METRIC_UNIT = 2;
-
-  private static final int COLUMN_TYPE = 3;
-
-  private static final int NEXT_COLUMN = 4;
 
   private static final String COLUMN_PLACEHOLDERS = "(?,?,?,?,?,?,?,?),";
 
@@ -95,10 +75,6 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
     return adaptResultToStaffingPlan(result, staffingPlanInput.groupers());
   }
 
-  private static String buildWhereClauseWithJsonExtract(final String column) {
-    return format(" AND tags ->> '$.%s' in (:%s)", column, column);
-  }
-
   private static String buildQuery(final StaffingPlanInput staffingPlanInput) {
 
     final String columns = buildColumnClause(DEFAULT_COLUMNS, staffingPlanInput.groupers());
@@ -122,16 +98,6 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
     );
   }
 
-  private static String buildColumnClause(final String clause,
-                                          final List<String> groupers) {
-    return !groupers.isEmpty()
-        ? format(clause, COMMA_SEPARATOR.concat(groupers.stream()
-                                                    .map(grouper -> DATE_COLUMN.equals(grouper)
-                                                        ? DATE_COLUMN : format(TAGS_COLUMN, grouper))
-                                                    .collect(joining(COMMA_SEPARATOR))))
-        : format(clause, EMPTY_STRING);
-  }
-
   private static Query addParameters(final Query query, final StaffingPlanInput staffingPlanInput) {
     query.setParameter("forecastIds", staffingPlanInput.forecastIds());
     query.setParameter("dateFrom", staffingPlanInput.dateFrom());
@@ -143,30 +109,4 @@ public class ProcessingDistributionJpaRepository implements ProcessingDistributi
     return query;
   }
 
-  private List<StaffingPlan> adaptResultToStaffingPlan(final List resultQuery,
-                                                       final List<String> groupers) {
-
-    return ((List<Object[]>) resultQuery).stream()
-        .map(row -> {
-
-          final double quantity = (Double) row[COLUMN_QUANTITY];
-          final MetricUnit metricUnit = MetricUnit.valueOf(((String) row[COLUMN_QUANTITY_METRIC_UNIT]));
-          final ProcessingType type = ProcessingType.valueOf((String) row[COLUMN_TYPE]);
-
-          final ConcurrentHashMap<String, String> groupersMap = new ConcurrentHashMap<>();
-
-          groupers.forEach(grouper -> {
-            final Object rowValue = row[NEXT_COLUMN + groupers.indexOf(grouper)];
-            if (rowValue != null) {
-              if (DATE_COLUMN.equals(grouper)) {
-                groupersMap.put(grouper, ((Timestamp) rowValue).toInstant().toString());
-              } else {
-                groupersMap.put(grouper, (String) rowValue);
-              }
-            }
-          });
-          return new StaffingPlan(quantity, metricUnit, type, groupersMap);
-        })
-        .toList();
-  }
 }

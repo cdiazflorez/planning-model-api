@@ -18,6 +18,7 @@ import static com.mercadolibre.planning.model.api.util.TestUtils.HEADCOUNT_TYPE;
 import static com.mercadolibre.planning.model.api.util.TestUtils.LOGISTIC_CENTER_ID;
 import static com.mercadolibre.planning.model.api.util.TestUtils.NON_SYSTEMIC;
 import static com.mercadolibre.planning.model.api.util.TestUtils.POLYVALENCE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.POLYVALENT;
 import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_NAME;
 import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_PATH;
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -192,7 +193,7 @@ class CurrentProcessingDistributionJpaRepositoryTest {
                 Map.of(
                     PROCESS_NAME, List.of(PICKING.getName()),
                     PROCESS_PATH, List.of(TOT_MULTI_BATCH.toJson()),
-                    POLYVALENCE, List.of(2)
+                    POLYVALENCE, List.of(POLYVALENT)
                 )
             ),
             Set.of(

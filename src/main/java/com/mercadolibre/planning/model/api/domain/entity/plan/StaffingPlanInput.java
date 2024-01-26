@@ -11,6 +11,6 @@ public record StaffingPlanInput(
     Instant dateTo,
     ProcessingType type,
     List<String> groupers,
-    Map<String, List<Object>> filters
+    Map<String, List<String>> filters
 ) {
 }

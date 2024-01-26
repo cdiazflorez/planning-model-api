@@ -84,7 +84,7 @@ class GetStaffingPlanUseCaseTest {
         .thenReturn(mockCurrentProcessingDistribution());
 
     //WHEN
-    final var result = getStaffingPlanUseCase.getStaffingPlan(
+    final var result = getStaffingPlanUseCase.execute(
         LOGISTIC_CENTER_ID,
         Workflow.FBM_WMS_OUTBOUND,
         EFFECTIVE_WORKERS,

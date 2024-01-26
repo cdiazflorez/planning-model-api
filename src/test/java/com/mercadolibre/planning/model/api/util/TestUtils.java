@@ -170,9 +170,9 @@ public final class TestUtils {
 
   public static final String DATE = "date";
 
-  public static final Integer MAIN = 1;
+  public static final String MAIN = "main";
 
-  public static final Integer POLYVALENT = 2;
+  public static final String POLYVALENT = "polyvalent";
 
   private TestUtils() {
   }

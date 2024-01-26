@@ -13,6 +13,6 @@ public record CurrentStaffingPlanInput(
     Instant dateTo,
     ProcessingType type,
     List<String> groupers,
-    Map<String, List<Object>> filters
+    Map<String, List<String>> filters
 ) {
 }

@@ -17,7 +17,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class GetStaffingPlanUseCase {
 
@@ -27,14 +29,14 @@ public class GetStaffingPlanUseCase {
 
   private final CurrentProcessingDistributionGateway currentProcessingDistributionGateway;
 
-  public List<StaffingPlanResponse> getStaffingPlan(final String logisticCenterId,
-                                                    final Workflow workflow,
-                                                    final ProcessingType type,
-                                                    final List<String> groupers,
-                                                    final Map<String, List<Object>> filters,
-                                                    final Instant dateFrom,
-                                                    final Instant dateTo,
-                                                    final Instant viewDate) {
+  public List<StaffingPlanResponse> execute(final String logisticCenterId,
+                                            final Workflow workflow,
+                                            final ProcessingType type,
+                                            final List<String> groupers,
+                                            final Map<String, List<String>> filters,
+                                            final Instant dateFrom,
+                                            final Instant dateTo,
+                                            final Instant viewDate) {
 
     final List<Long> forecastIds = getForecastUseCase.execute(GetForecastInput.builder()
                                                                   .dateFrom(ZonedDateTime.ofInstant(dateFrom, UTC))

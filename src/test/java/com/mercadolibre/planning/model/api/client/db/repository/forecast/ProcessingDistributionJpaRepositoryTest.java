@@ -136,7 +136,7 @@ class ProcessingDistributionJpaRepositoryTest {
   @MethodSource("provideArgumentsToGetStaffingPlan")
   void testGetStaffingPlan(final ProcessingType type,
                            final List<String> groupers,
-                           final Map<String, List<Object>> filters,
+                           final Map<String, List<String>> filters,
                            final List<StaffingPlan> expectedResponse) {
     // GIVEN
     final Forecast firstForecast = mockSimpleForecast();
@@ -372,7 +372,7 @@ class ProcessingDistributionJpaRepositoryTest {
                                                                     final ProcessPath processPath,
                                                                     final String headcountType,
                                                                     final ProcessingType processingType,
-                                                                    final Integer polyvalence,
+                                                                    final String polyvalence,
                                                                     final double quantity) {
     return ProcessingDistribution.builder()
         .forecast(forecast)
@@ -390,8 +390,8 @@ class ProcessingDistributionJpaRepositoryTest {
   private static String buildTags(final ProcessName processName,
                                   final ProcessPath processPath,
                                   final String headcountType,
-                                  final Integer polyvalence) {
-    final ConcurrentHashMap<String, Object> tags = new ConcurrentHashMap<>();
+                                  final String polyvalence) {
+    final ConcurrentHashMap<String, String> tags = new ConcurrentHashMap<>();
 
     if (processName != null) {
       tags.put(PROCESS_NAME, processName.getName());

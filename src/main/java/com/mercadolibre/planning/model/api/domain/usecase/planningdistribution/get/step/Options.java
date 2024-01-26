@@ -10,6 +10,8 @@ public final class Options {
 
   static final String APPLY_DATE_OUT_FILTERING = "apply_date_out_filtering";
 
+  static final String TAG_BY = "tag_by";
+
   private Options() {
   }
 

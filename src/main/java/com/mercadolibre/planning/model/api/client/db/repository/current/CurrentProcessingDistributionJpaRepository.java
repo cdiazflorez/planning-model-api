@@ -8,13 +8,16 @@ import static java.util.stream.Collectors.joining;
 import com.mercadolibre.planning.model.api.client.db.repository.util.StaffingPlanUtil;
 import com.mercadolibre.planning.model.api.domain.entity.plan.CurrentStaffingPlanInput;
 import com.mercadolibre.planning.model.api.domain.entity.plan.StaffingPlan;
+import com.mercadolibre.planning.model.api.gateway.CurrentProcessingDistributionGateway;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
 @RequiredArgsConstructor
-public class CurrentProcessingDistributionJpaRepository {
+public class CurrentProcessingDistributionJpaRepository implements CurrentProcessingDistributionGateway {
 
   private static final String DEFAULT_COLUMNS = "sum(quantity) as quantity, quantity_metric_unit, type %s";
 

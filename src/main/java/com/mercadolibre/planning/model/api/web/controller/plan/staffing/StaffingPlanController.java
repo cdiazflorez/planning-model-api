@@ -61,8 +61,7 @@ public class StaffingPlanController {
   private final GetStaffingPlanUseCase getStaffingPlanUseCase;
 
   /**
-   *
-   * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}
+   * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}.
    */
   @GetMapping
   @Deprecated

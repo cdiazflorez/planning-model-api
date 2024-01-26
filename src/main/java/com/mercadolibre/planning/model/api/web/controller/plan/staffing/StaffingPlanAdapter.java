@@ -35,13 +35,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- *
  * Adapter for Staffing Plan.
  *
  * <p>brings together the different use cases to obtain the necessary information for the staffing plan.</p>
- *
- * @deprecated use {@link GetStaffingPlanUseCase}
- *
+ * @deprecated use {@link GetStaffingPlanUseCase}.
  */
 @Deprecated
 @AllArgsConstructor

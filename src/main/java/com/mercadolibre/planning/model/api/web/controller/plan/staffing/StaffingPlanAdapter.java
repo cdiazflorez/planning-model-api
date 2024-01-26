@@ -22,6 +22,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.throughput.get.GetThroughputUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.plan.staffing.GetStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.exception.EntityTypeNotSupportedException;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest;
@@ -34,10 +35,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
+ *
  * Adapter for Staffing Plan.
  *
  * <p>brings together the different use cases to obtain the necessary information for the staffing plan.</p>
+ *
+ * @deprecated use {@link GetStaffingPlanUseCase}
+ *
  */
+@Deprecated
 @AllArgsConstructor
 @Component
 public class StaffingPlanAdapter {

@@ -19,6 +19,7 @@ import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessi
 import com.mercadolibre.planning.model.api.domain.usecase.entities.EntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastInput;
 import com.mercadolibre.planning.model.api.domain.usecase.forecast.get.GetForecastUseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.plan.staffing.GetStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.newrelic.api.agent.Trace;
 import java.util.HashSet;
@@ -30,6 +31,13 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ *
+ *  @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan
+ *  (Headcount, Productivity, TPH and maximum capacity)., it was replaced by the {@link GetStaffingPlanUseCase}
+ *
+ */
+@Deprecated
 @Service
 @AllArgsConstructor
 public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivityInput, List<ProductivityOutput>> {

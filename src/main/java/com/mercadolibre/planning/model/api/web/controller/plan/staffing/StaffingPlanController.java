@@ -60,7 +60,12 @@ public class StaffingPlanController {
 
   private final GetStaffingPlanUseCase getStaffingPlanUseCase;
 
-  @GetMapping()
+  /**
+   *
+   * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}
+   */
+  @GetMapping
+  @Deprecated
   @Trace(dispatcher = true)
   public ResponseEntity<StaffingPlanAdapter.StaffingPlanResponse> getStaffingPlan(
       @PathVariable final String logisticCenterId,

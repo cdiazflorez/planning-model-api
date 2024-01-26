@@ -19,6 +19,7 @@ import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get
 import com.mercadolibre.planning.model.api.domain.usecase.entities.headcount.get.GetHeadcountInput;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.GetProductivityEntityUseCase;
 import com.mercadolibre.planning.model.api.domain.usecase.entities.productivity.get.ProductivityOutput;
+import com.mercadolibre.planning.model.api.domain.usecase.plan.staffing.GetStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.util.StaffingPlanMapper;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.Source;
@@ -40,7 +41,12 @@ import org.springframework.util.CollectionUtils;
  * <p>
  * Both of these inputs are retrieved from the forecast and updated with the values from stored simulations or unnaplied simulations.
  * </p>
+ *
+ * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan
+ * (Headcount, Productivity, TPH and maximum capacity)., it was replaced by the {@link GetStaffingPlanUseCase}
+ *
  */
+@Deprecated
 @Service
 @AllArgsConstructor
 public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<EntityOutput>> {

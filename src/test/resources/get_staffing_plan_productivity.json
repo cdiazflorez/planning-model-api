@@ -1,0 +1,20 @@
+[
+  {
+    "value": 250.0,
+    "original_value": 250.0,
+    "groupers": {
+      "date": "2020-08-19T17:00:00Z",
+      "process_name": "picking",
+      "process_path": "global"
+    }
+  },
+  {
+    "value": 300.0,
+    "original_value": 300.0,
+    "groupers": {
+      "date": "2020-08-19T22:00:00Z",
+      "process_name": "picking",
+      "process_path": "global"
+    }
+  }
+]

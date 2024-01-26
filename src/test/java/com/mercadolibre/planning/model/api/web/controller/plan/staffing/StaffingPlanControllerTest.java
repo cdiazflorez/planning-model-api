@@ -1,17 +1,35 @@
 package com.mercadolibre.planning.model.api.web.controller.plan.staffing;
 
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.GLOBAL;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessName.PICKING;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.EFFECTIVE_WORKERS_NS;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.HEADCOUNT;
+import static com.mercadolibre.planning.model.api.domain.entity.ProcessingType.PRODUCTIVITY;
+import static com.mercadolibre.planning.model.api.domain.entity.Workflow.FBM_WMS_OUTBOUND;
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.DATE;
+import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_NAME;
+import static com.mercadolibre.planning.model.api.util.TestUtils.PROCESS_PATH;
+import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
+import static java.util.Collections.emptyMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.mercadolibre.planning.model.api.domain.entity.ProcessingType;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.entity.plan.StaffingPlanResponse;
+import com.mercadolibre.planning.model.api.domain.usecase.plan.staffing.GetStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +41,9 @@ import org.springframework.test.web.servlet.ResultActions;
 @WebMvcTest(StaffingPlanController.class)
 public class StaffingPlanControllerTest {
   private static final String BASE_URL = "/logistic_center/{logistic_center_id}/plan/staffing/v2";
+
+  private static final String NEW_URL = "/logistic_center/{logistic_center_id}/plan/staffing/v2/{type}";
+
   private static final String LOGISTIC_CENTER_ID = "ARTW01";
   private static final ZonedDateTime DATE_FROM = A_DATE_UTC;
 
@@ -35,10 +56,13 @@ public class StaffingPlanControllerTest {
   @MockBean
   private StaffingPlanAdapter staffingPlanAdapter;
 
+  @MockBean
+  private GetStaffingPlanUseCase getStaffingPlanUseCase;
+
   private static StaffingPlanRequest buildStaffingPlanRequest() {
     return new StaffingPlanRequest(
         List.of(EntityType.HEADCOUNT, EntityType.PRODUCTIVITY, EntityType.THROUGHPUT),
-        Workflow.FBM_WMS_OUTBOUND,
+        FBM_WMS_OUTBOUND,
         DATE_FROM.withFixedOffsetZone(),
         DATE_TO.withFixedOffsetZone(),
         A_DATE_UTC.toInstant(),
@@ -90,4 +114,115 @@ public class StaffingPlanControllerTest {
     );
     result.andExpect(status().isBadRequest());
   }
+
+  @Test
+  @DisplayName("Get staffing plan headcount")
+  void testGetStaffingPlanHeadcount() throws Exception {
+
+    when(getStaffingPlanUseCase.execute(
+             LOGISTIC_CENTER_ID,
+             FBM_WMS_OUTBOUND,
+             EFFECTIVE_WORKERS,
+             List.of(DATE),
+             emptyMap(),
+             DATE_FROM.toInstant(),
+             DATE_TO.toInstant(),
+             DATE_FROM.toInstant()
+         )
+    ).thenReturn(
+        List.of(
+            new StaffingPlanResponse(99, 99, Map.of(DATE, DATE_FROM.toInstant().toString())
+            )
+        )
+    );
+
+    when(getStaffingPlanUseCase.execute(
+             LOGISTIC_CENTER_ID,
+             FBM_WMS_OUTBOUND,
+             EFFECTIVE_WORKERS_NS,
+             List.of(DATE),
+             emptyMap(),
+             DATE_FROM.toInstant(),
+             DATE_TO.toInstant(),
+             DATE_FROM.toInstant()
+         )
+    ).thenReturn(
+        List.of(
+            new StaffingPlanResponse(1, 1, Map.of(DATE, DATE_FROM.toInstant().toString())
+            )
+        )
+    );
+
+    final ResultActions result = mvc.perform(
+        get(NEW_URL, LOGISTIC_CENTER_ID, HEADCOUNT.toJson())
+            .contentType(APPLICATION_JSON)
+            .param("workflow", "fbm-wms-outbound")
+            .param("date_from", DATE_FROM.toInstant().toString())
+            .param("date_to", DATE_TO.toInstant().toString())
+            .param("view_date", DATE_FROM.toInstant().toString())
+            .param("groupers", "date")
+    );
+
+    result.andExpect(status().isOk())
+        .andExpect(content().json(getResourceAsString("get_staffing_plan_headcount.json")));
+
+  }
+
+  @Test
+  @DisplayName("Get staffing plan productivity")
+  void testGetStaffingPlanProductivity() throws Exception {
+
+    when(getStaffingPlanUseCase.execute(
+             LOGISTIC_CENTER_ID,
+             FBM_WMS_OUTBOUND,
+             PRODUCTIVITY,
+             List.of(DATE, PROCESS_NAME, PROCESS_PATH),
+             Map.of(
+                 PROCESS_NAME, List.of(PICKING.toJson()),
+                 PROCESS_PATH, List.of(GLOBAL.toJson())
+             ),
+             DATE_FROM.toInstant(),
+             DATE_TO.toInstant(),
+             DATE_FROM.toInstant()
+         )
+    ).thenReturn(
+        List.of(
+            new StaffingPlanResponse(
+                250,
+                250,
+                Map.of(
+                    DATE, DATE_FROM.toInstant().toString(),
+                    PROCESS_NAME, PICKING.toJson(),
+                    PROCESS_PATH, GLOBAL.toJson()
+                )
+            ),
+            new StaffingPlanResponse(
+                300,
+                300,
+                Map.of(
+                    DATE, DATE_TO.toInstant().toString(),
+                    PROCESS_NAME, PICKING.toJson(),
+                    PROCESS_PATH, GLOBAL.toJson()
+                )
+            )
+        )
+    );
+
+    final ResultActions result = mvc.perform(
+        get(NEW_URL, LOGISTIC_CENTER_ID, PRODUCTIVITY.toJson())
+            .contentType(APPLICATION_JSON)
+            .param("workflow", "fbm-wms-outbound")
+            .param("date_from", DATE_FROM.toInstant().toString())
+            .param("date_to", DATE_TO.toInstant().toString())
+            .param("view_date", DATE_FROM.toInstant().toString())
+            .param("groupers", "date,process_name,process_path")
+            .param("process_name", "picking")
+            .param("process_path", "global")
+    );
+
+    result.andExpect(status().isOk())
+        .andExpect(content().json(getResourceAsString("get_staffing_plan_productivity.json")));
+
+  }
+
 }

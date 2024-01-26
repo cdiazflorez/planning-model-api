@@ -62,6 +62,7 @@ public class StaffingPlanController {
 
   /**
    * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}.
+   * @return the staffing plan.
    */
   @GetMapping
   @Deprecated

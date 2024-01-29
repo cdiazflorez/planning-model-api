@@ -31,10 +31,9 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-   /**
-   * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan (Headcount,
-   *  Productivity, TPH and maximum capacity)., it was replaced by the {@link GetStaffingPlanUseCase}.
-   */
+/**
+ * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan {@link GetStaffingPlanUseCase}.
+ */
 @Deprecated
 @Service
 @AllArgsConstructor
@@ -51,8 +50,8 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
   @Override
   public List<ProductivityOutput> execute(final GetProductivityInput input) {
     return Stream.concat(
-            getForecastProductivity(input),
-            getSimulationProductivity(input)
+        getForecastProductivity(input),
+        getSimulationProductivity(input)
     ).collect(Collectors.toList());
   }
 
@@ -65,25 +64,25 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
 
     // TODO: revisar si es necesario remover la validación del PP Global y dejar solo la del source.
     if (input.getSource() == FORECAST) {
-        return Stream.empty();
+      return Stream.empty();
     }
     final List<ProductivityOutput> inputSimulatedEntities = createUnappliedSimulations(input);
-    final Stream<ProductivityOutput> currentProductivity =  findCurrentProductivityBy(input).stream()
-            .filter(noSimulationExistsWithSameProperties(inputSimulatedEntities))
-            .map(sp -> ProductivityOutput.builder()
-                    .workflow(input.getWorkflow())
-                    .value(sp.getQuantity())
-                    .source(SIMULATION)
-                    .processPath(sp.getProcessPath())
-                    .processName(sp.getProcessName())
-                    .metricUnit(sp.getQuantityMetricUnit())
-                    .date(sp.getDate())
-                    .abilityLevel(ABILITY_LEVEL)
-                    .build());
+    final Stream<ProductivityOutput> currentProductivity = findCurrentProductivityBy(input).stream()
+        .filter(noSimulationExistsWithSameProperties(inputSimulatedEntities))
+        .map(sp -> ProductivityOutput.builder()
+            .workflow(input.getWorkflow())
+            .value(sp.getQuantity())
+            .source(SIMULATION)
+            .processPath(sp.getProcessPath())
+            .processName(sp.getProcessName())
+            .metricUnit(sp.getQuantityMetricUnit())
+            .date(sp.getDate())
+            .abilityLevel(ABILITY_LEVEL)
+            .build());
 
     return Stream.concat(
-            inputSimulatedEntities.stream(),
-            currentProductivity
+        inputSimulatedEntities.stream(),
+        currentProductivity
     );
   }
 
@@ -104,13 +103,13 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
   }
 
   private Predicate<CurrentProcessingDistribution> noSimulationExistsWithSameProperties(
-          final List<ProductivityOutput> entities
+      final List<ProductivityOutput> entities
   ) {
-     return currentHeadcountProductivity -> entities.stream().noneMatch(entityOutput -> entityOutput.getSource() == SIMULATION
-             && entityOutput.getProcessName() == currentHeadcountProductivity.getProcessName()
-             && entityOutput.getWorkflow() == currentHeadcountProductivity.getWorkflow()
-             && entityOutput.getDate().withFixedOffsetZone()
-             .isEqual(currentHeadcountProductivity.getDate().withFixedOffsetZone()));
+    return currentHeadcountProductivity -> entities.stream().noneMatch(entityOutput -> entityOutput.getSource() == SIMULATION
+        && entityOutput.getProcessName() == currentHeadcountProductivity.getProcessName()
+        && entityOutput.getWorkflow() == currentHeadcountProductivity.getWorkflow()
+        && entityOutput.getDate().withFixedOffsetZone()
+        .isEqual(currentHeadcountProductivity.getDate().withFixedOffsetZone()));
   }
 
   private List<CurrentProcessingDistribution> findCurrentProductivityBy(final GetProductivityInput input) {
@@ -157,20 +156,20 @@ public class GetProductivityEntityUseCase implements EntityUseCase<GetProductivi
     }
 
     return input.getSimulations().stream()
-      .flatMap(simulation -> simulation.getEntities().stream()
-                .filter(entity -> entity.getType() == PRODUCTIVITY)
-                .flatMap(entity -> entity.getValues().stream()
-                        .map(quantityByDate -> ProductivityOutput.builder()
-                                .workflow(input.getWorkflow())
-                                .date(quantityByDate.getDate())
-                                .metricUnit(MetricUnit.UNITS_PER_HOUR)
-                                .processPath(GLOBAL)
-                                .processName(simulation.getProcessName())
-                                .source(SIMULATION)
-                                .value(quantityByDate.getQuantity())
-                                .abilityLevel(1)
-                                .build())
-                    )
-            ).collect(Collectors.toList());
+        .flatMap(simulation -> simulation.getEntities().stream()
+            .filter(entity -> entity.getType() == PRODUCTIVITY)
+            .flatMap(entity -> entity.getValues().stream()
+                .map(quantityByDate -> ProductivityOutput.builder()
+                    .workflow(input.getWorkflow())
+                    .date(quantityByDate.getDate())
+                    .metricUnit(MetricUnit.UNITS_PER_HOUR)
+                    .processPath(GLOBAL)
+                    .processName(simulation.getProcessName())
+                    .source(SIMULATION)
+                    .value(quantityByDate.getQuantity())
+                    .abilityLevel(1)
+                    .build())
+            )
+        ).collect(Collectors.toList());
   }
 }

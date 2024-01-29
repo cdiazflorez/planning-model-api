@@ -69,8 +69,19 @@ public class StaffingPlanController {
   private final GetStaffingPlanUseCase getStaffingPlanUseCase;
 
   /**
-   * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}.
+   * @param logisticCenterId the logistic center id.
+   * @param workflow the workflow.
+   * @param resources the resources.
+   * @param groupers the groupers.
+   * @param processPaths the process paths.
+   * @param processes the processes.
+   * @param abilityLevels the ability levels.
+   * @param headcountTypes the headcount types.
+   * @param dateFrom the date from.
+   * @param dateTo the date to.
+   * @param viewDate the view date.
    * @return the staffing plan.
+   * @deprecated use {@link #getStaffingPlan(String, ProcessingType, Workflow, Instant, Instant, Instant, List, Map)}.
    */
   @GetMapping
   @Deprecated
@@ -104,23 +115,6 @@ public class StaffingPlanController {
             processes
         )
     ));
-  }
-
-  @ResponseStatus(OK)
-  @PutMapping
-  @Trace(dispatcher = true)
-  public void updateStaffingPlan(
-      @PathVariable final String logisticCenterId,
-      @RequestParam final Workflow workflow,
-      @RequestParam final long userId,
-      @RequestBody final StaffingPlanUpdateRequest request
-  ) {
-    final UpdateStaffingPlanInput input = request.toUpdateStaffingPlanInput(
-        logisticCenterId,
-        workflow,
-        userId
-    );
-    updateStaffingPlanUseCase.execute(input);
   }
 
   @GetMapping("/{resource}")
@@ -180,6 +174,23 @@ public class StaffingPlanController {
                   newViewDate
               )
         );
+  }
+
+  @ResponseStatus(OK)
+  @PutMapping
+  @Trace(dispatcher = true)
+  public void updateStaffingPlan(
+      @PathVariable final String logisticCenterId,
+      @RequestParam final Workflow workflow,
+      @RequestParam final long userId,
+      @RequestBody final StaffingPlanUpdateRequest request
+  ) {
+    final UpdateStaffingPlanInput input = request.toUpdateStaffingPlanInput(
+        logisticCenterId,
+        workflow,
+        userId
+    );
+    updateStaffingPlanUseCase.execute(input);
   }
 
   @InitBinder

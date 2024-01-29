@@ -42,8 +42,7 @@ import org.springframework.util.CollectionUtils;
  * Both of these inputs are retrieved from the forecast and updated with the values from stored simulations or unnaplied simulations.
  * </p>
  *
- * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan (Headcount, Productivity,
- * TPH and maximum capacity)., it was replaced by the {@link GetStaffingPlanUseCase}.
+ * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan (Headcount, Productivity, TPH and maximum capacity)., it was replaced by the {@link GetStaffingPlanUseCase}.
  */
 @Deprecated
 @Service
@@ -84,13 +83,13 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
         : input.getProcessName();
 
     allThroughputs.addAll(createThroughput(
-            processPaths,
-            processes,
-            headcounts,
-            productivity,
-            input.getWorkflow(),
-            input.getSource()
-        )
+                              processPaths,
+                              processes,
+                              headcounts,
+                              productivity,
+                              input.getWorkflow(),
+                              input.getSource()
+                          )
     );
     return allThroughputs;
   }
@@ -120,8 +119,8 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
     final var headcountsMap = toMapByProcessPathProcessNameDateAndSource(headcounts);
 
     final var regularProductivityMap = toMapByProcessPathProcessNameDateAndSource(productivity.stream()
-        .filter(ProductivityOutput::isMainProductivity)
-        .collect(toList()));
+                                                                                      .filter(ProductivityOutput::isMainProductivity)
+                                                                                      .collect(toList()));
 
     // Despite the `current_headcount_productivity` table has the `ability_level` field, currently (2022-08-26) it contains no polyvalent
     // productivity information. Therefore, this map contains polivalent productivity from the forecast only.
@@ -136,19 +135,19 @@ public class GetThroughputUseCase implements EntityUseCase<GetEntityInput, List<
 
     return processPaths.stream()
         .flatMap(processPath ->
-            processes.stream()
-                // receiving is filtered as it has its own way of calculating its tph
-                .filter(process -> process != ProcessName.RECEIVING)
-                .flatMap(process ->
-                    createThroughput(
-                        workflow,
-                        processPath,
-                        process,
-                        headcountsMap,
-                        regularProductivityMap,
-                        polyvalentProductivityRatios
-                    ).stream()
-                )
+                     processes.stream()
+                         // receiving is filtered as it has its own way of calculating its tph
+                         .filter(process -> process != ProcessName.RECEIVING)
+                         .flatMap(process ->
+                                      createThroughput(
+                                          workflow,
+                                          processPath,
+                                          process,
+                                          headcountsMap,
+                                          regularProductivityMap,
+                                          polyvalentProductivityRatios
+                                      ).stream()
+                         )
         ).collect(toList());
   }
 

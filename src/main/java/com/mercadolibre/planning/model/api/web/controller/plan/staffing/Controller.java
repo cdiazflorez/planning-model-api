@@ -31,6 +31,7 @@ import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEdit
 import com.mercadolibre.planning.model.api.web.controller.editor.ProcessPathEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanUpdateRequest;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.UpdateStaffingPlanRequest;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -117,9 +118,18 @@ public class Controller {
     ));
   }
 
+  /**
+   * Update staffing plan.
+   * @param logisticCenterId logistic center id
+   * @param workflow workflow
+   * @param userId user id
+   * @param request request
+   * @deprecated use {@link StaffingPlanController#updateStaffingPlan(String, Workflow, long, StaffingPlanUpdateRequest)}
+   */
   @ResponseStatus(OK)
   @PutMapping
   @Trace(dispatcher = true)
+  @Deprecated
   public void updateStaffingPlan(@PathVariable final String logisticCenterId,
                                  @RequestParam final Workflow workflow,
                                  @RequestParam final long userId,

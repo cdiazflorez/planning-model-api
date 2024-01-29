@@ -1,13 +1,17 @@
 package com.mercadolibre.planning.model.api.web.controller.plan.staffing;
 
 import static com.mercadolibre.planning.model.api.util.TestUtils.A_DATE_UTC;
+import static com.mercadolibre.planning.model.api.util.TestUtils.getResourceAsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.update.UpdateStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest;
 import java.time.ZonedDateTime;
@@ -34,6 +38,9 @@ public class StaffingPlanControllerTest {
 
   @MockBean
   private StaffingPlanAdapter staffingPlanAdapter;
+
+  @MockBean
+  private UpdateStaffingPlanUseCase updateStaffingPlanUseCase;
 
   private static StaffingPlanRequest buildStaffingPlanRequest() {
     return new StaffingPlanRequest(
@@ -89,5 +96,23 @@ public class StaffingPlanControllerTest {
             .param("groupers", "invalid_grouper")
     );
     result.andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @DisplayName("Update staffing plan ok")
+  void testUpdateStaffingPlanOk() throws Exception {
+    doNothing().when(updateStaffingPlanUseCase).execute(any());
+
+    //WHEN
+    final ResultActions result = mvc.perform(
+        put(BASE_URL, LOGISTIC_CENTER_ID)
+            .param("user_id", "123")
+            .param("workflow", "fbm-wms-outbound")
+            .contentType(APPLICATION_JSON)
+            .content(getResourceAsString("controller/plan/staffing/put_staffing_plan_new_request.json"))
+    );
+
+    //THEN
+    result.andExpect(status().isOk());
   }
 }

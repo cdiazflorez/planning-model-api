@@ -17,6 +17,7 @@ import com.mercadolibre.planning.model.api.domain.entity.Workflow;
 import com.mercadolibre.planning.model.api.domain.entity.current.CurrentProcessingDistribution;
 import com.mercadolibre.planning.model.api.domain.service.headcount.ProcessPathHeadcountShareService;
 import com.mercadolibre.planning.model.api.domain.usecase.UseCase;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.update.UpdateStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.web.controller.projection.request.QuantityByDate;
 import com.mercadolibre.planning.model.api.web.controller.simulation.Simulation;
 import java.time.Instant;
@@ -30,6 +31,10 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * Create an active simulation.
+ * @deprecated use {@link UpdateStaffingPlanUseCase} instead
+ */
 @AllArgsConstructor
 @Service
 public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<SimulationOutput>> {
@@ -39,6 +44,7 @@ public class ActivateSimulationUseCase implements UseCase<SimulationInput, List<
   private final ProcessPathHeadcountShareService processPathHeadcountShareService;
 
   @Override
+  @Deprecated
   public List<SimulationOutput> execute(final SimulationInput input) {
     deactivateOldSimulations(input);
     return createSimulation(input);

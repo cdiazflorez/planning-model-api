@@ -66,6 +66,8 @@ public class CurrentProcessingDistribution {
   @UpdateTimestamp
   private ZonedDateTime lastUpdated;
 
+  private String tags;
+
   public ProcessPath getProcessPath() {
     return processPath == null ? ProcessPath.GLOBAL : processPath;
   }

@@ -4,6 +4,8 @@ import static org.springframework.http.HttpStatus.OK;
 
 import com.mercadolibre.planning.model.api.domain.entity.ProcessName;
 import com.mercadolibre.planning.model.api.domain.entity.Workflow;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.update.UpdateStaffingPlanInput;
+import com.mercadolibre.planning.model.api.domain.usecase.forecast.update.UpdateStaffingPlanUseCase;
 import com.mercadolibre.planning.model.api.web.controller.editor.AbilityLevelEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.EntityTypeEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.HeadcountTypeEditor;
@@ -11,6 +13,7 @@ import com.mercadolibre.planning.model.api.web.controller.editor.ProcessNameEdit
 import com.mercadolibre.planning.model.api.web.controller.editor.StaffingPlanGroupersEditor;
 import com.mercadolibre.planning.model.api.web.controller.editor.WorkflowEditor;
 import com.mercadolibre.planning.model.api.web.controller.entity.EntityType;
+import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanUpdateRequest;
 import com.mercadolibre.planning.model.api.web.controller.plan.staffing.request.StaffingPlanRequest;
 import com.newrelic.api.agent.Trace;
 import java.time.Instant;
@@ -25,19 +28,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
 @AllArgsConstructor
-@RequestMapping("/logistic_center/{logisticCenterId}/plan/staffing")
+@RequestMapping("/logistic_center/{logisticCenterId}/plan/staffing/v2")
 public class StaffingPlanController {
 
   private final StaffingPlanAdapter staffingPlanAdapter;
 
-  @GetMapping("/v2")
+  private final UpdateStaffingPlanUseCase updateStaffingPlanUseCase;
+
+  @GetMapping
   @Trace(dispatcher = true)
   public ResponseEntity<StaffingPlanAdapter.StaffingPlanResponse> getStaffingPlan(
       @PathVariable final String logisticCenterId,
@@ -68,6 +76,23 @@ public class StaffingPlanController {
             processes
         )
     ));
+  }
+
+  @ResponseStatus(OK)
+  @PutMapping
+  @Trace(dispatcher = true)
+  public void updateStaffingPlan(
+      @PathVariable final String logisticCenterId,
+      @RequestParam final Workflow workflow,
+      @RequestParam final long userId,
+      @RequestBody final StaffingPlanUpdateRequest request
+  ) {
+    final UpdateStaffingPlanInput input = request.toUpdateStaffingPlanInput(
+        logisticCenterId,
+        workflow,
+        userId
+    );
+    updateStaffingPlanUseCase.execute(input);
   }
 
   @InitBinder

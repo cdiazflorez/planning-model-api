@@ -42,7 +42,7 @@ import org.springframework.util.CollectionUtils;
  * Both of these inputs are retrieved from the forecast and updated with the values from stored simulations or unnaplied simulations.
  * </p>
  *
- * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan {@link GetStaffingPlanUseCase}.
+ * @deprecated This use case is deprecated because only the get staffing plan use case will be used. {@link GetStaffingPlanUseCase}.
  */
 @Deprecated
 @Service

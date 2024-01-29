@@ -32,7 +32,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
- * @deprecated This use case is deprecated because only one use case will be used to obtain the staffing plan {@link GetStaffingPlanUseCase}.
+ * @deprecated This use case is deprecated because only the get staffing plan use case will be used. {@link GetStaffingPlanUseCase}.
  */
 @Deprecated
 @Service

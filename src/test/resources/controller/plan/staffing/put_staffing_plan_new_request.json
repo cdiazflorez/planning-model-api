@@ -1,0 +1,61 @@
+{
+  "resources": [
+    {
+      "name": "headcount",
+      "values": [
+        {
+          "value": 11,
+          "date": "2023-09-12T01:00:00Z",
+          "tags": {
+            "process": "picking",
+            "process_path": "tot_single_sku",
+            "headcount_type": "systemic"
+          }
+        },
+        {
+          "value": 11,
+          "date": "2023-09-12T02:00:00Z",
+          "tags": {
+            "process": "picking",
+            "process_path": "tot_single_sku",
+            "headcount_type": "systemic"
+          }
+        }
+      ]
+    },
+    {
+      "name": "productivity",
+      "values": [
+        {
+          "value": 11,
+          "date": "2023-09-12T02:00:00Z",
+          "tags": {
+            "process": "picking",
+            "process_path": "tot_single_sku"
+          }
+        },
+        {
+          "value": 11,
+          "date": "2023-09-12T02:00:00Z",
+          "tags": {
+            "process": "picking",
+            "process_path": "tot_single_sku"
+          }
+        }
+      ]
+    },
+    {
+      "name": "max_capacity",
+      "values": [
+        {
+          "value": 11,
+          "date": "2023-09-12T02:00:00Z"
+        },
+        {
+          "value": 11,
+          "date": "2023-09-12T02:00:00Z"
+        }
+      ]
+    }
+  ]
+}

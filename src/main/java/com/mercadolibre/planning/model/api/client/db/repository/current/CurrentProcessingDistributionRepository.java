@@ -84,6 +84,32 @@ public interface CurrentProcessingDistributionRepository extends JpaRepository<C
       @Param("user_id") long userId,
       @Param("metric_unit") MetricUnit metricUnit);
 
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("UPDATE "
+      + " CurrentProcessingDistribution cpd "
+      + "SET "
+      + "   cpd.isActive = false, "
+      + "   cpd.userId = :user_id,"
+      + "   cpd.lastUpdated = CURRENT_TIMESTAMP "
+      + "WHERE "
+      + "   cpd.workflow = :workflow "
+      + "   AND cpd.date = :date"
+      + "   AND cpd.logisticCenterId = :logistic_center_id "
+      + "   AND cpd.tags = :tags "
+      + "   AND cpd.type = :type "
+      + "   AND cpd.quantityMetricUnit = :metric_unit "
+      + "   AND cpd.isActive = true")
+  void deactivateProcessingDistributionByTags(
+      @Param("workflow") Workflow workflow,
+      @Param("date") ZonedDateTime date,
+      @Param("logistic_center_id") String logisticCenterId,
+      @Param("tags") String tags,
+      @Param("type") ProcessingType type,
+      @Param("metric_unit") MetricUnit metricUnit,
+      @Param("user_id") long userId
+  );
+
   @Query(
       value = "SELECT cpd.* "
           + "FROM current_processing_distribution cpd "
